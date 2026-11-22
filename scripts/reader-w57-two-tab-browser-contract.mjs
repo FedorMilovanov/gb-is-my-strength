@@ -77,23 +77,36 @@ async function run(engine, name) {
     const seeded = await A.evaluate(({qid,nid,initial}) => {
       const article = window.GBReaderContract?.articleRoot?.(document);
       if (!article || !window.GBReaderAnchors?.capture) throw Error('Canonical anchor owner missing');
-      let textNode = null;
-      for (const p of article.querySelectorAll('p')) {
-        const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
-        let t;
-        while ((t = walker.nextNode())) {
-          if (t.nodeValue.trim().length >= 75 && p.getBoundingClientRect().width > 100) {
-            textNode = t; break;
+      // Use the canonical authored-block list. An arbitrary first paragraph
+      // can be below the fold, in which case GBReaderAnchors.capture correctly
+      // returns null. Seed a REAL visible selection, never fake coordinates.
+      let textNode = null, sourceBlock = null;
+      for (const block of window.GBReaderAnchors.blocks(article)) {
+        if (!block.getClientRects().length || block.closest('[hidden],[inert],[aria-hidden="true"]')) continue;
+        const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          const owner=node.parentElement;
+          if (node.nodeValue.trim().length >= 75 &&
+              !owner?.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]')) {
+            textNode = node; sourceBlock = block; break;
           }
         }
         if (textNode) break;
       }
-      if (!textNode) throw Error('No eligible authored text node');
+      if (!textNode || !sourceBlock) throw Error('No eligible authored source block');
+      sourceBlock.scrollIntoView({block:'center',behavior:'instant'});
       const range = document.createRange();
       range.setStart(textNode, Math.min(3,textNode.length-1));
       range.setEnd(textNode, Math.min(textNode.length,58));
       const selection = window.getSelection();
       selection.removeAllRanges(); selection.addRange(range);
+      const geometry=range.getBoundingClientRect();
+      if (geometry.width < 2 || geometry.height < 2 ||
+          geometry.bottom < 0 || geometry.top > innerHeight)
+        throw Error('Fixture selection is not visible to canonical anchor capture: '+JSON.stringify({
+          top:geometry.top,bottom:geometry.bottom,height:geometry.height,width:geometry.width
+        }));
       const source = window.GBReaderAnchors.capture(article);
       selection.removeAllRanges();
       if (!source?.anchor || !source.text || source.text.length < 10)
