@@ -147,6 +147,37 @@ requireValue(supplement.includes("data-evidence-records={pathway.sourceIds.join(
 requireValue(supplement.includes('readerSources.filter((source) => pathway.sourceIds.includes(source.id))'), 'reader source ids must resolve against curated public sources');
 requireValue(supplement.includes('<a href={source.href}'), 'the reader must be able to open a cited public document');
 requireValue(supplement.includes('<a href={`#faithful-${pathway.id}`}'), 'evidence examples must link to actual case headings');
+
+// Reader-facing corrections must not rewrite the preserved Wave 11 evidence snapshot.
+// One known historical case references documents already listed in the main dossier,
+// while the other fourteen pathways have directly curated Wave 11 URLs.
+const missingNewLinkCases = pathways
+  .filter((pathway) => !pathway.sourceIds.some((id) => sourceIds.includes(id)))
+  .map((pathway) => pathway.id);
+requireValue(
+  missingNewLinkCases.length === 1 && missingNewLinkCases[0] === 'paige-patterson',
+  'unaccounted-for case pathway without direct Wave 11 reader source',
+);
+requireValue(
+  supplement.includes("pathway.id === 'paige-patterson'") && supplement.includes('href="#sources"'),
+  'Patterson must direct readers to the three original SWBTS documents',
+);
+requireValue(
+  !supplement.includes('Для этой истории отдельная прямая ссылка пока не представлена'),
+  'misleading missing-source statement returned',
+);
+requireValue(
+  supplement.includes('совет старейшин осуждает публичные заявления Брента Детуайлера'),
+  'Mahaney chronology again blurs the object of the council statement',
+);
+requireValue(
+  supplement.includes('изучение записи студентки, предоставленной с её разрешения'),
+  'Patterson chronology lost the record-permission clarification',
+);
+requireValue(
+  supplement.includes('их номера не образуют') && !supplement.includes('Предыдущая часть показала'),
+  'thematic numbering or same-page transition regressed',
+);
 requireValue(!supplement.includes('Research records:'), 'raw Research ids leaked into public supplementary prose');
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
