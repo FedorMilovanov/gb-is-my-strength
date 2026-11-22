@@ -33,6 +33,7 @@ on:
       - "css/highlights-runtime.css"
       - "js/highlights.js"
       - "scripts/reader-structured-content-browser-contract.mjs"
+      - "scripts/reader-gill-wholepage-browser-contract.mjs"
       - "scripts/reader-library-short-viewport-browser-contract.mjs"
       - "scripts/reader-library-tag-integrity-contract.mjs"
       - "js/reader-library-v3.js"
@@ -71,6 +72,7 @@ on:
       - "css/highlights-runtime.css"
       - "js/highlights.js"
       - "scripts/reader-structured-content-browser-contract.mjs"
+      - "scripts/reader-gill-wholepage-browser-contract.mjs"
       - "scripts/reader-library-short-viewport-browser-contract.mjs"
       - "scripts/reader-library-tag-integrity-contract.mjs"
       - "js/reader-library-v3.js"
@@ -121,6 +123,7 @@ jobs:
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
           node --check scripts/reader-library-premium-browser-contract.cjs
           node --check scripts/reader-structured-content-browser-contract.mjs
+          node --check scripts/reader-gill-wholepage-browser-contract.mjs
           node --check scripts/reader-library-short-viewport-browser-contract.mjs
           node --check scripts/reader-library-tag-integrity-contract.mjs
           node scripts/reader-library-tag-integrity-contract.mjs
@@ -154,6 +157,7 @@ jobs:
           SOURCE_SHA="$(git rev-parse HEAD)" node scripts/reader-speedrail-ssr-focus-browser-test.mjs 2>&1 | tee reports/reader-speedrail-ssr-focus.log
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
           READER_STRUCTURED_SHOTS=reports/reader-structured-shots node scripts/reader-structured-content-browser-contract.mjs 2>&1 | tee reports/reader-structured-content-browser-contract.log
+          node scripts/reader-gill-wholepage-browser-contract.mjs 2>&1 | tee reports/reader-gill-wholepage-browser-contract.log
           node scripts/reader-library-short-viewport-browser-contract.mjs 2>&1 | tee reports/reader-library-short-viewport-browser-contract.log
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
           node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
@@ -189,6 +193,8 @@ jobs:
             reports/reader-library-premium/*.png
             reports/reader-structured-content-browser-contract.log
             reports/reader-structured-shots/*.jpg
+            reports/reader-gill-wholepage-browser-contract.log
+            reports/reader-gill-wholepage/**
             reports/reader-library-short-viewport-browser-contract.log
             reports/reader-library-short/**/*
           if-no-files-found: warn
