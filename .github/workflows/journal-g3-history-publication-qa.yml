@@ -87,6 +87,15 @@ jobs:
             --axe="${G3_AXE_PATH}" \
             --widths=320,390 --mobile-heights=390,844 \
             --output=reports/g3-history-mobile-${{ matrix.engine }}
+          # AuditRepo W62: the replacement JournalContents/rail needs a real
+          # desktop sticky/scroll/focus witness, not the obsolete dossier-nav test.
+          # 2 routes × 2 heights × 2 palettes × JS/no-JS = 16 native cases/engine.
+          node scripts/journal-editorial-browser.mjs \
+            --origin=http://127.0.0.1:4177 \
+            --browser=${{ matrix.engine }} --suite=short \
+            --stop-on-first-error=${{ matrix.engine == 'firefox' }} \
+            --axe="${G3_AXE_PATH}" --widths=1440 --heights=390,480 \
+            --output=reports/g3-history-mobile-${{ matrix.engine }}/desktop-short
       - name: Retain exact-head browser JSON and real screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
