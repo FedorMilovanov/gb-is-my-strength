@@ -14,9 +14,9 @@ const ROUTES = [
   ['/articles/podrostok-za-kadrom-dvoynaya-zhizn/', 3],
   ['/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', 3],
   ['/articles/podrostok-za-kadrom-chto-delat-tserkvi/', 3],
-  ['/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', 2],
-  ['/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', 3],
   ['/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/', 2],
+  ['/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', 3],
+  ['/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', 2],
   ['/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/', 3],
 ];
 const REQUIRED_LATERAL_EDGES = [
@@ -81,7 +81,7 @@ const teenNodes = compiled.nodes
   .sort((a, b) => a.seriesIndex - b.seriesIndex);
 assert.equal(teenNodes.length, 7, 'compiled graph must expose exactly seven teen-series nodes');
 assert.deepEqual(teenNodes.map((node) => normalizeRoute(node.url)), ROUTES.map(([route]) => route),
-  'compiled teen node order must equal I -> II -> III -> A -> B -> C -> D');
+  'compiled teen node order must equal I -> II -> III -> IV -> V -> VI -> VII');
 assert.deepEqual(teenNodes.map((node) => node.seriesIndex), [1, 2, 3, 4, 5, 6, 7],
   'compiled teen seriesIndex must be contiguous 1..7');
 
