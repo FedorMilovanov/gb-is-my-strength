@@ -390,6 +390,7 @@ async function testMobileOverlays(browser) {
 async function testMobPartTocBtn(browser) {
   for (const route of ROUTES) {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    await addFakeTts(ctx);
     const page = await ctx.newPage();
     await page.goto(BASE + route, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(600);
@@ -425,11 +426,28 @@ async function testMobPartTocBtn(browser) {
       // больше нет (Save живёт в барах) — смоук проверяет актуальный футер.
       const footState = await page.evaluate(() => ({
         listen: !!document.querySelector('#partTocOverlay [data-gbat-listen]'),
+        listenLabel: document.querySelector('#partTocOverlay [data-gbat-listen] .gbat-fbtn-txt b')?.textContent?.trim() || '',
         cont: !!document.querySelector('#partTocOverlay [data-gbat-continue]'),
         print: !!document.querySelector('#partTocOverlay .gbat-foot [data-action="print"]'),
+        xOverflow: document.documentElement.scrollWidth - innerWidth,
       }));
       assert(footState.listen && footState.cont && footState.print,
         `${prefix}: part TOC canon footer (listen/continue/print)`, JSON.stringify(footState));
+      const isFrontmatter = route === INTRO || route === '/articles/dzhon-gill-spravochnik/';
+      assert(footState.listenLabel === (isFrontmatter ? 'Слушать статью' : 'Слушать часть'),
+        `${prefix}: listen action has the correct article/part label`, JSON.stringify(footState));
+      assert(footState.xOverflow <= 1,
+        `${prefix}: part TOC footer fits the viewport`, JSON.stringify(footState));
+      if (isFrontmatter) {
+        await page.locator('#partTocOverlay [data-gbat-listen]').click();
+        await page.waitForFunction(() => window.__ttsFake?.speakCalls > 0, undefined, { timeout: 5000 });
+        const listenAction = await page.evaluate(() => ({
+          partOpen: document.querySelector('#partTocOverlay')?.classList.contains('is-open') || false,
+          speakCalls: window.__ttsFake?.speakCalls || 0,
+        }));
+        assert(!listenAction.partOpen, `${prefix}: Listen closes the part TOC`, JSON.stringify(listenAction));
+        assert(listenAction.speakCalls > 0, `${prefix}: Listen starts the real Play owner`, JSON.stringify(listenAction));
+      }
     }
     await ctx.close();
   }
@@ -609,6 +627,31 @@ async function testMobileTargetGeometry(browser) {
     );
     assert(geometry.overlaps.length === 0, 'mobile 320: primary hit boxes do not overlap', JSON.stringify(geometry.overlaps));
     assert(geometry.xOverflow <= 1, 'mobile 320: target hardening creates no horizontal overflow', String(geometry.xOverflow));
+
+    await page.locator('#mobPartTocBtn').click();
+    await page.waitForFunction(() => document.querySelector('#partTocOverlay')?.classList.contains('is-open'));
+    const footerGeometry = await page.evaluate(() => {
+      const footer = document.querySelector('#partTocOverlay .gbat-foot');
+      const listenLabel = footer?.querySelector('[data-gbat-listen] .gbat-fbtn-txt b');
+      const actions = [...(footer?.querySelectorAll('.gbat-fbtn') || [])].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, right: r.right, width: r.width, height: r.height };
+      });
+      return {
+        open: document.querySelector('#partTocOverlay')?.classList.contains('is-open') || false,
+        xOverflow: document.documentElement.scrollWidth - innerWidth,
+        actionCount: actions.length,
+        actions,
+        listenText: listenLabel?.textContent?.trim() || '',
+        listenTextClipped: !!listenLabel && listenLabel.scrollWidth > listenLabel.clientWidth + 1,
+      };
+    });
+    assert(footerGeometry.open && footerGeometry.actionCount === 3,
+      'mobile 320: TOC exposes the canonical Listen/Continue/Print footer', JSON.stringify(footerGeometry));
+    assert(footerGeometry.xOverflow <= 1 && footerGeometry.actions.every((a) => a.left >= -1 && a.right <= 321 && a.height >= 44),
+      'mobile 320: TOC footer targets remain inside the viewport and tappable', JSON.stringify(footerGeometry));
+    assert(footerGeometry.listenText === 'Слушать статью' && !footerGeometry.listenTextClipped,
+      'mobile 320: frontmatter Listen label is visible without clipping', JSON.stringify(footerGeometry));
   } finally {
     await ctx.close();
   }

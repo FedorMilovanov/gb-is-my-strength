@@ -22,9 +22,6 @@ const seriesItems = config.items.filter((it) => it.tier !== 'satellite' && !it.p
 /* Текущая страница может быть спутником — тогда «текущая часть» аккордеона
    это её родитель (раскрыт), а сам спутник подсвечен своей строкой. */
 const currentRaw = config.items.find((item) => item.id === pageId)!;
-// Gill's contextual foreword and handbook are navigational front matter,
-// not numbered reading chapters. Keep their TOC compact and free of duplicate Play.
-const isGillFrontmatter = config.seriesId === 'dzhon-gill' && currentRaw.mark.kind === 'label';
 const currentPartId = currentRaw.parent ?? currentRaw.id;
 const current = seriesItems.find((item) => item.id === currentPartId)!;
 /* NBSP между «Часть» и нумералом: при длинном имени серии (Тёмная сторона
@@ -37,6 +34,10 @@ const currentPartLabel = currentRaw.mark.kind === 'arabic'
 /* Время текущей статьи/части — для подписи кнопки «Слушать» (референс владельца
    2026-07-17: play-в-кружке + подпись + время). */
 const listenTime = currentRaw.readingTime;
+// Label/frontmatter routes are full articles; keep the canonical contextual Listen action in their TOC footer too.
+const listenActionLabel = currentRaw.mark.kind === 'label' || current.tier === 'chapter'
+  ? 'Слушать статью'
+  : 'Слушать часть';
 /* Убираем дубль «Часть N.»/«Глава N.» из заголовка строки — колонка нумерала уже говорит это. */
 const shortTitle = (t: string) => t.replace(/^(?:Часть|Глава)\s+[IVXLC]+\.\s*/, '');
 const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.href || '';
@@ -141,13 +142,11 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       })}
     </div>
     <GillMobileMarginalia />
-    <div class:list={['toc-sheet__actions', 'gbat-foot', isGillFrontmatter && 'gbat-foot--frontmatter']}>
-      {!isGillFrontmatter && (
-        <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
-          <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>
-          <span class="gbat-fbtn-txt"><b>{current.tier === 'chapter' ? 'Слушать статью' : 'Слушать часть'}</b><small>{listenTime}</small></span>
-        </button>
-      )}
+    <div class="toc-sheet__actions gbat-foot">
+      <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
+        <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>
+        <span class="gbat-fbtn-txt"><b>{listenActionLabel}</b><small>{listenTime}</small></span>
+      </button>
       <button class="gbat-fbtn gbat-fbtn--cont" type="button" data-gbat-continue>
         <span class="gbat-cont-label">Продолжить</span>
       </button>
@@ -253,9 +252,6 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
     }
     [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub.h3:not(.gbat-sat) {
       padding-inline-start:28px;
-    }
-    [data-gill-v16] #partTocOverlay .gbat-foot--frontmatter {
-      grid-template-columns:minmax(0,1fr) 44px;
     }
   }
   @media (max-width:84.999em) {

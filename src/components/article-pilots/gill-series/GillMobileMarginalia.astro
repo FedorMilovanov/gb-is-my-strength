@@ -925,9 +925,9 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
    white-space:normal!important;overflow:visible!important;
    text-overflow:clip!important;line-height:1.08!important;
  }
- /* W65: two full footer labels on 320px, without a tiny 8.5px caption.
-    The 52px action hit areas and desktop geometry remain unchanged. */
- #partTocOverlay .gbat-foot:not(.gbat-foot--frontmatter){
+/* W65: keep the canonical Listen/Continue/PDF footer in three columns at
+   320px without shrinking its 52px action targets. */
+ #partTocOverlay .gbat-foot{
    grid-template-columns:minmax(0,1.36fr) minmax(0,1fr) 40px!important;
  }
  #partTocOverlay .gbat-fbtn--listen{
@@ -938,7 +938,6 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
  }
  #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-txt b{
    font-size:9.5px!important;letter-spacing:-.1px!important;
-   white-space:nowrap!important;line-height:1.18!important;
  }
  #partTocOverlay .gbat-fbtn--cont{
    padding-inline:4px!important;
