@@ -98,6 +98,10 @@ jobs:
           cache: npm
       - name: Reproducible install
         run: npm ci
+      - name: Verify approved G3 history and unchanged crisis evidence with installed dependencies
+        run: |
+          node scripts/journal-editorial-contract.mjs --source-only --output=reports/g3-history-source-acceptance
+          node --test scripts/g3-history-publication-contract.mjs
       - name: Canonical production-like build
         run: |
           npm run strangler:build:production-like

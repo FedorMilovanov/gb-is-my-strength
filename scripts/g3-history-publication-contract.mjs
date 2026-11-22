@@ -8,7 +8,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
 import { G3_HISTORY_METADATA as history } from '../src/data/journal/g3HistoryMetadata.ts';
 import { G3_HISTORY_SOURCES as sources } from '../src/data/journal/g3HistorySources.ts';
 
@@ -103,15 +102,6 @@ test('History and crisis pages cross-link through one Journal editorial surface'
   assert.ok(read('src/components/journal/G3Dossier.astro').includes('href="'+route+'"'));
   assert.ok(article.includes('href="/journal/dossiers/g3/"'));
   assert.ok(!read('src/pages/journal/dossiers/g3/index.astro').includes('G3HistoryArticle'));
-});
-
-test('Frozen crisis dossier and new historical article pass the full native source-only editorial contract', () => {
-  const output=execFileSync(process.execPath, [
-    'scripts/journal-editorial-contract.mjs', '--source-only',
-    '--output=reports/g3-history-source-acceptance',
-  ], {cwd: root, encoding: 'utf8', timeout: 30000});
-  assert.match(output, /9 approved historical groups/);
-  assert.match(output, /16\/21 crisis seal/);
 });
 
 test('Built route is indexable, single-headed and has correct source anchors when dist exists', () => {
