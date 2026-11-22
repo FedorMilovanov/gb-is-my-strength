@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
 import { assertJournalDocumentMetadata } from '../src/components/journal/journalDocumentMetadata.ts';
+import { G3_PRODUCT_METADATA } from '../src/data/journal/g3ProductMetadata.ts';
 
 const valid = {
   kind: 'Article', publishedAt: '2026-09-09T00:00:00+03:00',
@@ -48,4 +49,31 @@ test('head uses the runtime assertion and retains exactly one critical hint owne
   assert.equal((source.match(/<JournalFontPreloads\s*\/>/g) || []).length, 1);
   assert.equal((source.match(/property="og:image:alt"/g) || []).length, 1);
   assert.equal((source.match(/name="twitter:image:alt"/g) || []).length, 1);
+});
+
+test('G3 public discovery dates and titles agree with route-owned correction metadata', () => {
+  const g3 = G3_PRODUCT_METADATA;
+  const stamp = new Date(g3.modifiedAt).toISOString();
+  const manifest = JSON.parse(fs.readFileSync(new URL('../data/search-manifest.json', import.meta.url), 'utf8'));
+  const records = manifest.items.filter((item) => item.id === 'g3' && item.url === '/journal/dossiers/g3/');
+  assert.equal(records.length, 1, 'one public G3 search entry');
+  assert.equal(records[0].title, g3.title);
+  assert.equal(records[0].description, g3.description);
+  assert.equal(records[0].publishedTime, g3.publishedAt);
+  assert.equal(records[0].modifiedTime, g3.modifiedAt);
+  assert.ok(Date.parse(manifest.generatedAt) >= Date.parse(g3.modifiedAt), 'index snapshot cannot predate the correction');
+
+  const xml = fs.readFileSync(new URL('../sitemap.xml', import.meta.url), 'utf8');
+  const locator = `<loc>${g3.canonical}</loc>`;
+  assert.equal(xml.split(locator).length - 1, 1, 'one sitemap canonical');
+  const tail = xml.slice(xml.indexOf(locator) + locator.length);
+  const lastmod = tail.match(/^\s*<lastmod>([^<]+)<\/lastmod>/);
+  assert.ok(lastmod, 'G3 sitemap lastmod exists');
+  assert.equal(new Date(lastmod[1]).toISOString(), stamp);
+  assert.ok(tail.includes(`<image:title>${g3.title}</image:title>`), 'sitemap caption matches route headline');
+
+  const feed = fs.readFileSync(new URL('../feed.xml', import.meta.url), 'utf8');
+  const lastBuild = feed.match(/<lastBuildDate>([^<]+)<\/lastBuildDate>/);
+  assert.ok(lastBuild, 'RSS lastBuildDate exists');
+  assert.ok(Date.parse(lastBuild[1]) >= Date.parse(g3.modifiedAt), 'RSS snapshot cannot predate changed G3 data');
 });
