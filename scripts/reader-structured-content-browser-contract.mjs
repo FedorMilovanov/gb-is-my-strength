@@ -78,13 +78,14 @@ try {
         await ctx.close();
       }
     }
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false, serviceWorkers: 'block', reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     const nojs = await page.evaluate(() => {
       const t = document.querySelector('table[data-responsive-layout]');
-      return { tbody: getComputedStyle(t.tBodies[0]).display, labels: [...t.querySelectorAll('tbody td')].every(x => Boolean(x.dataset.label)) };
+      return { viewportWidth: innerWidth, mobileMedia: matchMedia('(max-width: 700px)').matches, tbody: getComputedStyle(t.tBodies[0]).display, labels: [...t.querySelectorAll('tbody td')].every(x => Boolean(x.dataset.label)) };
     });
+    assert.ok(nojs.mobileMedia && nojs.viewportWidth <= 700, engine + ': real phone-sized CSS viewport without JS');
     assert.equal(nojs.tbody, 'grid', engine + ': no-JS cards');
     assert.ok(nojs.labels, engine + ': no-JS labels');
     await page.emulateMedia({ media: 'print' });
