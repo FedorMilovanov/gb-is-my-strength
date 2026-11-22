@@ -228,6 +228,9 @@ try {
       '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/',
       {waitUntil:'domcontentloaded',timeout:25000});
     assert.equal(noJsResponse.status(),200,engine+' adulthood no-JS HTTP');
+    // DOMContentLoaded can precede stylesheet completion (observed in cold Chromium).
+    // Without JS, wait for real CSS readiness before asserting computed layout.
+    await noJsPage.waitForLoadState('load');
     const table=noJsPage.locator('article[data-teen-series-article] .teen-series-prose table[data-responsive-layout="stacked-prose"]');
     const mobile=await table.evaluate(t=>({
       display:getComputedStyle(t).display,
@@ -265,6 +268,9 @@ try {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false, serviceWorkers: 'block', reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });
+    // A real no-JS page can be interactive before its CSS has finished loading.
+    // WebKit must be judged after load, not against transient unstyled tbody.
+    await page.waitForLoadState('load');
     const nojs = await page.evaluate(() => {
       const t = document.querySelector('table[data-responsive-layout]');
       return { viewportWidth: innerWidth, mobileMedia: matchMedia('(max-width: 700px)').matches, tbody: getComputedStyle(t.tBodies[0]).display, labels: [...t.querySelectorAll('tbody td')].every(x => Boolean(x.dataset.label)) };
