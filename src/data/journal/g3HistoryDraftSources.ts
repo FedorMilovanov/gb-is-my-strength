@@ -6,6 +6,20 @@
  */
 export const G3_HISTORY_DRAFT_SOURCES = [
   {
+    id: 'invitation-2011', title: 'G3 Conference — архивное приглашение Джоша Бьюса',
+    period: '2011 · архив RSS G3', role: 'Датированный первичный анонс',
+    url: 'https://web.archive.org/web/20110927042330id_/http://www.g3conference.com:80/?feed=rss2',
+    boundary: 'Публичный план конференции на январь 2013 года. Не дата частного замысла и не позднейшая статистика участников.',
+    returnHref: '#g3-history', researchLocator: 'HIST-01 / G3-HIST-PUB-01',
+  },
+  {
+    id: 'ascol-2018', title: 'Том Аскол — The Statement on Social Justice and the Gospel',
+    period: '4 сентября 2018', role: 'Датированное свидетельство участника',
+    url: 'https://founders.org/articles/the-statement-on-social-justice-and-the-gospel/',
+    boundary: 'Слова Аскола о встрече 14 человек 19 июня и публикации 4 сентября. Не независимый протокол и не позиция каждого участника G3.',
+    returnHref: '#g3-year-2018', researchLocator: 'HIST-19 / G3-HIST-PUB-08',
+  },
+  {
     id: 'challies',
     title: 'Тим Чаллис. You, Me, and G3',
     period: '23 мая 2025', role: 'Воспоминания участника',
