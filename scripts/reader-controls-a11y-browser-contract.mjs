@@ -291,9 +291,11 @@ async function auditSlot(page, routeId, selectors, checks) {
       ['transparent','rgba(0, 0, 0, 0)'].includes(gillBefore.speedPseudoPaint?.badgeBackground),
       gillBefore.speedPseudoPaint);
     record(checks, `${prefix}-35`, 'rate chip sits on lower-right ring arc, with compact clear Settings spacing',
-      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 18 &&
-      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 22 &&
-      gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 2.5 &&
+      // The 24px badge tucks 4px left to meet the newly smaller 29px ring;
+      // its hitbox remains the separate 44px rate button.
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 15 &&
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 18 &&
+      gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 6 &&
       gillBefore.speedGapToSettings >= 12 && gillBefore.speedGapToSettings <= 30 &&
       gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5,
       {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
@@ -301,7 +303,7 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });
     record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
       gillBefore.playBorder === '0px' && gillBefore.playShadow === 'none' && gillBefore.ringOpacity > .95 &&
-        gillBefore.ring?.width === 40 && gillBefore.anchors[3]?.width === 44,
+        gillBefore.ring?.width === 32 && gillBefore.anchors[3]?.width === 44,
       { border: gillBefore.playBorder, shadow: gillBefore.playShadow, ringOpacity: gillBefore.ringOpacity });
     record(checks, `${prefix}-28`, 'Back and Home remain visible and operable while Gill speeds replace research slot',
       after?.backActive === true,{ after:after?.backActive, rail:after?.rail,slot:after?.slot });
@@ -628,7 +630,21 @@ async function auditGillWideSpeed(browser, origin) {
       const r=rect(rail),p=rect(play),b=rect(rate);
       const last=pill[pill.length-1],l=rect(last);
       const hit=document.elementFromPoint(l.right-6,l.y+20)?.closest('button');
-      return {open:rail.getAttribute('aria-hidden')==='false',r,p,b,
+      const svg=play.querySelector('.gb-ember__ring-svg');
+      const active=rail.querySelector('[aria-checked="true"]');
+      const arc=play.querySelector('.gb-ember__ring-progress');
+      const previous=play.style.getPropertyValue('--p');
+      arc.style.setProperty('transition','none','important');
+      const progressOffsets=[0,.5,1].map(value=>{
+        play.style.setProperty('--p',String(value));
+        const val=getComputedStyle(arc).strokeDashoffset;
+        return Number(val.match(/[0-9.]+/)?.[0]);
+      });
+      if(previous) play.style.setProperty('--p',previous);
+      else play.style.removeProperty('--p');
+      arc.style.removeProperty('transition');
+      return {open:rail.getAttribute('aria-hidden')==='false',r,p,b,ringSvgWidth:svg?.getBoundingClientRect().width,
+        selectedShadow:active?getComputedStyle(active).boxShadow:null,progressOffsets,
         total:pill.length,allVisible:pill.every(e=>{const q=e.getBoundingClientRect();
           return q.left>=r.x-1&&q.right<=r.right+1}),
         gap:p.x-r.right,rateGap:r.right-b.right,scrollLeft:rail.scrollLeft,
@@ -647,6 +663,16 @@ async function auditGillWideSpeed(browser, origin) {
       geometry.lastHit==='2'&&geometry.playHit==='play'&&geometry.overflow===0,geometry);
     record(checks,'gill-wide-speed-05','historical W77 fine ring is 3px track and 3.6px progress',
       Math.abs(geometry.track-3)<.15&&Math.abs(geometry.progress-3.6)<.15,geometry);
+    record(checks,'gill-wide-speed-06','selected 1x has no rectangular full-button shadow',
+      geometry.selectedShadow==='none',{shadow:geometry.selectedShadow});
+    record(checks,'gill-wide-speed-07','Play ring is 32px SVG inside independent 44px hit target',
+      Math.abs(geometry.ringSvgWidth-32)<.2&&geometry.p.width===44,geometry);
+    record(checks,'gill-wide-speed-08','real TTS --p from 0 to 1 drives ring arc at 0,50,100%',
+      geometry.progressOffsets.length===3&&
+      Math.abs(geometry.progressOffsets[0]-283)<1&&
+      Math.abs(geometry.progressOffsets[1]-141.5)<1&&
+      Math.abs(geometry.progressOffsets[2])<1,
+      {offsets:geometry.progressOffsets});
     return {caseId:'gill-wide-speed',checks};
   } finally {await context.close()}
 }

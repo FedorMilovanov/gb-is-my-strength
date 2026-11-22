@@ -270,18 +270,25 @@ const page = config.pages[pageId];
     background:transparent;color:var(--gill-mobile-bar-ink,#291f1b);
     box-shadow:none;transform:none;
   }
-  /* The single physical SVG progress ring remains 36px diameter
-     (40px SVG times its r=45/100 geometry); never add a CSS outer ring. */
+  /* AuditRepo PremiumControls v4: one genuine --p SVG progress arc,
+     never a decorative second border. Owner W101 reduces optical ring
+     diameter from 36px to 28.8px while preserving the 44px Play target. */
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {
-    inset:2px;width:40px;height:40px;opacity:1;
+    inset:6px;width:32px;height:32px;opacity:1;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
     stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:3;opacity:.58;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {
     stroke-width:3.6;opacity:1;
+    /* The actual TTS --p value controls stroke-dashoffset in
+       floating-cluster.css. Keep the warm moving arc, no fake looping fill. */
+    stroke-linecap:round;
     filter:drop-shadow(0 0 1px rgba(197,151,88,.13));
     transition:stroke-dashoffset .55s cubic-bezier(.2,.75,.3,1);
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play[data-state="playing"] .gb-ember__ring-progress {
+    filter:drop-shadow(0 0 1.5px rgba(197,151,88,.32));
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {
     inset:19%;border:none;
@@ -307,7 +314,7 @@ const page = config.pages[pageId];
     content:none;display:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
-    box-sizing:border-box;position:absolute;left:auto;right:-44px;bottom:0;z-index:4;
+    box-sizing:border-box;position:absolute;left:auto;right:-40px;bottom:1px;z-index:4;
     display:grid;place-items:center;width:max-content;
     min-width:24px;max-width:35px;height:15px;padding:0 3px;
     border:1px solid color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 68%,transparent);
@@ -355,7 +362,10 @@ const page = config.pages[pageId];
     flex:0 0 44px;min-width:44px;width:44px;height:44px;
     padding:0;position:relative;isolation:isolate;
     color:var(--gill-mobile-bar-muted,#786552);font-size:10.5px;
-    background:transparent;border:0;
+    /* Global floating-cluster.css adds a rectangular box-shadow to
+       every checked speed button. The selected Gill pill is painted by
+       its rounded ::before, so remove the extra 44px square only here. */
+    background:transparent;border:0;box-shadow:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate::before {
     content:'';position:absolute;z-index:-1;inset:6px 1px;
@@ -367,7 +377,7 @@ const page = config.pages[pageId];
     content:none;display:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate[aria-checked="true"] {
-    color:#744e26;background:transparent;
+    color:#744e26;background:transparent;box-shadow:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate[aria-checked="true"]::before {
     background:color-mix(in srgb,var(--gill-mobile-bar-gold,#b18b62) 18%,transparent);
