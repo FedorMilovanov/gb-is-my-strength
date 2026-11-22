@@ -38,6 +38,10 @@ assert.ok(suite !== 'print' || engine === 'chromium', 'actual PDF generation req
 const axePath = args.axe || path.join(root, 'node_modules/axe-core/axe.min.js');
 assert.ok(suite === 'print' || fs.existsSync(axePath), 'provide --axe=<existing axe-core file>; do not silently skip the accessibility audit');
 const axeSource = suite === 'print' ? '' : fs.readFileSync(axePath, 'utf8');
+const isExpectedJournalConsole = (_, message) =>
+  !['error', 'warning'].includes(message.type()) ||
+  (engine === 'webkit' && ['warning','error'].includes(message.type()) &&
+    message.text() === 'Viewport argument key "interactive-widget" not recognized and ignored.');
 const output = path.resolve(root, args.output || 'reports/g3-editorial-local-20261118');
 fs.mkdirSync(path.join(output, 'after'), { recursive: true });
 const widths = args.widths ? args.widths.split(',').map(Number) : [320, 360, 390, 430, 768, 1024, 1440, 1920];
@@ -227,7 +231,7 @@ try {
     });
     const page = await context.newPage();
     const item = { kind: route.kind, width, theme, runtime: [] };
-    monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+    monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
     try {
       const response = await ready(page, route.url);
       if (route.kind === 'history') {
@@ -393,10 +397,13 @@ try {
     const result = { kind: route.kind, runtime: [] };
     const context = await contextFor(390, 'light');
     const page = await context.newPage();
-    monitorRuntime(page, result.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+    monitorRuntime(page, result.runtime, { isIgnoredConsole: isExpectedJournalConsole });
     try {
       await ready(page, route.url);
-      await page.keyboard.press('Tab');
+      // WebKit's default Tab skips implicit links. After explicitly focusing
+      // the actual skip link, native Enter still must activate it.
+      if (engine === 'webkit') await page.locator('.skip-link').focus();
+      else await page.keyboard.press('Tab');
       assert.equal(await page.locator('.skip-link').evaluate((el) => el === document.activeElement), true);
       await page.keyboard.press('Enter');
       assert.equal(await page.locator('#main-content').evaluate((el) => el === document.activeElement), true);
@@ -424,7 +431,7 @@ try {
         // A copied citation URL is tested in a genuinely new tab, not a
         // same-document goto (no response) or artificial about:blank detour.
         const bookmark = await context.newPage();
-        monitorRuntime(bookmark, result.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        monitorRuntime(bookmark, result.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         await ready(bookmark, `${route.url}#${citationId}`); await settle(bookmark);
         const citation = citationFor(bookmark, route.kind);
         assert.equal(await citation.evaluate((el) => el === document.activeElement), true);
@@ -465,7 +472,11 @@ try {
       if (route.kind !== 'journal') {
         assert.equal(await page.locator('.je-editorial-rail').isVisible(), false);
         assert.equal(await page.locator('[data-journal-source-return]').evaluateAll((links) => links.every((link) => getComputedStyle(link).display === 'none')), true, 'paper must not contain screen-only return controls');
-        if (route.kind === 'dossier') assert.equal(await page.locator('.bibliography-item').first().locator('.biblio-links').isVisible(), true, 'print must reveal closed source locators');
+        if (route.kind === 'dossier') assert.equal(await page.locator('.bibliography-item').first().locator('.biblio-links').evaluate((el) => {
+          const details = el.closest('details'), rect = el.getBoundingClientRect(), style = getComputedStyle(el);
+          return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility === 'visible' &&
+            getComputedStyle(details, '::details-content').contentVisibility === 'visible';
+        }), true, 'print must reveal closed source locators as actual layout boxes');
         if (route.kind === 'history') {
           assert.equal(await page.locator('.je-review-note').isVisible(), true, 'the manuscript must remain visibly unpublished in print');
           result.printYearLabels = await page.locator('.je-history-dateline > span, .je-history-year-mark time').evaluateAll((labels) => labels.map((label) => {
@@ -517,8 +528,12 @@ try {
           }
         }
         const firstOption = await page.locator('.cp-input').getAttribute('aria-activedescendant');
+        const optionCount = await page.locator('#cp-listbox [role=option]').count();
+        assert.ok(optionCount >= 1, 'search must have a keyboard-operable result');
         await page.keyboard.press('ArrowDown');
-        assert.notEqual(await page.locator('.cp-input').getAttribute('aria-activedescendant'), firstOption);
+        const downOption = await page.locator('.cp-input').getAttribute('aria-activedescendant');
+        if (optionCount > 1) assert.notEqual(downOption, firstOption, 'ArrowDown must advance when multiple options exist');
+        else assert.equal(downOption, firstOption, 'ArrowDown must retain the sole option');
         await page.keyboard.press('ArrowUp');
         assert.equal(await page.locator('.cp-input').getAttribute('aria-activedescendant'), firstOption);
         result.searchKeyboardArrows = true;
@@ -572,7 +587,7 @@ try {
         const page = await context.newPage();
         const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
         const name = `${route.kind}-short-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
-        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         const rail = page.locator('.je-editorial-rail');
         const toc = page.locator('[data-journal-contents]');
         const summary = toc.locator('summary');
@@ -688,7 +703,7 @@ try {
         const page = await context.newPage();
         const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
         const name = `${route.kind}-mobile-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
-        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
         const selected = [390, 844].includes(width);
         const settleMobile = async () => {
@@ -703,7 +718,7 @@ try {
           }
           throw new Error('native compact-TOC/root/header scrolling did not settle');
         };
-        const focused = async (expected) => {
+        const focused = async (expected, isReturn = false) => {
           await settleMobile();
           const state = await toc.evaluate((el) => {
             const active = document.activeElement, style = getComputedStyle(active), nav = el.querySelector('nav');
@@ -713,6 +728,7 @@ try {
               clip: { left: r.left + nav.clientLeft, right: r.left + nav.clientLeft + nav.clientWidth,
                 top: r.top + nav.clientTop, bottom: r.top + nav.clientTop + nav.clientHeight },
               scrollbar: nav.offsetWidth - nav.clientWidth, scrollTop: nav.scrollTop, y: scrollY,
+              insideScrollport: nav.contains(active), isNativeReturn: active.matches('.je-contents-return'),
               usableViewportWidth: document.documentElement.clientWidth,
               outline: Math.max(0, (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
               outlineWidth: parseFloat(style.outlineWidth) || 0, outlineOffset: parseFloat(style.outlineOffset) || 0,
@@ -738,10 +754,18 @@ try {
             && text.top >= r.top + inset - 1 && text.bottom <= r.bottom - inset + 1), 'an inset summary indicator must not cover text');
           assert.ok(r.left - o >= -1 && r.right + o <= state.usableViewportWidth + 1 && r.top - o >= state.headerBottom - 1 && r.bottom + o <= height + 1,
             `focus outline outside usable viewport / under visible shared header: ${JSON.stringify(state)}`);
-          if (expected !== null) {
+          if (expected !== null && state.insideScrollport) {
             assert.ok(r.left - o >= c.left - 1 && r.right + o <= c.right + 1 && r.top - o >= c.top - 1 && r.bottom + o <= c.bottom + 1,
-              `compact nav clips the focus outline: ${JSON.stringify(state)}`);
+              'compact nav clips the focus outline: ' + JSON.stringify(state));
             if (visibleScrollbars) assert.ok(state.scrollbar > 0, 'visible-scrollbar run needs a real native gutter');
+          }
+          if (isReturn) {
+            assert.equal(expected, '#overview');
+            assert.equal(state.isNativeReturn, true, 'native return must be identifiable independently from TOC #overview');
+            assert.equal(state.insideScrollport, false, 'native return is outside scrolling TOC items');
+          } else if (expected !== null) {
+            assert.equal(state.insideScrollport, true, 'actual TOC link must belong to the scrollport');
+            assert.equal(state.isNativeReturn, false);
           }
           return state;
         };
@@ -762,17 +786,32 @@ try {
           await page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth').scrollIntoViewIfNeeded();
           await settleMobile();
           const links = await nav.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          const nativeReturn = route.kind === 'dossier' ? toc.locator('.je-contents-return') : null;
+          if (nativeReturn) {
+            await page.keyboard.press('Tab');
+            item.returnBeforeNav = await focused('#overview', true);
+          }
           item.keyboardForward = [];
           for (const [index, href] of links.entries()) {
-            await page.keyboard.press('Tab'); item.keyboardForward.push(await focused(href));
-            if (selected && (index === 0 || index === links.length - 1)) await shot(page, `${name}-${index === 0 ? 'first' : 'last'}`);
+            // WebKit's default Tab skips implicit links; inspect real focus
+            // and painted outline. Chromium/Firefox retain native Tab traversal.
+            await page.keyboard.press('Tab');
+            item.keyboardForward.push(await focused(href));
+            if (selected && (index === 0 || index === links.length - 1))
+              await shot(page, name + '-' + (index === 0 ? 'first' : 'last'));
           }
           item.keyboardBackward = [];
           for (const href of links.slice(0, -1).reverse()) {
-            await page.keyboard.press('Shift+Tab'); item.keyboardBackward.push(await focused(href));
+            await page.keyboard.press('Shift+Tab');
+            item.keyboardBackward.push(await focused(href));
           }
-          await page.keyboard.press('Shift+Tab'); item.summaryReturn = await focused(null);
-          if (selected) await shot(page, `${name}-summary`);
+          if (nativeReturn) {
+            await page.keyboard.press('Shift+Tab');
+            item.returnBeforeSummary = await focused('#overview', true);
+          }
+          await page.keyboard.press('Shift+Tab');
+          item.summaryReturn = await focused(null);
+          if (selected) await shot(page, name + '-summary');
           await page.keyboard.press('Escape');
           assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled, 'Escape belongs to the existing JS adapter, not native no-JS details');
           assert.equal(await summary.evaluate((el) => el === document.activeElement), true);
@@ -784,7 +823,10 @@ try {
             assert.deepEqual(item.axe.violations, []);
             item.clippedContrastReview = await reviewClippedContrast(page, item.axe.incomplete);
           }
-          for (const href of links) await page.keyboard.press('Tab');
+          if (nativeReturn) await page.keyboard.press('Tab');
+          for (const href of links) {
+            await page.keyboard.press('Tab');
+          }
           item.lastActivation = await focused(links.at(-1));
           await page.keyboard.press('Enter'); await settleMobile();
           assert.equal(new URL(page.url()).hash, links.at(-1));
@@ -817,7 +859,7 @@ try {
         const context = await contextFor(width, theme, { forcedColors: 'active' });
         const page = await context.newPage(), item = { kind: route.kind, width, theme, runtime: [] };
         const name = `${route.kind}-forced-${width}-${theme}`;
-        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         try {
           await ready(page, route.url);
           item.state = await page.locator('.je-masthead__nav').evaluate((nav) => {
@@ -878,7 +920,7 @@ try {
         const page = await context.newPage();
         const name = `${route.kind}-${paper}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         const item = { kind: route.kind, paper, theme, javaScriptEnabled, pdf: path.join(printDirectory, `${name}.pdf`), runtime: [] };
-        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         try {
           const response = await ready(page, route.url);
           if (route.kind === 'history') {
