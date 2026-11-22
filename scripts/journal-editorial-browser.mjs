@@ -4,7 +4,7 @@
  * Requires existing Playwright plus an explicit axe-core file (no dependency changes).
  * JOURNAL_CHROMIUM_EXECUTABLE may select a sandbox-compatible Chromium.
  * Example: node scripts/journal-editorial-browser.mjs --origin=http://localhost:4173
- *   --history-origin=http://localhost:4321 --axe=/path/to/axe.min.js
+ *   --axe=/path/to/axe.min.js; checks public history at the same --origin
  * --browser=firefox|webkit uses that actual Playwright browser, never Chromium emulation.
  * --suite=print runs only the actual-PDF matrix (Chromium + Python/PyMuPDF).
  * --suite=mobile exercises native compact-TOC focus; --mobile-heights=390,844.
@@ -27,10 +27,7 @@ const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
 const suite = args.suite || 'full';
 const visibleScrollbars = args['visible-scrollbars'] === 'true';
-const publicOnly = args['public-only'] === 'true';
-assert.ok(!publicOnly || !args['history-origin'], 'Public-only acceptance must not activate a held-history fixture');
-const transfer = args.transfer ? JSON.parse(fs.readFileSync(args.transfer, 'utf8')) : null;
-assert.ok(!transfer || publicOnly, 'A gitless composite must explicitly use --public-only=true');
+assert.ok(!args.transfer && !args['public-only'] && !args['history-origin'], 'Public history uses a canonical route; obsolete transfer and preview flags are not accepted');
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
 assert.ok(['full', 'short', 'mobile', 'print', 'forced-colors'].includes(suite), 'use --suite=full|short|mobile|print|forced-colors');
 assert.ok(suite !== 'forced-colors' || engine === 'chromium', 'forced-colors system-palette witness currently requires actual Chromium');
@@ -53,32 +50,20 @@ assert.ok(suite !== 'mobile' || mobileWidths.length > 0, 'the mobile suite needs
 assert.ok(widths.every((width) => Number.isInteger(width) && width >= 320));
 assert.ok(shortHeights.every((height) => Number.isInteger(height) && height >= 320 && height <= 600));
 assert.ok(suite !== 'short' || widths.some((width) => width >= 1024), 'the short suite needs at least one desktop width');
-const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier', url: origin + '/journal/dossiers/g3/' }];
-if (args['history-origin']) routes.push({ kind: 'history', url: args['history-origin'] + '/_review/g3-history/' });
-const report = { engine, suite, version: null, head: transfer ? null : execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  worktree: transfer ? null : execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
-  publicOnly, composite: transfer ? { base: transfer.base, source: transfer.source, notCanonicalGitCommit: true } : null,
+const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier', url: origin + '/journal/dossiers/g3/' },
+  { kind: 'history', url: origin + '/journal/dossiers/g3/history/' }];
+const report = { engine, suite, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+  worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
   visibleScrollbars,
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
-  ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
-  'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro',
+  ...['g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
-if (transfer) {
-  assert.equal(transfer.version, 2);
-  assert.match(transfer.base, /^[a-f0-9]{40}$/); assert.match(transfer.source, /^[a-f0-9]{40}$/);
-  for (const entry of transfer.files) {
-    const bytes = fs.readFileSync(path.join(root, entry.path));
-    assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'), entry.after.blob, `Runtime source differs from transferred public file: ${entry.path}`);
-  }
-}
-for (const name of witnessFiles) {
-  if (publicOnly && ['src/data/journal/g3HistoryDraftSources.ts', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro'].includes(name)) continue;
-  report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
-}
+for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
 const browser = await ({ chromium, firefox, webkit })[engine].launch({
   headless: true,
   ...(visibleScrollbars ? { ignoreDefaultArgs: ['--hide-scrollbars'] } : {}),
@@ -146,6 +131,15 @@ const inspect = (page) => page.evaluate(() => {
     lcp: window.__journalLab?.lcp ?? null, cls: window.__journalLab?.cls ?? null };
 });
 const shot = (page, name, options) => page.screenshot({ path: path.join(output, `after/${name}.png`), ...options });
+const assertPublishedHistory = async (page, response) => {
+  assert.equal(response.status(), 200);
+  assert.ok(!/noindex/i.test(response.headers()['x-robots-tag'] || ''), 'Public history may not set noindex header');
+  assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://gospod-bog.ru/journal/dossiers/g3/history/');
+  assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /index,\s*follow/);
+  assert.equal(await page.locator('body[data-journal-id="g3-history"]').count(), 1);
+  assert.equal(await page.locator('.je-review-note, [data-research-publication-status="PUBLICATION_HOLD"]').count(), 0);
+  assert.equal(await page.locator('.bibliography-item').count(), 22, 'Research bibliography must contain all 22 sources');
+};
 const citationFor = (page, kind, second = false) => page.locator(kind === 'dossier'
   ? second ? '#finance .je-data-figure [data-journal-citation]' : '#finance .source-note[data-journal-citation]'
   : second ? '#g3-history [data-journal-citation]' : '#g3-growth [data-journal-citation][href="#history-source-challies"]');
@@ -234,17 +228,12 @@ try {
     monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
     try {
       const response = await ready(page, route.url);
-      if (route.kind === 'history') {
-        assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
-        assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /noindex/);
-        assert.equal(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0, true);
-        assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
-      }
+      if (route.kind === 'history') await assertPublishedHistory(page, response);
       item.layout = await inspect(page);
       await shot(page, `${route.kind}-${width}-${theme}`);
       assert.equal(item.layout.documentOverflow, 0);
       assert.deepEqual(item.layout.overflow, [], 'visible elements must fit; root overflow:clip alone is not a pass');
-      assert.deepEqual(item.layout.duplicateIds, [], 'IDs must be unique, including the held history manuscript');
+      assert.deepEqual(item.layout.duplicateIds, [], 'Public routes must have unique IDs');
       assert.deepEqual(item.layout.brokenAnchors, [], 'every local anchor needs a real target');
       assert.equal(item.layout.h1, 1);
       assert.equal(item.layout.theme, theme);
@@ -313,7 +302,7 @@ try {
       item.axe = await audit(page);
       assert.deepEqual(item.axe.violations, [], 'axe WCAG A/AA violations');
       assert.deepEqual(item.axe.incomplete, [], 'static editorial surfaces must not leave unresolved axe review items');
-      if (route.kind !== 'history' && engine === 'chromium') {
+      if (engine === 'chromium') {
         assert.ok(item.layout.cls !== null && item.layout.cls <= .1, `initial-load local CLS budget exceeded: ${item.layout.cls}`);
       }
       if (route.kind !== 'journal') {
@@ -478,7 +467,7 @@ try {
             getComputedStyle(details, '::details-content').contentVisibility === 'visible';
         }), true, 'print must reveal closed source locators as actual layout boxes');
         if (route.kind === 'history') {
-          assert.equal(await page.locator('.je-review-note').isVisible(), true, 'the manuscript must remain visibly unpublished in print');
+          assert.equal(await page.locator('.je-review-note').count(), 0, 'No unpublished warning belongs in public print');
           result.printYearLabels = await page.locator('.je-history-dateline > span, .je-history-year-mark time').evaluateAll((labels) => labels.map((label) => {
             const range = document.createRange(); range.selectNodeContents(label);
             const rects = [...range.getClientRects()];
@@ -491,8 +480,8 @@ try {
       result.print = true;
       if (engine === 'chromium') await page.pdf({ path: path.join(output, `${route.kind}-print.pdf`), format: 'A4', printBackground: true, margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
       await page.emulateMedia({ media: 'screen' });
-      if (route.kind !== 'history') {
-        // Exercise a cold keyboard bootstrap before any click has loaded search.
+      {
+        // Exercise cold keyboard search bootstrap on each public route.
         await page.keyboard.press('Control+k');
         const palette = page.locator('.cp-backdrop.is-open');
         await palette.waitFor();
@@ -791,11 +780,7 @@ try {
         };
         try {
           const response = await ready(page, route.url);
-          if (route.kind === 'history') {
-            assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
-            assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
-            assert.ok(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0);
-          }
+          if (route.kind === 'history') await assertPublishedHistory(page, response);
           assert.equal(await page.locator('[data-journal-contents]').count(), 1);
           assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
           await summary.focus();
@@ -878,7 +863,7 @@ try {
   // transparent borders, erasing the current-section distinction. Check actual
   // computed system colors in Chromium, not hard-coded RGB or a CSS text regex.
   if (['full', 'forced-colors'].includes(suite) && engine === 'chromium')
-    for (const route of routes.filter((route) => route.kind !== 'history'))
+    for (const route of routes)
       for (const width of [390, 1440]) for (const theme of ['light', 'dark']) {
         const context = await contextFor(width, theme, { forcedColors: 'active' });
         const page = await context.newPage(), item = { kind: route.kind, width, theme, runtime: [] };
@@ -947,11 +932,7 @@ try {
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         try {
           const response = await ready(page, route.url);
-          if (route.kind === 'history') {
-            assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
-            assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
-            assert.ok(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0);
-          }
+          if (route.kind === 'history') await assertPublishedHistory(page, response);
           await page.emulateMedia({ media: 'print' });
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');
