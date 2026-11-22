@@ -8,3 +8,12 @@
 - **Десктопный прогресс серии Gill (`1440×900`):** после прочтения Части I до `96%` общая строка серии на Части II показывает `25%` (`COMPLETE_AT = 97%`).
 
 [Скриншот поиска](r13-search-dark-320.jpg) · [замеры](r13-checks.jsonl).
+
+## Раунд 14: `/konfessii/russkij-baptizm/`, «Нагорная» (`chast-2..5`, `istochniki`, `nakhodki`, `seriya`), 6 статей и типографика (`f908e289`)
+
+- **`/konfessii/russkij-baptizm/` (`320×568`, [`r14-konfessii-320.jpg`](r14-konfessii-320.jpg)):** 0 JS-ошибок и `docOv: 0`, однако ссылка в шапке обрезана по середине слова (`← Конфессии и Деноми`), а надпись загрузчика `ЗАГРУЗКА ИНТЕРАКТИВНОЙ 3D-КАРТЫ...` имеет сверхнизкий контраст тёмного по тёмному.
+- **`/nagornaya/chast-2..5/`, `/nagornaya/istochniki/`, `/nagornaya/nakhodki/`, `/nagornaya/seriya/` (`320×568`, `768×1024`, `1440×900`):** все 21 прогон без JS-ошибок, без `docOv > 0`, без `tableOv > 0` и без склейки `Опубликовано:1`.
+- **6 ранее не проверявшихся статей (`/articles/diotrefy-nashego-vremeni/`, `/articles/steven-lawson-samoobman-i-publichnyy-golos/`, `/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/`, `/articles/podrostok-za-kadrom-chto-delat-tserkvi/`, `/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/`, `/articles/teksty-pisaniya-kotorymi-manipuliruyut/` на `320×568` и `1440×900`):** 0 JS-ошибок, 0 битых `<img>`, 0 переполнений таблиц и разрывов слов.
+- **Десктопная типографика Gill II (`1440×900`):** переключение `Cormorant Garamond` + `Свободный` интерлиньяж + `Широкая` строка (`Lora → Cormorant Garamond`, `28.8px → 33.3px`, `734px → 846px`) срабатывает чисто.
+
+[Скриншот конфессии](r14-konfessii-320.jpg) · [замеры](r14-checks.jsonl).
