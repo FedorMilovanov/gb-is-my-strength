@@ -135,4 +135,25 @@
     white-space: normal;
     clip-path: none;
   }
+  .article-body table[data-responsive-layout="stacked-prose"] > tbody {
+    display: table-row-group;
+  }
+  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr {
+    display: table-row;
+    border: 0;
+    box-shadow: none;
+  }
+  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
+    display: table-cell;
+    inline-size: auto;
+    max-inline-size: none;
+    border: 1px solid var(--color-border, #e5e2dc);
+    border-radius: 0;
+    padding: 9px 11px;
+    background: transparent;
+  }
+  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td::before {
+    content: none;
+    display: none;
+  }
 }
