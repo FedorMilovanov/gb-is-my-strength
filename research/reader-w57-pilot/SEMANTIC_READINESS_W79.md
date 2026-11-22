@@ -61,3 +61,15 @@ Expanded «Писание» on the two dense pages, Chromium/WebKit × 320/390: 
 6. **Cohort rollout only after parity.** Pilot Gill page in dual-read/single-write mode; validate against normal articles and historical chapters, then other approved long-form pages. The explicit Nagornaya and news/G3 exceptions remain frozen. Keep W57 desktop layout and mobile Classic typography unchanged until an owner-approved redesign.
 
 **Release HOLD** is still required for new-head CI, semantic parity across all eligible route families, linked-note concurrency, legacy/cross-page citation navigation, dense Analytics UX and visual review. Passing this baseline only closes the **route and semantic inventory measurement** task.
+
+## W80 — immutable source-owned semantic snapshot (22 Nov 2026)
+
+Implementation (read-only): `src/lib/reader-semantic-snapshot.mjs`, tests in `scripts/reader-semantic-snapshot-contract.mjs`. The existing `scripts/reader-universal-semantic-readiness.mjs` now uses this shared module against the actual 74-route browser inventory. It does **not** inject a new Reader, change W57 appearance, select passage text, create an annotation ID, or attach unverified source anchors to DOM elements.
+
+**Confirmed cross-check:** 68 existing shared-series Reader routes contain **2,627** source-index witnesses with source ownership; each survives the snapshot unchanged. **0 provenance-count mismatches** and 0 browser navigation errors across 74 checked pages (68 existing Reader + 6 standalone review candidates). The 6 standalone routes are explicitly reported as `unapproved-route` unless separately added to an inspected allowlist; 12 excluded Nagornaya/news/journal built pages remain outside the adoption cohort.
+
+**Safe contract:** canonical Bible ID/key comes from the prevalidated index, not a second regex; original `raw` and `sourceOwner` are preserved. Repeated references are separate witnesses. A known index anchor is labeled `indexAnchorUnverified` and never promoted to a navigable DOM location. All `verifiedDomPosition`, `rangeSelector` and `verifiedSection` fields remain `null`; `canNavigateToOccurrence=false`. Snapshot collections and nested records are immutable. Missing/invalid source fields are counted and rejected, not rendered as trustworthy citations. Explicit blocked routes and uninspected candidates fail closed; no snippet of licensed verse text is copied into the new snapshot.
+
+**Regression facts:** 1 John 1:5–2:2 and 1:7–2:2 keep their full endpoints and original `1 Ин.` labels; two occurrences of the same cross-chapter citation remain two witnesses. Gill's repeated `Ин 3:16` in different source sections remains distinct. Source-index absence is `source-index-empty-unverified`, not «в статье нет ссылок».
+
+**Next gate:** an independent, verified DOM occurrence locator and section identity must join to this source snapshot without position guessing. Only then may the Product mobile Analytics and desktop W57 consume the same content, first in a dual-read/single-write canary. Dense 109-item Scripture shelves and linked-note concurrency are **not** closed by this module. Keep PR Draft/HOLD; do not enable broad rollout.
