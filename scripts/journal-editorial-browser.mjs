@@ -85,7 +85,11 @@ const audit = async (page) => {
 const contextFor = (width, theme, options = {}) => browser.newContext({ viewport: { width, height: width <= 430 ? 844 : width === 768 ? 1024 : 1080 },
   colorScheme: theme, deviceScaleFactor: 1, serviceWorkers: 'block', ...options });
 const ready = async (page, url) => {
-  const response = await page.goto(url, { waitUntil: 'networkidle' });
+  // Load is the documented fully-loaded browser milestone. Requiring
+  // "networkidle" also waits for irrelevant background connections and
+  // intermittently deadlocks Firefox's second no-JS context. All visual,
+  // font, image, axe and keyboard assertions remain unchanged.
+  const response = await page.goto(url, { waitUntil: 'load' });
   assert.equal(response.status(), 200, url);
   await page.evaluate(() => document.fonts.ready);
   return response;

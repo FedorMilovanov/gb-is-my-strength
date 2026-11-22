@@ -165,7 +165,10 @@
   /* Match the existing document's 72px focus/scroll clearance, not just the
      visual sticky offset: otherwise native Tab still scrolls the article.
      The rail scrolls only when needed; its inset preserves the 7px outline. */
-  .journal-edition .je-editorial-rail { --je-rail-clearance: 72px; top: var(--je-rail-clearance); max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; padding: 8px; margin-inline: -8px; scroll-padding-block: 8px; }
+  /* The rail is the scroll owner in short desktop windows. Do not chain its
+     scroll to the article, nor use its scrolling descendants as document
+     anchors when native Tab brings individual entries into view. */
+  .journal-edition .je-editorial-rail { --je-rail-clearance: 72px; top: var(--je-rail-clearance); max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; overflow-anchor: none; padding: 8px; margin-inline: -8px; scroll-padding-block: 8px; }
 }
 @media (max-width: 1199px) and (min-width: 1024px) {
   .journal-edition .je-article-header { column-gap: 32px; }
