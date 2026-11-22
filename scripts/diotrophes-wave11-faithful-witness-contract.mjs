@@ -185,7 +185,7 @@ requireValue(
   supplement.includes('их номера не образуют') && !supplement.includes('Предыдущая часть показала'),
   'thematic numbering or same-page transition regressed',
 );
-const relatedPairs = [...supplement.matchAll(/'FW-(\\d{2})':\\s*\\[([\\d,\\s]+)\\]/g)];
+const relatedPairs = [...supplement.matchAll(/'FW-(\d{2})':\s*\[([\d,\s]+)\]/g)];
 const relatedIds = new Set(relatedPairs.map((pair) => `FW-${pair[1]}`));
 requireValue(
   relatedPairs.length === 20 && responses.every((item) => relatedIds.has(item.id)),
