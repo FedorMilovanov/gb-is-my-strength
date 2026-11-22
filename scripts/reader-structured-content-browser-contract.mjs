@@ -98,6 +98,10 @@ try {
     });
     assert.equal(pr.table, 'table', engine + ': print uses real table');
     assert.equal(pr.header, 'table-header-group', engine + ': print headers retained');
+    assert.equal(pr.body, 'table-row-group', engine + ': print tbody restored');
+    assert.equal(pr.row, 'table-row', engine + ': print rows restored');
+    assert.equal(pr.cell, 'table-cell', engine + ': print columns restored');
+    assert.ok(pr.labelsSuppressed, engine + ': mobile labels not duplicated in print');
     scenarios += 2;
     await ctx.close();
     await browser.close();
