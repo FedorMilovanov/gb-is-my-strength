@@ -61,6 +61,20 @@ const mediaAltFor = (pageId) => {
   const block = end < 0 ? mediaSource.slice(start) : mediaSource.slice(start, end);
   return block.match(/\balt:\s*'([^']+)'/u)?.[1] || '';
 };
+// Reader anchors may be attached to spans after editorial H2/H3 consolidation;
+// never treat a valid span id as a missing destination.
+const teenTocAnchorsFor = (pageId) => {
+  const pagesStart = config.indexOf('  pages: {', config.indexOf('export const TEEN_DOUBLE_LIFE_SERIES'));
+  const pageStart = config.indexOf("'" + pageId + "': {", pagesStart);
+  const pageEnd = config.indexOf('\n    },', pageStart);
+  if (pagesStart < 0 || pageStart < 0 || pageEnd < 0) return null;
+  const tocName = config.slice(pageStart, pageEnd).match(/\bpartToc:\s*(\w+)/)?.[1];
+  if (!tocName) return null;
+  const tocStart = config.indexOf('const ' + tocName + ' = toc(');
+  const tocEnd = config.indexOf('\n);', tocStart);
+  if (tocStart < 0 || tocEnd < 0) return null;
+  return [...config.slice(tocStart, tocEnd).matchAll(/\bhref:\s*'#([^']+)'/g)].map((x) => x[1]);
+};
 const siteData = read('src/data/site.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
 const readerProjector = read('scripts/project-reader-linear-text-to-dist.mjs');
@@ -219,6 +233,19 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
     fail(`${slug}: updatedAt must be a valid instant on/after publishedAt`);
   }
   if (/<!--|-->/.test(mdx)) fail(`${slug}: raw HTML comment marker remains in published MDX`);
+
+  const tocAnchors = teenTocAnchorsFor(pageId);
+  if (!tocAnchors?.length) {
+    fail(`${slug}: Reader partToc missing or unparsable`);
+  } else {
+    const ids = [...mdx.matchAll(/<[a-z][^>]*\bid=["']([^"']+)["']/gi)].map((x) => x[1]);
+    const available = new Set(ids);
+    for (const id of tocAnchors) {
+      if (!available.has(id)) fail(`${slug}: Reader TOC #${id} has no MDX target`);
+    }
+    if (new Set(tocAnchors).size !== tocAnchors.length) fail(`${slug}: Reader TOC duplicates target IDs`);
+    if (available.size !== ids.length) fail(`${slug}: duplicate id attributes in published MDX`);
+  }
 
   const routeRel = `src/pages/articles/${slug}/index.astro`;
   const source = read(routeRel);
