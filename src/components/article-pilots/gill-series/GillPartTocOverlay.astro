@@ -22,6 +22,9 @@ const seriesItems = config.items.filter((it) => it.tier !== 'satellite' && !it.p
 /* Текущая страница может быть спутником — тогда «текущая часть» аккордеона
    это её родитель (раскрыт), а сам спутник подсвечен своей строкой. */
 const currentRaw = config.items.find((item) => item.id === pageId)!;
+// Gill's contextual foreword and handbook are navigational front matter,
+// not numbered reading chapters. Keep their TOC compact and free of duplicate Play.
+const isGillFrontmatter = config.seriesId === 'dzhon-gill' && currentRaw.mark.kind === 'label';
 const currentPartId = currentRaw.parent ?? currentRaw.id;
 const current = seriesItems.find((item) => item.id === currentPartId)!;
 /* NBSP между «Часть» и нумералом: при длинном имени серии (Тёмная сторона
@@ -138,11 +141,13 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       })}
     </div>
     <GillMobileMarginalia />
-    <div class="toc-sheet__actions gbat-foot">
-      <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
-        <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>
-        <span class="gbat-fbtn-txt"><b>{current.tier === 'chapter' ? 'Слушать статью' : 'Слушать часть'}</b><small>{listenTime}</small></span>
-      </button>
+    <div class:list={['toc-sheet__actions', 'gbat-foot', isGillFrontmatter && 'gbat-foot--frontmatter']}>
+      {!isGillFrontmatter && (
+        <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
+          <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>
+          <span class="gbat-fbtn-txt"><b>{current.tier === 'chapter' ? 'Слушать статью' : 'Слушать часть'}</b><small>{listenTime}</small></span>
+        </button>
+      )}
       <button class="gbat-fbtn gbat-fbtn--cont" type="button" data-gbat-continue>
         <span class="gbat-cont-label">Продолжить</span>
       </button>
@@ -234,18 +239,23 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
 </script>
 
 <style is:global>
-  /* W89: Historical Context and Handbook need a circular marker for
-     every outline item (owner requirement). These quiet dots are editorial
-     bullets, not a continuous percentage-of-reading progress rail. */
-  @media (max-width:767px) {
-    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-rail {
+  /* W99b owner correction: reference/frontmatter lists are typographic,
+     not miniature progress timelines. W89 inadvertently reinstated dots
+     hidden in W84; restore the calm Classic editorial hierarchy here only.
+     Numbered chapters retain their authentic dot + rail navigation. */
+  @media (max-width:84.999em) {
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-rail,
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub .gbat-dot {
       display:none;
     }
     [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub:not(.gbat-sat) {
-      padding-inline-start:44px;
+      padding-inline-start:20px;
     }
     [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub.h3:not(.gbat-sat) {
-      padding-inline-start:58px;
+      padding-inline-start:28px;
+    }
+    [data-gill-v16] #partTocOverlay .gbat-foot--frontmatter {
+      grid-template-columns:minmax(0,1fr) 44px;
     }
   }
   @media (max-width:84.999em) {

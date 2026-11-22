@@ -816,16 +816,16 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
   #partTocOverlay .gbat-part:not(.cur) .gbat-t {
     color: var(--gbr-classic-ink);
   }
-  /* Original ARGON Classic LeftNavigation.tsx uses 11px JetBrains Mono
-     for Roman section labels, medium weight; not italic display numerals. */
+  /* Owner W99: large upright Roman chapter numerals on mobile,
+     not the tiny 11px mono navigation counters and not italic. */
   #partTocOverlay .gbat-num:not(.gbat-num--label) {
-    font: 500 11px/1 'GB Classic Mono', Consolas, monospace !important;
+    font: 600 26px/1 'GB Mobile Classic Cormorant', Georgia, serif !important;
     font-style: normal !important;
-    letter-spacing: .01em;
+    letter-spacing: -.025em;
     color: var(--gbr-classic-bronze);
   }
   #partTocOverlay .gbat-part.cur .gbat-num:not(.gbat-num--label) {
-    font-weight: 600 !important;
+    font-weight: 700 !important;
   }
   #partTocOverlay .gbat-num--label i {
     font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
@@ -927,7 +927,7 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
  }
  /* W65: two full footer labels on 320px, without a tiny 8.5px caption.
     The 52px action hit areas and desktop geometry remain unchanged. */
- #partTocOverlay .gbat-foot{
+ #partTocOverlay .gbat-foot:not(.gbat-foot--frontmatter){
    grid-template-columns:minmax(0,1.36fr) minmax(0,1fr) 40px!important;
  }
  #partTocOverlay .gbat-fbtn--listen{

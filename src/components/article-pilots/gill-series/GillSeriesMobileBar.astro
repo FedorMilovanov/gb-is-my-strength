@@ -256,11 +256,10 @@ const page = config.pages[pageId];
 @media (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
     box-sizing:border-box;position:relative;z-index:2;display:flex;align-items:center;
-    justify-content:flex-start;flex:0 0 68px;width:68px;min-width:68px;
+    justify-content:flex-start;flex:0 0 88px;width:88px;min-width:88px;
     height:44px;gap:0;margin:0;overflow:visible;
-    /* 44px Play + 44px rate targets share 20px of their outer edges.
-       The two target centers stay 24px apart; this removes the empty
-       phantom space before Settings without shrinking either control. */
+    /* Two non-overlapping 44px targets: rate first, then Play.
+       This positions the visible Play immediately beside Settings. */
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-play {
     --ember-size:44px;
@@ -277,10 +276,10 @@ const page = config.pages[pageId];
     inset:2px;width:40px;height:40px;opacity:1;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
-    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:3.4;opacity:.62;
+    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:6;opacity:.68;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {
-    stroke-width:3.9;opacity:1;
+    stroke-width:6.5;opacity:1;
     filter:drop-shadow(0 0 1px rgba(197,151,88,.13));
     transition:stroke-dashoffset .55s cubic-bezier(.2,.75,.3,1);
   }
@@ -294,36 +293,29 @@ const page = config.pages[pageId];
   @media(hover:hover) and (pointer:fine) {
     [data-gill-v16] .mobile-top-bar .reader-mobile-play:hover {transform:none;}
   }
-  /* Play and speed share a 68px group with separate 44px targets.
-     The speed chip is a true pointer target so its overlap cannot invoke TTS. */
+  /* A separate 44px speed target precedes Play in DOM and paint order.
+     Its small painted chip reaches the lower-right Play arc, while the
+     true hit-box stays clear of Settings and Play's primary tap target. */
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {
     position:relative;z-index:3;box-sizing:border-box;flex:0 0 44px;
     width:44px;height:44px;min-width:44px;min-height:44px;
-    padding:0;margin:0 0 0 -20px;border:0;border-radius:0;background:transparent;
+    padding:0;margin:0;border:0;border-radius:0;background:transparent;
     box-shadow:none;overflow:visible;cursor:pointer;color:inherit;
-    /* Let Play own its 44px icon, including the right half of the triangle.
-       The speed hit surface occupies the outer-right 24px and the visible
-       chip itself; this prevents accidental speed opening on Play taps. */
-    pointer-events:none;
+    pointer-events:auto;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {
-    content:'';display:block;position:absolute;
-    left:20px;right:auto;top:0;width:24px;height:44px;
-    /* This is a transparent hit area, never a painted second button.
-       Gill ResponsiveStyles used to supply a wine-colored panel here. */
-    background:transparent!important;border:0!important;
-    box-shadow:none!important;border-radius:0!important;pointer-events:auto;
+    content:none;display:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
-    box-sizing:border-box;position:absolute;left:5px;bottom:2px;z-index:4;
+    box-sizing:border-box;position:absolute;left:auto;right:-44px;bottom:0;z-index:4;
     display:grid;place-items:center;width:max-content;
     min-width:24px;max-width:35px;height:15px;padding:0 3px;
     border:1px solid color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 68%,transparent);
     border-radius:999px;background:#544333;color:#fff9f0;
     font:720 8.5px/1 "Source Sans 3",system-ui,sans-serif;
     white-space:nowrap;box-shadow:0 1px 5px rgba(35,24,17,.13);
-    /* A real pointer target even where the visible chip overlaps Play.
-       The event bubbles to its owning speed badge, never the TTS button. */
+    /* The visible chip delegates to the dedicated rate button.
+       It never projects into the neighbouring Settings hit area. */
     pointer-events:auto;cursor:pointer;
   }
   html.dark [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
@@ -390,8 +382,7 @@ const page = config.pages[pageId];
     opacity:0;transform:none;pointer-events:none;
   }
 }
-/* Optical spacing: target geometry remains 44px, painted glyphs follow a
-   tighter rhythm. The final Play/rate compound is 88px after W77. */
+/* Optical spacing: independent 44px targets with Play adjacent to Settings. */
 @media (min-width:431px) and (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar {gap:2px!important;}
   [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
@@ -471,21 +462,6 @@ const page = config.pages[pageId];
     height:44px !important;min-height:44px !important;
     flex:0 0 44px !important;
   }
-}
-/* W77: restore separate physical 44px Play and rate targets. The old
-   26x24 absolute badge failed sitewide mobile accessibility in CI and
-   overlapped the Play ring. The painted 1x chip remains visually compact. */
-@media (max-width:84.999em) {
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex:0 0 88px;width:88px;min-width:88px}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:relative;inset:auto;margin:0;flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;pointer-events:auto}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {content:none}
-  /* Paint the compact rate chip back on the lower-right Play ring arc,
-     while its owning badge retains a separate full 44px touch surface.
-     A Play triangle tap remains unoccluded; the chip bubbles to rate. */
-  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:-21px;right:auto;bottom:7px;height:14px;min-width:20px;box-shadow:none}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {width:38px;height:38px;inset:3px}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {stroke-width:3;opacity:.58}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {stroke-width:3.6}
 }
 /* Recover the complete Analytics label at common 390px phone widths,
    without shortening the real Play/rate touch surfaces. */

@@ -296,8 +296,9 @@ try {
     scenarios += 2;
     await ctx.close();
 
-    // W89: numbered progress rail stays independent, while Context and
-    // Handbook restore each heading's quiet circular bullet.
+    // W99b owner-requested frontmatter correction: Context and Handbook
+    // have editorial links without circular bullets, continuous rails or
+    // a redundant second Listen button. Numbered chapter TOCs retain dots.
     for (const route of ['/articles/dzhon-gill-istoricheskiy-kontekst/',
                          '/articles/dzhon-gill-spravochnik/']) {
       for (const width of [320, 390, 768]) {
@@ -309,7 +310,7 @@ try {
         assert.equal(resp.status(),200,engine+' '+route+' route');
         // A hidden bottom sheet returns zero geometry even if its authored CSS
         // would position the dot correctly. Open it BEFORE measuring pixels.
-        if (width < 768) {
+        if (width <= 768) {
           await tocPage.locator('#mobPartTocBtn').click({timeout:7000});
           await tocPage.waitForFunction(() => {
             const overlay=document.querySelector('#partTocOverlay');
@@ -324,31 +325,47 @@ try {
           const rail = item?.querySelector('.gbat-rail');
           const numbered = document.querySelector('#partTocOverlay .gbat-part:not(.gbat-part--label) .gbat-dot');
           const first = item?.querySelector('.gbat-subs .gbat-sub:not(.gbat-sat)');
-          const bullet = first?.querySelector('.gbat-dot');
-          const caption = bullet?.nextElementSibling;
-          const bulletGap = bullet && caption
-            ? caption.getBoundingClientRect().left - bullet.getBoundingClientRect().right : -1;
-          const layoutReady = !!(first && first.getClientRects().length && first.getBoundingClientRect().width);
-          return { bulletGap, layoutReady,
-            matched: !!item, dots:dots.length,
+          const caption = first?.querySelector('.gbat-dot')?.nextElementSibling;
+          const firstBox=first?.getBoundingClientRect();
+          const captionBox=caption?.getBoundingClientRect();
+          const layoutReady=!!(firstBox?.width && captionBox?.width);
+          const nums=[...document.querySelectorAll('#partTocOverlay .gbat-num:not(.gbat-num--label)')];
+          const footer=document.querySelector('#partTocOverlay .gbat-foot--frontmatter');
+          return {
+            matched:!!item, dots:dots.length,
             visibleDots:dots.filter(e=>getComputedStyle(e).display!=='none').length,
             rail:rail?getComputedStyle(rail).display:null,
             numberedDot:numbered?getComputedStyle(numbered).display:null,
+            layoutReady,
+            textInBounds:!!(layoutReady && captionBox.left>=firstBox.left+8 &&
+              captionBox.right<=Math.min(firstBox.right,innerWidth-8)+1),
+            romanCount:nums.length,
+            romanLargeUpright:nums.length>=4 && nums.every(e=>{
+              const cs=getComputedStyle(e);return parseFloat(cs.fontSize)>=24 && cs.fontStyle==='normal';
+            }),
+            footerButtons:footer?.querySelectorAll('button').length,
+            redundantListen:footer?.querySelectorAll('[data-gbat-listen]').length,
+            nextExists:!!footer?.querySelector('[data-gbat-continue]'),
+            pdfExists:!!footer?.querySelector('[data-action="print"]'),
+            footerColumns:footer?getComputedStyle(footer).gridTemplateColumns:null,
+            topPlayCount:[...document.querySelectorAll('.mobile-top-bar [data-fc-action="play"]')].filter(e=>e.getBoundingClientRect().width>0).length,
           };
         });
         const tag=engine+' '+route+' '+width;
         assert.ok(tocResult.matched&&tocResult.dots>0,tag+' current label part with sections');
-        if(width<768){
-          assert.equal(tocResult.visibleDots,tocResult.dots,tag+' every outline item shows its circle');
-          assert.equal(tocResult.rail,'none',tag+' no frontmatter rail');
-          assert.ok(tocResult.layoutReady,tag+' measure after opening the sheet, not hidden zero rectangles');
-          assert.ok(tocResult.bulletGap>=8,tag+' bullet must not collide with text: '+tocResult.bulletGap);
-          assert.notEqual(tocResult.numberedDot,'none',tag+' numbered part unchanged');
-          await tocPage.screenshot({path:path.join(shots,engine+'-'+width+'-'+route.split('/')[2]+'-toc.jpg'),
-            type:'jpeg',quality:76,animations:'disabled'});
-        } else {
-          assert.ok(tocResult.visibleDots>0,tag+' tablet/desktop legacy dots unchanged');
-        }
+        assert.equal(tocResult.visibleDots,0,tag+' frontmatter decorative circles stay hidden');
+        assert.equal(tocResult.rail,'none',tag+' frontmatter has no progress rail');
+        assert.ok(tocResult.layoutReady,tag+' real sheet and text measured after opening');
+        assert.ok(tocResult.textInBounds,tag+' typographic frontmatter links fit without bullet gaps');
+        assert.notEqual(tocResult.numberedDot,'none',tag+' numbered chapter dot untouched');
+        assert.ok(tocResult.romanLargeUpright,tag+' all four Roman headings >=24px, not italic');
+        assert.equal(tocResult.footerButtons,2,tag+' reference has only Continue and PDF footer');
+        assert.equal(tocResult.redundantListen,0,tag+' no duplicate footer Play on frontmatter');
+        assert.ok(tocResult.nextExists&&tocResult.pdfExists,tag+' footer navigation and PDF still exist');
+        assert.ok(tocResult.footerColumns?.split(' ').length===2,tag+' two usable footer grid columns');
+        assert.equal(tocResult.topPlayCount,1,tag+' one canonical top audio Play remains');
+        await tocPage.screenshot({path:path.join(shots,engine+'-'+width+'-'+route.split('/')[2]+'-toc.jpg'),
+          type:'jpeg',quality:76,animations:'disabled'});
         scenarios++;
         await tocContext.close();
       }

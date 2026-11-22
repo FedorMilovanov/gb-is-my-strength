@@ -163,8 +163,12 @@ async function gillPlayOptics(page) {
       ringProgressWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).strokeWidth,
       ringProgressTransition: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).transitionDuration,
       speedPseudoPaint: (() => {
-        const ps=getComputedStyle(el('.reader-mobile-speed-badge'),'::before');
-        return {border:ps.borderTopWidth,background:ps.backgroundColor,shadow:ps.boxShadow};
+        const badge=el('.reader-mobile-speed-badge');
+        const ps=getComputedStyle(badge,'::before');
+        const actual=getComputedStyle(badge);
+        return {border:ps.borderTopWidth,background:ps.backgroundColor,
+          shadow:ps.boxShadow,content:ps.content,display:ps.display,
+          badgeBackground:actual.backgroundColor,badgeBorder:actual.borderTopWidth};
       })(),
       settingsSvg: rect('#mobSettingsBtn svg'),
       speedGapToSettings: (() => {
@@ -252,19 +256,21 @@ async function auditSlot(page, routeId, selectors, checks) {
       { playTriangleSafe: gillBefore.playTriangleSafe,
         rateCenter: gillBefore.rateCenterClickable,
         paintedChip: gillBefore.chipPointerHitsBadge });
-    // W78: The owner-approved chip still visually touches the Play ring,
-    // but the old 26×24 accessible badge was too small. Require separate
-    // physical 44px Play/rate targets and an independently clickable chip.
-    record(checks, `${prefix}-31`, 'Gill keeps the compact ring chip with disjoint 44px Play and speed touch targets',
+    // W99: Keep separate physical 44px targets and DOM/tab order
+    // [speed, Play, Settings]. Play must be adjacent to Settings instead
+    // of stranded one full button to the left. The visible speed chip
+    // alone overlaps the lower-right Play arc, never Settings.
+    record(checks, `${prefix}-31`, 'Gill rate then Play then Settings: adjacent disjoint 44px controls and clickable chip',
       gillBefore.compound?.width >= 87.5 && gillBefore.compound?.width <= 88.5 &&
       gillBefore.rateBadge?.width >= 43.5 && gillBefore.rateBadge?.width <= 44.5 &&
       gillBefore.rateBadge?.height >= 43.5 && gillBefore.rateBadge?.height <= 44.5 &&
-      gillBefore.rateBadge?.x - gillBefore.anchors[3].x >= 43.5 &&
-      gillBefore.rateBadge?.x - gillBefore.anchors[3].x <= 44.5 &&
-      gillBefore.rateBadge?.x >= gillBefore.anchors[3].right - .5 &&
-      gillBefore.settingsButton?.x >= gillBefore.compound.right - .5 &&
-      gillBefore.settingsButton?.x - gillBefore.compound.right <= 9 &&
-      gillBefore.rateChip?.right <= gillBefore.rateBadge.x + 1 &&
+      gillBefore.anchors[3]?.x - gillBefore.rateBadge?.x >= 43.5 &&
+      gillBefore.anchors[3]?.x - gillBefore.rateBadge?.x <= 44.5 &&
+      gillBefore.anchors[3]?.x >= gillBefore.rateBadge?.right - .5 &&
+      gillBefore.settingsButton?.x >= gillBefore.anchors[3]?.right - .5 &&
+      gillBefore.settingsButton?.x - gillBefore.anchors[3]?.right <= 9 &&
+      gillBefore.rateChip?.x >= gillBefore.anchors[3]?.x - .5 &&
+      gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5 &&
       gillBefore.rateChip?.bottom <= gillBefore.compound.bottom &&
       gillBefore.chipPointerHitsBadge && gillBefore.playTriangleSafe &&
       gillBefore.rateCenterClickable,
@@ -272,28 +278,30 @@ async function auditSlot(page, routeId, selectors, checks) {
         badge: gillBefore.rateBadge, chip: gillBefore.rateChip, settings: gillBefore.settingsButton,
         chipClickable: gillBefore.chipPointerHitsBadge,
         playTriangleSafe: gillBefore.playTriangleSafe, rateCenterClickable: gillBefore.rateCenterClickable });
-    record(checks, `${prefix}-32`, 'one fine, softly animated progress ring inside the canonical 44px Play',
-      Number.parseFloat(gillBefore.ringTrackWidth) >= 2.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.1 &&
-      Number.parseFloat(gillBefore.ringProgressWidth) >= 3.5 && Number.parseFloat(gillBefore.ringProgressWidth) <= 3.7 &&
+    record(checks, `${prefix}-32`, 'one owner-approved thick golden progress ring with smooth transition',
+      Number.parseFloat(gillBefore.ringTrackWidth) >= 5.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 6.1 &&
+      Number.parseFloat(gillBefore.ringProgressWidth) >= 6.4 && Number.parseFloat(gillBefore.ringProgressWidth) <= 6.6 &&
       Number.parseFloat(gillBefore.ringProgressTransition) >= 0.5,
       { trackStroke: gillBefore.ringTrackWidth,
         progressStroke: gillBefore.ringProgressWidth, transition: gillBefore.ringProgressTransition });
-    record(checks, `${prefix}-34`, 'rate hit-area is invisible; no phantom panel or background beside Play',
-      gillBefore.speedPseudoPaint?.border === '0px' &&
-      ['transparent','rgba(0, 0, 0, 0)'].includes(gillBefore.speedPseudoPaint?.background) &&
-      gillBefore.speedPseudoPaint?.shadow === 'none',
+    record(checks, `${prefix}-34`, 'no painted phantom: pseudo disabled and real speed hit-area transparent',
+      (gillBefore.speedPseudoPaint?.content === 'none' ||
+        gillBefore.speedPseudoPaint?.display === 'none') &&
+      gillBefore.speedPseudoPaint?.badgeBorder === '0px' &&
+      ['transparent','rgba(0, 0, 0, 0)'].includes(gillBefore.speedPseudoPaint?.badgeBackground),
       gillBefore.speedPseudoPaint);
-    record(checks, `${prefix}-35`, 'painted rate sits on the lower-right ring arc with a clear Settings glyph gap',
-      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 22 &&
-      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 24.5 &&
-      gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 1.5 &&
-      gillBefore.speedGapToSettings >= 45 && gillBefore.speedGapToSettings <= 75,
+    record(checks, `${prefix}-35`, 'rate chip sits on lower-right ring arc, with compact clear Settings spacing',
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 18 &&
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 22 &&
+      gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 2.5 &&
+      gillBefore.speedGapToSettings >= 12 && gillBefore.speedGapToSettings <= 30 &&
+      gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5,
       {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
     record(checks, `${prefix}-30`, 'Visible speed chip overlap clicks its badge, never triggers Play',
       gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });
     record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
       gillBefore.playBorder === '0px' && gillBefore.playShadow === 'none' && gillBefore.ringOpacity > .95 &&
-        gillBefore.ring?.width === 38 && gillBefore.anchors[3]?.width === 44,
+        gillBefore.ring?.width === 40 && gillBefore.anchors[3]?.width === 44,
       { border: gillBefore.playBorder, shadow: gillBefore.playShadow, ringOpacity: gillBefore.ringOpacity });
     record(checks, `${prefix}-28`, 'Back and Home remain visible and operable while Gill speeds replace research slot',
       after?.backActive === true,{ after:after?.backActive, rail:after?.rail,slot:after?.slot });
@@ -483,9 +491,65 @@ async function auditMobile(browser, origin, routeInfo) {
         placement.controls === 'gillSettingsOverlay' && placement.target && Boolean(placement.label), placement);
       record(checks, 'gill-mobile-12', 'bottom chapter reclaims 44px without displacing library/PDF/share',
         placement.chapterWidth >= 185 && placement.dockActions === 2 && placement.library && placement.overflow === 0, placement);
+
+      // W99 owner geometry regression: 44px speed FIRST, then 44px Play,
+      // then 44px Settings. Prior W77 pushed the visible Play a full slot
+      // away; earlier W63 overlapped Play and Settings target hit areas.
+      const tight = await page.evaluate(() => {
+        const bar = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+        const rate = bar?.querySelector('#mobSpdBadge');
+        const play = bar?.querySelector('.reader-mobile-play');
+        const settings = bar?.querySelector('#mobSettingsBtn');
+        const chip = bar?.querySelector('.reader-mobile-speed-chip');
+        if (!rate || !play || !settings || !chip) return null;
+        const r = rate.getBoundingClientRect(), p = play.getBoundingClientRect();
+        const s = settings.getBoundingClientRect(), c = chip.getBoundingClientRect();
+        const ownerAt = (x, y) => {
+          const b = document.elementFromPoint(x, y)?.closest('button');
+          return b?.id || b?.getAttribute('data-fc-action') || '';
+        };
+        return {
+          widths: [r.width, p.width, s.width], heights: [r.height, p.height, s.height],
+          inline: Math.abs(r.right - p.left) <= .5 && Math.abs(p.right - s.left) <= .5,
+          paintGap: s.x + s.width / 2 - (p.x + p.width / 2),
+          chipInBounds: c.right <= s.left + .5 && c.left >= p.left - .5,
+          rateOwner: ownerAt(r.x + r.width / 2, r.y + r.height / 2),
+          playOwner: ownerAt(p.x + p.width / 2, p.y + p.height / 2),
+          gearOwner: ownerAt(s.x + 2, s.y + s.height / 2),
+          chipOwner: ownerAt(c.x + c.width / 2, c.y + c.height / 2),
+          ringStroke: Number(getComputedStyle(play.querySelector('.gb-ember__ring-progress')).strokeWidth.replace('px','')),
+        };
+      });
+      record(checks, 'gill-mobile-13', 'rate Play Settings are separate 44px targets with adjacent Play and safe chip',
+        Boolean(tight && tight.widths.every(v => v >= 44) && tight.heights.every(v => v >= 44) &&
+          tight.inline && tight.paintGap <= 44.5 && tight.chipInBounds &&
+          tight.rateOwner === 'mobSpdBadge' && tight.playOwner === 'play' &&
+          tight.gearOwner === 'mobSettingsBtn' && tight.chipOwner === 'mobSpdBadge' &&
+          tight.ringStroke >= 6.3), tight);
     }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
     for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);
+
+    if (routeInfo.id === 'gill') {
+      await page.locator('#mobPartTocBtn').click();
+      await page.waitForTimeout(200);
+      const roman = await page.evaluate(() => {
+        const nums = [...document.querySelectorAll('#partTocOverlay .gbat-num:not(.gbat-num--label)')];
+        return {
+          open: document.getElementById('partTocOverlay')?.classList.contains('is-open'),
+          values: nums.map(e => e.textContent?.trim()),
+          sizes: nums.map(e => parseFloat(getComputedStyle(e).fontSize)),
+          styles: nums.map(e => getComputedStyle(e).fontStyle),
+          visible: nums.some(e => e.getBoundingClientRect().width >= 40),
+        };
+      });
+      record(checks, 'gill-mobile-14', 'mobile Roman headings are large, upright and visible inside the native TOC',
+        Boolean(roman.open && roman.visible && roman.values.includes('I') &&
+          roman.values.includes('II') && roman.sizes.every(n => n >= 24) &&
+          roman.styles.every(s => s === 'normal')), roman);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(120);
+    }
 
     const play = page.locator('[data-fc-action="play"]:visible').first();
     const before = await page.evaluate(() => window.__controlsA11ySpeech.speaks);
