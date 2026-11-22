@@ -882,7 +882,7 @@ try {
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
           console.error(`FAIL ${name}: ${error.message.slice(0, 1600)}`);
           fs.writeFileSync(path.join(output, 'after', `${name}-diagnostic.json`),
-            JSON.stringify({ head: report.head, engine, name, item }, null, 2) + '\\n');
+            JSON.stringify({ head: report.head, engine, name, item }, null, 2) + '\n');
           await shot(page, `${name}-failure`, { timeout: 8000 }).catch(() => {});
         } finally {
           report.mobileFocus.push(item);
