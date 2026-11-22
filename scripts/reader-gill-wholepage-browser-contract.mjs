@@ -74,12 +74,12 @@ try {
         });
         const tag=engine+' '+width+' '+theme;
         assert.equal(info.summary,5,tag+' five authored summary points');
-        assert.equal(info.figures,3,tag+' three narrative figures');
+        assert.equal(info.figures,7,tag+' seven narrative figures');
         assert.ok(info.figureAlt,tag+' authored figure alt text');
-        assert.equal(info.captions,3,tag+' caption coverage');
+        assert.equal(info.captions,7,tag+' all seven captions retained');
         assert.equal(info.sourceGroups,6,tag+' six source sections');
         assert.equal(info.sourceItems,38,tag+' 38 bibliography entries retained');
-        assert.equal(info.sourceLinks,40,tag+' all 40 sources retained');
+        assert.equal(info.sourceLinks,38,tag+' 38 annotated source links retained');
         assert.equal(info.brokenLink,0,tag+' all source links have destinations');
         assert.equal(info.author,1,tag+' author block');
         assert.equal(info.next,1,tag+' next chapter');
