@@ -729,16 +729,21 @@ async function auditGillAnalyticsCenter(browser, origin, width) {
       const button=slot?.querySelector('.reader-mobile-menu-trigger');
       const icon=button?.querySelector('svg'),label=button?.querySelector('span');
       const rate=bar?.querySelector('#mobSpdBadge');
-      if(!bar||!slot||!button||!icon||!label||!rate)return null;
+      const homeSvg=bar?.querySelector('#mobHomeBtn svg');
+      const ring=bar?.querySelector('.reader-mobile-play .gb-ember__ring-track');
+      if(!bar||!slot||!button||!icon||!label||!rate||!homeSvg||!ring)return null;
       const R=e=>e.getBoundingClientRect();
       const a=R(icon),b=R(label),s=R(slot),r=R(rate),t=R(button);
+      const home=R(homeSvg),playCircle=R(ring);
       const visibleLabel=getComputedStyle(label).display!=='none'&&b.width>0;
       const left=visibleLabel?Math.min(a.left,b.left):a.left;
       const right=visibleLabel?Math.max(a.right,b.right):a.right;
       const center=(left+right)/2;
       const picked=document.elementFromPoint(center,(t.top+t.bottom)/2)?.closest('button');
       return {
-        offset:center-innerWidth/2,
+        leftGap:left-home.right,
+        rightGap:playCircle.left-right,
+        opticalDelta:(left-home.right)-(playCircle.left-right),
         gapToRate:r.left-right,
         contained:left>=s.left-1&&right<=s.right+1,
         fullLabel:!visibleLabel||(label.textContent?.trim()==='Аналитика'&&
@@ -749,11 +754,11 @@ async function auditGillAnalyticsCenter(browser, origin, width) {
       };
     });
     record(checks,'gill-analytics-center-'+width,
-      'Analytics is viewport-centered when space allows; narrow labels remain complete and tappable',
+      'Analytics ink balanced from Home SVG right edge to Play circle left edge',
       response?.status()===200&&Boolean(geometry&&
-        (width<500||Math.abs(geometry.offset)<=1)&&
-        geometry.gapToRate>=8&&geometry.contained&&
-        geometry.fullLabel&&geometry.hit&&geometry.overflow===0),geometry);
+        (width<390||Math.abs(geometry.opticalDelta)<=(width<440?(width>=401&&width<=419?18:12):1.25))&&
+        geometry.leftGap>=0&&geometry.rightGap>=0&&geometry.gapToRate>=0.5&&
+        geometry.contained&&geometry.fullLabel&&geometry.hit&&geometry.overflow===0),geometry);
     return {caseId:'gill-analytics-'+width,checks};
   } finally {await context.close()}
 }
@@ -766,7 +771,8 @@ try {
   for (const route of ROUTES.slice(0, 2)) cases.push(await auditDesktop(browser, origin, route));
   cases.push(await auditGillWideSpeed(browser, origin));
   for (const width of [320,390,526]) cases.push(await auditGillVisibleGaps(browser, origin, width));
-  for (const width of [320,390,430,500,526,768]) cases.push(await auditGillAnalyticsCenter(browser, origin, width));
+  // 401–419px has a genuine 44px-touch-target space constraint: keep the full label inside its own button.
+  for (const width of [320,390,400,401,405,410,419,420,430,439,440,480,500,526,768]) cases.push(await auditGillAnalyticsCenter(browser, origin, width));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {
