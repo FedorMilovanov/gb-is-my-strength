@@ -754,7 +754,25 @@ try {
               headerBottom: headerStyle?.display !== 'none' && headerStyle?.visibility !== 'hidden' && Number(headerStyle?.opacity) > 0
                 ? Math.max(0, headerRect.bottom) : 0 };
           });
-          assert.equal(state.inside, true); assert.equal(state.href, expected);
+          if (state.href !== expected || !state.inside) {
+            const focusTrace = await page.evaluate(() => {
+              const active = document.activeElement;
+              const details = document.querySelector('[data-journal-contents]');
+              const summary = details?.querySelector('summary');
+              const returnLink = details?.querySelector('.je-contents-return');
+              return {
+                activeTag: active?.tagName, activeId: active?.id || '',
+                activeClass: active?.className || '', activeHtml: active?.outerHTML?.slice(0, 500),
+                activeHref: active?.getAttribute('href'), activeInsideDetails: details?.contains(active),
+                detailsOpen: details?.open, summaryFocused: active === summary,
+                returnVisible: returnLink ? getComputedStyle(returnLink).display !== 'none' : false,
+                returnTabIndex: returnLink?.tabIndex, returnHref: returnLink?.getAttribute('href'),
+                documentHasFocus: document.hasFocus(),
+              };
+            });
+            item.focusFailure = { expected, state, focusTrace };
+            throw new Error('native TOC keyboard focus mismatch: ' + JSON.stringify(item.focusFailure));
+          }
           assert.equal(state.focusVisible, true);
           assert.ok(state.outlineWidth >= 2 && state.outlineStyle === 'solid', 'the indicator must really paint, even when fully inset');
           const { rect: r, outline: o, clip: c } = state;
@@ -855,9 +873,25 @@ try {
           console.log(`PASS ${name}`);
         } catch (error) {
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
-          console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
-          await shot(page, `${name}-failure`).catch(() => {});
-        } finally { report.mobileFocus.push(item); await context.close(); }
+          console.error(`FAIL ${name}: ${error.message.slice(0, 1600)}`);
+          fs.writeFileSync(path.join(output, 'after', `${name}-diagnostic.json`),
+            JSON.stringify({ head: report.head, engine, name, item }, null, 2) + '\\n');
+          await shot(page, `${name}-failure`, { timeout: 8000 }).catch(() => {});
+        } finally {
+          report.mobileFocus.push(item);
+          // Firefox may retain a native disclosure/scroll task after an assertion
+          // failure. A hung teardown must fail closed, not monopolize CI for 55m.
+          let teardownTimeout;
+          try {
+            await Promise.race([
+              context.close(),
+              new Promise((_, reject) => { teardownTimeout = setTimeout(() => reject(new Error('browser context teardown exceeded 10s')), 10_000); }),
+            ]);
+          } catch (closeError) {
+            console.error(`FAIL ${name}: ${closeError.message}; diagnostic JSON retained`);
+            process.exit(1);
+          } finally { clearTimeout(teardownTimeout); }
+        }
       }
   // Agent4/#2339 confirmed this on selected Agent8: forced colors exposes all
   // transparent borders, erasing the current-section distinction. Check actual
