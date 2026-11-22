@@ -62,8 +62,12 @@ jobs:
           python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/g3-history-http.log 2>&1 &
           pid=$!
           trap 'kill "$pid" 2>/dev/null || true' EXIT
-          for i in $(seq 1 50); do
+          for attempt in {1..50}; do
             if curl -fsS "http://127.0.0.1:4177/journal/dossiers/g3/history/" -o /dev/null; then break; fi
+            if (( attempt == 50 )); then
+              echo "ERROR: historical route failed to serve after 50 checks" >&2
+              exit 1
+            fi
             sleep .2
           done
           node scripts/journal-editorial-browser.mjs \
@@ -110,8 +114,12 @@ jobs:
           python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/g3-history-http.log 2>&1 &
           pid=$!
           trap 'kill "$pid" 2>/dev/null || true' EXIT
-          for i in $(seq 1 50); do
+          for attempt in {1..50}; do
             if curl -fsS "http://127.0.0.1:4177/journal/dossiers/g3/history/" -o /dev/null; then break; fi
+            if (( attempt == 50 )); then
+              echo "ERROR: historical route failed to serve after 50 checks" >&2
+              exit 1
+            fi
             sleep .2
           done
           node scripts/journal-editorial-browser.mjs \
