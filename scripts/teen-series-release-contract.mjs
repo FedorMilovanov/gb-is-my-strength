@@ -52,6 +52,7 @@ const frontmatterScalar = (source, key) => {
 };
 const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
+const publishedAnchorBaseline = readJson('data/teen-series-anchor-baseline.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
 const mediaSource = read('src/components/article-pilots/_shared/series/teenSeriesMedia.ts');
 const mediaAltFor = (pageId) => {
@@ -268,6 +269,14 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
     }
     if (new Set(tocAnchors).size !== tocAnchors.length) fail(`${slug}: Reader TOC duplicates target IDs`);
     if (available.size !== ids.length) fail(`${slug}: duplicate id attributes in published MDX`);
+    const legacy = publishedAnchorBaseline.articles?.[slug];
+    if (publishedAnchorBaseline.seriesId !== SERIES_KEY || publishedAnchorBaseline.version !== 1 || !Array.isArray(legacy) || !legacy.length) {
+      fail(`${slug}: missing stable published deep-link baseline`);
+    } else {
+      for (const id of legacy) {
+        if (!available.has(id)) fail(`${slug}: published deep-link #${id} removed; restore an id alias`);
+      }
+    }
   }
 
   const routeRel = `src/pages/articles/${slug}/index.astro`;
