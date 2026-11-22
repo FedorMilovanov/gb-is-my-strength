@@ -206,7 +206,7 @@ requireValue(
   'three-article editorial bridge and anti-overclassification guard missing',
 );
 requireValue(
-  publishedPage.includes('не репрезентативная выборка церквей') &&
+  /а не\s+репрезентативная выборка церквей/.test(publishedPage) &&
   publishedPage.includes('нельзя рассчитывать'),
   'documentary case selection must not imply prevalence or deterministic stage transitions',
 );
