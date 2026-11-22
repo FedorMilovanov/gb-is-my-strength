@@ -1,0 +1,33 @@
+{
+  "route": "/journal/dossiers/g3/history/",
+  "profiledAt": "2026-11-22",
+  "migrationLane": "journal-foundation",
+  "routeType": "journal-history",
+  "surfaceContractVersion": 1,
+  "surface": "page",
+  "section": "journal",
+  "slug": "g3-history",
+  "currentStatus": "production-dist",
+  "source": "src/pages/journal/dossiers/g3/history/index.astro",
+  "risk": 3,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "migrationMode": "strict-native",
+  "pagefindContract": {
+    "strategy": "native source-attributed historical documentary article",
+    "requiredMarkers": [
+      "data-pagefind-body",
+      "data-journal-surface=\"dossier\"",
+      "data-journal-id=\"g3-history\""
+    ]
+  },
+  "publicationContract": {
+    "participatesIn": []
+  },
+  "visualParity": {
+    "mode": "native-contract",
+    "legacyComparison": "not-applicable",
+    "reason": "New native historical Journal article has no legacy page."
+  }
+}

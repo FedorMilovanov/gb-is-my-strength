@@ -853,4 +853,16 @@
       <image:title>Обновления исследований — Господь Бог — Сила Моя</image:title>
     </image:image>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/journal/dossiers/g3/history/</loc>
+    <lastmod>2026-11-21T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/journal/g3-ministries-og-1200x630.webp</image:loc>
+      <image:title>G3 Ministries: от конференции к служению (2011–2024)</image:title>
+    </image:image>
+  </url>
 </urlset>
