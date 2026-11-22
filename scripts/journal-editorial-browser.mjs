@@ -602,7 +602,18 @@ try {
           item.afterWheel = await railState();
           assert.ok(item.afterWheel.scrollTop > 0, 'wheel must reveal the end of the rail');
           assert.ok(Math.abs(item.afterWheel.y - item.before.y) < 1, 'scrolling the rail must not displace the reading position');
-          const links = await rail.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          // Hidden desktop return links cannot occur in native Tab order.
+          // Exercise EVERY rendered keyboard link (TOC and rail notes), not
+          // hidden SSR/mobile alternatives; keep a witness of excluded nodes.
+          item.railLinks = await rail.locator('a').evaluateAll((links) => links.map((link) => ({
+            href: link.getAttribute('href'),
+            rendered: link.getClientRects().length > 0 && getComputedStyle(link).visibility !== 'hidden'
+          })));
+          const links = item.railLinks.filter((entry) => entry.rendered).map((entry) => entry.href);
+          assert.ok(links.length >= 5, 'short-window rail needs at least five native rendered keyboard links');
+          if (route.kind === 'dossier')
+            assert.ok(item.railLinks.some((entry) => entry.href === '#overview' && !entry.rendered),
+              'SSR mobile-only return link must remain hidden on desktop');
           const focused = async (expected) => {
             const state = await rail.evaluate((el) => {
               const active = document.activeElement, style = getComputedStyle(active);
@@ -612,6 +623,7 @@ try {
                 outline: (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0),
                 focusVisible: active.matches(':focus-visible') };
             });
+            item.lastKeyboardState = state;
             assert.equal(state.inside, true); assert.equal(state.href, expected);
             assert.equal(state.focusVisible, true, 'keyboard focus must have a visible indicator');
             assert.ok(state.outline >= 2, 'the focus-visible state must actually paint an outline');
@@ -623,6 +635,7 @@ try {
             return { href: state.href, y: state.rect.top, bottom: state.rect.bottom, outline: state.outline };
           };
           await summary.focus();
+          item.afterSummaryFocus = await railState();
           item.keyboardForward = [];
           for (const href of links) { await page.keyboard.press('Tab'); item.keyboardForward.push(await focused(href)); }
           if (width === 1440 && height === 480) {
