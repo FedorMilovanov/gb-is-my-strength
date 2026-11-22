@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { listRangeFiles } from './shared-diff-authority.mjs';
 
 const DERIVED_PROJECTION_PATTERNS = Object.freeze([
@@ -13,6 +14,39 @@ const DERIVED_PROJECTION_PATTERNS = Object.freeze([
   /^data\/search-manifest\.json$/,
   /^data\/route-search-policy\.json$/,
 ]);
+
+
+/**
+ * Strict, positive shared-registry exception:
+ * two PRs adding NEW, DISJOINT route keys to page-ownership.json are not
+ * competing owners of the same route. Any deletion, existing-route edit,
+ * global schema/description change, missing baseline, or same-route addition
+ * still blocks. The general exclusive-file collision rule remains unchanged.
+ */
+export function addedRegistryRouteKeys(before, after) {
+  if (!before || !after || typeof before !== 'object' || typeof after !== 'object') return null;
+  if (!before.routes || !after.routes || Array.isArray(before.routes) || Array.isArray(after.routes)) return null;
+  const stripRoutes = value => Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'routes' && key !== 'updated'));
+  if (JSON.stringify(stripRoutes(before)) !== JSON.stringify(stripRoutes(after))) return null;
+  const added = new Set();
+  for (const [route, owner] of Object.entries(before.routes)) {
+    if (!(route in after.routes) || JSON.stringify(after.routes[route]) !== JSON.stringify(owner)) return null;
+  }
+  for (const [route, owner] of Object.entries(after.routes)) {
+    if (route in before.routes) continue;
+    if (!(route.startsWith('/') && route.endsWith('/') && route !== '/' &&
+      route.split('/').every(segment => /^[A-Za-z0-9_.-]*$/.test(segment))) || !owner || typeof owner !== 'object' ||
+        owner.status !== 'production-dist' || typeof owner.source !== 'string' || !owner.source.startsWith('src/pages/')) return null;
+    added.add(route);
+  }
+  return added.size > 0 ? added : null;
+}
+
+export function disjointRegistryRouteAdditions(currentBefore, currentAfter, candidateBefore, candidateAfter) {
+  const current = addedRegistryRouteKeys(currentBefore, currentAfter);
+  const candidate = addedRegistryRouteKeys(candidateBefore, candidateAfter);
+  return Boolean(current && candidate && [...current].every(route => !candidate.has(route)));
+}
 
 export function normalizeRepoPath(value) {
   if (typeof value !== 'string' || value.length === 0) {
@@ -234,6 +268,48 @@ export async function runCli(env = process.env) {
     currentFiles,
     candidates: candidateModels,
   });
+
+  // GitHub's file-level lock must not turn two independent route additions
+  // into a false conflict merely because both extend the same JSON registry.
+  // Prove this from immutable Git SHAs, not PR prose or diff text. On any API
+  // failure or overlapping route key, retain the original fail-closed blocker.
+  const pageOwnershipPath = 'migration/page-ownership.json';
+  const verifiedIndependent = [];
+  for (const blocker of result.blockers) {
+    if (!blocker.files.includes(pageOwnershipPath)) continue;
+    const candidate = openPulls.find(item => Number(item.number) === blocker.number);
+    if (!candidate?.head?.sha) continue;
+    try {
+      const compare = await githubJson(
+        `${apiUrl}/repos/${encodedOwner}/${encodedName}/compare/${effectiveBaseSha}...${candidate.head.sha}?per_page=1`, token,
+      );
+      const mergeBaseSha = compare.merge_base_commit?.sha;
+      if (!/^[a-f0-9]{40}$/.test(mergeBaseSha || '')) throw new Error('missing immutable merge base');
+      const getContents = async sha => {
+        const item = await githubJson(
+          `${apiUrl}/repos/${encodedOwner}/${encodedName}/contents/${pageOwnershipPath}?ref=${sha}`, token,
+        );
+        if (item.type !== 'file' || item.encoding !== 'base64' || !item.content) throw new Error('unavailable ownership JSON');
+        return JSON.parse(Buffer.from(item.content.replace(/\s+/g, ''), 'base64').toString('utf8'));
+      };
+      const currentBase = JSON.parse(execFileSync('git', ['show', `${effectiveBaseSha}:${pageOwnershipPath}`], { encoding: 'utf8' }));
+      const currentHead = JSON.parse(execFileSync('git', ['show', `${effectiveHeadSha}:${pageOwnershipPath}`], { encoding: 'utf8' }));
+      const candidateBase = await getContents(mergeBaseSha);
+      const candidateHead = await getContents(candidate.head.sha);
+      if (disjointRegistryRouteAdditions(currentBase, currentHead, candidateBase, candidateHead)) {
+        blocker.files = blocker.files.filter(file => file !== pageOwnershipPath);
+        result.warnings.push({ number: blocker.number, title: candidate.title || '', files: [pageOwnershipPath],
+          reason: 'independently-verified-disjoint-route-additions' });
+        verifiedIndependent.push(blocker.number);
+      }
+    } catch (error) {
+      console.error(`Ownership registry candidate #${blocker.number}: disjoint proof unavailable (${error.message}); preserving collision blocker`);
+    }
+  }
+  result.blockers = result.blockers.filter(blocker => blocker.files.length);
+  if (verifiedIndependent.length) {
+    console.log(`Verified disjoint page-ownership route additions against immutable Git bases: PR ${verifiedIndependent.map(n => '#'+n).join(', ')}`);
+  }
 
   console.log(
     `Lane collision guard: PR #${prNumber}; effective range ${effectiveBaseSha}..${effectiveHeadSha}; `
