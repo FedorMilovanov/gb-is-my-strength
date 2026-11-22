@@ -15,7 +15,7 @@
     "indexedRoutes": 103,
     "scannedSourceFiles": 551,
     "references": 1377,
-    "occurrences": 3511,
+    "occurrences": 3512,
     "canonicalTextRecords": 149,
     "referencesWithoutCanonicalText": 1228,
     "chapterRanges": 45,
@@ -47785,6 +47785,25 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
+          "title": "Совершеннолетие и родительская власть: что меняется, что остаётся",
+          "context": "едушку и бабушку автоматически родителями внуков и не отменяет обязанностей взрослого сына или дочери перед собственными детьми. Слова Павла о свободе вдовы вступить в новый брак (1 Кор. 7:39) подтверждают, что вдовство не превращает женщину обратно в малолетнюю дочь. Вопросы проживания, законной опеки и родительских прав после развода требуют самостоятел…",
+          "anchor": null,
+          "raw": "1 Кор. 7:39",
+          "topics": [
+            "взрослые дети",
+            "послушание",
+            "почитание",
+            "пятая заповедь",
+            "родители",
+            "семья",
+            "Семья",
+            "совершеннолетие"
+          ],
+          "sourceOwner": "src/content/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya.mdx",
+          "sourceKind": "mdx-source"
+        },
         {
           "url": "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
           "title": "Совершеннолетие и родительская власть: что меняется, что остаётся",
