@@ -273,5 +273,5 @@ const outputDirectory = process.argv.find((arg) => arg.startsWith('--output='))?
 const output = path.resolve(root, outputDirectory, 'contract.json');
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
-console.log(`PASS: ${paragraphCount} crisis factual paragraphs unchanged; 16/21 crisis seal, 9 approved historical groups, ${historySources.length} historical sources; ${built.length} built routes.`);
+console.log(`PASS: ${paragraphCount} crisis factual paragraphs unchanged; ${claimIds.length}/21 reader-visible crisis claim/source projection (Q020 withdrawal preserved; 16-ID historical handoff unchanged), 9 approved historical groups, ${historySources.length} historical sources; ${built.length} built routes.`);
 console.log(path.relative(root, output));
