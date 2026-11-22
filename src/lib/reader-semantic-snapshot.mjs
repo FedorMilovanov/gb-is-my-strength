@@ -10,7 +10,7 @@
  * No UI or storage ownership here: W57 desktop, mobile Product Reader,
  * Library and Marginalia may consume this model only after parity acceptance.
  */
-const EXCLUDED_ROUTE = /^\/(?:nagornaya|updates|journal|news|g3)(?:\/|$)/;
+const EXCLUDED_ROUTE = /^\/(?:nagornaya|novosti|updates|journal|news|g3)(?:\/|$)/i;
 const SAFE_ROUTE = /^\/(?:[A-Za-z0-9._~!$&'()+,;=:@%\-]+\/)*$/u;
 
 export const READER_SEMANTIC_SNAPSHOT_VERSION = 1;
@@ -20,7 +20,12 @@ export function normalizeReaderSemanticRoute(input) {
   const value = input.trim();
   if (!value.startsWith('/') || value.startsWith('//') || /[?#\s\\]/u.test(value)) return null;
   const route = value.endsWith('/') ? value : value + '/';
-  if (!SAFE_ROUTE.test(route) || route.includes('/../') || route.includes('/./')) return null;
+  // A route may be approved only in its canonical, readable form. Encoded dot
+  // segments and slashes (%2e, %2f, %5c) are not proof of a second owner or
+  // article; URL parsers normalize them differently. Until a canonical URL
+  // registry is connected, fail closed on *all* encoded route spellings.
+  if (route.includes('%') || !SAFE_ROUTE.test(route) ||
+      route.includes('/../') || route.includes('/./')) return null;
   return route;
 }
 
