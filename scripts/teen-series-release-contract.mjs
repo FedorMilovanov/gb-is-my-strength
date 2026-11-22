@@ -167,6 +167,29 @@ for (const [name, workflow] of [
 const registered = series[SERIES_KEY];
 if (!registered) fail('data/series.json missing teen-double-life');
 const expectedSlugs = ITEMS.map(([, , slug]) => slug);
+// Fail before building when a reader-only reorder drifts from the published
+// series registry or per-route core mark. Global .includes() cannot detect
+// a correct value accidentally attached to the wrong chapter.
+const configItemStart = config.indexOf('  items: [', config.indexOf('export const TEEN_DOUBLE_LIFE_SERIES'));
+const configItemEnd = config.indexOf('\n  pages: {', configItemStart);
+if (configItemStart < 0 || configItemEnd < 0) fail('teen config items/pages boundaries missing');
+const configItemSource = configItemStart < 0 || configItemEnd < 0 ? '' : config.slice(configItemStart, configItemEnd);
+const configItemOrder = [...configItemSource.matchAll(/\bhref:\s*'\/articles\/([^/]+)\/'/g)].map((x) => x[1]);
+if (configItemOrder.length !== expectedSlugs.length || configItemOrder.some((slug, i) => slug !== expectedSlugs[i])) {
+  fail('teen config core order drift: ' + (configItemOrder.join(' -> ') || 'empty'));
+}
+for (const [mark, pageId, slug, minutes, done] of ITEMS) {
+  const itemStart = configItemSource.indexOf("id: '" + pageId + "'");
+  const itemEnd = configItemSource.indexOf('\n    },', itemStart);
+  const item = itemStart < 0 || itemEnd < 0 ? '' : configItemSource.slice(itemStart, itemEnd);
+  if (!item.includes("mark: { kind: 'roman', value: '" + mark + "' }")) fail(`${slug}: expected Roman core mark ${mark}`);
+  if (!item.includes(`readingTime: '${minutes} мин'`)) fail(`${slug}: expected ${minutes} min`);
+  const pageStart = config.indexOf("'" + pageId + "': {", configItemEnd);
+  const pageEnd = config.indexOf('\n    },', pageStart);
+  const page = pageStart < 0 || pageEnd < 0 ? '' : config.slice(pageStart, pageEnd);
+  if (!page.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: progress must start at ${done}`);
+  if (!page.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: page minute count must be ${minutes}`);
+}
 const siteOrderBody = siteData.match(/['"]teen-double-life['"]\s*:\s*\[([\s\S]*?)\]/u)?.[1] || '';
 const siteOrder = [...siteOrderBody.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]);
 if (siteOrder.length !== expectedSlugs.length || siteOrder.some((slug, index) => slug !== expectedSlugs[index])) {
