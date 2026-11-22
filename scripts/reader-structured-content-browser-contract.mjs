@@ -104,10 +104,15 @@ try {
         const cells=trs.flatMap(x=>[...x.querySelectorAll('td')]);
         const first=cells[0].getBoundingClientRect();
         const rect=t.getBoundingClientRect();
+        const firstStyle=getComputedStyle(cells[0]);
+        const proseKey=t.getAttribute('data-key-type');
         return {heads,rows:trs.length,cells:cells.length,
           labels:trs.every(row=>[...row.cells].every((cell,i)=>cell.dataset.label===heads[i])),
           overflow:document.documentElement.scrollWidth-innerWidth,
           tableWidth:rect.width,firstWidth:first.width,
+          firstWhiteSpace:firstStyle.whiteSpace,
+          firstWordBreak:firstStyle.wordBreak,
+          keyType:proseKey,
           display:getComputedStyle(t).display,
           header:getComputedStyle(t.tHead).display,body:getComputedStyle(t.tBodies[0]).display};
       });
@@ -115,6 +120,7 @@ try {
       assert.ok(props,label+' authored table exists');
       assert.deepEqual(props.heads,['Статус','Что обычно остаётся особенно сильным','Что заметно меняется'],
         label+' exactly three authored column headings');
+      assert.equal(props.keyType,'prose',label+' prose key explicitly opted in');
       assert.equal(props.rows,5,label+' five source comparison rows');
       assert.equal(props.cells,15,label+' all source cells kept');
       assert.equal(props.heads.length,3,label+' original column headings');
@@ -127,6 +133,10 @@ try {
         assert.ok(props.tableWidth<=width,label+' cards inside viewport');
       }else{
         assert.notEqual(props.body,'grid',label+' full desktop table');
+        assert.equal(props.firstWhiteSpace,'normal',label+' no legacy nowrap on long Russian status labels');
+        assert.equal(props.firstWordBreak,'normal',label+' prose words do not split at arbitrary letters');
+        assert.ok(props.firstWidth<=props.tableWidth*0.43,
+          label+' prose key does not consume half the table: '+props.firstWidth+'/'+props.tableWidth);
       }
       const semantic=article.getByRole('table',{
         name:'Семейные отношения и обязанности в разные периоды взрослой жизни'
@@ -136,7 +146,7 @@ try {
       assert.deepEqual(accessibleHeaders.map(x=>x.trim()),[
         'Статус','Что обычно остаётся особенно сильным','Что заметно меняется'
       ],label+' original column headers in accessibility tree');
-      if(width===320||width===390||width===768){
+      if(width===320||width===390||width===701||width===768){
         const cellTable=article.locator('article[data-teen-series-article] table[data-responsive-layout]');
         await cellTable.scrollIntoViewIfNeeded();
         await article.screenshot({path:path.join(shots,engine+'-'+width+'-adult-table.jpg'),

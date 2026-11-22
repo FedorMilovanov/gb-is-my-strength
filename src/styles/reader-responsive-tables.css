@@ -5,6 +5,28 @@
  * All column names are copied from the authored <th> into data-label.
  * Opt-in owners: article-body and teen-series-prose. No other route is enrolled.
  */
+/*
+ * Wide/desktop layout has two different semantic first-column types.
+ * Chronologies (Gill dates) stay compact. Long prose status labels must wrap
+ * normally instead of inheriting the legacy compare-table nowrap column.
+ */
+@media (min-width: 701px) {
+  :is(.article-body, .teen-series-prose)
+  table[data-responsive-layout="stacked-prose"][data-key-type="prose"]
+  > tbody > tr > td:first-child {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    inline-size: 28%;
+  }
+
+  :is(.article-body, .teen-series-prose)
+  table[data-responsive-layout="stacked-prose"][data-key-type="prose"]
+  > tbody > tr > td:not(:first-child) {
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+}
 @media (max-width: 700px) {
   :is(.article-body, .teen-series-prose) .table-scroll:has(> table[data-responsive-layout="stacked-prose"]) {
     overflow: visible;
