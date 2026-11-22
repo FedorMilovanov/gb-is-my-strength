@@ -1,0 +1,6 @@
+{"name":"hybrid-1280-kod","hrailVis":true,"hrailRight":301,"bodyLeft":315,"itemsClippedBottom":4}
+{"name":"hybrid-1280-gill","railVis":true,"mobBarVis":true}
+{"name":"search-no-pagefind-and-320-tab","req404":[{"status":404,"url":"/pagefind/pagefind.js"}],"abrahamItems":1,"lastTabRight":null,"vw":320}
+{"name":"nagornaya-bar-theme-tap","htmlClass":"dark","htmlData":{"readerTheme":"dark","readerTextMode":"rich","readerMotion":"system","readerMeasure":"normal","readerFontFamily":"lora","gbFavoriteStoreReady":"1","gbReaderProjectionReady":"1","gbPrintGeometryOwner":"3","gbReaderActionsReady":"1","gbReaderTtsReady":"2","gbArticleTooltipsOwner":"article-inline-tooltip","gbArticleTooltipsVersion":"20","gbHeadingAnchorsReady":"1","gbHeadingNamesReady":"1","gbArticleInteractionsReady":"1"},"bodyBg":"rgb(14, 17, 22)","btocBg":"rgb(31, 26, 21)","btocLinkFg":"rgb(216, 118, 6)"}
+{"name":"plain-mode-gill","mode":"plain","fnDisplay":"inline-flex","gtBorder":"dotted"}
+{"name":"plain-mode-kod","mode":"plain","fnDisplay":"inline-block"}
