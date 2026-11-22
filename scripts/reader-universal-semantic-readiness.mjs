@@ -24,7 +24,7 @@ const source=JSON.parse(fs.readFileSync(path.join(root,'data/scripture-search-in
 assert(Array.isArray(source.references),'Source index not parseable');
 const readerInspector=path.join(root,'research/reader-w57-pilot/assets/reader_universal_contract.js');
 const OUT=process.env.READER_COVERAGE_REPORT || path.join(root,'reports/reader-universal-semantic-readiness.json');
-const EXCLUDED=/^\/(?:nagornaya|journal|updates)(?:\/|$)/;
+const EXCLUDED=/^\/(?:nagornaya|novosti|journal|updates|news|g3)(?:\/|$)/i;
 const APP=/^\/(?:app|map|karty|rodosloviye)(?:\/|$)/;
 function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const f=path.join(d,e.name);return e.isDirectory()?walk(f):e.isFile()&&e.name==='index.html'?[f]:[];});}
 function asRoute(f){const r=path.relative(dist,path.dirname(f)).replaceAll('\\','/');return r==='.'?'/':'/'+r.replace(/^\/|\/$/g,'')+'/';}
