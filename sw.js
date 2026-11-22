@@ -45,7 +45,7 @@ const PRECACHE_ASSETS = [
   '/js/floating-cluster-controller.js?v=81cb2e7f',
   '/js/reader-preferences-head.js?v=bd4355e3',
   '/js/reader-preferences.js?v=f7880f37',
-  '/js/reader-state.js?v=b3deb501',
+  '/js/reader-state.js?v=af589b59',
   '/pagefind/pagefind.js',
   '/favicon.ico',
   '/favicon-48.png',
