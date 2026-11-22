@@ -720,6 +720,26 @@ try {
         };
         const focused = async (expected, isReturn = false) => {
           await settleMobile();
+          // Wait for WebKit native smooth keyboard-focus scrolling to actually
+          // finish; do not scroll or refocus from the harness. No-JS has no
+          // timers, so poll from the driver rather than waitForFunction.
+          let nativeVisible = false;
+          for (let step = 0; step < 45; step++) {
+            nativeVisible = await toc.evaluate(() => {
+              const active = document.activeElement, rect = active.getBoundingClientRect();
+              const style = getComputedStyle(active);
+              const margin = Math.max(0, (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0));
+              const header = document.querySelector('.mcp-top');
+              const hs = header && getComputedStyle(header);
+              const headerBottom = hs && hs.display !== 'none' && hs.visibility !== 'hidden' && Number(hs.opacity) > 0
+                ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
+              return rect.top - margin >= headerBottom - 1 && rect.bottom + margin <= innerHeight + 1;
+            });
+            if (nativeVisible) break;
+            await page.waitForTimeout(75);
+          }
+          assert.ok(nativeVisible, 'native keyboard focus remains offscreen after bounded real-scroll settling');
+          await settleMobile();
           const state = await toc.evaluate((el) => {
             const active = document.activeElement, style = getComputedStyle(active), nav = el.querySelector('nav');
             const r = nav.getBoundingClientRect(), header = document.querySelector('.mcp-top');
