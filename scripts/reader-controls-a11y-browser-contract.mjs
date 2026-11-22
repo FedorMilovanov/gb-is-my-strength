@@ -716,6 +716,48 @@ async function auditGillVisibleGaps(browser, origin, width) {
   } finally {await context.close()}
 }
 
+async function auditGillAnalyticsCenter(browser, origin, width) {
+  const context = await browser.newContext({ viewport: {width,height:844},
+    isMobile:true,hasTouch:true,reducedMotion:'reduce' });
+  const page=await context.newPage(),checks=[];
+  try {
+    const response=await page.goto(origin+'/articles/dzhon-gill-chast-2-uchenyi/',
+      {waitUntil:'load',timeout:45000});
+    const geometry=await page.evaluate(()=>{
+      const bar=document.querySelector('.mobile-top-bar');
+      const slot=bar?.querySelector('.mobile-top-slot');
+      const button=slot?.querySelector('.reader-mobile-menu-trigger');
+      const icon=button?.querySelector('svg'),label=button?.querySelector('span');
+      const rate=bar?.querySelector('#mobSpdBadge');
+      if(!bar||!slot||!button||!icon||!label||!rate)return null;
+      const R=e=>e.getBoundingClientRect();
+      const a=R(icon),b=R(label),s=R(slot),r=R(rate),t=R(button);
+      const visibleLabel=getComputedStyle(label).display!=='none'&&b.width>0;
+      const left=visibleLabel?Math.min(a.left,b.left):a.left;
+      const right=visibleLabel?Math.max(a.right,b.right):a.right;
+      const center=(left+right)/2;
+      const picked=document.elementFromPoint(center,(t.top+t.bottom)/2)?.closest('button');
+      return {
+        offset:center-innerWidth/2,
+        gapToRate:r.left-right,
+        contained:left>=s.left-1&&right<=s.right+1,
+        fullLabel:!visibleLabel||(label.textContent?.trim()==='Аналитика'&&
+          label.scrollWidth<=label.clientWidth+1),
+        labelVisible:visibleLabel,
+        hit:picked===button,
+        overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+      };
+    });
+    record(checks,'gill-analytics-center-'+width,
+      'Analytics is viewport-centered when space allows; narrow labels remain complete and tappable',
+      response?.status()===200&&Boolean(geometry&&
+        (width<500||Math.abs(geometry.offset)<=1)&&
+        geometry.gapToRate>=8&&geometry.contained&&
+        geometry.fullLabel&&geometry.hit&&geometry.overflow===0),geometry);
+    return {caseId:'gill-analytics-'+width,checks};
+  } finally {await context.close()}
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -724,6 +766,7 @@ try {
   for (const route of ROUTES.slice(0, 2)) cases.push(await auditDesktop(browser, origin, route));
   cases.push(await auditGillWideSpeed(browser, origin));
   for (const width of [320,390,526]) cases.push(await auditGillVisibleGaps(browser, origin, width));
+  for (const width of [320,390,430,500,526,768]) cases.push(await auditGillAnalyticsCenter(browser, origin, width));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {

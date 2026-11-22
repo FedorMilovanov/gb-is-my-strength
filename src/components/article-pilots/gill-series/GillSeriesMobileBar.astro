@@ -332,6 +332,19 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .mobile-top-slot {
     position:relative;flex:1 1 auto;min-width:0;z-index:3;
   }
+  /* W103: Analytics was 45px LEFT of the viewport centre because the
+     trailing controls use two more 44px targets than the leading controls.
+     Centre the VISIBLE icon+label on the full bar whenever enough space
+     exists; reserve 102px for its unchanged text and right padding.
+     Narrow devices keep a fully legible, non-overlapping label instead
+     of forcing an absolute 50vw position over the rate/Play buttons.
+     No changes to control hitboxes, speed rail or W57 desktop. */
+  @media (min-width:361px) and (max-width:84.999em) {
+    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
+      box-sizing:border-box;
+      padding-inline-start:clamp(9px,calc(100% - 102px),99px) !important;
+    }
+  }
   /* Original Gill #83439219: the rail occupies ONLY the central slot.
      Back/Home stay visible, clickable, keyboard-focusable during the swap. */
   [data-gill-v16] .mobile-top-bar.speed-open .mobile-top-slot .reader-mobile-speedrail {
