@@ -1,0 +1,36 @@
+{
+  "base": "f908e289e59b423f98d129b20552e6d6d3092b04",
+  "patchApplyOrder": [
+    {
+      "path": "research/reader-gb-focus-audit-20261122/focus-candidate/native-anchor-focus-f908e289.patch",
+      "sha256": "78b260133afe9f697fe609a3b5461cfeda8dd5a719707fd6a1210226f30c7ba3"
+    },
+    {
+      "path": "research/reader-gb-focus-audit-20261122/marker-candidate/exact-location-25830c64.patch",
+      "sha256": "ed65fbbd40b2d3abf8642797ecd8b839fb511ece43d6efb045e9a6d39f5b07da"
+    }
+  ],
+  "changedTrackedSources": [
+    {
+      "file": "js/floating-cluster-controller.js",
+      "baselineBlob": "4f7f6804c2049b986c1ae8016ad73ad114086f19",
+      "candidateBlob": "7d820bb4df7522c43a25f9cb02b94e9052b728e9"
+    },
+    {
+      "file": "src/components/article-pilots/gill-series/GillPartTocOverlay.astro",
+      "baselineBlob": "f2f76e153d5b594b5c588726f9e6b20b4ee2e170",
+      "candidateBlob": "9b4fefd616548d9f63f22cca7f9dd3559af0c733"
+    },
+    {
+      "file": "src/lib/asset-version.js",
+      "baselineBlob": "f932bf1cdc9df760a1c3ee654f628cd75a47b872",
+      "candidateBlob": "08fe7a906911379e27c20521d2315ebc856681f1"
+    },
+    {
+      "file": "sw.js",
+      "baselineBlob": "330aa3296daf10c36008bee79bbd11c23a52cdfc",
+      "candidateBlob": "ef0e9d2f6da6e3d91f4b37a1dddaa8607f2e5944"
+    }
+  ],
+  "controllerMd5Prefix": "41284ba0"
+}
