@@ -176,13 +176,13 @@ async function gillPlayOptics(page) {
         const icon=el('#mobSettingsBtn svg')?.getBoundingClientRect();
         return chip && icon ? icon.x-chip.right : -1;
       })(),
-      chipPointerHitsBadge: (() => {
+      chipPointerHitsPlay: (() => {
         const chip=el('.reader-mobile-speed-chip');
-        const badge=el('.reader-mobile-speed-badge');
-        if (!chip || !badge) return false;
+        const play=el('.reader-mobile-play');
+        if (!chip || !play) return false;
         const r=chip.getBoundingClientRect();
         const hit=document.elementFromPoint(r.left+3,r.top+r.height/2);
-        return hit===badge || badge.contains(hit);
+        return hit===play || play.contains(hit);
       })(),
       playTriangleSafe: (() => {
         const play=el('.reader-mobile-play');
@@ -250,17 +250,17 @@ async function auditSlot(page, routeId, selectors, checks) {
       Math.abs(anchor.y - after.anchors[i].y) < .5);
     record(checks, `${prefix}-25`, 'Play, bookmark, Back, Home and Marginalia do not shift when speeds expand',
       fixed, { before: gillBefore.anchors, after: after?.anchors });
-    record(checks, `${prefix}-33`, 'overlapping rate hitbox never steals a Play triangle tap',
+    record(checks, `${prefix}-33`, 'painted rate echo never steals Play arc taps; separate speed target remains clickable',
       gillBefore.playTriangleSafe === true && gillBefore.rateCenterClickable === true &&
-      gillBefore.chipPointerHitsBadge === true,
+      gillBefore.chipPointerHitsPlay === true,
       { playTriangleSafe: gillBefore.playTriangleSafe,
         rateCenter: gillBefore.rateCenterClickable,
-        paintedChip: gillBefore.chipPointerHitsBadge });
+        paintedChipDelegatesToPlay: gillBefore.chipPointerHitsPlay });
     // W99: Keep separate physical 44px targets and DOM/tab order
     // [speed, Play, Settings]. Play must be adjacent to Settings instead
     // of stranded one full button to the left. The visible speed chip
     // alone overlaps the lower-right Play arc, never Settings.
-    record(checks, `${prefix}-31`, 'Gill rate then Play then Settings: adjacent disjoint 44px controls and clickable chip',
+    record(checks, `${prefix}-31`, 'Gill rate then Play then Settings: distinct 44px controls and decorative rate echo',
       gillBefore.compound?.width >= 87.5 && gillBefore.compound?.width <= 88.5 &&
       gillBefore.rateBadge?.width >= 43.5 && gillBefore.rateBadge?.width <= 44.5 &&
       gillBefore.rateBadge?.height >= 43.5 && gillBefore.rateBadge?.height <= 44.5 &&
@@ -272,11 +272,11 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore.rateChip?.x >= gillBefore.anchors[3]?.x - .5 &&
       gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5 &&
       gillBefore.rateChip?.bottom <= gillBefore.compound.bottom &&
-      gillBefore.chipPointerHitsBadge && gillBefore.playTriangleSafe &&
+      gillBefore.chipPointerHitsPlay && gillBefore.playTriangleSafe &&
       gillBefore.rateCenterClickable,
       { compound: gillBefore.compound, play: gillBefore.anchors[3],
         badge: gillBefore.rateBadge, chip: gillBefore.rateChip, settings: gillBefore.settingsButton,
-        chipClickable: gillBefore.chipPointerHitsBadge,
+        chipDelegatesToPlay: gillBefore.chipPointerHitsPlay,
         playTriangleSafe: gillBefore.playTriangleSafe, rateCenterClickable: gillBefore.rateCenterClickable });
     record(checks, `${prefix}-32`, 'historical W77 fine golden progress ring with smooth transition',
       Number.parseFloat(gillBefore.ringTrackWidth) >= 2.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.1 &&
@@ -299,8 +299,8 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore.speedGapToSettings >= 12 && gillBefore.speedGapToSettings <= 30 &&
       gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5,
       {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
-    record(checks, `${prefix}-30`, 'Visible speed chip overlap clicks its badge, never triggers Play',
-      gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });
+    record(checks, `${prefix}-30`, 'painted 1x chip is visual only; tap on its Play-side arc targets Play',
+      gillBefore?.chipPointerHitsPlay === true,{ chipDelegatesToPlay:gillBefore?.chipPointerHitsPlay });
     record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
       gillBefore.playBorder === '0px' && gillBefore.playShadow === 'none' && gillBefore.ringOpacity > .95 &&
         gillBefore.ring?.width === 32 && gillBefore.anchors[3]?.width === 44,
@@ -521,6 +521,10 @@ async function auditMobile(browser, origin, routeInfo) {
           playOwner: ownerAt(p.x + p.width / 2, p.y + p.height / 2),
           gearOwner: ownerAt(s.x + 2, s.y + s.height / 2),
           chipOwner: ownerAt(c.x + c.width / 2, c.y + c.height / 2),
+          chipPointerEvents: getComputedStyle(chip).pointerEvents,
+          playTapGrid: Array.from({ length: 16 }, (_, i) => ownerAt(
+            p.x + p.width * ((i % 4) + .5) / 4,
+            p.y + p.height * (Math.floor(i / 4) + .5) / 4)),
           ringStroke: Number(getComputedStyle(play.querySelector('.gb-ember__ring-progress')).strokeWidth.replace('px','')),
         };
       });
@@ -528,8 +532,14 @@ async function auditMobile(browser, origin, routeInfo) {
         Boolean(tight && tight.widths.every(v => v >= 44) && tight.heights.every(v => v >= 44) &&
           tight.inline && tight.paintGap <= 44.5 && tight.chipInBounds &&
           tight.rateOwner === 'mobSpdBadge' && tight.playOwner === 'play' &&
-          tight.gearOwner === 'mobSettingsBtn' && tight.chipOwner === 'mobSpdBadge' &&
+          tight.gearOwner === 'mobSettingsBtn' && tight.chipOwner === 'play' &&
+          tight.chipPointerEvents === 'none' &&
           tight.ringStroke >= 3.5 && tight.ringStroke <= 3.7), tight);
+      record(checks, 'gill-mobile-15', 'painted 1x echo cannot steal Play taps; speed retains separate 44px hit area',
+        Boolean(tight && tight.playTapGrid.length === 16 &&
+          tight.playTapGrid.filter(v => v === 'play').length >= 13 &&
+          tight.playTapGrid.every(v => v === 'play' || v === '') &&
+          tight.rateOwner === 'mobSpdBadge'), tight);
     }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
     for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);

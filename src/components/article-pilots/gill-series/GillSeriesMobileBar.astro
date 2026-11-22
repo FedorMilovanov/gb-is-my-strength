@@ -321,9 +321,9 @@ const page = config.pages[pageId];
     border-radius:999px;background:#544333;color:#fff9f0;
     font:720 8.5px/1 "Source Sans 3",system-ui,sans-serif;
     white-space:nowrap;box-shadow:0 1px 5px rgba(35,24,17,.13);
-    /* The visible chip delegates to the dedicated rate button.
-       It never projects into the neighbouring Settings hit area. */
-    pointer-events:auto;cursor:pointer;
+    /* This painted rate echo overlaps the lower arc of Play. Never let
+       it steal Play taps: the separate 44px speed button owns rate changes. */
+    pointer-events:none;cursor:default;
   }
   html.dark [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
     background:#c7a170;color:#191617;border-color:#312826;
