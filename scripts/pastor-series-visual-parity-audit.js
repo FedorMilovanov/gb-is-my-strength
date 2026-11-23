@@ -64,7 +64,7 @@ const nativeText = [head, chrome, main, cards, stats, end].join('\n');
 // the contract constants below pin the canonical totals so silent registry
 // drift fails instead of silently re-basing the guard.
 const CONTRACT_CORE_TOTAL_MIN = 157;
-const CONTRACT_COMPANION_MIN = 15;
+const CONTRACT_COMPANION_MIN = 35;
 const expectedCore = [
   { roman: 'I', slug: '20-antisovetov-pastoru' },
   { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy' },
