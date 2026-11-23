@@ -91,6 +91,21 @@ const uniqueReaderUrls = new Set(readerUrls);
 requireValue(readerUrls.length === 40, `expected exactly 40 reader URLs, found ${readerUrls.length}`);
 requireValue(uniqueReaderUrls.size === 40, `reader URLs must be unique; found ${uniqueReaderUrls.size}`);
 
+// The product bibliography still owns exactly 40 URLs. A selected third
+// tuple field may point a case to an existing Research record, but may never
+// synthesize a court locator, add an unverified document or break the source
+// IDs frozen in the 21-case manifest.
+const caseSourceIds = new Set([...caseBlock.matchAll(/sources:\s*\[([^\]]+)\]/g)]
+  .flatMap((match) => [...match[1].matchAll(/'([^']+)'/g)].map((item) => item[1])));
+const mappedSourceIds = [...sourceBlock.matchAll(/,\s*'([A-Z0-9]+(?:-[A-Z0-9]+)+)'\s*\]/g)]
+  .map((match) => match[1]);
+requireValue(mappedSourceIds.length === 18, `expected 18 case-local links backed by existing reader URLs, found ${mappedSourceIds.length}`);
+requireValue(new Set(mappedSourceIds).size === mappedSourceIds.length, 'duplicate case-local source ID');
+requireValue(mappedSourceIds.every((id) => caseSourceIds.has(id)), 'case-local link does not belong to any core case source pair');
+requireValue(mappedSourceIds.every((id) => !/^W2-(?:KUZ|SHI)-/.test(id)), 'unverified Russian court locator was promoted into a clickable link');
+requireValue(draft.includes('const readerLinksForCard = (card: CaseCard)'), 'case-local source join is not rendered');
+requireValue((draft.match(/readerLinksForCard\(card\)\.map/g) ?? []).length === 5, 'source links must reach every ordinary case-grid group');
+
 const allowedHosts = [
   'guidepostsolutions.com', 'sbc.net', 'willowcreek.org', 'childabuseroyalcommission.gov.au',
   'crechurches.org', 'thirtyoneeight.org', 'swbts.edu', 'liberty.edu', 'churchofengland.org',
