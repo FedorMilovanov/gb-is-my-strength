@@ -1,0 +1,929 @@
+{
+  "events": [
+    {
+      "name": "beforeprint",
+      "media": false,
+      "elems": [
+        {
+          "cls": "summary-card",
+          "flow": "atomic",
+          "monolith": false,
+          "display": "block",
+          "br": "auto",
+          "w": 311,
+          "h": 755
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 651
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 182
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 101
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 104
+        }
+      ],
+      "report": {
+        "version": 1,
+        "prepared": true,
+        "route": "/articles/anatomiya-padeniya-pyat-stadiy/",
+        "pageContentHeight": 1017,
+        "stats": {
+          "candidates": 22,
+          "atomic": 6,
+          "splittable": 0,
+          "rows": 0,
+          "keepNext": 33,
+          "tailPairs": 0,
+          "closingGroups": 0,
+          "terminalFlow": 9,
+          "terminalFollowers": 3,
+          "terminalAnchors": 1,
+          "nonTerminalTails": 0,
+          "tails": 1
+        },
+        "geometry": {
+          "version": 3,
+          "status": "deferred",
+          "reason": "screen-media",
+          "pageContentHeight": 1017,
+          "considered": 0,
+          "stabilized": 0,
+          "decisions": []
+        }
+      }
+    },
+    {
+      "name": "change:false",
+      "media": false,
+      "elems": [
+        {
+          "cls": "summary-card",
+          "flow": null,
+          "monolith": false,
+          "display": "block",
+          "br": "auto",
+          "w": 311,
+          "h": 755
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 651
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 182
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 101
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 104
+        }
+      ],
+      "report": {
+        "version": 1,
+        "prepared": true,
+        "route": "/articles/anatomiya-padeniya-pyat-stadiy/",
+        "pageContentHeight": 1017,
+        "stats": {
+          "candidates": 22,
+          "atomic": 6,
+          "splittable": 0,
+          "rows": 0,
+          "keepNext": 33,
+          "tailPairs": 0,
+          "closingGroups": 0,
+          "terminalFlow": 9,
+          "terminalFollowers": 3,
+          "terminalAnchors": 1,
+          "nonTerminalTails": 0,
+          "tails": 1
+        },
+        "geometry": {
+          "version": 3,
+          "status": "deferred",
+          "reason": "screen-media",
+          "pageContentHeight": 1017,
+          "considered": 0,
+          "stabilized": 0,
+          "decisions": []
+        }
+      }
+    },
+    {
+      "name": "change:true",
+      "media": true,
+      "elems": [
+        {
+          "cls": "summary-card",
+          "flow": "atomic",
+          "monolith": false,
+          "display": "block",
+          "br": "avoid",
+          "w": 632,
+          "h": 611
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 593,
+          "h": 481
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 593,
+          "h": 86
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 593,
+          "h": 131
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 593,
+          "h": 86
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 593,
+          "h": 86
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 593,
+          "h": 67
+        }
+      ],
+      "report": {
+        "version": 1,
+        "prepared": true,
+        "route": "/articles/anatomiya-padeniya-pyat-stadiy/",
+        "pageContentHeight": 1017,
+        "stats": {
+          "candidates": 22,
+          "atomic": 7,
+          "splittable": 0,
+          "rows": 0,
+          "keepNext": 33,
+          "tailPairs": 1,
+          "closingGroups": 1,
+          "terminalFlow": 4,
+          "terminalFollowers": 0,
+          "terminalAnchors": 1,
+          "nonTerminalTails": 0,
+          "tails": 1
+        }
+      }
+    },
+    {
+      "name": "afterprint",
+      "media": false,
+      "elems": [
+        {
+          "cls": "summary-card",
+          "flow": null,
+          "monolith": false,
+          "display": "block",
+          "br": "auto",
+          "w": 311,
+          "h": 755
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 651
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 182
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 101
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 104
+        }
+      ],
+      "report": {
+        "version": 1,
+        "prepared": true,
+        "route": "/articles/anatomiya-padeniya-pyat-stadiy/",
+        "pageContentHeight": 1017,
+        "stats": {
+          "candidates": 22,
+          "atomic": 7,
+          "splittable": 0,
+          "rows": 0,
+          "keepNext": 33,
+          "tailPairs": 1,
+          "closingGroups": 1,
+          "terminalFlow": 4,
+          "terminalFollowers": 0,
+          "terminalAnchors": 1,
+          "nonTerminalTails": 0,
+          "tails": 1
+        }
+      }
+    },
+    {
+      "name": "change:false",
+      "media": false,
+      "elems": [
+        {
+          "cls": "summary-card",
+          "flow": null,
+          "monolith": false,
+          "display": "block",
+          "br": "auto",
+          "w": 311,
+          "h": 755
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 651
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 182
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 101
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 120
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "monolith": false,
+          "display": "flex",
+          "br": "auto",
+          "w": 309,
+          "h": 104
+        }
+      ],
+      "report": {
+        "version": 1,
+        "prepared": true,
+        "route": "/articles/anatomiya-padeniya-pyat-stadiy/",
+        "pageContentHeight": 1017,
+        "stats": {
+          "candidates": 22,
+          "atomic": 7,
+          "splittable": 0,
+          "rows": 0,
+          "keepNext": 33,
+          "tailPairs": 1,
+          "closingGroups": 1,
+          "terminalFlow": 4,
+          "terminalFollowers": 0,
+          "terminalAnchors": 1,
+          "nonTerminalTails": 0,
+          "tails": 1
+        }
+      }
+    }
+  ],
+  "preps": [
+    {
+      "media": false,
+      "stats": {
+        "candidates": 22,
+        "atomic": 6,
+        "splittable": 0,
+        "rows": 0,
+        "keepNext": 33,
+        "tailPairs": 0,
+        "closingGroups": 0,
+        "terminalFlow": 9,
+        "terminalFollowers": 3,
+        "terminalAnchors": 1,
+        "nonTerminalTails": 0,
+        "tails": 1
+      },
+      "nodes": [
+        {
+          "cls": "summary-card",
+          "flow": "atomic",
+          "display": "block",
+          "breakInside": "auto",
+          "h": 755,
+          "w": 311
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 651,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 120,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 96,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 182,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 158,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 101,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 77,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 120,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 96,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 104,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 80,
+          "w": 286
+        }
+      ]
+    },
+    {
+      "media": false,
+      "stats": {
+        "candidates": 22,
+        "atomic": 6,
+        "splittable": 0,
+        "rows": 0,
+        "keepNext": 33,
+        "tailPairs": 0,
+        "closingGroups": 0,
+        "terminalFlow": 9,
+        "terminalFollowers": 3,
+        "terminalAnchors": 1,
+        "nonTerminalTails": 0,
+        "tails": 1
+      },
+      "nodes": [
+        {
+          "cls": "summary-card",
+          "flow": "atomic",
+          "display": "block",
+          "breakInside": "auto",
+          "h": 755,
+          "w": 311
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 651,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 120,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 96,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 182,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 158,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 101,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 77,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 120,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 96,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 104,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 80,
+          "w": 286
+        }
+      ]
+    },
+    {
+      "media": false,
+      "stats": {
+        "candidates": 22,
+        "atomic": 6,
+        "splittable": 0,
+        "rows": 0,
+        "keepNext": 33,
+        "tailPairs": 0,
+        "closingGroups": 0,
+        "terminalFlow": 9,
+        "terminalFollowers": 3,
+        "terminalAnchors": 1,
+        "nonTerminalTails": 0,
+        "tails": 1
+      },
+      "nodes": [
+        {
+          "cls": "summary-card",
+          "flow": "atomic",
+          "display": "block",
+          "breakInside": "auto",
+          "h": 755,
+          "w": 311
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 651,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 120,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 96,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 182,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 158,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 101,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 77,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 120,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 96,
+          "w": 286
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 104,
+          "w": 309
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 80,
+          "w": 286
+        }
+      ]
+    },
+    {
+      "media": true,
+      "stats": {
+        "candidates": 22,
+        "atomic": 7,
+        "splittable": 0,
+        "rows": 0,
+        "keepNext": 33,
+        "tailPairs": 1,
+        "closingGroups": 1,
+        "terminalFlow": 4,
+        "terminalFollowers": 0,
+        "terminalAnchors": 1,
+        "nonTerminalTails": 0,
+        "tails": 1
+      },
+      "nodes": [
+        {
+          "cls": "summary-card",
+          "flow": "atomic",
+          "display": "block",
+          "breakInside": "avoid",
+          "h": 611,
+          "w": 632
+        },
+        {
+          "cls": "summary-card__body",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 481,
+          "w": 593
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 86,
+          "w": 593
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 62,
+          "w": 566
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 131,
+          "w": 593
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 107,
+          "w": 566
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 86,
+          "w": 593
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 62,
+          "w": 566
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 86,
+          "w": 593
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 62,
+          "w": 566
+        },
+        {
+          "cls": "summary-card__item",
+          "flow": null,
+          "display": "flex",
+          "breakInside": "auto",
+          "h": 67,
+          "w": 593
+        },
+        {
+          "cls": "summary-card__text",
+          "flow": null,
+          "display": "block",
+          "breakInside": "auto",
+          "h": 43,
+          "w": 566
+        }
+      ]
+    }
+  ]
+}
