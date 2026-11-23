@@ -1,0 +1,261 @@
+{
+  "base": "http://127.0.0.1:8083",
+  "results": [
+    {
+      "width": 320,
+      "method": "direct",
+      "run": 1,
+      "copy": 1,
+      "file": "320-direct-1-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 320,
+      "method": "direct",
+      "run": 1,
+      "copy": 2,
+      "file": "320-direct-1-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 320,
+      "method": "direct",
+      "run": 2,
+      "copy": 1,
+      "file": "320-direct-2-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 320,
+      "method": "direct",
+      "run": 2,
+      "copy": 2,
+      "file": "320-direct-2-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 320,
+      "method": "button",
+      "run": 1,
+      "copy": 1,
+      "file": "320-button-1-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 320,
+      "method": "button",
+      "run": 1,
+      "copy": 2,
+      "file": "320-button-1-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 320,
+      "method": "button",
+      "run": 2,
+      "copy": 1,
+      "file": "320-button-2-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 320,
+      "method": "button",
+      "run": 2,
+      "copy": 2,
+      "file": "320-button-2-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 390,
+      "method": "direct",
+      "run": 1,
+      "copy": 1,
+      "file": "390-direct-1-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 390,
+      "method": "direct",
+      "run": 1,
+      "copy": 2,
+      "file": "390-direct-1-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 390,
+      "method": "direct",
+      "run": 2,
+      "copy": 1,
+      "file": "390-direct-2-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 390,
+      "method": "direct",
+      "run": 2,
+      "copy": 2,
+      "file": "390-direct-2-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": null
+    },
+    {
+      "width": 390,
+      "method": "button",
+      "run": 1,
+      "copy": 1,
+      "file": "390-button-1-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 390,
+      "method": "button",
+      "run": 1,
+      "copy": 2,
+      "file": "390-button-1-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 390,
+      "method": "button",
+      "run": 2,
+      "copy": 1,
+      "file": "390-button-2-1.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    },
+    {
+      "width": 390,
+      "method": "button",
+      "run": 2,
+      "copy": 2,
+      "file": "390-button-2-2.pdf",
+      "initial": {
+        "mediaPrint": false,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "mobileButton": true
+      },
+      "calls": 1
+    }
+  ]
+}
