@@ -87,6 +87,9 @@ assert.ok(playPosition >= 0 && playPosition < searchPosition && searchPosition <
 assert.doesNotMatch(partOverlay, /gbr-marginalia-search/, 'Analytics must not include a competing search action');
 assert.match(mobileBar, /initGillCompactFavouritePlacement\(\)/, 'compact mobile must preserve one favourite control');
 assert.match(mobileBar, /compact\.addEventListener\('change', place\)/, 'Save must return to top when resizing');
+// W126: no individual SVG offset is allowed to falsify a uniform 44px grid.
+assert.doesNotMatch(mobileBar, /\.mobile-top-save svg\s*\{\s*translate:\s*-4px/, 'Save icon must not be nudged 4px left');
+assert.doesNotMatch(mobileBar, /\.reader-mobile-action--top-settings svg[^\{]*\{[^}]*transform:translateX\(-[48]px\)/, 'Settings icon must not receive a hidden nudge');
 // W125: do not regress to centring the full flex slot or to a localhost link
 // that displays the older desktop unless ?reader-pilot=1 was hand-added.
 assert.match(mobileBar, /initGillAnalyticsOpticalAlignment\(\)/, 'painted Analytics alignment must run');

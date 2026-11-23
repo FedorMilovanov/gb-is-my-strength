@@ -42,7 +42,7 @@ try{
  await p.waitForURL(url=>url.pathname===ROUTE,{timeout:10000});
  await p.waitForFunction(()=>document.activeElement?.tagName==='P'||document.activeElement?.tagName==='LI'||document.activeElement?.tagName==='BLOCKQUOTE',null,{timeout:12000});
  // W57 is loaded by a deferred pilot bootstrap; do not classify a still-hydrating page as a desktop rollback.
- if(kind==='desktop-W57')await p.waitForFunction(()=>document.body.classList.contains('np-w57-ready'),null,{timeout:25000});
+ if(kind==='desktop-W57')await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true,null,{timeout:25000});
  const state=await p.evaluate(()=>({
    pathname:location.pathname,href:location.href,w57:document.body.classList.contains('np-w57-ready'),hash:location.hash,focusTag:document.activeElement?.tagName,
    text:document.activeElement?.textContent?.slice(0,140),selected:window.getSelection()?.toString()?.slice(0,75),
@@ -71,7 +71,7 @@ try{
      await p.keyboard.press('ArrowDown');
    }
    await p.keyboard.press('Enter');
-   await p.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&new URLSearchParams(location.search).get('reader-pilot')==='1'&&window.getSelection()?.toString().includes('Маришальского'),null,{timeout:25000});
+   await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true&&new URLSearchParams(location.search).get('reader-pilot')==='1'&&window.getSelection()?.toString().includes('Маришальского'),null,{timeout:25000});
    ck(name+' W57 keyboard Enter preserves Reader and exact paragraph',await p.evaluate(()=>
      document.body.classList.contains('np-w57-ready')&&
      window.getSelection()?.toString().includes('Маришальского')&&

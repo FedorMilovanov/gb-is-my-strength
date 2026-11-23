@@ -545,19 +545,11 @@ const page = config.pages[pageId];
     outline:2px solid currentColor;outline-offset:-3px;
   }
 }
-/* Optical spacing: independent 44px targets for Play, Search, Settings. */
+/* W126: one canonical 44px icon-centre grid for the complete top-right
+   group. No per-icon translations: Search, Settings and Save share the
+   same visual pitch; Play's larger 32px ring retains its intended size. */
 @media (min-width:431px) and (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar {gap:2px!important;}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
-  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {
-    transform:translateX(-8px);
-  }
-}
-@media (min-width:361px) and (max-width:430px) {
-  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
-  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {
-    transform:translateX(-4px);
-  }
 }
 @media(max-width:430px) {
   [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
@@ -652,14 +644,6 @@ const page = config.pages[pageId];
   }
 }
 
-@media(max-width:84.999em){
-  /* W102: natural icon centering. The W61 3.5px right shift made the
-   visible ring→Settings gap 6.6px larger than Settings→Bookmark.
-   Measured 390px: 24.1/17.5 before, 20.6/21.0 after.
-   Preserve 44px control boxes and 32px Play SVG. */
-[data-gill-v16] .mobile-top-bar #mobSettingsBtn svg {translate:0 0}
-  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {translate:-4px 0}
-}
 @media(max-width:84.999em){
  [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] {
    background:transparent!important;border-color:transparent!important;box-shadow:none!important;
