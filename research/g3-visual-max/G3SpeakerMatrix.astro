@@ -1,0 +1,33 @@
+---
+// Donor: place alongside matrix-data.json, matrix.css and matrix.js after MAX 0 integration.
+import matrix from './matrix-data.json';
+import { historyCitation, type G3HistorySourceId } from '@/data/journal/g3HistorySources';
+import './matrix.css';
+const years = matrix.years;
+const source = (year: number) => historyCitation(`gnl-${year}` as G3HistorySourceId);
+---
+<section class="g3-matrix" data-g3-matrix aria-label="Проповедники в каталогах G3">
+  <p class="gm-kicker">Архив конференций · 2013–2020</p>
+  <h2>Проповедники в каталогах G3</h2>
+  <p class="gm-intro">Выборка из семи каталогов конференций. Точка ведёт к источнику соответствующего года; прочерк означает только отсутствие имени в этой подборке.</p>
+  <div class="gm-filter" hidden>
+    <label>Имя проповедника<input type="search" placeholder="Например, Вошер" autocomplete="off" /></label>
+    <label>Год конференции<select><option value="">Все годы</option>{years.map(year => <option value={year}>{year}</option>)}</select></label>
+    <button type="button">Сбросить</button>
+  </div>
+  <p class="gm-status" role="status" hidden></p>
+  <div class="gm-head" aria-hidden="true"><span>Имя в каталоге</span>{years.map(year => <span>{year}</span>)}</div>
+  <ul class="gm-list" role="list">
+    {matrix.rows.map(row => <li class="gm-row" data-years={row.years.join(' ')}>
+      <span class="gm-name">{row.name}</span>
+      {years.map(year => row.years.includes(year) ? <span class="gm-cell">
+        <a id={`cite-g3-matrix-${row.id}-${year}`} data-journal-citation href={source(year)} aria-label={`${row.name}, каталог ${year} года`}>
+          <span class="gm-sr">{row.name}, каталог </span><span class="gm-dot" aria-hidden="true"></span><span class="gm-year">{year}</span>
+        </a></span> : <span class="gm-cell gm-empty" aria-hidden="true"><span class="gm-none">—</span></span>)}
+    </li>)}
+  </ul>
+  <p class="gm-foot">Каталоги GNL. Выборка ограничена именами из исторической статьи; не является полным списком участников.</p>
+</section>
+<script>
+  import './matrix.js';
+</script>

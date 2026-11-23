@@ -1,0 +1,5 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=n=>JSON.parse(readFileSync(new URL(n,import.meta.url),'utf8'));
+const m=read('matrix-data.json'), w=read('catalog-witness.json'), f=read('finance-proposal.json');
+assert.equal(m.rows.length,15);assert.equal(new Set(m.rows.map(r=>r.id)).size,15);const pairs=m.rows.flatMap(r=>r.years.map(y=>[r.id,y]));assert.equal(pairs.length,37);assert.equal(new Set(pairs.map(p=>p.join('/'))).size,37);for(const [id,y] of pairs){assert(m.years.includes(y));assert(w.years[y].records[id]);}assert.equal(Object.values(w.years).reduce((n,y)=>n+Object.keys(y.records).length,0),37);assert.equal(f.state,'PUBLICATION_HOLD');assert.equal(f.rows.length,7);for(const [i,r] of f.rows.entries()){assert.equal(r.fy,2019+i);for(const k of ['revenue','expenses','result','netAssets'])assert(Number.isSafeInteger(r[k]));assert.equal(r.revenue-r.expenses,r.result);assert(r.revenue>=0&&r.expenses>=0&&r.netAssets>=0);}console.log('PASS: 37 exact witness pairs; 28 financial values and 7 reconciliations; publication HOLD');
