@@ -239,14 +239,13 @@ if (!process.argv.includes('--source-only')) {
       }
     }
     if (route === historyRoute) {
-      // Browser and printed text must preserve spaces around the provenance
-      // link. Astro drops indentation-only text at adjacent element edges.
-      const disclosures = nodes.filter((node) => hasClass(node, 'research-disclosure'));
-      assert.equal(disclosures.length, 1, 'one bounded historical provenance disclosure');
-      const disclosureProse = text(disclosures[0]).replace(/\s+/gu, ' ').trim();
-      assert.match(disclosureProse,
-        /свидетельствами\.\s+Принятый редакционный пакет Research\s+ограничивает/u,
-        'history provenance anchor must preserve source word boundaries');
+      // Internal handoff is checked against the canonical metadata above;
+      // it is editorial provenance, not a public bibliographic source.
+      assert.ok(!nodes.some(node => node.tagName === 'a' &&
+        /github\.com\/FedorMilovanov\/Research(?:\/|$)/i.test(attr(node, 'href') || '')),
+        'internal Research links must not appear in public history');
+      assert.equal(nodes.filter(node => hasClass(node, 'research-disclosure')).length, 0);
+      assert.doesNotMatch(text(doc), /Принятый редакционный пакет Research|Основание источниковой сверки/u);
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
       assert.equal(nodes.filter((node) => hasClass(node, 'article-header')).length, 1);
@@ -255,6 +254,9 @@ if (!process.argv.includes('--source-only')) {
       for (const source of historySources) {
         const entry = byId(doc, `history-source-${source.id}`);
         assert.ok(entry, `Missing history citation bibliography ${source.id}`);
+        assert.equal(all(entry, node => node.tagName === 'a' && attr(node, 'href') === source.url).length, 1, 'original source link preserved');
+        assert.equal(all(entry, node => node.tagName === 'details' && hasClass(node, 'biblio-details')).length, 1, 'one native source disclosure');
+        assert.ok(normalize(text(entry)).includes(normalize(source.boundary)), 'source context preserved in disclosure');
         const returns = all(entry, node => node.tagName === 'a' && attr(node,'data-journal-source-return') !== undefined);
         assert.equal(returns.length, 1, `${source.id}: exactly one bibliography return`);
         assert.equal(attr(returns[0],'href'), source.returnHref, `${source.id}: return must target its source context`);

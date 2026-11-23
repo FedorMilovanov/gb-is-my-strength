@@ -178,7 +178,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <JournalEditorialRail label="Содержание документального досье G3">
       <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed returnHref="#overview" />
       <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
-        <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
+        <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a>.{' '}
         <a href="#corrections">Журнал исправлений</a>.</p>
     </JournalEditorialRail>
     <div class="journal-story-column">
@@ -443,12 +443,8 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <div class="prose">
       <h2>Источники и материалы для проверки</h2>
       <p>
-        Мы сохранили привязку фактов к оригинальным документам. Ниже можно
-        найти 21 источник этого документального досье: официальные записи,
-        налоговые формы, сообщения организаций и архивные материалы.
-        Для части источников приведены библиографические сведения без прямой
-        ссылки на документ. Наличие ссылки само по себе не разрешает
-        воспроизводить документ.
+        Официальные записи, налоговые формы, сообщения организаций и архивные материалы.
+        Сведения о документе и доступные ссылки раскрываются по нажатию.
       </p>
       <ol class="bibliography-list">
         {G3_SOURCE_BIBLIOGRAPHY.map((entry) => {

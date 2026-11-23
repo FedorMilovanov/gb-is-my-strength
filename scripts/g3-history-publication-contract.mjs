@@ -44,6 +44,7 @@ test('Reader copy has no draft overlays, forged audio access or hidden route', (
     assert.doesNotMatch(source, /data-research-candidates=/, `${name}: internal review ids should not surface in HTML`);
   }
   assert.ok(article.includes('Автор-редактор:'), 'preserve editorial attribution');
+  assert.doesNotMatch(article, /researchHandoffUrl|Принятый редакционный пакет Research|Основание источниковой сверки/u, 'internal handoff stays in metadata, not reader copy');
   assert.ok(!fs.existsSync(path.join(root, 'src/pages/_review/g3-history')), 'no unintended preview route');
 });
 
@@ -115,4 +116,5 @@ test('Built route is indexable, single-headed and has correct source anchors whe
   assert.ok(html.includes('history-source-invitation-2011'));
   assert.ok(html.includes('history-source-ascol-2018'));
   assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('Не опубликовано'));
+  assert.doesNotMatch(html, /href=["'][^"']*github\.com\/FedorMilovanov\/Research\//i, 'no internal handoff anchor in public HTML');
 });
