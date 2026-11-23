@@ -1,10 +1,24 @@
 /**
- * Reader bibliography PROJECTION of Research #582 at 93d6f08a40c7989eb1f6362fd1667094742144d2.
- * Not a new evidence registry or publication handoff. No access/rights state is
- * upgraded here; catalogs, announcements, recollections and transcripts differ.
- * Source URLs already occur in that exact Research candidate; no acquired media.
+ * Bibliography for the public G3 2011–2024 historical article.
+ * Evidence authority: Research #628, handoff commit 389de7b1.
+ * Catalogs, programs, participant accounts and transcripts have distinct evidentiary weight.
+ * Text and outbound links only: no acquired recordings or copied third-party media.
  */
-export const G3_HISTORY_DRAFT_SOURCES = [
+export const G3_HISTORY_SOURCES = [
+  {
+    id: 'invitation-2011', title: 'G3 Conference — архивное приглашение Джоша Бьюса',
+    period: '2011 · архив RSS G3', role: 'Датированный первичный анонс',
+    url: 'https://web.archive.org/web/20110927042330id_/http://www.g3conference.com:80/?feed=rss2',
+    boundary: 'Публичный план конференции на январь 2013 года. Не дата частного замысла и не позднейшая статистика участников.',
+    returnHref: '#g3-history', researchLocator: 'HIST-01 / G3-HIST-PUB-01',
+  },
+  {
+    id: 'ascol-2018', title: 'Том Аскол — The Statement on Social Justice and the Gospel',
+    period: '4 сентября 2018', role: 'Датированное свидетельство участника',
+    url: 'https://founders.org/articles/the-statement-on-social-justice-and-the-gospel/',
+    boundary: 'Слова Аскола о встрече 14 человек 19 июня и публикации 4 сентября. Не независимый протокол и не позиция каждого участника G3.',
+    returnHref: '#g3-year-2018', researchLocator: 'HIST-19 / G3-HIST-PUB-08',
+  },
   {
     id: 'challies',
     title: 'Тим Чаллис. You, Me, and G3',
@@ -58,7 +72,9 @@ export const G3_HISTORY_DRAFT_SOURCES = [
   {
     id: 'statement-2018', title: 'The Statement on Social Justice and the Gospel',
     period: '2018 · History and Formation; Introduction; Affirmations & Denials', role: 'Текст заявления и рассказ составителя',
-    url: 'https://statementonsocialjustice.com/',
+    // Previous host statementonsocialjustice.com had no A/AAAA DNS on 2026-11-23.
+    // This working host retains the same primary statement and History and Formation.
+    url: 'https://socialjusticestatement.com/',
     boundary: 'Содержание и собственное объяснение целей документа. Рассказ о подготовке атрибутируется составителю, не заменяет независимый протокол встречи.',
     returnHref: '#g3-year-2018', researchLocator: 'HIST-19 / G3-HIST-PUB-08',
   },
@@ -119,10 +135,10 @@ export const G3_HISTORY_DRAFT_SOURCES = [
     returnHref: '#g3-year-2024', researchLocator: 'HIST-20 / G3-HIST-PUB-09',
   },
   {
-    id: 'cessationist-2024', title: 'G3 / Ticket Tailor. Cessationist Conference',
-    period: '3–5 октября 2024 · Mustang, Oklahoma', role: 'Страница записи на мероприятие',
+    id: 'cessationist-2024', title: 'G3 / Ticket Tailor. 2024 Cessationist Conference Publisher',
+    period: '3–5 октября 2024 · Mustang, Oklahoma', role: 'Регистрация издательств на мероприятие',
     url: 'https://www.tickettailor.com/events/g3ministries/1270768',
-    boundary: 'Даты и итоговая объявленная площадка First Baptist Church of Mustang; не реестр посетителей и не объяснение смены места.',
+    boundary: 'Даты и заявленная площадка из формы регистрации издательств, а не из общего списка посетителей; документ не устанавливает фактическую программу или причину смены места.',
     returnHref: '#g3-year-2024', researchLocator: 'HIST-20 / G3-HIST-PUB-09',
   },
   {
@@ -148,5 +164,5 @@ export const G3_HISTORY_DRAFT_SOURCES = [
   },
 ] as const;
 
-export type G3HistorySourceId = (typeof G3_HISTORY_DRAFT_SOURCES)[number]['id'];
+export type G3HistorySourceId = (typeof G3_HISTORY_SOURCES)[number]['id'];
 export const historyCitation = (id: G3HistorySourceId) => `#history-source-${id}`;

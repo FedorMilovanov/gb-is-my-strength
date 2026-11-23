@@ -5,5 +5,9 @@ interface Props {
 const { label = 'Материалы и документы' } = Astro.props;
 ---
 <aside class="je-editorial-rail" aria-label={label}>
-  <slot />
+  <!-- Sticky placement and native scrolling are separate elements: focus inside
+       the scrollport must not reposition the article. Links remain Tab stops. -->
+  <div class="je-editorial-rail__scrollport" tabindex="-1">
+    <slot />
+  </div>
 </aside>

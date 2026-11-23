@@ -1,0 +1,165 @@
+name: Journal G3 historical publication browser and PDF QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/journal-g3-history-publication-qa.yml'
+      - 'src/pages/journal/**'
+      - 'src/components/journal/**'
+      - 'src/data/journal/g3History*.ts'
+      - 'scripts/journal-editorial-browser.mjs'
+      - 'scripts/lib/journal-print-pdf.py'
+      - 'scripts/g3-history-publication-contract.mjs'
+      - 'data/route-profiles/journal-dossiers-g3-history.json'
+      - 'data/search-manifest.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/journal-g3-history-publication-qa.yml'
+      - 'src/pages/journal/**'
+      - 'src/components/journal/**'
+      - 'src/data/journal/g3History*.ts'
+      - 'scripts/journal-editorial-browser.mjs'
+      - 'scripts/lib/journal-print-pdf.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: journal-g3-history-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-mobile-navigation:
+    name: G3/JOURNAL mobile keyboard and sources (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit, firefox]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v4.4.1
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Reproducible install
+        run: npm ci
+      - name: Provision exact-version axe accessibility auditor outside project dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          axe_root="${RUNNER_TEMP}/g3-axe-core"
+          mkdir -p "${axe_root}"
+          npm pack axe-core@4.10.3 --pack-destination "${axe_root}" --silent
+          tar -xzf "${axe_root}/axe-core-4.10.3.tgz" -C "${axe_root}" package/axe.min.js
+          test -s "${axe_root}/package/axe.min.js"
+          echo "G3_AXE_PATH=${axe_root}/package/axe.min.js" >> "${GITHUB_ENV}"
+      - name: Canonical production-like build
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+      - name: Install real browser engine
+        run: npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Source-check published-only browser witness
+        run: node --check scripts/journal-editorial-browser.mjs
+      - name: Exercise three public routes and native noJS keyboard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/g3-history-http.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in {1..50}; do
+            if curl -fsS "http://127.0.0.1:4177/journal/dossiers/g3/history/" -o /dev/null; then break; fi
+            if (( attempt == 50 )); then
+              echo "ERROR: historical route failed to serve after 50 checks" >&2
+              exit 1
+            fi
+            sleep .2
+          done
+          node scripts/journal-editorial-browser.mjs \
+            --origin=http://127.0.0.1:4177 \
+            --browser=${{ matrix.engine }} --suite=mobile \
+            --stop-on-first-error=${{ matrix.engine == 'firefox' }} \
+            --axe="${G3_AXE_PATH}" \
+            --widths=320,390 --mobile-heights=390,844 \
+            --output=reports/g3-history-mobile-${{ matrix.engine }}
+          # AuditRepo W62: the replacement JournalContents/rail needs a real
+          # desktop sticky/scroll/focus witness, not the obsolete dossier-nav test.
+          # 2 routes × 2 heights × 2 palettes × JS/no-JS = 16 native cases/engine.
+          node scripts/journal-editorial-browser.mjs \
+            --origin=http://127.0.0.1:4177 \
+            --browser=${{ matrix.engine }} --suite=short \
+            --stop-on-first-error=${{ matrix.engine == 'firefox' }} \
+            --axe="${G3_AXE_PATH}" --widths=1440 --heights=390,480 \
+            --output=reports/g3-history-mobile-${{ matrix.engine }}/desktop-short
+      - name: Retain exact-head browser JSON and real screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+        with:
+          name: journal-g3-history-mobile-${{ matrix.engine }}-${{ github.sha }}
+          path: reports/g3-history-mobile-${{ matrix.engine }}/
+          if-no-files-found: warn
+          retention-days: 14
+
+  actual-paper:
+    name: G3/JOURNAL real PDF A4/Letter JS/noJS
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v4.4.1
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Reproducible install
+        run: npm ci
+      - name: Verify approved G3 history and unchanged crisis evidence with installed dependencies
+        run: node scripts/journal-editorial-contract.mjs --source-only --output=reports/g3-history-source-acceptance
+      - name: Canonical production-like build
+        run: |
+          npm run strangler:build:production-like
+          npm run pagefind:build:dist
+      # Source-only contracts cannot certify dist; require the built route, SEO,
+      # Pagefind query hits, citation links and immutable 2025–26 crisis dossier.
+      - name: Verify exact-head built G3 publication and search projection
+        run: |
+          node --test scripts/g3-history-publication-contract.mjs
+          node scripts/journal-editorial-contract.mjs --require-dist --probe-publication --output=reports/g3-history-paper/built-contract
+      - name: Install real Chromium PDF engine and pinned PDF text analyzer
+        run: |
+          npx playwright install --with-deps chromium
+          python3 -m pip install --disable-pip-version-check 'PyMuPDF==1.26.6'
+          python3 -c 'import fitz; print("PyMuPDF", fitz.VersionBind)'
+      - name: Capture and inspect 24 actual printed PDFs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4177 --bind 127.0.0.1 --directory dist >/tmp/g3-history-http.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in {1..50}; do
+            if curl -fsS "http://127.0.0.1:4177/journal/dossiers/g3/history/" -o /dev/null; then break; fi
+            if (( attempt == 50 )); then
+              echo "ERROR: historical route failed to serve after 50 checks" >&2
+              exit 1
+            fi
+            sleep .2
+          done
+          node scripts/journal-editorial-browser.mjs \
+            --origin=http://127.0.0.1:4177 --browser=chromium --suite=print \
+            --output=reports/g3-history-paper
+      - name: Retain PDF text/page findings and 24 original print captures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+        with:
+          name: journal-g3-history-paper-${{ github.sha }}
+          path: reports/g3-history-paper/
+          if-no-files-found: warn
+          retention-days: 14

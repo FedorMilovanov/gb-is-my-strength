@@ -66,6 +66,8 @@ def inspect(case):
     expected_size = PAPER_POINTS[case["paper"]]
     return {
         "pages": len(texts), "pageSizes": sizes,
+        # Detect last-sheet orphans that a mere nonempty-text check misses.
+        "lastPageWords": len(texts[-1].split()) if texts else 0,
         # Chromium rounds paper dimensions to device pixels (less than 1.1pt).
         "paperSizeCorrect": bool(sizes) and all(abs(size[i] - expected_size[i]) < 1.1 for size in sizes for i in (0, 1)),
         "allPagesHaveText": bool(texts) and all(text.strip() for text in texts),
@@ -75,6 +77,15 @@ def inspect(case):
         "printedScreenControls": [label for label in dom.get("screenOnlyLabels", []) if normalize(label, fold=True) in all_text],
         "reviewWarningFirstPage": bool(folded) and normalize(dom["reviewWarning"], fold=True) in folded[0] if dom.get("reviewWarning") else None,
         "holdPrinted": "publication_hold" in all_text,
+        # Editorial Research handoff must remain clickable but its full
+        # machine URL must not be pasted across paper sheet boundaries.
+        "rawResearchHandoffUrlPrinted": "github.com/fedormilovanov/research/blob/" in all_text,
+        # Unlike the compact word-equivalence hashes, printed editorial prose
+        # needs real spaces at element boundaries. Both defects occurred at a
+        # provenance <a> seam and escaped the otherwise green 24-PDF matrix.
+        "historyProvenanceWordsSeparated": bool(re.search(
+            r"свидетельствами\.\s+Принятый\s+редакционный\s+пакет\s+Research\s+ограничивает",
+            "".join(texts), re.UNICODE)) if case["kind"] == "history" else None,
         "companionPages": locations,
         "companionTogether": locations is None or len(locations["label"]) == len(locations["title"]) == 1 and locations["label"] == locations["title"],
         # Ignore pagination/whitespace, not words, case, numerals, fonts or sizes.
@@ -91,8 +102,8 @@ def analyze(capture, baseline=None):
     kinds = {case["kind"] for case in cases}
     expected = {(kind, paper, theme, scripting) for kind in kinds for paper in PAPER_POINTS
                 for theme in ("light", "dark") for scripting in (True, False)}
-    if not {"journal", "dossier"} <= kinds <= {"journal", "dossier", "history"}:
-        problems.append("expected public Journal/dossier and optional held history surfaces")
+    if kinds != {"journal", "dossier", "history"}:
+        problems.append("expected exactly three published Journal, G3 crisis and G3 history print surfaces")
     if len(cases) != len(expected) or {key(case) for case in cases} != expected:
         problems.append("missing or duplicate print matrix cases")
     if baseline and (len(before) != len(baseline["cases"]) or set(before) != expected):
@@ -111,11 +122,18 @@ def analyze(capture, baseline=None):
             if case["kind"] != "journal" and not result["sourceTitles"]:
                 failures.append("missing bibliography")
             if case["kind"] == "history":
-                for field in ("reviewWarningFirstPage", "holdPrinted"):
-                    if not result[field]:
-                        failures.append(field)
+                if result["reviewWarningFirstPage"] is not None:
+                    failures.append("unpublished manuscript warning leaked into printed article")
+                if result["holdPrinted"]:
+                    failures.append("PUBLICATION_HOLD leaked into published article PDF")
+                if result["rawResearchHandoffUrlPrinted"]:
+                    failures.append("long internal Research URL leaked into published article PDF")
+                if not result["historyProvenanceWordsSeparated"]:
+                    failures.append("history source disclosure lost a space at an inline provenance link")
+                if result["lastPageWords"] < 65:
+                    failures.append(f"near-empty final historical paper sheet ({result['lastPageWords']} words)")
                 if not case["dom"].get("companion"):
-                    failures.append("missing companion")
+                    failures.append("missing link to 2025–2026 companion dossier")
             if baseline:
                 original = inspect(before[key(case)])
                 result["baseline"] = {name: original[name] for name in ("pages", "textSha256", "typographySha256", "pageGeometrySha256", "companionPages")}

@@ -1,15 +1,12 @@
 ---
 /**
- * Source-only manuscript based on Research #582, not the 16-claim crisis seal.
- * Catalog titles are not sermon transcripts. No audio/video viewing is claimed.
+ * Historical publication scoped to the nine bounded factual projections
+ * adopted in Research #628. This is not the 2025–26 crisis evidence seal.
+ * Catalog titles are not sermon transcripts; audio is not claimed heard.
  */
-import { historyCitation as cite } from '@/data/journal/g3HistoryDraftSources';
-import { G3_HISTORY_DRAFT_METADATA as draft } from '@/data/journal/g3HistoryDraftMetadata';
-if (import.meta.env.PROD) {
-  throw new Error('G3 history feature PUBLICATION_HOLD: a signed history handoff is required');
-}
+import { historyCitation as cite } from '@/data/journal/g3HistorySources';
 ---
-<section id="g3-history" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-history-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-01">
+<section id="g3-history" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-history-title">
   <div class="je-history-heading">
     <p class="module-label">01 · Истоки</p>
     <h2 id="g3-history-title">Конференция при поместной церкви</h2>
@@ -25,12 +22,14 @@ if (import.meta.env.PROD) {
         перед нами не готовая общенациональная организация, а церковная конференция,
         которая со временем приобретала новые формы. Рассказ Чаллиса помогает увидеть её
         ранние годы глазами участника, хотя и написан значительно позднее.</p>
-      <p class="je-history-footnote"><a id="cite-g3-history-challies" data-journal-citation href={cite('challies')}>Источник: Тим Чаллис, воспоминания участника</a></p>
+      <p>У этой истории есть документальная отправная точка задолго до появления общенационального служения. Архивная копия приглашения 2011 года показывает, что Джош Бьюс публично готовил встречу на январь 2013-го и приглашал пасторов, миссионеров и прихожан в район Атланты. Слова «Евангелие, благодать, слава» уже задавали её богословскую рамку. Но дата объявления не отвечает на другой вопрос — когда в частных разговорах впервые возникла идея конференции. Между замыслом, опубликованным приглашением и состоявшимся собранием лежат разные события.</p>
+<p class="je-history-footnote"><a id="cite-g3-invitation-2011" data-journal-citation href={cite('invitation-2011')}>Архивное приглашение 2011 года</a></p>
+<p class="je-history-footnote"><a id="cite-g3-history-challies" data-journal-citation href={cite('challies')}>Источник: Тим Чаллис, воспоминания участника</a></p>
     </div>
   </div>
 </section>
 
-<section id="g3-speakers" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-speakers-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-02 G3-HIST-PUB-03">
+<section id="g3-speakers" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-speakers-title">
   <div class="je-history-heading">
     <p class="module-label">02 · 2013–2017</p>
     <h2 id="g3-speakers-title">Не только имена: о чём собирались говорить</h2>
@@ -49,7 +48,8 @@ if (import.meta.env.PROD) {
           Это опора для разговора об их участии, а не исчерпывающий список всех,
           кто выходил за кафедру. О собственном выступлении на первой конференции
           отдельно свидетельствует Чаллис.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2013-gnl-2013" data-journal-citation href={cite('gnl-2013')}>Каталог записей 2013 года</a> · <a id="cite-g3-year-2013-challies" data-journal-citation href={cite('challies')}>Свидетельство Чаллиса</a></p>
+        <p>В сохранённой подборке 2013 года названия записей раскрывают разные стороны первоначальной программы. У Пола Вошера есть выступление о значении молитвы для христианского служения и миссии, у Стивена Лоусона — о проповеди Жана Кальвина и уроках для современного проповедника. Запись Тима Чаллиса названа «Миссия в меняющемся мире», а Дэвида Миллера — «Иисус молится за Своих последователей». Это именно русские передачи каталожных заглавий, а не цитаты из произнесённых проповедей.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2013-gnl-2013" data-journal-citation href={cite('gnl-2013')}>Каталог записей 2013 года</a> · <a id="cite-g3-year-2013-challies" data-journal-citation href={cite('challies')}>Свидетельство Чаллиса</a></p>
       </div>
     </li>
     <li id="g3-year-2014" class="je-history-year" tabindex="-1">
@@ -61,31 +61,24 @@ if (import.meta.env.PROD) {
           Тим Чаллис, Конрад Мбеве и Дэвид Миллер. Анонс показывает замысел организаторов;
           каталог 2014 года служит отдельным маршрутом к записям о Церкви,
           проповеди и поклонении. Эти два вида свидетельств не следует смешивать.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2014-sbts-2014" data-journal-citation href={cite('sbts-2014')}>Анонс семинарии</a> · <a id="cite-g3-year-2014-gnl-2014" data-journal-citation href={cite('gnl-2014')}>Каталог записей 2014 года</a></p>
+        <p>Каталог 2014 года конкретизирует объявленную тему Церкви. Стивен Лоусон представлен записями о призвании Церкви к библейской проповеди и о Церкви, избранной и призванной Богом. Конрад Мбеве — материалом о поклоняющейся Церкви, Водди Бокам — выступлением об ученичестве и подготовке учеников. Вместе эти заголовки показывают переход от широкого разговора о Евангелии к вопросам проповеди, богослужения и передачи веры внутри общины.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2014-sbts-2014" data-journal-citation href={cite('sbts-2014')}>Анонс семинарии</a> · <a id="cite-g3-year-2014-gnl-2014" data-journal-citation href={cite('gnl-2014')}>Каталог записей 2014 года</a></p>
       </div>
     </li>
     <li id="g3-year-2015" class="je-history-year" tabindex="-1">
       <div class="je-history-year-mark"><time datetime="2015">2015</time><span>Божье Слово</span></div>
       <div class="je-history-year-text">
         <h3>Авторитет и безошибочность Писания</h3>
-        <p>Тема года — Библия как Слово Божие. В каталоге за Лоусоном закреплена запись
-          о богодухновенном Слове, за Миллером — о безошибочности Писания,
-          за Вошером — о Великом поручении, за Бокамом — об экспозиционной апологетике,
-          за Чаллисом — сессия «Две книги». Есть также записи Джеймса Уайта.
-          Названия позволяют увидеть круг вопросов, но не восстановить всю аргументацию проповедников.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2015-gnl-2015" data-journal-citation href={cite('gnl-2015')}>Имена и названия сессий 2015 года</a></p>
+        <p>Тема 2015 года — Библия как Божье Слово. В каталоге за Стивеном Лоусоном закреплена запись о богодухновенном Слове, за Дэвидом Миллером — о безошибочности Писания, за Полом Вошером — о составляющих Великого поручения. Водди Бокам представлен выступлением об экспозиционной апологетике, Джеймс Уайт — о безошибочности и согласовании библейских текстов, Тим Чаллис — сессией «Две книги». Перечень заглавий показывает связь между авторитетом Писания, толкованием, защитой веры и миссией, но не заменяет содержание самих записей.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2015-gnl-2015" data-journal-citation href={cite('gnl-2015')}>Имена и названия сессий 2015 года</a></p>
       </div>
     </li>
     <li id="g3-year-2016" class="je-history-year" tabindex="-1">
       <div class="je-history-year-mark"><time datetime="2016">2016</time><span>Учение о Троице</span></div>
       <div class="je-history-year-text">
         <h3>Исповедание, поклонение, спасение</h3>
-        <p>В каталоге 2016 года названы Брюс Уэр (Bruce Ware) — «Созерцая Троицу в поклонении»,
-          Джеймс Уайт — «Троица: определяющее христианское исповедание»,
-          Стивен Лоусон — «Троица в спасении», Х. Б. Чарльз — о воскресении Христа
-          как событии, в котором действовали Лица Троицы. Так тема исповедания связывалась
-          уже в названиях сессий с поклонением и спасением, а не оставалась только отвлечённой формулой.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2016-gnl-2016" data-journal-citation href={cite('gnl-2016')}>Каталог записей 2016 года</a></p>
+        <p>В каталоге 2016 года тема Троицы раскрывается с разных сторон: Брюс Уэр (Bruce Ware) — о созерцании Троицы в поклонении, Джеймс Уайт — о Троице как определяющем христианском исповедании, Стивен Лоусон — о Троице в спасении, Дэвид Миллер — о вечном завете как тринитарном замысле, Х. Б. Чарльз — о воскресении Христа как событии Троицы и, в отдельной записи, о зависимости проповедника от Святого Духа. Здесь переданы названия записей; точных формулировок из непрослушанных выступлений статья не приписывает авторам.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2016-gnl-2016" data-journal-citation href={cite('gnl-2016')}>Каталог записей 2016 года</a></p>
       </div>
     </li>
     <li id="g3-year-2017" class="je-history-year" tabindex="-1">
@@ -97,13 +90,14 @@ if (import.meta.env.PROD) {
           Конрад Мбеве и Джеймс Уайт. Записи дают возможность изучать конкретные выступления
           о спасении, Писании и Реформации. Сам по себе общий состав конференции
           не означает единой позиции её участников по каждому последующему спору.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2017-gnl-2017" data-journal-citation href={cite('gnl-2017')}>Каталог Reformation 500</a></p>
+        <p>Некоторые сохранившиеся названия 2017 года особенно ясно показывают задуманный мост между историей и настоящим. Стивен Лоусон говорил на тему Реформации как возвращения к Евангелию, Водди Бокам — о необходимости Реформации в поклонении, Пол Вошер — о постоянной опасности отступничества. В каталоге Д. А. Карсон представлен, в частности, темой «Одному Богу слава». Тематический диапазон не исчерпывается юбилейным событием: он касается церковного исповедания, проповеди и практики поклонения.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2017-gnl-2017" data-journal-citation href={cite('gnl-2017')}>Каталог Reformation 500</a></p>
       </div>
     </li>
   </ol>
 </section>
 
-<section id="g3-year-2018" class="module je-history-chapter je-history-document" tabindex="-1" aria-labelledby="g3-statement-title" data-history-kind="statement" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-06 G3-HIST-PUB-08">
+<section id="g3-year-2018" class="module je-history-chapter je-history-document" tabindex="-1" aria-labelledby="g3-statement-title" data-history-kind="statement">
   <div class="je-history-heading">
     <p class="module-label">03 · Богословская дискуссия · 2018</p>
     <h2 id="g3-statement-title">Заявление о социальной справедливости и Евангелии</h2>
@@ -122,11 +116,12 @@ if (import.meta.env.PROD) {
       Его оценка дальнейшего изменения атмосферы остаётся взглядом участника.
       Ни заявление, ни отказ от подписи не устанавливают мотивы всех людей,
       связанных с G3, и не доказывают причин позднейших кризисов.</p>
-    <p class="je-history-footnote"><a id="cite-g3-year-2018-statement-2018" data-journal-citation href={cite('statement-2018')}>Текст и история подготовки заявления</a> · <a id="cite-g3-year-2018-responses-2018" data-journal-citation href={cite('responses-2018')}>Отклики современников</a> · <a id="cite-g3-year-2018-challies" data-journal-citation href={cite('challies')}>Позиция Чаллиса</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2018-ascol-2018" data-journal-citation href={cite('ascol-2018')}>Датированное свидетельство Тома Аскола</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2018-statement-2018" data-journal-citation href={cite('statement-2018')}>Текст и история подготовки заявления</a> · <a id="cite-g3-year-2018-responses-2018" data-journal-citation href={cite('responses-2018')}>Отклики современников</a> · <a id="cite-g3-year-2018-challies" data-journal-citation href={cite('challies')}>Позиция Чаллиса</a></p>
   </div>
 </section>
 
-<section id="g3-later-conferences" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-later-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-04 G3-HIST-PUB-07 G3-HIST-PUB-09">
+<section id="g3-later-conferences" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-later-title">
   <div class="je-history-heading">
     <p class="module-label">04 · 2019–2024</p>
     <h2 id="g3-later-title">Миссия, поклонение и новые форматы встреч</h2>
@@ -145,32 +140,24 @@ if (import.meta.env.PROD) {
           а не итоговый протокол их участия. Каталог записей 2019 года даёт
           отдельный путь к проверке конкретных выступлений; переносить весь список
           с афиши в перечень записанных сессий было бы неточно.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2019-announcement-2019" data-journal-citation href={cite('announcement-2019')}>Рекламный анонс</a> · <a id="cite-g3-year-2019-gnl-2019" data-journal-citation href={cite('gnl-2019')}>Каталог записей</a></p>
+        <p>В опубликованных записях 2019 года видны разные грани миссионерской темы. У Стивена Лоусона есть сессия о Божьем суверенном избрании и миссии, у Водди Бокама — о миссионерском характере Авраамова завета, у Марка Девера — о Великом поручении и основании церквей. Конрад Мбеве представлен темой создания здоровых новых общин, Пол Вошер — обсуждением определения миссии. Здесь перечислены точные предметы записей в русском переводе заглавий, а не реконструкция того, что было сказано.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2019-announcement-2019" data-journal-citation href={cite('announcement-2019')}>Рекламный анонс</a> · <a id="cite-g3-year-2019-gnl-2019" data-journal-citation href={cite('gnl-2019')}>Каталог записей</a></p>
       </div>
     </li>
     <li id="g3-year-2020" class="je-history-year" tabindex="-1">
       <div class="je-history-year-mark"><time datetime="2020">2020</time><span>Поклонение</span></div>
       <div class="je-history-year-text">
         <h3>Доктрина в жизни собранной общины</h3>
-        <p>За Джоном МакАртуром в каталоге закреплена сессия «Истинные поклонники».
-          Рядом — Фил Джонсон о благословении поклонения, Лоусон о славе Божией,
-          Том Аскол о благоговении, Вошер об основании поклонения,
-          Джоэл Бики о пуританском взгляде на него и Уайт о поклонении трижды святому Богу.
-          Это пересказ каталожных названий, не результат прослушивания всех записей.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2020-gnl-2020" data-journal-citation href={cite('gnl-2020')}>Каталог сессий 2020 года</a></p>
+        <p>В каталоге 2020 года Джону МакАртуру соответствует запись «Истинные поклонники», Филу Джонсону — тема благословения поклонения, Стивену Лоусону — славы Божией, Тому Асколу — благоговения, Полу Вошеру — основания поклонения. Джоэл Бики представлен сессией о пуританском понимании богослужения, Водди Бокам — о призвании Церкви воспевать Евангелие, Джеймс Уайт — о поклонении трижды святому Богу. Так названия записей соединяют богословие и общинную практику; это каталог, не стенограммы выступлений.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2020-gnl-2020" data-journal-citation href={cite('gnl-2020')}>Каталог сессий 2020 года</a></p>
       </div>
     </li>
     <li id="g3-year-2023" class="je-history-year" tabindex="-1">
       <div class="je-history-year-mark"><time datetime="2023">2023</time><span>Божий суверенитет</span></div>
       <div class="je-history-year-text">
         <h3>Национальная конференция в сентябре</h3>
-        <p>На 21–23 сентября была анонсирована конференция о Божьем суверенитете.
-          Современный анонс в <em>The Atlanta Journal-Constitution</em> помогает
-          восстановить объявленные тему и даты, но не заменяет итоговый архив сессий
-          и не даёт проверенного числа присутствовавших. Состав докладчиков
-          и точные соответствия «имя — выступление» требуют отдельной сверки:
-          переносить сводный список из нескольких публикаций в одну сноску нельзя.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2023-announcement-2023" data-journal-citation href={cite('announcement-2023')}>Анонс конференции 2023 года</a></p>
+        <p>В опубликованном 6 сентября 2023 года анонсе <em>The Atlanta Journal-Constitution</em> названы тема «Божий суверенитет» и даты национальной конференции 21–23 сентября. Документ позволяет датировать объявленную встречу, но не заменяет итоговый архив сессий и не подтверждает численность аудитории или фактический состав выступивших. Имена из предварительных списков нельзя автоматически превращать в перечень записанных докладов.</p>
+<p class="je-history-footnote"><a id="cite-g3-year-2023-announcement-2023" data-journal-citation href={cite('announcement-2023')}>Анонс конференции 2023 года</a></p>
       </div>
     </li>
     <li id="g3-year-2024" class="je-history-year" tabindex="-1" data-history-kind="regional-events">
@@ -182,20 +169,20 @@ if (import.meta.env.PROD) {
           Это сведения из анонса мероприятия, а не реестр его посетителей:
           они подтверждают заявленный план, но сами по себе не доказывают проведение.
           Речь о региональном формате, не очередном выпуске национальной конференции.</p>
-        <p>Страница записи на <em>Cessationist Conference</em> указывала 3–5 октября
+        <p>Форма регистрации издательств на <em>Cessationist Conference</em> указывала 3–5 октября
           и First Baptist Church of Mustang, Оклахома. Встреча касалась учения о прекращении
           действия чудесных даров. Своё участие в ней отдельно подтверждал
           Джастин Питерс в письменном отчёте о поездках за 2024 год;
           отчётный период не следует путать с датой публикации текста.
-          Ранний анонс называл площадку в Калифорнии, поздняя страница записи — Оклахому.
+          Ранний анонс называл площадку в Калифорнии, поздняя форма регистрации издательств — Оклахому.
           Причину изменения места доступные документы не устанавливают.</p>
-        <p class="je-history-footnote"><a id="cite-g3-year-2024-reformation-2024" data-journal-citation href={cite('reformation-2024')}>Майская регистрация</a> · <a id="cite-g3-year-2024-cessationist-2024" data-journal-citation href={cite('cessationist-2024')}>Октябрьская регистрация</a> · <a id="cite-g3-year-2024-peters-2024" data-journal-citation href={cite('peters-2024')}>Отчёт Питерса</a> · <a id="cite-g3-year-2024-early-venue-2023" data-journal-citation href={cite('early-venue-2023')}>Ранний анонс площадки</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2024-reformation-2024" data-journal-citation href={cite('reformation-2024')}>Майская регистрация</a> · <a id="cite-g3-year-2024-cessationist-2024" data-journal-citation href={cite('cessationist-2024')}>Регистрация издательств</a> · <a id="cite-g3-year-2024-peters-2024" data-journal-citation href={cite('peters-2024')}>Отчёт Питерса</a> · <a id="cite-g3-year-2024-early-venue-2023" data-journal-citation href={cite('early-venue-2023')}>Ранний анонс площадки</a></p>
       </div>
     </li>
   </ol>
 </section>
 
-<section id="g3-growth" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-growth-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-05">
+<section id="g3-growth" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-growth-title">
   <div class="je-history-heading">
     <p class="module-label">05 · За пределами конференции</p>
     <h2 id="g3-growth-title">От нескольких дней в году к постоянному служению</h2>
@@ -216,7 +203,8 @@ if (import.meta.env.PROD) {
       В частности, год запуска G3+ в пределах 2013–2024 годов здесь не установлен.
       У книги, учебного курса и межцерковного сотрудничества разные задачи —
       их нельзя оценить одной цифрой посещаемости большого собрания.</p>
-    <p class="je-history-footnote"><a id="cite-g3-growth-challies" data-journal-citation href={cite('challies')}>Воспоминания о смене площадки</a> · <a id="cite-g3-growth-aniol-2021" data-journal-citation href={cite('aniol-2021')}>Письменное сообщение Аниола</a> · <a id="cite-g3-growth-context-overview" data-journal-citation href={cite('context-overview')}>Исторический обзор</a></p>
+    <p>В позднейшем обзоре упоминаются G3 Press, G3+, Church Network и Gloria Deo. Вместе с письмом Аниола это позволяет различить намерения организаторов и существование нескольких названных направлений. Но сведения об издательских правах, подписчиках, бюджетах и итоговой результативности нуждались бы в других документах и не входят в историю, построенную на этих источниках.</p>
+<p class="je-history-footnote"><a id="cite-g3-growth-challies" data-journal-citation href={cite('challies')}>Воспоминания о смене площадки</a> · <a id="cite-g3-growth-aniol-2021" data-journal-citation href={cite('aniol-2021')}>Письменное сообщение Аниола</a> · <a id="cite-g3-growth-context-overview" data-journal-citation href={cite('context-overview')}>Исторический обзор</a></p>
   </div>
   <dl class="je-history-projects" aria-label="Форматы расширения, не хронология запусков">
     <div><dt>G3 Press</dt><dd>Книги и учебные материалы</dd></div>

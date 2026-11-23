@@ -74,9 +74,10 @@ const paletteCss = assetUrl('css/command-palette.css');
       z-index: 1000;
       min-height: 52px;
       padding: calc(env(safe-area-inset-top, 0px) + 7px) 10px 7px;
-      background: color-mix(in srgb, var(--bg, #faf7f2) 88%, transparent);
-      -webkit-backdrop-filter: blur(14px) saturate(1.4);
-      backdrop-filter: blur(14px) saturate(1.4);
+      /* Solid paper avoids legibility loss when WebKit/Firefox composite
+         a fixed header over article text; blur behind an opaque surface has
+         no visual benefit and varies across engines. */
+      background: var(--bg, #faf7f2);
       border-bottom: 1px solid var(--border, #e5e2dc);
       transform: translateY(-110%);
       /* Уведённый за экран бар оставался в порядке Tab: три контроля Back/Home/Search
