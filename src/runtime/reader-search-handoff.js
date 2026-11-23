@@ -1,11 +1,24 @@
 /* W121/W123: source-word handoff for the canonical Pagefind command palette.
-   The search UI remains owned by js/search.js; this adapter only focuses the
-   clicked occurrence within the published Reader prose. No new modal/index. */
+   Search remains owned by js/search.js. Exact literal hits focus their prose;
+   unresolved morphology gets an honest, validated article-level fallback.
+   No second modal, parser or index. */
 const KEY='gb-reader-pagefind-hit-v1';
 const norm=value=>String(value||'').toLocaleLowerCase('ru').replaceAll('ё','е');
 function targetArticle(){
  return document.querySelector('article.article-body')||document.querySelector('article[data-pagefind-body]');
 }
+function selectedDestinationPath(palette,clickedItem){
+ const selected=palette?.querySelector('#cp-listbox .cp-item[aria-selected="true"]');
+ if(!selected||(clickedItem&&selected.dataset.idx!==clickedItem.dataset.idx))return '';
+ const link=palette.querySelector('#cp-read-btn');
+ const href=link?.getAttribute('href')||link?.href;
+ if(!href||href==='#')return '';
+ try{
+  const target=new URL(href,location.href);
+  return target.origin===location.origin?target.pathname:'';
+ }catch(_){return '';}
+}
+function clearHandoff(){try{sessionStorage.removeItem(KEY)}catch(_){}}
 function locate(query){
  const article=targetArticle();if(!article)return false;
  const needle=norm(query.trim());if(needle.length<2||needle.length>120)return false;
@@ -39,14 +52,58 @@ function locate(query){
  }
  return false;
 }
+function focusArticleFallback(article){
+ const root=article?.closest('main')||article;
+ const heading=article?.querySelector('h1')||root?.querySelector('h1');
+ if(!(heading instanceof HTMLElement)||!root?.contains(heading)||!heading.getClientRects().length)return false;
+ if(!heading.hasAttribute('tabindex')){
+  heading.setAttribute('tabindex','-1');
+  heading.addEventListener('blur',()=>heading.removeAttribute('tabindex'),{once:true});
+ }
+ heading.scrollIntoView({block:'start',behavior:'auto'});
+ window.getSelection()?.removeAllRanges();
+ heading.focus({preventScroll:true});
+ return document.activeElement===heading;
+}
+function fallback(entry,reason,article){
+ clearHandoff();
+ let fallbackFocused=false;
+ if(reason==='literal-occurrence-not-found'){
+  // Pagefind may attach a heading fragment to an excerpt. Morphology is not
+  // evidence for that exact location, so keep the article route but clear it.
+  try{
+   if(location.hash&&typeof history!=='undefined'&&typeof history.replaceState==='function'){
+    const unanchored=new URL(location.href);
+    unanchored.hash='';
+    history.replaceState(history.state,'',unanchored.href);
+   }
+  }catch(_){}
+  try{fallbackFocused=focusArticleFallback(article)}catch(_){}
+ }
+ document.dispatchEvent(new CustomEvent('gb:search-source-fallback',{detail:{
+  query:entry.query,path:location.pathname,targetPath:entry.path,reason,fallbackFocused
+ }}));
+}
 function consume(){
  let entry;try{entry=JSON.parse(sessionStorage.getItem(KEY)||'null')}catch(_){}
  if(!entry)return;
- const valid=typeof entry.query==='string'&&Date.now()-entry.timestamp<20000;
- if(!valid){sessionStorage.removeItem(KEY);return;}
+ const age=Date.now()-Number(entry.timestamp);
+ const valid=typeof entry.query==='string'&&entry.query.trim().length>=2&&entry.query.trim().length<=120&&
+  Number.isFinite(Number(entry.timestamp))&&age>=0&&age<20000&&typeof entry.path==='string'&&
+  entry.path.startsWith('/')&&!entry.path.startsWith('//')&&entry.path.length<=2048;
+ if(!valid){clearHandoff();return;}
+ let targetPath='';
+ try{
+  const target=new URL(entry.path,location.href);
+  if(target.origin===location.origin)targetPath=target.pathname;
+ }catch(_){}
+ // A stale or mismatched one-shot must never be replayed on another page.
+ if(!targetPath||targetPath!==location.pathname){clearHandoff();return;}
+ const article=targetArticle();
+ if(!article){fallback(entry,'article-root-not-found',null);return;}
  // Results from W57 must not silently revert to the old desktop Reader.
  // Pagefind's canonical result URLs omit this local opt-in, so restore it
- // once on the destination before focusing the exact source paragraph.
+ // once on the validated destination before exact or article-level focus.
  if(entry.pilot && new URLSearchParams(location.search).get('reader-pilot')!=='1' &&
     /^(?:\/articles\/|\/baptisty-rossii\/|\/biografii\/)/.test(location.pathname)){
    const url=new URL(location.href);
@@ -55,26 +112,35 @@ function consume(){
    if(entry.panel==='open'||entry.panel==='closed')url.searchParams.set('panel',entry.panel);
    location.replace(url.href);return;
  }
- if(locate(entry.query)){
-  sessionStorage.removeItem(KEY);
+ let focused=false;
+ try{focused=locate(entry.query)}catch(_){}
+ if(focused){
+  clearHandoff();
   document.dispatchEvent(new CustomEvent('gb:search-source-focused',{detail:{query:entry.query,path:location.pathname}}));
+ }else{
+  fallback(entry,'literal-occurrence-not-found',article);
  }
 }
 function init(){
- function captureResult(){
-  const query=document.querySelector('.cp-backdrop.is-open .cp-input')?.value?.trim();
+ function captureResult(clickedItem){
+  const palette=document.querySelector('.cp-backdrop.is-open');
+  const query=palette?.querySelector('.cp-input')?.value?.trim();
+  clearHandoff();
   if(!query||query.length<2||query.length>120)return;
+  const path=selectedDestinationPath(palette,clickedItem);
+  if(!path)return;
   const params=new URLSearchParams(location.search);
   try{sessionStorage.setItem(KEY,JSON.stringify({
-    query,timestamp:Date.now(),pilot:params.get('reader-pilot')==='1',
+    query,path,timestamp:Date.now(),pilot:params.get('reader-pilot')==='1',
     paper:params.get('paper'),panel:params.get('panel')
   }))}catch(_){}
-  // The result owner navigates; consume only on the destination.
+  // The result owner navigates; consume only on the validated destination.
  }
  document.addEventListener('click',event=>{
-  if(event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-  if(!event.target.closest?.('.cp-backdrop.is-open #cp-listbox .cp-item'))return;
-  captureResult();
+  const result=event.target.closest?.('.cp-backdrop.is-open #cp-listbox .cp-item');
+  if(!result)return;
+  if(event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey){clearHandoff();return;}
+  captureResult(result);
  },true);
  // The canonical palette activates results with Enter directly from its input,
  // not by firing a click on the selected result. Keep keyboard parity.

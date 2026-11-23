@@ -9,6 +9,10 @@ const b=await engine.launch({headless:true});
 for(const [kind,w] of [['mobile',390],['desktop-W57',1440]]){
 const c=await b.newContext({viewport:{width:w,height:900},serviceWorkers:'block',colorScheme:'light',reducedMotion:'reduce'});
 await c.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,r=>r.fulfill({status:200,body:''}));
+await c.addInitScript(()=>{
+ window.__w121SearchFallbacks=[];
+ document.addEventListener('gb:search-source-fallback',event=>window.__w121SearchFallbacks.push(event.detail));
+});
 const p=await c.newPage(),errors=[];
 p.on('pageerror',e=>errors.push(String(e)));
 try{
@@ -48,11 +52,14 @@ try{
    text:document.activeElement?.textContent?.slice(0,140),selected:window.getSelection()?.toString()?.slice(0,75),
    within:document.activeElement?.closest('article.article-body')!==null,
    scrollY:scrollY,
-   hasStudy:!!document.getElementById('gbAnalyticsStudy')
+   hasStudy:!!document.getElementById('gbAnalyticsStudy'),
+   pending:sessionStorage.getItem('gb-reader-pagefind-hit-v1')
  }));
  ck(name+' '+kind+' source occurrence focuses real article paragraph',
    state.within&&state.selected?.toLocaleLowerCase('ru').includes('маришальского'),JSON.stringify(state));
  ck(name+' '+kind+' retains Reader quiz',state.hasStudy);
+ ck(name+' '+kind+' exact-word handoff is consumed on the validated article',
+   state.pending===null,JSON.stringify({pending:state.pending,pathname:state.pathname}));
  if(kind==='desktop-W57'){
    ck(name+' W57 search result preserves pilot desktop',state.w57&&state.href.includes('reader-pilot=1'),state.href);
    // Pagefind uses a direct Enter handler on its combobox; this must follow the
@@ -71,12 +78,54 @@ try{
      await p.keyboard.press('ArrowDown');
    }
    await p.keyboard.press('Enter');
-   await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true&&new URLSearchParams(location.search).get('reader-pilot')==='1'&&window.getSelection()?.toString().includes('Маришальского'),null,{timeout:25000});
+   await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true&&new URLSearchParams(location.search).get('reader-pilot')==='1'&&window.getSelection()?.toString().includes('Маришальского')&&sessionStorage.getItem('gb-reader-pagefind-hit-v1')===null,null,{timeout:25000});
    ck(name+' W57 keyboard Enter preserves Reader and exact paragraph',await p.evaluate(()=>
      document.body.classList.contains('np-w57-ready')&&
      window.getSelection()?.toString().includes('Маришальского')&&
+     sessionStorage.getItem('gb-reader-pagefind-hit-v1')===null&&
      !!document.querySelector('#gbAnalyticsStudy')));
  }
+ // A morphological Pagefind hit identifies the correct article without a
+ // literal query substring. Land honestly at article level, never guess a
+ // different wordform or paragraph, and consume the one-shot handoff.
+ if(kind==='mobile'){
+   await p.locator('.mobile-top-bar .reader-mobile-top-search').click();
+ }else{
+   await p.locator('#gbSearchBtn:visible,[data-fc-action="search"]:visible,.gb-nav-search-icon:visible').first().click();
+ }
+ await p.locator('.cp-backdrop.is-open').waitFor({timeout:13000});
+ await p.locator('.cp-input').fill('беспрецедентный');
+ await p.waitForFunction(()=>!!window.__pagefindReady__&&
+   [...document.querySelectorAll('#cp-listbox .cp-item')].some(item=>item.textContent.includes('Часть II')),
+   null,{timeout:18000});
+ const morphTarget=p.locator('#cp-listbox .cp-item').filter({hasText:'Часть II'}).first();
+ const morphText=(await morphTarget.innerText()).toLocaleLowerCase('ru');
+ ck(name+' '+kind+' Pagefind returns Gill II for Russian morphological query',
+   await morphTarget.count()===1&&morphText.includes('беспрецедентным')&&!morphText.includes('беспрецедентный'),morphText.slice(0,180));
+ ck(name+' '+kind+' morphology fixture has no literal visible article occurrence',
+   !(await p.locator('article.article-body').innerText()).toLocaleLowerCase('ru').includes('беспрецедентный'));
+ await morphTarget.click();
+ await p.waitForURL(url=>url.pathname===ROUTE,{timeout:10000});
+ await p.waitForFunction(()=>{
+   const last=window.__w121SearchFallbacks?.[window.__w121SearchFallbacks.length-1];
+   return document.activeElement?.tagName==='H1'&&last?.reason==='literal-occurrence-not-found'&&
+     last?.fallbackFocused===true&&sessionStorage.getItem('gb-reader-pagefind-hit-v1')===null;
+ },null,{timeout:15000});
+ if(kind==='desktop-W57')await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true,null,{timeout:25000});
+ const fallback=await p.evaluate(()=>({
+   focusTag:document.activeElement?.tagName,
+   withinMain:document.activeElement?.closest('main')!==null,
+   hash:location.hash,selected:window.getSelection()?.toString()||'',
+   pending:sessionStorage.getItem('gb-reader-pagefind-hit-v1'),
+   event:window.__w121SearchFallbacks?.[window.__w121SearchFallbacks.length-1]||null,
+   w57:document.body.classList.contains('np-w57-ready'),href:location.href
+ }));
+ ck(name+' '+kind+' morphology validates target and uses article-heading fallback',
+   fallback.focusTag==='H1'&&fallback.withinMain&&fallback.hash===''&&fallback.selected===''&&fallback.pending===null&&
+   fallback.event?.fallbackFocused===true&&fallback.event?.targetPath===ROUTE&&fallback.event?.path===ROUTE,
+   JSON.stringify(fallback));
+ if(kind==='desktop-W57')ck(name+' W57 morphology fallback preserves pilot Reader',
+   fallback.w57&&fallback.href.includes('reader-pilot=1')&&fallback.href.includes('paper=space')&&fallback.href.includes('panel=open'),fallback.href);
  ck(name+' '+kind+' no page errors',!errors.length,errors.slice(0,2).join(' | '));
  }catch(e){ck(name+' '+kind+' FATAL',false,String(e).slice(0,420));}
  finally{await c.close()}
