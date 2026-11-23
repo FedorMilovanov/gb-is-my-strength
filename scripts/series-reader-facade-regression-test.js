@@ -115,6 +115,14 @@ assert.match(mobileRuntime, /hasActiveSection \? reader\.sectionTitle : \(MOB_SE
 assert.match(partOverlay, /gb:gill-select-part-panel/, 'research tab must be selected through the native Part TOC sheet');
 assert.doesNotMatch(settingsSheet, /mobLearningBtn|gillLearningOverlay|Обучение/, 'Settings must contain reading preferences only');
 assert.match(analyticsStudy, /id="gbAnalyticsStudy"/, 'unified Analytics quiz must be mounted once');
+// W127: the quiz is the sixth canonical Analytics accordion, not a separate
+// low-contrast call-to-action tile. Shared classes are the geometry authority.
+assert.match(analyticsStudy, /class="gb-analytics-study gbr-marginalia-group"/,
+  'mobile quiz must share the native Analytics accordion surface');
+assert.match(analyticsStudy, /class="gb-analytics-study__title gbr-marginalia-group-head"/,
+  'mobile quiz must share native Analytics summary typography and chevron');
+assert.doesNotMatch(analyticsStudy, /id="gbAnalyticsStudy"[^>]*\bopen\b/,
+  'quiz should not default open or erase the reader choice');
 assert.match(fs.readFileSync(FACADE, 'utf8'), /<GillAnalyticsStudy pageId=\{pageId\} config=\{config\}/, 'series chrome must own one Analytics study');
 // Historical #75 slot-swap: speeds REPLACE the research capsule, never descend
 // across the hero. One ReaderSpeedOptions/speedSlot owner serves both readers.

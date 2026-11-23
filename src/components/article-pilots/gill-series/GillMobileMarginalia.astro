@@ -974,11 +974,94 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
 <style is:global>
   #partTocOverlay details.gbr-marginalia-group {padding:0 12px;margin:0 0 7px;border:1px solid var(--color-border);border-radius:6px;background:transparent}
   #partTocOverlay details.gbr-marginalia-group[open] {padding-bottom:12px}
-  #partTocOverlay summary.gbr-marginalia-group-head {display:flex;align-items:center;gap:8px;min-height:44px;margin:0;list-style:none;cursor:pointer}
+  #partTocOverlay summary.gbr-marginalia-group-head {display:flex;align-items:center;gap:8px;min-height:44px;margin:0;padding:0;list-style:none;cursor:pointer}
   #partTocOverlay summary.gbr-marginalia-group-head::-webkit-details-marker {display:none}
   #partTocOverlay .gbr-marginalia-group-head strong {margin-inline-end:auto;font:600 15px/1.3 'Lora',Georgia,serif}
   #partTocOverlay .gbr-marginalia-group-head::after {content:'';width:6px;height:6px;border:solid currentColor;border-width:0 1px 1px 0;transform:rotate(45deg);margin:0 3px 3px 4px}
   #partTocOverlay details[open] > .gbr-marginalia-group-head::after {transform:rotate(225deg);margin-top:5px}
+
+  /* W127: the movable quiz uses the SAME .gbr-marginalia-group and
+     .gbr-marginalia-group-head rules above as all native accordions.
+     Only the EXPANDED quiz contents need their own editorial treatment. */
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__inner {
+    min-width:0;padding:13px 1px 2px;
+    border-top:1px solid var(--gbr-classic-edge,var(--color-border));
+  }
+  #partTocOverlay #gbAnalyticsQuiz {
+    min-width:0;color:var(--gbr-classic-ink,inherit);
+    font:400 13px/1.6 'GB Mobile Classic Inter',system-ui,sans-serif;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-status {
+    margin:1px 0 9px;color:var(--gbr-classic-muted,inherit);
+    font:600 10.5px/1.45 'GB Mobile Classic Inter',system-ui,sans-serif;
+    letter-spacing:.055em;
+  }
+  #partTocOverlay #gbAnalyticsQuiz h4 {
+    margin:0 0 13px;color:inherit;
+    font:600 16.5px/1.45 'GB Classic Literata',Georgia,serif;
+    letter-spacing:-.008em;text-wrap:pretty;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options {
+    display:grid;counter-reset:gb-study-choice;gap:7px;margin:12px 0;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button {
+    position:relative;display:block;min-width:0;width:100%;min-height:48px;
+    margin:0;padding:11px 12px 11px 43px;
+    border:1px solid var(--gbr-classic-edge,var(--color-border));border-radius:6px;
+    background:color-mix(in srgb,var(--gbr-classic-surface,#efece4) 42%,transparent);
+    color:inherit;text-align:left;overflow-wrap:anywhere;
+    font:500 12.5px/1.5 'GB Mobile Classic Inter',system-ui,sans-serif;
+    transition:border-color .16s ease,background-color .16s ease;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button::before {
+    counter-increment:gb-study-choice;content:counter(gb-study-choice,decimal-leading-zero);
+    position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    color:var(--gbr-classic-bronze,#8c6239);
+    font:500 10px/1.2 'GB Classic Mono',monospace;
+    font-variant-numeric:tabular-nums;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button:hover:not(:disabled) {
+    border-color:var(--gbr-classic-bronze,#8c6239);
+    background:color-mix(in srgb,var(--gbr-classic-surface,#efece4) 80%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button.is-correct {
+    border-color:#4d866b;background:color-mix(in srgb,#4d866b 12%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button.is-wrong {
+    border-color:#b77963;background:color-mix(in srgb,#b77963 12%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__modes {
+    display:flex;gap:7px;margin:0 0 12px;
+  }
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__modes[hidden] {display:none!important}
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__modes button {
+    min-height:44px;padding:9px 12px;
+    border-color:var(--gbr-classic-edge,var(--color-border));border-radius:6px;
+    font:600 11.5px/1.4 'GB Mobile Classic Inter',system-ui,sans-serif;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-feedback {
+    margin:13px 0;padding:11px 13px;
+    border-left:2px solid var(--gbr-classic-bronze,#8c6239);
+    border-radius:0 5px 5px 0;
+    background:color-mix(in srgb,var(--gbr-classic-surface,#efece4) 55%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-feedback p {
+    margin:7px 0 0;line-height:1.65;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-next {
+    display:block;width:100%;min-height:48px;margin:14px 0 0;
+    border-color:var(--gbr-classic-bronze,#8c6239);border-radius:6px;
+    background:color-mix(in srgb,var(--gbr-classic-bronze,#8c6239) 12%,transparent);
+    font:600 12.5px/1.5 'GB Mobile Classic Inter',system-ui,sans-serif;
+    text-align:center;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-score {
+    margin:4px 0 12px;font:650 19px/1.35 'GB Mobile Classic Cormorant',Georgia,serif;
+  }
+  #partTocOverlay #gbAnalyticsQuiz button:focus-visible,
+  #partTocOverlay #gbAnalyticsStudy > summary:focus-visible {
+    outline:2px solid var(--gbr-classic-bronze,#8c6239);outline-offset:2px;
+  }
   #partTocOverlay .gbr-marginalia-personal {border-top:1px solid var(--color-border);padding:8px 0;overflow-wrap:anywhere}
   #partTocOverlay .gbr-marginalia-personal p {margin:4px 0;white-space:pre-line}
   /* Mobile Classic shelf: keep both horizontal-scroll arrows at least 44px

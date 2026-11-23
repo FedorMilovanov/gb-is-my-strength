@@ -46,7 +46,12 @@ export function initReaderAnalyticsStudy() {
         b.hidden=!readyMode(kind)||(kind==='series'&&editor.length&&!current.finished&&current.mode!=='series');
         b.setAttribute('aria-pressed',String(kind===current.mode));
       });
-      count.textContent=current.mode==='article'?' · '+editor.length+' вопроса по статье':' · '+series.length+' по серии';
+      // Match the numerical suffix of every native Analytics accordion.
+      count.textContent=String(current.mode==='article'?editor.length:series.length);
+      // A one-option mode switch is redundant; show choices only if both
+      // article and whole-series training are currently available.
+      const modeRow=root.querySelector('.gb-analytics-study__modes');
+      if(modeRow)modeRow.hidden=modeButtons.filter(b=>!b.hidden).length<2;
     }
     function closeForSource(){
       root.open=false;
