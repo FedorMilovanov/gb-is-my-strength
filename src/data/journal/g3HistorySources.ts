@@ -72,7 +72,9 @@ export const G3_HISTORY_SOURCES = [
   {
     id: 'statement-2018', title: 'The Statement on Social Justice and the Gospel',
     period: '2018 · History and Formation; Introduction; Affirmations & Denials', role: 'Текст заявления и рассказ составителя',
-    url: 'https://statementonsocialjustice.com/',
+    // Previous host statementonsocialjustice.com had no A/AAAA DNS on 2026-11-23.
+    // This working host retains the same primary statement and History and Formation.
+    url: 'https://socialjusticestatement.com/',
     boundary: 'Содержание и собственное объяснение целей документа. Рассказ о подготовке атрибутируется составителю, не заменяет независимый протокол встречи.',
     returnHref: '#g3-year-2018', researchLocator: 'HIST-19 / G3-HIST-PUB-08',
   },
