@@ -119,6 +119,14 @@ const jsonLd = {
           />
         </figure>
 
+        <section class="teen-letter-entry" aria-labelledby="teen-letter-entry-title">
+          <p class="section-label">Личное обращение к подростку</p>
+          <h2 id="teen-letter-entry-title">А если всё «нормально» только для других?</h2>
+          <p>Не разбор твоей жизни взрослыми, а разговор с тобой: о том, что нравится, что страшно потерять, почему трудно сказать правду и где искать настоящее освобождение.</p>
+          <p><a class="gb-text-link teen-letter-entry__link" href="/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno/">Читать «Пока все думают, что у тебя всё нормально»</a></p>
+          <p class="teen-letter-entry__note">Самостоятельное письмо перед серией — не дополнительный обязательный шаг.</p>
+        </section>
+
         <section aria-labelledby="series-order">
           <h2 id="series-order">Читать по порядку</h2>
           <div class="teen-series-grid">
@@ -166,6 +174,12 @@ const jsonLd = {
     </main>
     <script is:inline src={assetUrl('js/sw-register.js')} defer></script>
     <style>
+      .teen-letter-entry{padding:1.5rem 1.6rem;margin:1.5rem 0 2rem;border:1px solid color-mix(in srgb,currentColor 20%,transparent);border-radius:1.25rem;background:color-mix(in srgb,Canvas 96%,currentColor 4%)}
+      .teen-letter-entry h2{margin:.35rem 0 .7rem;line-height:1.24}
+      .teen-letter-entry p{max-width:66ch}
+      .teen-letter-entry__link{font-weight:700;text-underline-offset:.22em}
+      .teen-letter-entry__note{font-size:.86rem;opacity:.75}
+      @media(max-width:480px){.teen-letter-entry{padding:1.1rem 1rem}}
       .teen-series-hero{margin:2rem 0 2.5rem}.teen-series-hero img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover;border-radius:1.5rem}
       .teen-series-grid{display:grid;gap:1rem;margin:1.25rem 0 2.5rem}
       .teen-series-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:1rem;text-decoration:none;color:inherit;background:color-mix(in srgb,Canvas 94%,currentColor 6%)}
