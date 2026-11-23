@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v224-learning-analytics-unified-20261123';
+const CACHE_VERSION = 'gb-v225-skip-link-paint-20261123';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -17,7 +17,7 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=3cd0cf28',
+  '/css/site.css?v=1348a6a1',
   '/css/home.css?v=4a2fa9a3',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
