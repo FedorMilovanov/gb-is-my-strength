@@ -136,6 +136,14 @@ requireValue(!draft.includes('Судебное решение и апелляц�
 requireValue(draft.includes('Изменения законодательства Миссури не выдаются здесь за доказанное следствие именно этого дела'), 'Bickle legislation causality must remain unasserted');
 requireValue(draft.includes('её прежний адрес ныне недоступен'), 'Journey retrospective URL provenance warning missing');
 
+// Frozen Wave10 bibliography keeps its 40 source identities. The historical
+// Journey page now returns 404 and must not masquerade as a working 40th link.
+requireValue(draft.includes("href === 'https://www.thejourney.org/about/our-story-new'"), 'historic Journey locator must have explicit disabled-reader handling');
+requireValue(draft.includes('data-locator-status="unavailable-404-2026-11-23"'), 'verified Journey 404 status must stay visible');
+requireValue(draft.includes('gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf'), 'case-local primary Journey letter missing');
+requireValue(draft.includes('40 библиографических записей'), 'bibliographic entries must not be conflated with 40 live links');
+requireValue(!draft.includes('40 прямых ссылок'), 'confirmed dead Journey URL counted as a working live reader link');
+
 const quizBlock = extractArrayBlock('quiz');
 const quizQuestions = (quizBlock.match(/^\s*\['/gm) ?? []).length;
 requireValue(quizQuestions === 10, `expected 10 quiz questions, found ${quizQuestions}`);
