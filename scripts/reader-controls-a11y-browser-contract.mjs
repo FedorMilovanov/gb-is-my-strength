@@ -594,6 +594,17 @@ async function auditMobile(browser, origin, routeInfo) {
         record(checks, 'gill-mobile-17', 'speed echo works repeatedly after second selection; no accidental speech',
           Boolean(echoAgain && reopened.expanded === 'true' && reopened.rate === '1.5' &&
             reopened.speech === speechBeforeRateTap), { reopened, echoAgain });
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(() => document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded') === 'false');
+        const corner = await page.locator('.mobile-top-bar .reader-mobile-speed-chip').boundingBox();
+        if (corner) await page.touchscreen.tap(corner.x+corner.width-2, corner.y+corner.height-2);
+        const cornerResult = await page.evaluate(() => ({
+          expanded: document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded'),
+          speech: window.__controlsA11ySpeech.speaks,
+        }));
+        record(checks, 'gill-mobile-18', 'bottom-right painted speed echo corner reopens rates rather than losing the tap',
+          Boolean(corner && cornerResult.expanded === 'true' &&
+            cornerResult.speech === speechBeforeRateTap), {corner,cornerResult});
       }
       await page.keyboard.press('Escape');
     }
