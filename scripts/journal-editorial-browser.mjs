@@ -105,10 +105,13 @@ const ready = async (page, url, stage = () => {}) => {
   if (new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
     const hints = await page.locator('link[rel="preload"][as="font"]').evaluateAll((links) =>
       links.map((el) => new URL(el.href).pathname));
-    for (const expected of [
-      '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
-      '/fonts/Lora/lora-cyrillic-600.woff2'
-    ]) assert.ok(hints.includes(expected), 'G3 semibold Cyrillic font missing preload: ' + expected);
+    const history = new URL(url).pathname.startsWith('/journal/dossiers/g3/history/');
+    const source600 = '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2';
+    const lora600 = '/fonts/Lora/lora-cyrillic-600.woff2';
+    assert.equal(hints.filter((hint) => hint === source600).length, 1,
+      'G3 Article must preload exactly one semibold Cyrillic Source Sans face');
+    assert.equal(hints.filter((hint) => hint === lora600).length, history ? 0 : 1,
+      'Only G3 dossier must preload semibold Cyrillic Lora; history must not preload unused face');
   }
   stage('navigation/fonts-ready');
   // A Firefox browsing context with JS disabled may leave an injected

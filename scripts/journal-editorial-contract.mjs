@@ -147,10 +147,11 @@ if (!process.argv.includes('--source-only')) {
     const covers = nodes.filter((node) => node.tagName === 'source' && attr(node, 'type') === 'image/avif');
     assert.equal(covers.length, 1, `exactly one responsive AVIF cover at ${route}`);
     const fontHints = nodes.filter((node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'font');
-    // The Journal collection retains its four existing critical faces.
-    // Only the two published G3 Article routes preload the two additional
-    // pinned semibold Cyrillic faces; reject any missing, extra, or duplicate
-    // hint rather than relaxing the original exact-set contract.
+    // The Journal collection retains its four original critical faces.
+    // Both G3 articles add semibold Source Sans for real labels; only the
+    // dossier uses semibold Lora. History must NOT preload the unused face
+    // (Firefox reports a genuine unused-WOFF2 console warning).
+    // Reject any missing, extra, or duplicate font hint.
     const expectedFontHints = [
       '/fonts/PlayfairDisplay/playfairdisplay-cyrillic-600.woff2',
       '/fonts/Lora/lora-cyrillic-400.woff2',
@@ -158,6 +159,8 @@ if (!process.argv.includes('--source-only')) {
       '/fonts/SourceSans3/sourcesans3-latin-400.woff2',
       ...(type === 'Article' ? [
         '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
+      ] : []),
+      ...(route === '/journal/dossiers/g3/' ? [
         '/fonts/Lora/lora-cyrillic-600.woff2',
       ] : []),
     ];
