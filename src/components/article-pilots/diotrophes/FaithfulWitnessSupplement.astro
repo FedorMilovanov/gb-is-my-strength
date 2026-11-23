@@ -18,6 +18,13 @@ const readerStepCorrections: Record<string, Record<string, string>> = {
   'paige-patterson': {
     'разрешение на доступ к записи': 'проверка сведений из студенческого дела, доступ к которым был предоставлен с разрешения',
   },
+  'darrin-patrick': {
+    // The April 2016 elders' letter reports the board's decision and announced plans;
+    // it does not certify unanimity or that subsequent congregational meetings took place.
+    'единогласное отстранение': 'решение совета об отстранении',
+    'встречи для слушания членов': 'запланированные встречи с общиной (их проведение письмом не подтверждено)',
+    'восстановление миссии': 'объявленные меры для продолжения служения общины (их итог письмом не установлен)',
+  },
 };
 const readerStep = (caseId: string, step: string) => readerStepCorrections[caseId]?.[step] ?? step;
 
@@ -120,6 +127,12 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
           {readerSources.filter((source) => pathway.sourceIds.includes(source.id)).map((source, index) => (
             <span>{index > 0 ? ' · ' : ' '}<a href={source.href} rel="noopener noreferrer">{source.label}</a></span>
           ))}
+          {pathway.id === 'darrin-patrick' && (
+            <span>
+              {' '}<a href="https://www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf" rel="noopener noreferrer">Копия первичного письма старейшин The Journey, апрель 2016 года (PDF, 3 страницы)</a>.
+              {' '}Письмо подтверждает решение об отстранении и анонс предстоящих собраний; оно не доказывает, что объявленные встречи затем состоялись.
+            </span>
+          )}
           {pathway.id === 'paige-patterson' && (
             <span>
               {' '}<a href="#sources">Три документа SWBTS о решениях попечителей находятся в основной библиографии выше</a>.
@@ -149,6 +162,7 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
       <a href="https://gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf?utm_campaign=31a15475a8-Letter_to_ALL_ATTENDERS4_12_2016&utm_medium=email&utm_source=Journey+members&utm_term=0_503455d089-31a15475a8-345860089" rel="noopener noreferrer">письмо совета старейшин The Journey, апрель 2016 года (PDF, 3 страницы)</a>.
       В нём говорится о намерении провести встречи с общиной, но само письмо не
       подтверждает, что эти встречи позднее состоялись.
+      {' '}<a href="https://www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf" rel="noopener noreferrer">Доступная копия PDF</a> размещена отдельно от первоначальной рассылки.
     </p>
     <p class="muted">
       Последующая трагическая смерть Darrin Patrick не используется для объяснения её причин,
