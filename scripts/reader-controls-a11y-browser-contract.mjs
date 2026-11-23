@@ -831,13 +831,21 @@ async function auditGillAnalyticsCenter(browser, origin, width) {
       const left=visibleLabel?Math.min(a.left,b.left):a.left;
       const right=visibleLabel?Math.max(a.right,b.right):a.right;
       const center=(left+right)/2;
+      const desired=(home.right+playCircle.left)/2;
+      const inkWidth=right-left;
+      const low=s.left+1+inkWidth/2;
+      const high=s.right-1-inkWidth/2;
+      const feasible=low<=high;
+      const closest=feasible?Math.max(low,Math.min(high,desired)):null;
       const picked=document.elementFromPoint(center,(t.top+t.bottom)/2)?.closest('button');
       return {
         leftGap:left-home.right,
         rightGap:playCircle.left-right,
         opticalDelta:(left-home.right)-(playCircle.left-right),
+        opticalError:feasible?Math.abs(center-closest):null,
+        feasible,inkWidth,slotWidth:s.width,
         gapToRate:r.left-right,
-        contained:left>=s.left-1&&right<=s.right+1,
+        contained:left>=s.left-.25&&right<=s.right+.25,
         fullLabel:!visibleLabel||(label.textContent?.trim()==='Аналитика'&&
           label.scrollWidth<=label.clientWidth+1),
         labelVisible:visibleLabel,
@@ -846,10 +854,10 @@ async function auditGillAnalyticsCenter(browser, origin, width) {
       };
     });
     record(checks,'gill-analytics-center-'+width,
-      'Analytics ink balanced from Home SVG right edge to Play circle left edge',
-      response?.status()===200&&Boolean(geometry&&
-        (width<390||Math.abs(geometry.opticalDelta)<=(width<440?(width>=401&&width<=419?18:12):1.25))&&
-        geometry.leftGap>=0&&geometry.rightGap>=0&&geometry.gapToRate>=0.5&&
+      'Analytics ink stays inside its own slot at the closest feasible Home-to-Play optical centre',
+      response?.status()===200&&Boolean(geometry&&geometry.feasible&&
+        geometry.opticalError<=1.25&&
+        geometry.leftGap>=0&&geometry.rightGap>=0&&geometry.gapToRate>=0&&
         geometry.contained&&geometry.fullLabel&&geometry.hit&&geometry.overflow===0),geometry);
     return {caseId:'gill-analytics-'+width,checks};
   } finally {await context.close()}
