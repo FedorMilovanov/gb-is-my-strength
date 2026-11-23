@@ -290,6 +290,7 @@ const page = config.pages[pageId];
     const homeSvg = homeInk as SVGElement;
     const ringSvg = playInk as SVGElement;
     const analyticsSvg = iconInk as SVGElement;
+    const slot = button.closest('.mobile-top-slot') as HTMLElement | null;
     let currentShift = 0;
     let queued = false;
     function align() {
@@ -301,11 +302,24 @@ const page = config.pages[pageId];
       const labelVisible = labelInk instanceof HTMLElement
         && getComputedStyle(labelInk).display !== 'none'
         && !!labelInk.getClientRects().length;
-      const right = labelVisible ? labelInk.getBoundingClientRect().right : icon.right;
-      // Subtract the previous paint-only offset before measuring the natural centre.
-      const naturalCentre = (icon.left + right) / 2 - currentShift;
+      const labelRect = labelVisible ? labelInk.getBoundingClientRect() : null;
+      const left = Math.min(icon.left, labelRect?.left ?? icon.left);
+      const right = Math.max(icon.right, labelRect?.right ?? icon.right);
+      // Use the same optical centre as W125, but never let painted text
+      // protrude into the neighbouring 44px speed target. This is a real
+      // containment constraint, not a fixed per-breakpoint pixel nudge.
+      const naturalCentre = (left + right) / 2 - currentShift;
       const targetCentre = (home.right + play.left) / 2;
-      const nextShift = Math.round((targetCentre - naturalCentre) * 100) / 100;
+      let desiredShift = targetCentre - naturalCentre;
+      if (slot) {
+        const bounds = slot.getBoundingClientRect();
+        const minShift = bounds.left + 1 - (left - currentShift);
+        const maxShift = bounds.right - 1 - (right - currentShift);
+        if (minShift <= maxShift) {
+          desiredShift = Math.max(minShift, Math.min(maxShift, desiredShift));
+        }
+      }
+      const nextShift = Math.round(desiredShift * 100) / 100;
       if (Number.isFinite(nextShift) && Math.abs(nextShift - currentShift) > 0.25) {
         currentShift = nextShift;
         button.style.setProperty('--gb-analytics-ink-shift', currentShift + 'px');
