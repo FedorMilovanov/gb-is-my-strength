@@ -224,6 +224,18 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     var lead = node('header', 'gbr-marginalia-lead');
     lead.appendChild(node('span', 'gbr-marginalia-eyebrow', 'АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА'));
     lead.appendChild(node('h3', '', data.active ? text(data.active) : 'Исследовательский контекст'));
+    // One canonical Pagefind palette, not another research-sheet search owner.
+    var searchAction = node('button', 'gbr-marginalia-search', 'Поиск по сайту');
+    searchAction.type = 'button';
+    searchAction.addEventListener('click', function () {
+      var close = sheet.querySelector('.toc-sheet__handle');
+      if (close) close.click();
+      window.setTimeout(function () {
+        if (window.GBSearch && typeof window.GBSearch.open === 'function') window.GBSearch.open();
+        else window.dispatchEvent(new CustomEvent('gb:openSearch'));
+      }, 60);
+    });
+    lead.appendChild(searchAction);
     content.appendChild(lead);
     {
       var refs = group('Писание', String(data.refs.length));
@@ -443,6 +455,8 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   #partTocOverlay .gbr-marginalia { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:0 20px 22px; scrollbar-width:thin; color:inherit; }
   #partTocOverlay .gbr-marginalia-inner { max-width:620px; margin:0 auto; }
   #partTocOverlay .gbr-marginalia-lead { padding:12px 0 11px; border-bottom:1px solid rgba(121,92,67,.17); }
+  #partTocOverlay .gbr-marginalia-search { display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;padding:10px 14px;border:1px solid currentColor;border-radius:9px;background:transparent;color:inherit;font:600 13px/1.4 system-ui,sans-serif;cursor:pointer; }
+  #partTocOverlay .gbr-marginalia-search:focus-visible { outline:2px solid currentColor;outline-offset:3px; }
   #partTocOverlay .gbr-marginalia-eyebrow { display:block; font:650 9px/1.5 'Source Sans 3',system-ui,sans-serif; letter-spacing:.14em; color:#987956; }
   #partTocOverlay .gbr-marginalia-lead h3 { margin:4px 0 2px; font:600 15.5px/1.35 'Lora',Georgia,serif; letter-spacing:-.015em; }
   #partTocOverlay .gbr-marginalia-lead p { margin:0; font-size:12px; line-height:1.6; opacity:.7; }
