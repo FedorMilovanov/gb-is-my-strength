@@ -680,6 +680,12 @@
       "source": "src/pages/otstupniki/index.astro",
       "risk": 2,
       "status": "production-dist"
+    },
+    "/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno/": {
+      "owner": "astro-noindex",
+      "source": "src/pages/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno/index.astro",
+      "risk": 2,
+      "status": "build-only"
     }
   }
 }
