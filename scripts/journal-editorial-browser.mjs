@@ -100,6 +100,16 @@ const ready = async (page, url, stage = () => {}) => {
   stage('navigation/load');
   const response = await page.goto(url, { waitUntil: 'load', timeout: 25_000 });
   assert.equal(response.status(), 200, url);
+  // Verify the actual article preload contract on the shipped HTML; fail
+  // independently of WebKit's CSS FontFaceSet status, not instead of it.
+  if (new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
+    const hints = await page.locator('link[rel="preload"][as="font"]').evaluateAll((links) =>
+      links.map((el) => new URL(el.href).pathname));
+    for (const expected of [
+      '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
+      '/fonts/Lora/lora-cyrillic-600.woff2'
+    ]) assert.ok(hints.includes(expected), 'G3 semibold Cyrillic font missing preload: ' + expected);
+  }
   stage('navigation/fonts-ready');
   // A Firefox browsing context with JS disabled may leave an injected
   // document.fonts.ready promise unsettled. Observe the actual FontFaceSet
