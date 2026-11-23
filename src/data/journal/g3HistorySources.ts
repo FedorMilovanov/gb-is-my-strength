@@ -133,10 +133,10 @@ export const G3_HISTORY_SOURCES = [
     returnHref: '#g3-year-2024', researchLocator: 'HIST-20 / G3-HIST-PUB-09',
   },
   {
-    id: 'cessationist-2024', title: 'G3 / Ticket Tailor. Cessationist Conference',
-    period: '3–5 октября 2024 · Mustang, Oklahoma', role: 'Страница записи на мероприятие',
+    id: 'cessationist-2024', title: 'G3 / Ticket Tailor. 2024 Cessationist Conference Publisher',
+    period: '3–5 октября 2024 · Mustang, Oklahoma', role: 'Регистрация издательств на мероприятие',
     url: 'https://www.tickettailor.com/events/g3ministries/1270768',
-    boundary: 'Даты и итоговая объявленная площадка First Baptist Church of Mustang; не реестр посетителей и не объяснение смены места.',
+    boundary: 'Даты и заявленная площадка из формы регистрации издательств, а не из общего списка посетителей; документ не устанавливает фактическую программу или причину смены места.',
     returnHref: '#g3-year-2024', researchLocator: 'HIST-20 / G3-HIST-PUB-09',
   },
   {
