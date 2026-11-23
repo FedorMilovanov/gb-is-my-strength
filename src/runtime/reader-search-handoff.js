@@ -61,19 +61,28 @@ function consume(){
  }
 }
 function init(){
+ function captureResult(){
+  const query=document.querySelector('.cp-backdrop.is-open .cp-input')?.value?.trim();
+  if(!query||query.length<2||query.length>120)return;
+  const params=new URLSearchParams(location.search);
+  try{sessionStorage.setItem(KEY,JSON.stringify({
+    query,timestamp:Date.now(),pilot:params.get('reader-pilot')==='1',
+    paper:params.get('paper'),panel:params.get('panel')
+  }))}catch(_){}
+  // The result owner navigates; consume only on the destination.
+ }
  document.addEventListener('click',event=>{
   if(event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
   if(!event.target.closest?.('.cp-backdrop.is-open #cp-listbox .cp-item'))return;
-  const query=document.querySelector('.cp-backdrop.is-open .cp-input')?.value?.trim();
-  if(query&&query.length>=2&&query.length<=120){
-   const params=new URLSearchParams(location.search);
-   try{sessionStorage.setItem(KEY,JSON.stringify({
-     query,timestamp:Date.now(),pilot:params.get('reader-pilot')==='1',
-     paper:params.get('paper'),panel:params.get('panel')
-   }))}catch(_){}
-   // The result owner navigates. Consume only after the destination loads;
-   // a timer here could clear the handoff on the source page before navigation.
-  }
+  captureResult();
+ },true);
+ // The canonical palette activates results with Enter directly from its input,
+ // not by firing a click on the selected result. Keep keyboard parity.
+ document.addEventListener('keydown',event=>{
+  if(event.key!=='Enter'||event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+  if(!document.activeElement?.matches?.('.cp-backdrop.is-open .cp-input,.cp-backdrop.is-open #cp-listbox .cp-item'))return;
+  if(!document.querySelector('.cp-backdrop.is-open #cp-listbox .cp-item[aria-selected="true"]'))return;
+  captureResult();
  },true);
  consume();
  window.addEventListener('pageshow',consume);

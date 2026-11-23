@@ -1,6 +1,7 @@
 import {chromium,webkit} from 'playwright';
 import fs from 'node:fs';
-const BASE='http://127.0.0.1:8618',ROUTE='/articles/dzhon-gill-chast-2-uchenyi/';
+// Run against the explicit W57 preview server with a built Pagefind index.
+const BASE=process.env.AUDIT_BASE||'http://127.0.0.1:8618',ROUTE='/articles/dzhon-gill-chast-2-uchenyi/';
 const checks=[],failures=[];
 const ck=(n,good,detail='')=>{checks.push({name:n,ok:!!good,detail});console.log((good?'PASS ':'FAIL ')+n+' '+detail);if(!good)failures.push(n+' '+detail);};
 for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
@@ -47,7 +48,30 @@ try{
  ck(name+' '+kind+' source occurrence focuses real article paragraph',
    state.within&&state.selected?.toLocaleLowerCase('ru').includes('маришальского'),JSON.stringify(state));
  ck(name+' '+kind+' retains Reader quiz',state.hasStudy);
- if(kind==='desktop-W57')ck(name+' W57 search result preserves pilot desktop',state.w57&&state.href.includes('reader-pilot=1'),state.href);
+ if(kind==='desktop-W57'){
+   ck(name+' W57 search result preserves pilot desktop',state.w57&&state.href.includes('reader-pilot=1'),state.href);
+   // Pagefind uses a direct Enter handler on its combobox; this must follow the
+   // same source-word + W57 preservation route as a mouse result click.
+   const opener=p.locator('#gbSearchBtn:visible,[data-fc-action="search"]:visible,.gb-nav-search-icon:visible').first();
+   await opener.click();
+   await p.locator('.cp-input').fill('Маришальского');
+   const choices=p.locator('#cp-listbox .cp-item');
+   await p.waitForFunction(()=>document.querySelectorAll('#cp-listbox .cp-item').length>=2,null,{timeout:18000});
+   const labels=await choices.allTextContents();
+   const index=labels.findIndex(s=>s.includes('Часть II'));
+   if(index<0)throw Error('keyboard target missing');
+   await p.locator('.cp-input').focus();
+   for(let i=0;i<=labels.length;i++){
+     if(await p.locator('.cp-input').getAttribute('aria-activedescendant')==='cp-option-'+index)break;
+     await p.keyboard.press('ArrowDown');
+   }
+   await p.keyboard.press('Enter');
+   await p.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&new URLSearchParams(location.search).get('reader-pilot')==='1'&&window.getSelection()?.toString().includes('Маришальского'),null,{timeout:25000});
+   ck(name+' W57 keyboard Enter preserves Reader and exact paragraph',await p.evaluate(()=>
+     document.body.classList.contains('np-w57-ready')&&
+     window.getSelection()?.toString().includes('Маришальского')&&
+     !!document.querySelector('#gbAnalyticsStudy')));
+ }
  ck(name+' '+kind+' no page errors',!errors.length,errors.slice(0,2).join(' | '));
  }catch(e){ck(name+' '+kind+' FATAL',false,String(e).slice(0,420));}
  finally{await c.close()}
