@@ -247,7 +247,7 @@ requireValue(
 );
 requireValue(
   supplement.includes('gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf') &&
-  supplement.includes('не подтверждает, что эти встречи позднее состоялись') &&
+  /не\s+подтверждает,\s+что эти встречи позднее состоялись\./.test(supplement) &&
   !supplement.includes('позднее проводили встречи, где'),
   'The Journey comparator must cite the original 2016 elder letter and distinguish plans from completed meetings',
 );
