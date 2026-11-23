@@ -265,8 +265,11 @@ requireValue(
   supplement.includes('Письмо подтверждает решение об отстранении и анонс') &&
   supplement.includes('официальная история The Journey') &&
   supplement.includes('встречах с группами общины в начале 2017 года') &&
-  supplement.includes('https://www.thejourney.org/about/our-story-new'),
-  'Journey pathways lost the distinct 2016 letter and later 2017–18 source attribution',
+  supplement.includes("source.id === 'FW10-DPA-01'") &&
+  supplement.includes('data-locator-status="unavailable-404-2026-11-23"') &&
+  !supplement.includes('<a href="https://www.thejourney.org/about/our-story-new"') &&
+  supplement.includes('исторической страницы The Journey адрес сейчас недоступен'),
+  'Journey paths must preserve 2016 vs 2017–18 provenance without offering the confirmed-404 historical URL as a working link',
 );
 requireValue(
   seriesConfig.includes("href: '#faithful-witness-sources'") &&
