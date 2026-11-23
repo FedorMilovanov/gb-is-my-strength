@@ -1017,6 +1017,27 @@ async function auditGillScrollLockPosition(browser, origin, kind, resizeUnderLoc
         Math.abs(after.reading?.progress - before.reading?.progress) <= 2 &&
         Math.abs(after.saved?.progress - before.saved?.progress) <= 2),
       { before, after });
+    // W136: TOC "Продолжить" is CLOSE, not navigation to a saved section.
+    // A real upward wheel gesture reveals auto-hidden mobile chrome; do not
+    // force-click or override product auto-hide in this regression.
+    if (kind === 'toc') {
+      await p.mouse.wheel(0, -220);
+      await p.waitForTimeout(450);
+      const atContinue = await get();
+      await p.locator('#mobPartTocBtn').click();
+      await p.waitForTimeout(200);
+      const continueOpen = await get();
+      await p.locator('#partTocOverlay [data-gbat-continue]').click();
+      await p.waitForTimeout(950);
+      const afterContinue = await get();
+      record(checks, caseId+'-continue-returns-to-exact-position',
+        'Part TOC Continue closes without scrolling to a saved section start',
+        Boolean(continueOpen.lock === '1' && afterContinue.lock !== '1' &&
+          Math.abs(afterContinue.scrollY - atContinue.scrollY) <= 2 &&
+          afterContinue.reading?.sectionId === atContinue.reading?.sectionId &&
+          Math.abs((afterContinue.reading?.progress || 0) - (atContinue.reading?.progress || 0)) <= 1),
+        { atContinue, continueOpen, afterContinue });
+    }
     const newtab = await ctx.newPage();
     await newtab.goto(url, { waitUntil: 'load' });
     await newtab.waitForTimeout(850);
