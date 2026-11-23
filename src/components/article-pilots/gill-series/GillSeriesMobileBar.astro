@@ -270,9 +270,65 @@ const page = config.pages[pageId];
     compact.addEventListener('change', place);
   }
 
+  /** W125: centre the VISIBLE Analytics icon+label between the right edge
+   * of Home's SVG and the left edge of the painted Play ring. The rate badge
+   * between the slot and Play is an invisible 44px hit target, not the visual
+   * neighbour: centring the flexible slot produced a consistent ~19px error.
+   * Keep all 44px click targets unchanged, only shift the painted children. */
+  function initGillAnalyticsOpticalAlignment() {
+    const top = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    const trigger = top?.querySelector('.mobile-top-slot .reader-mobile-menu-trigger');
+    const homeInk = top?.querySelector('#mobHomeBtn svg');
+    const playInk = top?.querySelector('.reader-mobile-play .gb-ember__ring-svg');
+    const iconInk = trigger?.querySelector('svg');
+    const labelInk = trigger?.querySelector('span');
+    if (!(top instanceof HTMLElement) || !(trigger instanceof HTMLElement)
+      || !(homeInk instanceof SVGElement) || !(playInk instanceof SVGElement)
+      || !(iconInk instanceof SVGElement)) return;
+    // Keep the validated DOM types stable inside the requestAnimationFrame closure.
+    const button = trigger as HTMLElement;
+    const homeSvg = homeInk as SVGElement;
+    const ringSvg = playInk as SVGElement;
+    const analyticsSvg = iconInk as SVGElement;
+    let currentShift = 0;
+    let queued = false;
+    function align() {
+      queued = false;
+      if (!button.getClientRects().length) return;
+      const home = homeSvg.getBoundingClientRect();
+      const play = ringSvg.getBoundingClientRect();
+      const icon = analyticsSvg.getBoundingClientRect();
+      const labelVisible = labelInk instanceof HTMLElement
+        && getComputedStyle(labelInk).display !== 'none'
+        && !!labelInk.getClientRects().length;
+      const right = labelVisible ? labelInk.getBoundingClientRect().right : icon.right;
+      // Subtract the previous paint-only offset before measuring the natural centre.
+      const naturalCentre = (icon.left + right) / 2 - currentShift;
+      const targetCentre = (home.right + play.left) / 2;
+      const nextShift = Math.round((targetCentre - naturalCentre) * 100) / 100;
+      if (Number.isFinite(nextShift) && Math.abs(nextShift - currentShift) > 0.25) {
+        currentShift = nextShift;
+        button.style.setProperty('--gb-analytics-ink-shift', currentShift + 'px');
+      }
+    }
+    function schedule() {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(align);
+    }
+    const ro = new ResizeObserver(schedule);
+    ro.observe(top);
+    ro.observe(trigger);
+    if (labelInk instanceof HTMLElement) ro.observe(labelInk);
+    window.addEventListener('resize', schedule, { passive:true });
+    document.fonts?.ready.then(schedule);
+    schedule();
+  }
+
   function boot() {
     initGillThemeSync();
     initGillCompactFavouritePlacement();
+    initGillAnalyticsOpticalAlignment();
     initGillMobileTopBarAutoHide();
 
     const backBtn = document.getElementById('mobBackBtn');
@@ -371,17 +427,19 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .mobile-top-slot {
     position:relative;flex:1 1 auto;min-width:0;z-index:3;
   }
-  /* W124: Analytics is centred IN ITS OWN flexible 44px+ slot.
-     No absolute offsets or translated text: adding a 44px Search hitbox
-     must not make the label intercept Play, rate, Settings or Save taps.
-     Narrow screens use an icon-only Analytics trigger with its full
-     accessible name intact; all controls retain independent 44px targets. */
+  /* W125: keep Analytics' existing 44px+ touch target, but optically align
+     its painted icon+label to Home SVG and Play ring, not the invisible
+     intervening speed-button hitbox. Narrow screens retain the same controls. */
   [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
     box-sizing:border-box;justify-content:center;gap:6px;
     padding-inline:0 !important;
   }
   [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger :is(svg,span) {
     position:static;left:auto;transform:none;
+    /* Only the ink moves. Overflowing letters never consume the adjacent
+       invisible speed target: the 44px button boxes remain disjoint. */
+    translate:var(--gb-analytics-ink-shift,0px) 0;
+    pointer-events:none;
   }
   @media(max-width:374px) {
     [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger span {

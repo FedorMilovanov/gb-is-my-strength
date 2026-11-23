@@ -87,6 +87,16 @@ assert.ok(playPosition >= 0 && playPosition < searchPosition && searchPosition <
 assert.doesNotMatch(partOverlay, /gbr-marginalia-search/, 'Analytics must not include a competing search action');
 assert.match(mobileBar, /initGillCompactFavouritePlacement\(\)/, 'compact mobile must preserve one favourite control');
 assert.match(mobileBar, /compact\.addEventListener\('change', place\)/, 'Save must return to top when resizing');
+// W125: do not regress to centring the full flex slot or to a localhost link
+// that displays the older desktop unless ?reader-pilot=1 was hand-added.
+assert.match(mobileBar, /initGillAnalyticsOpticalAlignment\(\)/, 'painted Analytics alignment must run');
+assert.match(mobileBar, /const targetCentre = \(home\.right \+ play\.left\) \/ 2/, 'optical centre uses actual Home and Play ink edges');
+assert.match(mobileBar, /--gb-analytics-ink-shift/, 'optical shift must affect ink, not touch target');
+const localPreview = fs.readFileSync(path.join(ROOT, 'research/reader-w57-pilot/preview.py'), 'utf8');
+assert.match(localPreview, /parse_qs\(req\.query\)\.get\("reader-pilot"\)!=\["0"\]/,
+  'ordinary localhost Reader URL must default to W57 desktop; native is an explicit opt-out');
+assert.match(localPreview, /matchMedia\('\(min-width:1121px\)'\)/,
+  'local W57 bootstrap must retain the native mobile reader');
 assert.match(mobileBar, /<ReaderMobileActions engine="series" settingsPlacement="none"/, 'Gill bottom bar must reserve space for the current chapter, not duplicate Settings');
 assert.match(actionsSource, /settingsPlacement === 'bottom' && <ReaderMobileSettingsButton engine=\{engine\}/, 'other mobile Reader engines must retain their bottom settings');
 assert.match(settingsTrigger, /id=\{isSeries\?'mobSettingsBtn':'hmSettingsBtn'\}/, 'single settings control must preserve original owner IDs');

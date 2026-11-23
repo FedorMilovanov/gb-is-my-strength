@@ -11,7 +11,7 @@ is explicitly run. Canonical production Reader remains the existing Astro compon
 
 1. Build the repository's current branch to `dist/`.
 2. Run `python research/reader-w57-pilot/preview.py` (Python 3.11+).
-3. Open `http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space`.
+3. Open `http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/` — W57 loads **by default on desktop (≥1121px)**; native Reader stays on mobile.
 
 **Explicit views (same W57 source, no guesswork):**
 
@@ -32,8 +32,11 @@ represent different UI states, not different production versions.
 5. Preview server binds **only** to localhost; it never writes to production, commits, or a live site.
 
 Environment overrides: `READER_W57_DIST` (absolute Astro dist path) and
-`READER_W57_PORT` (default `19061`). An ordinary URL without
-`?reader-pilot=1` serves the unchanged built site.
+`READER_W57_PORT` (default `19061`). An ordinary Reader URL now loads the
+W57 preview on desktop, even with `utm_source`; it no longer silently falls
+back to the old desktop design. Add `?reader-pilot=0` to deliberately compare
+the native desktop. All mobile widths remain native (CSS and JS desktop-gated).
+These defaults apply **only** to this localhost preview server, not production.
 
 ## Scrollbar-safe single-axis positioning
 
