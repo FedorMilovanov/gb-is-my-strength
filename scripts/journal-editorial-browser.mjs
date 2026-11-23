@@ -903,6 +903,24 @@ try {
           item.phase = 'navigation/ready';
           const response = await ready(page, route.url, (phase) => { item.phase = phase; });
           if (route.kind === 'history') await assertPublishedHistory(page, response);
+          // The shared dark-theme anchor color must not override Journal's
+          // inverse skip-navigation foreground. Check the *focused* control
+          // in every real mobile engine/theme and JS/no-JS mode.
+          await page.locator('a.skip-link').focus();
+          item.skipLinkContrast = await page.locator('a.skip-link').evaluate((el) => {
+            const style = getComputedStyle(el);
+            const rgb = (value) => value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number);
+            const fg = rgb(style.color), bg = rgb(style.backgroundColor);
+            if (!fg || !bg) throw new Error('skip-link has no opaque RGB colors');
+            const lum = (c) => c.map((value) => {
+              const n = value / 255;
+              return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+            }).reduce((acc, channel, i) => acc + channel * [0.2126, 0.7152, 0.0722][i], 0);
+            const a = lum(fg), b = lum(bg);
+            return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+          });
+          assert.ok(item.skipLinkContrast >= 4.5,
+            `focused skip-link contrast below WCAG AA: ${item.skipLinkContrast.toFixed(2)}:1 (${name})`);
           assert.equal(await page.locator('[data-journal-contents]').count(), 1);
           assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
           await summary.focus();
