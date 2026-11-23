@@ -329,11 +329,65 @@ if (exists('data/route-search-policy.json')) {
   }
 }
 
+let checkedInternalLinks = 0;
+let checkedInternalAnchors = 0;
 if (fs.existsSync(DIST)) {
+  // Validate actual rendered links, not merely declared Reader TOC / historic anchors.
+  // Missing target files and fragment IDs must fail the atomic 3+4 release contract.
+  const linkedHtml = new Map();
+  const linkedIds = new Map();
+  const scanRenderedLinks = (route, html) => {
+    for (const hit of html.matchAll(/<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
+      const href = (hit[1] ?? hit[2]).replace(/&amp;/g, '&');
+      let target;
+      try {
+        target = new URL(href, SITE + route);
+      } catch {
+        fail(route + ': malformed rendered link ' + href);
+        continue;
+      }
+      if (target.origin !== SITE) continue;
+      checkedInternalLinks += 1;
+      let relative;
+      try {
+        relative = decodeURIComponent(target.pathname).replace(/^\/+/, '');
+      } catch {
+        fail(route + ': invalid percent encoding in local link ' + href);
+        continue;
+      }
+      const candidate = path.join(DIST, relative.endsWith('/') || !path.extname(relative)
+        ? relative + 'index.html' : relative);
+      if (!fs.existsSync(candidate)) {
+        fail(route + ': rendered internal link is missing from dist: ' + href);
+        continue;
+      }
+      if (!target.hash) continue;
+      checkedInternalAnchors += 1;
+      let id;
+      try {
+        id = decodeURIComponent(target.hash.slice(1));
+      } catch {
+        fail(route + ': invalid anchor encoding ' + href);
+        continue;
+      }
+      if (!linkedHtml.has(candidate)) {
+        linkedHtml.set(candidate, candidate === routeFile(route) ? html : fs.readFileSync(candidate, 'utf8'));
+      }
+      if (!linkedIds.has(candidate)) {
+        linkedIds.set(candidate, new Set([...linkedHtml.get(candidate).matchAll(
+          /<[a-z][^>]*\s+id=["']([^"']+)["'][^>]*>/gi
+        )].map((match) => match[1])));
+      }
+      if (!linkedIds.get(candidate).has(id)) {
+        fail(route + ': rendered internal anchor is missing from dist: ' + href);
+      }
+    }
+  };
   for (const [route] of requiredOwnership) {
     const file = routeFile(route);
     if (!fs.existsSync(file)) { fail(`${route}: missing production-like dist HTML`); continue; }
     const html = fs.readFileSync(file, 'utf8');
+    scanRenderedLinks(route, html);
     const expectedCanonical = `${SITE}${route}`;
     if (canonical(html) !== expectedCanonical) fail(`${route}: canonical mismatch`);
     if (/\bnoindex\b/i.test(meta(html, 'robots'))) fail(`${route}: live candidate remains noindex`);
@@ -407,4 +461,5 @@ console.log('  publication source: seven MDX canonical + raw HTML comments rejec
 console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical frontmatter');
 console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail family');
 console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
+if (fs.existsSync(DIST)) console.log('  rendered links: ' + checkedInternalLinks + ' internal, ' + checkedInternalAnchors + ' fragment anchors, 0 missing targets');
 console.log('  production ownership: astro/production-dist');
