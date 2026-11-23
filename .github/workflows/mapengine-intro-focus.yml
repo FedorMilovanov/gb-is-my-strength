@@ -60,6 +60,11 @@ jobs:
         run: |
           node -e "const fs=require('node:fs');const pw=require('playwright');const v=require('playwright/package.json').version;if(v!=='1.62.1')throw Error('Playwright version mismatch: '+v);for(const [name,b] of [['chromium',pw.chromium],['webkit',pw.webkit]]){const p=b.executablePath();if(!fs.existsSync(p))throw Error('Missing preinstalled '+name+' browser: '+p);console.log('Verified '+name+' '+p)}"
 
+      - name: Trust only this checked-out repository inside the job container
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          test "$(git rev-parse --show-toplevel)" = "$GITHUB_WORKSPACE"
+
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 
