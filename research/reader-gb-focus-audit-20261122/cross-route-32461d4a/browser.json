@@ -1,0 +1,116 @@
+[
+  {
+    "fixture": {
+      "source": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "overlay": "partTocOverlay",
+      "href": "/articles/dzhon-gill-istoricheskiy-kontekst/#sec-from-puritans-to-baptists",
+      "ariaCurrent": null,
+      "targetPath": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+      "fragment": "sec-from-puritans-to-baptists",
+      "crossRoute": true,
+      "fileExists": true,
+      "targetIdCount": 1,
+      "pass": true
+    },
+    "checks": [
+      {
+        "name": "Tab reaches cross-route fragment link after keyboard expansion",
+        "pass": true
+      },
+      {
+        "name": "Native cross-route hash reaches visible target with closed destination dialog",
+        "pass": true,
+        "data": {
+          "path": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+          "hash": "#sec-from-puritans-to-baptists",
+          "top": 87.84375,
+          "height": 844,
+          "overlay": "true",
+          "focus": "",
+          "native": true
+        }
+      },
+      {
+        "name": "Zero page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  },
+  {
+    "fixture": {
+      "source": "/baptisty-rossii/dva-sezda-1884/",
+      "overlay": "partTocOverlay",
+      "href": "/baptisty-rossii/noch-na-kure/#molokan-context",
+      "ariaCurrent": null,
+      "targetPath": "/baptisty-rossii/noch-na-kure/",
+      "fragment": "molokan-context",
+      "crossRoute": true,
+      "fileExists": true,
+      "targetIdCount": 1,
+      "pass": true
+    },
+    "checks": [
+      {
+        "name": "Tab reaches cross-route fragment link after keyboard expansion",
+        "pass": true
+      },
+      {
+        "name": "Native cross-route hash reaches visible target with closed destination dialog",
+        "pass": true,
+        "data": {
+          "path": "/baptisty-rossii/noch-na-kure/",
+          "hash": "#molokan-context",
+          "top": 87.65625,
+          "height": 844,
+          "overlay": "true",
+          "focus": "",
+          "native": true
+        }
+      },
+      {
+        "name": "Zero page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  },
+  {
+    "fixture": {
+      "source": "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/",
+      "overlay": "partTocOverlay",
+      "href": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/#коротко",
+      "ariaCurrent": null,
+      "targetPath": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+      "fragment": "коротко",
+      "crossRoute": true,
+      "fileExists": true,
+      "targetIdCount": 1,
+      "pass": true
+    },
+    "checks": [
+      {
+        "name": "Tab reaches cross-route fragment link after keyboard expansion",
+        "pass": true
+      },
+      {
+        "name": "Native cross-route hash reaches visible target with closed destination dialog",
+        "pass": true,
+        "data": {
+          "path": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+          "hash": "#коротко",
+          "top": 88.1875,
+          "height": 844,
+          "overlay": "true",
+          "focus": "",
+          "native": true
+        }
+      },
+      {
+        "name": "Zero page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  }
+]
