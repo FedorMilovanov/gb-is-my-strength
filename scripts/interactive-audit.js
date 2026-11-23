@@ -366,7 +366,7 @@ async function checkQuiz(browser) {
         push('quiz-question-options-not-rendered', url, state);
       } else {
         const scan = () => quiz.evaluate(node => {
-          const LITERAL = /<(em|strong|b|i|u|span)\\b/i;
+          const LITERAL = /<(em|strong|b|i|u|span)\b/i;
           const elements = [node.querySelector('h4'),...node.querySelectorAll('.gb-study-options button, .gb-study-feedback')];
           const literal = elements.filter(el => el && LITERAL.test(el.textContent || ''))
             .map(el => (el.textContent || '').slice(0,80));
@@ -406,7 +406,7 @@ async function checkQuiz(browser) {
       /* GBS-QUIZ-LITERAL-MARKUP: legacy articles keep their rich markup
          regression guard, before and after the first answer. */
       const scan = () => page.evaluate(() => {
-        const LITERAL = /<(em|strong|b|i|u|span)\\b/i;
+        const LITERAL = /<(em|strong|b|i|u|span)\b/i;
         const nodes = [document.querySelector('#quizQuestion'), ...document.querySelectorAll('.quiz-option'),
           ...document.querySelectorAll('.quiz-feedback, .quiz-explanation, .quiz-explanation-full')];
         const literal = nodes.filter(n => n && LITERAL.test(n.textContent || '')).map(n => (n.textContent || '').slice(0, 80));
