@@ -64,7 +64,7 @@ const nativeText = [head, chrome, main, cards, stats, end].join('\n');
 // the contract constants below pin the canonical totals so silent registry
 // drift fails instead of silently re-basing the guard.
 const CONTRACT_CORE_TOTAL_MIN = 157;
-const CONTRACT_COMPANION_MIN = 15;
+const CONTRACT_COMPANION_MIN = 35;
 const expectedCore = [
   { roman: 'I', slug: '20-antisovetov-pastoru' },
   { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy' },
@@ -151,7 +151,8 @@ for (const part of expectedCore) {
 must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Dossier A route');
 must(cards, 'data-wave12-series-card="true"', 'Dossier A card authority marker');
 must(cards, `Досье A · ${CONTRACT_COMPANION_MIN} мин`, 'Dossier A duration');
-must(cards, '181 источник', 'Dossier A source-count marker');
+must(cards, 'Источники и сверка', 'Dossier A reader-facing evidence label');
+mustNot(cards, '181 источник', 'research authority count must not masquerade as 181 independently reader-openable sources');
 equal(count(cards, '<a href="../articles/'), 10, 'public link inventory: nine core parts plus Dossier A');
 equal(count(cards, 'aria-disabled="true"'), 1, 'non-public card count: field guide only');
 equal(count(cards, 'data-pagefind-ignore'), 1, 'search-excluded non-public card count: field guide only');
@@ -184,7 +185,8 @@ must(stats, 'минута канонического ядра I–IX', 'canonica
 must(stats, '>1</div>', 'one published dossier stat');
 must(stats, 'опубликованное Досье A', 'Dossier A companion stat label');
 must(stats, '>181</div>', 'Dossier A source-count stat');
-must(stats, 'источник в Досье A', 'Dossier A source-count label');
+must(stats, 'запись в реестре Досье A', 'Dossier A authority-record label');
+mustNot(stats, 'источник в Досье A', 'research record count must not be presented as reader-openable sources');
 mustNot(stats, '>10</div>', 'core and dossier conflated into one publication stat');
 
 const pastorSeries = seriesRegistry['pastor-series'];
