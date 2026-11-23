@@ -1,0 +1,2425 @@
+{
+  "sha": "445446050ebb8cebee612d2ea5c195ddc954a60a",
+  "scope": "source-only real configs + real authored standalone TOC; not rendered/browser/runtime/visual proof",
+  "checks": [
+    {
+      "label": "dzhon-gill/context preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "dzhon-gill/part1 preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "dzhon-gill/part2 preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "dzhon-gill/part3 preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "dzhon-gill/part4 preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "dzhon-gill/spravochnik preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "dzhon-gill source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/noch-na-kure preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/yuzhnaya-shtunda preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/dva-sezda-1884 preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/peterburgskaya-liniya preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/goneniya-i-sovest preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/sovetskaya-noch preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/vsehib-1944 preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/iniciativnaya-gruppa preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/podpolnaya-pechat preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism/spravochnik preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "russian-baptism source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/prolog preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/krajne preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/idoly preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/religioznoe preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/sovest preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/myslennaya preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/dorozhki preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/rimlyanam preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/yazyk preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/telo preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/sokrovishche preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/tma preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/skorb preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/novoe preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/menyaetsya preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/iskushenie preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/hranit preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/strah preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/svoboda preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/serdce-duh preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/odinochku preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/hrista preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/osvobozhdennoe preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts/spravochnik preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "hard-texts source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "genesis-6/enoch preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "genesis-6/corpus preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "genesis-6/audit preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "genesis-6/angels preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "genesis-6/spirits preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "genesis-6/dead preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "genesis-6 source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/antisovetov preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/anatomiya preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/teksty preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/sem-tipov preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/disciplina preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/kogda-uhodit preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/vernye preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/zdorovaya-cerkov preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/nesovershennyy preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series/diotrophes preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "pastor-series source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "apostasy-series/otstuplenie-chto-govorit-bibliya preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "apostasy-series/otstupniki-biblii-iuda-saul-ierovoam-dimas preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "apostasy-series/petr-i-iuda-padenie-ili-otstuplenie preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "apostasy-series/otreklis-ot-hrista-istoriya-cerkvi preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "apostasy-series/kogda-chelovek-uhodit-ot-very preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "apostasy-series source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/teen-double-life preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/teen-parents-after-disclosure preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/teen-church-response preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/adult-child-left-home preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/adult-child-home-money preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/adult-child-authority preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life/adult-daughter-marriage preserves canonical identity and active-only hydration",
+      "pass": true
+    },
+    {
+      "label": "teen-double-life source config unchanged",
+      "pass": true
+    },
+    {
+      "label": "Real standalone authored TOC stays heading-only without invented series/chapter",
+      "pass": true
+    },
+    {
+      "label": "Structural chapter cannot be selected as an invented published article",
+      "pass": true
+    },
+    {
+      "label": "Book cannot silently be flattened by removing shape",
+      "pass": true
+    },
+    {
+      "label": "Flat series cannot become book by changing label alone",
+      "pass": true
+    }
+  ],
+  "rows": [
+    {
+      "seriesId": "dzhon-gill",
+      "structure": "flat-series",
+      "pageId": "context",
+      "href": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "context",
+      "currentPageKey": "series:dzhon-gill:page:context",
+      "activePath": [
+        "series:dzhon-gill:page:context"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Исторический контекст"
+      ]
+    },
+    {
+      "seriesId": "dzhon-gill",
+      "structure": "flat-series",
+      "pageId": "part1",
+      "href": "/articles/dzhon-gill-chast-1-chelovek/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "part1",
+      "currentPageKey": "series:dzhon-gill:page:part1",
+      "activePath": [
+        "series:dzhon-gill:page:part1"
+      ],
+      "activeHeadingCount": 15,
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть I. Человек"
+      ]
+    },
+    {
+      "seriesId": "dzhon-gill",
+      "structure": "flat-series",
+      "pageId": "part2",
+      "href": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "part2",
+      "currentPageKey": "series:dzhon-gill:page:part2",
+      "activePath": [
+        "series:dzhon-gill:page:part2"
+      ],
+      "activeHeadingCount": 6,
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть II. Учёный"
+      ]
+    },
+    {
+      "seriesId": "dzhon-gill",
+      "structure": "flat-series",
+      "pageId": "part3",
+      "href": "/articles/dzhon-gill-chast-3-nasledie/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "part3",
+      "currentPageKey": "series:dzhon-gill:page:part3",
+      "activePath": [
+        "series:dzhon-gill:page:part3"
+      ],
+      "activeHeadingCount": 16,
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть IV. Наследие"
+      ]
+    },
+    {
+      "seriesId": "dzhon-gill",
+      "structure": "flat-series",
+      "pageId": "part4",
+      "href": "/articles/dzhon-gill-chast-4-ekzeget/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "part4",
+      "currentPageKey": "series:dzhon-gill:page:part4",
+      "activePath": [
+        "series:dzhon-gill:page:part4"
+      ],
+      "activeHeadingCount": 14,
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть III. Экзегет"
+      ]
+    },
+    {
+      "seriesId": "dzhon-gill",
+      "structure": "flat-series",
+      "pageId": "spravochnik",
+      "href": "/articles/dzhon-gill-spravochnik/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "spravochnik",
+      "currentPageKey": "series:dzhon-gill:page:spravochnik",
+      "activePath": [
+        "series:dzhon-gill:page:spravochnik"
+      ],
+      "activeHeadingCount": 9,
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Справочник по Гиллу"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "noch-na-kure",
+      "href": "/baptisty-rossii/noch-na-kure/",
+      "chapterId": "origins-and-first-brotherhood",
+      "satelliteParent": null,
+      "actualPageId": "noch-na-kure",
+      "currentPageKey": "series:russian-baptism:page:noch-na-kure",
+      "activePath": [
+        "series:russian-baptism:chapter:origins-and-first-brotherhood",
+        "series:russian-baptism:page:noch-na-kure"
+      ],
+      "activeHeadingCount": 6,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Рождение братства",
+        "Воронин и ночь на Куре"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "yuzhnaya-shtunda",
+      "href": "/baptisty-rossii/yuzhnaya-shtunda/",
+      "chapterId": "origins-and-first-brotherhood",
+      "satelliteParent": null,
+      "actualPageId": "yuzhnaya-shtunda",
+      "currentPageKey": "series:russian-baptism:page:yuzhnaya-shtunda",
+      "activePath": [
+        "series:russian-baptism:chapter:origins-and-first-brotherhood",
+        "series:russian-baptism:page:yuzhnaya-shtunda"
+      ],
+      "activeHeadingCount": 5,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Рождение братства",
+        "Южная штунда и первые крещения"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "dva-sezda-1884",
+      "href": "/baptisty-rossii/dva-sezda-1884/",
+      "chapterId": "origins-and-first-brotherhood",
+      "satelliteParent": null,
+      "actualPageId": "dva-sezda-1884",
+      "currentPageKey": "series:russian-baptism:page:dva-sezda-1884",
+      "activePath": [
+        "series:russian-baptism:chapter:origins-and-first-brotherhood",
+        "series:russian-baptism:page:dva-sezda-1884"
+      ],
+      "activeHeadingCount": 6,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Рождение братства",
+        "Петербург и Ново-Васильевка: две развилки 1884 года"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "peterburgskaya-liniya",
+      "href": "/baptisty-rossii/peterburgskaya-liniya/",
+      "chapterId": "awakening-unions-and-conscience",
+      "satelliteParent": null,
+      "actualPageId": "peterburgskaya-liniya",
+      "currentPageKey": "series:russian-baptism:page:peterburgskaya-liniya",
+      "activePath": [
+        "series:russian-baptism:chapter:awakening-unions-and-conscience",
+        "series:russian-baptism:page:peterburgskaya-liniya"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Пробуждение, союзы и свобода совести",
+        "Петербургское пробуждение: Редсток, Пашков и Проханов"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "goneniya-i-sovest",
+      "href": "/baptisty-rossii/goneniya-i-sovest/",
+      "chapterId": "awakening-unions-and-conscience",
+      "satelliteParent": null,
+      "actualPageId": "goneniya-i-sovest",
+      "currentPageKey": "series:russian-baptism:page:goneniya-i-sovest",
+      "activePath": [
+        "series:russian-baptism:chapter:awakening-unions-and-conscience",
+        "series:russian-baptism:page:goneniya-i-sovest"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Пробуждение, союзы и свобода совести",
+        "Свобода совести и военный вопрос"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "sovetskaya-noch",
+      "href": "/baptisty-rossii/sovetskaya-noch/",
+      "chapterId": "soviet-night-and-one-union",
+      "satelliteParent": null,
+      "actualPageId": "sovetskaya-noch",
+      "currentPageKey": "series:russian-baptism:page:sovetskaya-noch",
+      "activePath": [
+        "series:russian-baptism:chapter:soviet-night-and-one-union",
+        "series:russian-baptism:page:sovetskaya-noch"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Советская ночь и единый центр",
+        "Советская ночь: закон 1929 года и репрессии"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "vsehib-1944",
+      "href": "/baptisty-rossii/vsehib-1944/",
+      "chapterId": "soviet-night-and-one-union",
+      "satelliteParent": null,
+      "actualPageId": "vsehib-1944",
+      "currentPageKey": "series:russian-baptism:page:vsehib-1944",
+      "activePath": [
+        "series:russian-baptism:chapter:soviet-night-and-one-union",
+        "series:russian-baptism:page:vsehib-1944"
+      ],
+      "activeHeadingCount": 14,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Советская ночь и единый центр",
+        "ВСЕХБ 1944: один союз под надзором"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "iniciativnaya-gruppa",
+      "href": "/baptisty-rossii/iniciativnaya-gruppa/",
+      "chapterId": "conscience-split-and-underground-memory",
+      "satelliteParent": null,
+      "actualPageId": "iniciativnaya-gruppa",
+      "currentPageKey": "series:russian-baptism:page:iniciativnaya-gruppa",
+      "activePath": [
+        "series:russian-baptism:chapter:conscience-split-and-underground-memory",
+        "series:russian-baptism:page:iniciativnaya-gruppa"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Разлом совести и подпольная память",
+        "Инициативная группа: путь к Совету Церквей"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "podpolnaya-pechat",
+      "href": "/baptisty-rossii/podpolnaya-pechat/",
+      "chapterId": "conscience-split-and-underground-memory",
+      "satelliteParent": null,
+      "actualPageId": "podpolnaya-pechat",
+      "currentPageKey": "series:russian-baptism:page:podpolnaya-pechat",
+      "activePath": [
+        "series:russian-baptism:chapter:conscience-split-and-underground-memory",
+        "series:russian-baptism:page:podpolnaya-pechat"
+      ],
+      "activeHeadingCount": 13,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Разлом совести и подпольная память",
+        "Подпольная печать: Вестники, «Христианин» и память узников"
+      ]
+    },
+    {
+      "seriesId": "russian-baptism",
+      "structure": "book",
+      "pageId": "spravochnik",
+      "href": "/baptisty-rossii/spravochnik/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "spravochnik",
+      "currentPageKey": "series:russian-baptism:page:spravochnik",
+      "activePath": [
+        "series:russian-baptism:page:spravochnik"
+      ],
+      "activeHeadingCount": 9,
+      "rootKinds": [
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Справочник"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "prolog",
+      "href": "/articles/chto-bibliya-nazyvaet-serdcem/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "prolog",
+      "currentPageKey": "series:hard-texts:page:prolog",
+      "activePath": [
+        "series:hard-texts:page:prolog"
+      ],
+      "activeHeadingCount": 19,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Библейская кардиология"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "krajne",
+      "href": "/articles/krajne-li-isporcheno-serdce/",
+      "chapterId": "ch1",
+      "satelliteParent": null,
+      "actualPageId": "krajne",
+      "currentPageKey": "series:hard-texts:page:krajne",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:krajne"
+      ],
+      "activeHeadingCount": 14,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава I. Диагноз сердца",
+        "Испорчено ли сердце?"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "idoly",
+      "href": "/articles/skrytye-idoly-serdca/",
+      "chapterId": "ch1",
+      "satelliteParent": null,
+      "actualPageId": "idoly",
+      "currentPageKey": "series:hard-texts:page:idoly",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:idoly"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава I. Диагноз сердца",
+        "Скрытые идолы сердца"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "religioznoe",
+      "href": "/articles/religioznoe-serdce/",
+      "chapterId": "ch1",
+      "satelliteParent": null,
+      "actualPageId": "religioznoe",
+      "currentPageKey": "series:hard-texts:page:religioznoe",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:religioznoe"
+      ],
+      "activeHeadingCount": 8,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава I. Диагноз сердца",
+        "Религиозное сердце"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "sovest",
+      "href": "/articles/sovest-vnutrenniy-sud/",
+      "chapterId": "ch1",
+      "satelliteParent": null,
+      "actualPageId": "sovest",
+      "currentPageKey": "series:hard-texts:page:sovest",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:sovest"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава I. Диагноз сердца",
+        "Совесть: внутренний суд"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "myslennaya",
+      "href": "/articles/myslennaya-zhizn-serdca/",
+      "chapterId": "ch1",
+      "satelliteParent": null,
+      "actualPageId": "myslennaya",
+      "currentPageKey": "series:hard-texts:page:myslennaya",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:myslennaya"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава I. Диагноз сердца",
+        "Мысленная жизнь сердца"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "dorozhki",
+      "href": "/articles/starye-dorozhki-serdca/",
+      "chapterId": "ch1",
+      "satelliteParent": null,
+      "actualPageId": "dorozhki",
+      "currentPageKey": "series:hard-texts:page:dorozhki",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:dorozhki"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава I. Диагноз сердца",
+        "Старые дорожки сердца"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "rimlyanam",
+      "href": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
+      "chapterId": "ch2",
+      "satelliteParent": null,
+      "actualPageId": "rimlyanam",
+      "currentPageKey": "series:hard-texts:page:rimlyanam",
+      "activePath": [
+        "series:hard-texts:chapter:ch2",
+        "series:hard-texts:page:rimlyanam"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава II. Сердце на войне",
+        "Римлянам 7"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "yazyk",
+      "href": "/articles/serdce-i-yazyk/",
+      "chapterId": "ch2",
+      "satelliteParent": null,
+      "actualPageId": "yazyk",
+      "currentPageKey": "series:hard-texts:page:yazyk",
+      "activePath": [
+        "series:hard-texts:chapter:ch2",
+        "series:hard-texts:page:yazyk"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава II. Сердце на войне",
+        "Сердце и язык"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "telo",
+      "href": "/articles/serdce-i-telo/",
+      "chapterId": "ch2",
+      "satelliteParent": null,
+      "actualPageId": "telo",
+      "currentPageKey": "series:hard-texts:page:telo",
+      "activePath": [
+        "series:hard-texts:chapter:ch2",
+        "series:hard-texts:page:telo"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава II. Сердце на войне",
+        "Сердце и тело"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "sokrovishche",
+      "href": "/articles/serdce-i-sokrovishche/",
+      "chapterId": "ch2",
+      "satelliteParent": null,
+      "actualPageId": "sokrovishche",
+      "currentPageKey": "series:hard-texts:page:sokrovishche",
+      "activePath": [
+        "series:hard-texts:chapter:ch2",
+        "series:hard-texts:page:sokrovishche"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава II. Сердце на войне",
+        "Сердце и сокровище"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "tma",
+      "href": "/articles/tma-na-serdce/",
+      "chapterId": "ch2",
+      "satelliteParent": null,
+      "actualPageId": "tma",
+      "currentPageKey": "series:hard-texts:page:tma",
+      "activePath": [
+        "series:hard-texts:chapter:ch2",
+        "series:hard-texts:page:tma"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава II. Сердце на войне",
+        "Тьма на сердце"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "skorb",
+      "href": "/articles/serdce-pod-skorbyu/",
+      "chapterId": "ch2",
+      "satelliteParent": null,
+      "actualPageId": "skorb",
+      "currentPageKey": "series:hard-texts:page:skorb",
+      "activePath": [
+        "series:hard-texts:chapter:ch2",
+        "series:hard-texts:page:skorb"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава II. Сердце на войне",
+        "Сердце под скорбью"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "novoe",
+      "href": "/articles/novoe-serdce/",
+      "chapterId": "ch3",
+      "satelliteParent": null,
+      "actualPageId": "novoe",
+      "currentPageKey": "series:hard-texts:page:novoe",
+      "activePath": [
+        "series:hard-texts:chapter:ch3",
+        "series:hard-texts:page:novoe"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава III. Перелом и перемена",
+        "Новое сердце"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "menyaetsya",
+      "href": "/articles/kak-menyaetsya-serdce/",
+      "chapterId": "ch3",
+      "satelliteParent": null,
+      "actualPageId": "menyaetsya",
+      "currentPageKey": "series:hard-texts:page:menyaetsya",
+      "activePath": [
+        "series:hard-texts:chapter:ch3",
+        "series:hard-texts:page:menyaetsya"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава III. Перелом и перемена",
+        "Как меняется сердце"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "iskushenie",
+      "href": "/articles/serdce-i-iskushenie/",
+      "chapterId": "ch3",
+      "satelliteParent": null,
+      "actualPageId": "iskushenie",
+      "currentPageKey": "series:hard-texts:page:iskushenie",
+      "activePath": [
+        "series:hard-texts:chapter:ch3",
+        "series:hard-texts:page:iskushenie"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава III. Перелом и перемена",
+        "Сердце и искушение"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "hranit",
+      "href": "/articles/kak-hranit-serdce/",
+      "chapterId": "ch3",
+      "satelliteParent": null,
+      "actualPageId": "hranit",
+      "currentPageKey": "series:hard-texts:page:hranit",
+      "activePath": [
+        "series:hard-texts:chapter:ch3",
+        "series:hard-texts:page:hranit"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава III. Перелом и перемена",
+        "Как хранить сердце"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "strah",
+      "href": "/articles/strah-bozhij-rabskij-ili-synovnij/",
+      "chapterId": "ch3",
+      "satelliteParent": null,
+      "actualPageId": "strah",
+      "currentPageKey": "series:hard-texts:page:strah",
+      "activePath": [
+        "series:hard-texts:chapter:ch3",
+        "series:hard-texts:page:strah"
+      ],
+      "activeHeadingCount": 8,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава III. Перелом и перемена",
+        "Страх Божий"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "svoboda",
+      "href": "/articles/svoboda-vo-hriste/",
+      "chapterId": "ch3",
+      "satelliteParent": null,
+      "actualPageId": "svoboda",
+      "currentPageKey": "series:hard-texts:page:svoboda",
+      "activePath": [
+        "series:hard-texts:chapter:ch3",
+        "series:hard-texts:page:svoboda"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава III. Перелом и перемена",
+        "Свобода во Христе"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "serdce-duh",
+      "href": "/articles/serdce-i-duh/",
+      "chapterId": "ch4",
+      "satelliteParent": null,
+      "actualPageId": "serdce-duh",
+      "currentPageKey": "series:hard-texts:page:serdce-duh",
+      "activePath": [
+        "series:hard-texts:chapter:ch4",
+        "series:hard-texts:page:serdce-duh"
+      ],
+      "activeHeadingCount": 13,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава IV. Жизнь Духом",
+        "Закон духа жизни"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "odinochku",
+      "href": "/articles/serdce-ne-v-odinochku/",
+      "chapterId": "ch4",
+      "satelliteParent": null,
+      "actualPageId": "odinochku",
+      "currentPageKey": "series:hard-texts:page:odinochku",
+      "activePath": [
+        "series:hard-texts:chapter:ch4",
+        "series:hard-texts:page:odinochku"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава IV. Жизнь Духом",
+        "Сердце не в одиночку"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "hrista",
+      "href": "/articles/serdce-hrista-k-nemoshchnym/",
+      "chapterId": "ch4",
+      "satelliteParent": null,
+      "actualPageId": "hrista",
+      "currentPageKey": "series:hard-texts:page:hrista",
+      "activePath": [
+        "series:hard-texts:chapter:ch4",
+        "series:hard-texts:page:hrista"
+      ],
+      "activeHeadingCount": 15,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава IV. Жизнь Духом",
+        "Сердце Христа"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "osvobozhdennoe",
+      "href": "/articles/osvobozhdennoe-serdce/",
+      "chapterId": "ch4",
+      "satelliteParent": null,
+      "actualPageId": "osvobozhdennoe",
+      "currentPageKey": "series:hard-texts:page:osvobozhdennoe",
+      "activePath": [
+        "series:hard-texts:chapter:ch4",
+        "series:hard-texts:page:osvobozhdennoe"
+      ],
+      "activeHeadingCount": 9,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Глава IV. Жизнь Духом",
+        "Освобождённое сердце"
+      ]
+    },
+    {
+      "seriesId": "hard-texts",
+      "structure": "book",
+      "pageId": "spravochnik",
+      "href": "/articles/serdce-spravochnik/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "spravochnik",
+      "currentPageKey": "series:hard-texts:page:spravochnik",
+      "activePath": [
+        "series:hard-texts:page:spravochnik"
+      ],
+      "activeHeadingCount": 9,
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Справочник"
+      ]
+    },
+    {
+      "seriesId": "genesis-6",
+      "structure": "flat-series",
+      "pageId": "enoch",
+      "href": "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "enoch",
+      "currentPageKey": "series:genesis-6:page:enoch",
+      "activePath": [
+        "series:genesis-6:page:enoch"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Енох пророчествовал: Иуд. 14–15, 1 Енох 1:9 и 4Q204"
+      ]
+    },
+    {
+      "seriesId": "genesis-6",
+      "structure": "flat-series",
+      "pageId": "corpus",
+      "href": "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+      "chapterId": null,
+      "satelliteParent": "enoch",
+      "actualPageId": "corpus",
+      "currentPageKey": "series:genesis-6:page:enoch",
+      "activePath": [
+        "series:genesis-6:page:enoch"
+      ],
+      "activeHeadingCount": 0,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Енох пророчествовал: Иуд. 14–15, 1 Енох 1:9 и 4Q204"
+      ]
+    },
+    {
+      "seriesId": "genesis-6",
+      "structure": "flat-series",
+      "pageId": "audit",
+      "href": "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/",
+      "chapterId": null,
+      "satelliteParent": "enoch",
+      "actualPageId": "audit",
+      "currentPageKey": "series:genesis-6:page:enoch",
+      "activePath": [
+        "series:genesis-6:page:enoch"
+      ],
+      "activeHeadingCount": 0,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Енох пророчествовал: Иуд. 14–15, 1 Енох 1:9 и 4Q204"
+      ]
+    },
+    {
+      "seriesId": "genesis-6",
+      "structure": "flat-series",
+      "pageId": "angels",
+      "href": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "angels",
+      "currentPageKey": "series:genesis-6:page:angels",
+      "activePath": [
+        "series:genesis-6:page:angels"
+      ],
+      "activeHeadingCount": 14,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Ангелы под мраком: Иуд. 6–7, 2 Петра 2 и Бытие 6"
+      ]
+    },
+    {
+      "seriesId": "genesis-6",
+      "structure": "flat-series",
+      "pageId": "spirits",
+      "href": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "spirits",
+      "currentPageKey": "series:genesis-6:page:spirits",
+      "activePath": [
+        "series:genesis-6:page:spirits"
+      ],
+      "activeHeadingCount": 15,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Духи в темнице, Ной и крещение: 1 Петра 3:18–22"
+      ]
+    },
+    {
+      "seriesId": "genesis-6",
+      "structure": "flat-series",
+      "pageId": "dead",
+      "href": "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "dead",
+      "currentPageKey": "series:genesis-6:page:dead",
+      "activePath": [
+        "series:genesis-6:page:dead"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Благовестие мёртвым: что означает 1 Петра 4:5–6"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "antisovetov",
+      "href": "/articles/20-antisovetov-pastoru/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "antisovetov",
+      "currentPageKey": "series:pastor-series:page:antisovetov",
+      "activePath": [
+        "series:pastor-series:page:antisovetov"
+      ],
+      "activeHeadingCount": 14,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть I. 20 антисоветов пастору"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "anatomiya",
+      "href": "/articles/anatomiya-padeniya-pyat-stadiy/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "anatomiya",
+      "currentPageKey": "series:pastor-series:page:anatomiya",
+      "activePath": [
+        "series:pastor-series:page:anatomiya"
+      ],
+      "activeHeadingCount": 14,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть II. Анатомия падения"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "teksty",
+      "href": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "teksty",
+      "currentPageKey": "series:pastor-series:page:teksty",
+      "activePath": [
+        "series:pastor-series:page:teksty"
+      ],
+      "activeHeadingCount": 13,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть III. Тексты Писания, которыми манипулируют"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "sem-tipov",
+      "href": "/articles/sem-tipov-razlichenie-uchiteley/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "sem-tipov",
+      "currentPageKey": "series:pastor-series:page:sem-tipov",
+      "activePath": [
+        "series:pastor-series:page:sem-tipov"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть IV. Семь типов учителей и лидеров"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "disciplina",
+      "href": "/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "disciplina",
+      "currentPageKey": "series:pastor-series:page:disciplina",
+      "activePath": [
+        "series:pastor-series:page:disciplina"
+      ],
+      "activeHeadingCount": 16,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть V. Церковная дисциплина: власть, границы и защита"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "kogda-uhodit",
+      "href": "/articles/kogda-uhodit-kogda-ostavatsya/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "kogda-uhodit",
+      "currentPageKey": "series:pastor-series:page:kogda-uhodit",
+      "activePath": [
+        "series:pastor-series:page:kogda-uhodit"
+      ],
+      "activeHeadingCount": 17,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть VI. Когда говорить, молчать, уходить или оставаться"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "vernye",
+      "href": "/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "vernye",
+      "currentPageKey": "series:pastor-series:page:vernye",
+      "activePath": [
+        "series:pastor-series:page:vernye"
+      ],
+      "activeHeadingCount": 21,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть VII. Верные и неизвестные: здоровое пастырство"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "zdorovaya-cerkov",
+      "href": "/articles/priznaki-zdorovoy-cerkvi/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "zdorovaya-cerkov",
+      "currentPageKey": "series:pastor-series:page:zdorovaya-cerkov",
+      "activePath": [
+        "series:pastor-series:page:zdorovaya-cerkov"
+      ],
+      "activeHeadingCount": 21,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть VIII. Признаки здоровой церкви"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "nesovershennyy",
+      "href": "/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "nesovershennyy",
+      "currentPageKey": "series:pastor-series:page:nesovershennyy",
+      "activePath": [
+        "series:pastor-series:page:nesovershennyy"
+      ],
+      "activeHeadingCount": 21,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть IX. Несовершенный человек в несовершенной церкви"
+      ]
+    },
+    {
+      "seriesId": "pastor-series",
+      "structure": "flat-series",
+      "pageId": "diotrophes",
+      "href": "/articles/diotrefy-nashego-vremeni/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "diotrophes",
+      "currentPageKey": "series:pastor-series:page:diotrophes",
+      "activePath": [
+        "series:pastor-series:page:diotrophes"
+      ],
+      "activeHeadingCount": 17,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Диотрефы нашего времени"
+      ]
+    },
+    {
+      "seriesId": "apostasy-series",
+      "structure": "flat-series",
+      "pageId": "otstuplenie-chto-govorit-bibliya",
+      "href": "/articles/otstuplenie-chto-govorit-bibliya/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "otstuplenie-chto-govorit-bibliya",
+      "currentPageKey": "series:apostasy-series:page:otstuplenie-chto-govorit-bibliya",
+      "activePath": [
+        "series:apostasy-series:page:otstuplenie-chto-govorit-bibliya"
+      ],
+      "activeHeadingCount": 15,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть I. Что Библия на самом деле называет отпадением от веры"
+      ]
+    },
+    {
+      "seriesId": "apostasy-series",
+      "structure": "flat-series",
+      "pageId": "otstupniki-biblii-iuda-saul-ierovoam-dimas",
+      "href": "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "otstupniki-biblii-iuda-saul-ierovoam-dimas",
+      "currentPageKey": "series:apostasy-series:page:otstupniki-biblii-iuda-saul-ierovoam-dimas",
+      "activePath": [
+        "series:apostasy-series:page:otstupniki-biblii-iuda-saul-ierovoam-dimas"
+      ],
+      "activeHeadingCount": 16,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть II. Отступники Библии: Иуда, Саул, Иеровоам, Димас"
+      ]
+    },
+    {
+      "seriesId": "apostasy-series",
+      "structure": "flat-series",
+      "pageId": "petr-i-iuda-padenie-ili-otstuplenie",
+      "href": "/articles/petr-i-iuda-padenie-ili-otstuplenie/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "petr-i-iuda-padenie-ili-otstuplenie",
+      "currentPageKey": "series:apostasy-series:page:petr-i-iuda-padenie-ili-otstuplenie",
+      "activePath": [
+        "series:apostasy-series:page:petr-i-iuda-padenie-ili-otstuplenie"
+      ],
+      "activeHeadingCount": 20,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть III. Пётр и Иуда: падение или отступничество?"
+      ]
+    },
+    {
+      "seriesId": "apostasy-series",
+      "structure": "flat-series",
+      "pageId": "otreklis-ot-hrista-istoriya-cerkvi",
+      "href": "/articles/otreklis-ot-hrista-istoriya-cerkvi/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "otreklis-ot-hrista-istoriya-cerkvi",
+      "currentPageKey": "series:apostasy-series:page:otreklis-ot-hrista-istoriya-cerkvi",
+      "activePath": [
+        "series:apostasy-series:page:otreklis-ot-hrista-istoriya-cerkvi"
+      ],
+      "activeHeadingCount": 15,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть IV. Отреклись от Христа: история Церкви"
+      ]
+    },
+    {
+      "seriesId": "apostasy-series",
+      "structure": "flat-series",
+      "pageId": "kogda-chelovek-uhodit-ot-very",
+      "href": "/articles/kogda-chelovek-uhodit-ot-very/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "kogda-chelovek-uhodit-ot-very",
+      "currentPageKey": "series:apostasy-series:page:kogda-chelovek-uhodit-ot-very",
+      "activePath": [
+        "series:apostasy-series:page:kogda-chelovek-uhodit-ot-very"
+      ],
+      "activeHeadingCount": 20,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "page",
+        "page"
+      ],
+      "coreStep": null,
+      "previewPath": [
+        "Часть V. Когда человек уходит от веры: предупреждать, исправлять, возвращать"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "teen-double-life",
+      "href": "/articles/podrostok-za-kadrom-dvoynaya-zhizn/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "teen-double-life",
+      "currentPageKey": "series:teen-double-life:page:teen-double-life",
+      "activePath": [
+        "series:teen-double-life:page:teen-double-life"
+      ],
+      "activeHeadingCount": 9,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 1,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 1 из 7"
+      },
+      "previewPath": [
+        "Часть I. Как рождается двойная жизнь"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "teen-parents-after-disclosure",
+      "href": "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "teen-parents-after-disclosure",
+      "currentPageKey": "series:teen-double-life:page:teen-parents-after-disclosure",
+      "activePath": [
+        "series:teen-double-life:page:teen-parents-after-disclosure"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 2,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 2 из 7"
+      },
+      "previewPath": [
+        "Часть II. Что делать родителям после разоблачения"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "teen-church-response",
+      "href": "/articles/podrostok-za-kadrom-chto-delat-tserkvi/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "teen-church-response",
+      "currentPageKey": "series:teen-double-life:page:teen-church-response",
+      "activePath": [
+        "series:teen-double-life:page:teen-church-response"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 3,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 3 из 7"
+      },
+      "previewPath": [
+        "Часть III. Что должна делать церковь"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "adult-child-left-home",
+      "href": "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "adult-child-left-home",
+      "currentPageKey": "series:teen-double-life:page:adult-child-left-home",
+      "activePath": [
+        "series:teen-double-life:page:adult-child-left-home"
+      ],
+      "activeHeadingCount": 10,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 4,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 4 из 7"
+      },
+      "previewPath": [
+        "A. Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "adult-child-home-money",
+      "href": "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "adult-child-home-money",
+      "currentPageKey": "series:teen-double-life:page:adult-child-home-money",
+      "activePath": [
+        "series:teen-double-life:page:adult-child-home-money"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 5,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 5 из 7"
+      },
+      "previewPath": [
+        "B. Взрослый ребёнок дома: правила, деньги, помощь и последствия"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "adult-child-authority",
+      "href": "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "adult-child-authority",
+      "currentPageKey": "series:teen-double-life:page:adult-child-authority",
+      "activePath": [
+        "series:teen-double-life:page:adult-child-authority"
+      ],
+      "activeHeadingCount": 11,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 6,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 6 из 7"
+      },
+      "previewPath": [
+        "C. Совершеннолетие и родительская власть: что меняется, что остаётся"
+      ]
+    },
+    {
+      "seriesId": "teen-double-life",
+      "structure": "flat-series",
+      "pageId": "adult-daughter-marriage",
+      "href": "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/",
+      "chapterId": null,
+      "satelliteParent": null,
+      "actualPageId": "adult-daughter-marriage",
+      "currentPageKey": "series:teen-double-life:page:adult-daughter-marriage",
+      "activePath": [
+        "series:teen-double-life:page:adult-daughter-marriage"
+      ],
+      "activeHeadingCount": 12,
+      "rootKinds": [
+        "page",
+        "page",
+        "page",
+        "endpaper",
+        "endpaper",
+        "endpaper",
+        "endpaper"
+      ],
+      "coreStep": {
+        "position": 7,
+        "total": 7,
+        "label": "Шаг",
+        "text": "Шаг 7 из 7"
+      },
+      "previewPath": [
+        "D. Взрослая дочь, отец и брак: согласие и границы власти"
+      ]
+    }
+  ],
+  "standalone": {
+    "route": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+    "headings": [
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-definitions",
+        "kind": "heading",
+        "label": "Герменевтические определения",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-definitions",
+        "depth": 0,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-explanation",
+        "kind": "heading",
+        "label": "Объяснение христоцентричной герменевтики",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-explanation",
+        "depth": 0,
+        "children": [
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-what-is",
+            "kind": "heading",
+            "label": "Что такое христоцентричная герменевтика?",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-what-is",
+            "depth": 1,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-how-achieves",
+            "kind": "heading",
+            "label": "Как она достигает своих целей",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-how-achieves",
+            "depth": 1,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-why",
+            "kind": "heading",
+            "label": "Почему она стремится к такому толкованию",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-why",
+            "depth": 1,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-assessment",
+            "kind": "heading",
+            "label": "Оценка христоцентричной герменевтики",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-assessment",
+            "depth": 1,
+            "children": [
+              {
+                "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-question-posed",
+                "kind": "heading",
+                "label": "Вопрос поставлен: Есть ли исключения из правил?",
+                "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-question-posed",
+                "depth": 2,
+                "children": []
+              },
+              {
+                "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-exceptions-passages",
+                "kind": "heading",
+                "label": "Есть ли исключения из правила? Взгляд на конкретные отрывки",
+                "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-passages",
+                "depth": 2,
+                "children": []
+              },
+              {
+                "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-exceptions-theological",
+                "kind": "heading",
+                "label": "Есть ли исключения из правила? Взгляд на библейско-богословское обоснование",
+                "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-theological",
+                "depth": 2,
+                "children": []
+              }
+            ]
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-consequences",
+            "kind": "heading",
+            "label": "Последствия христоцентричной герменевтики",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-consequences",
+            "depth": 1,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-sufficiency",
+            "kind": "heading",
+            "label": "Достаточность грамматико-исторической герменевтики",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-sufficiency",
+            "depth": 1,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-conclusion",
+            "kind": "heading",
+            "label": "Заключение",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-conclusion",
+            "depth": 1,
+            "children": []
+          }
+        ]
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-what-is",
+        "kind": "heading",
+        "label": "Что такое христоцентричная герменевтика?",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-what-is",
+        "depth": 1,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-how-achieves",
+        "kind": "heading",
+        "label": "Как она достигает своих целей",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-how-achieves",
+        "depth": 1,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-why",
+        "kind": "heading",
+        "label": "Почему она стремится к такому толкованию",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-why",
+        "depth": 1,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-assessment",
+        "kind": "heading",
+        "label": "Оценка христоцентричной герменевтики",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-assessment",
+        "depth": 1,
+        "children": [
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-question-posed",
+            "kind": "heading",
+            "label": "Вопрос поставлен: Есть ли исключения из правил?",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-question-posed",
+            "depth": 2,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-exceptions-passages",
+            "kind": "heading",
+            "label": "Есть ли исключения из правила? Взгляд на конкретные отрывки",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-passages",
+            "depth": 2,
+            "children": []
+          },
+          {
+            "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-exceptions-theological",
+            "kind": "heading",
+            "label": "Есть ли исключения из правила? Взгляд на библейско-богословское обоснование",
+            "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-theological",
+            "depth": 2,
+            "children": []
+          }
+        ]
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-question-posed",
+        "kind": "heading",
+        "label": "Вопрос поставлен: Есть ли исключения из правил?",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-question-posed",
+        "depth": 2,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-exceptions-passages",
+        "kind": "heading",
+        "label": "Есть ли исключения из правила? Взгляд на конкретные отрывки",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-passages",
+        "depth": 2,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-exceptions-theological",
+        "kind": "heading",
+        "label": "Есть ли исключения из правила? Взгляд на библейско-богословское обоснование",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-theological",
+        "depth": 2,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-consequences",
+        "kind": "heading",
+        "label": "Последствия христоцентричной герменевтики",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-consequences",
+        "depth": 1,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-sufficiency",
+        "kind": "heading",
+        "label": "Достаточность грамматико-исторической герменевтики",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-sufficiency",
+        "depth": 1,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:sec-conclusion",
+        "kind": "heading",
+        "label": "Заключение",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-conclusion",
+        "depth": 1,
+        "children": []
+      },
+      {
+        "key": "standalone:/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/:heading:spravka",
+        "kind": "heading",
+        "label": "Часто задаваемые вопросы",
+        "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#spravka",
+        "depth": 0,
+        "children": []
+      }
+    ]
+  }
+}

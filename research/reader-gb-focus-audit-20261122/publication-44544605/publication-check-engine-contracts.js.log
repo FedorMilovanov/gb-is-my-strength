@@ -1,0 +1,108 @@
+✅ Editorial hero art: historical sources and no fabricated headline posters
+✅ CSS: .gill-settings-overlay scoped by [data-gill-v16]
+✅ CSS: no double .gill-tab focus ring
+✅ CSS: series mobile breadcrumbs hidden
+✅ CSS: idle PLAY outline for series
+✅ CSS: idle PLAY outline for articles
+✅ CSS: desktop speed badges anchored inside PLAY
+✅ Reader mobile: one semantic speed-choice component for series and standalone articles
+✅ Series mobile: shared Play/rate slot, 44px hit targets and cross-browser witness
+✅ Reader: follow-scroll contract
+✅ Reader: Media Session contract
+✅ Reader: chunk seek contract
+✅ Reader: shared settings selector
+✅ Reader actions: print engine is a dedicated singleton
+✅ Reader actions: capture-phase owns global actions before chrome propagation
+✅ Reader actions: print delegates pagination, records failure and calls window.print once
+✅ Reader actions: Astro module graph owns hashing and only explicit Vosk asset resolution
+✅ Reader actions: strict-native series use explicit owner without site.js
+✅ Gill responsive: mobile table scroll is local, visible and print-reversible
+✅ Gill responsive: floating tooltip wraps within safe viewport
+✅ Engine isolation: single article does not import gill-series
+✅ Engine isolation: Gill settings has no [data-reader-root] fallback
+✅ Page engine: six catalogs registered
+✅ Series engine: all article bodies use SeriesReaderChrome
+✅ Content: Baptist series counters match canonical engine
+✅ Series configs: all declared through defineSeriesConfig()
+✅ Series guide exists
+✅ Series themes: every declared theme has CSS
+✅ Series satellites rendered by accordion
+✅ Relations: canonical compiler surface complete
+✅ Relations: browser assembly runtime removed
+✅ Relations: compiler validates catalog, derives series and imports legacy fallback
+✅ Relations: compiler creates ranked article projections without series duplication
+✅ Relations: compiler fails on ambiguous series ownership
+✅ Relations: compiler rejects synthetic series node id collisions instead of renumbering deep links
+✅ Relations: compiler validates draft and deprecated endpoints before status handling
+✅ Relations: composition root compiles and recursively freezes once
+✅ Relations: endpoint serves canonical singleton
+✅ Relations: projector creates semantic static navigation
+✅ Relations: projector is idempotent and removes obsolete runtime
+✅ Relations: legacy backlinks are removed, never CSS-masked
+✅ Relations: native article layout excludes legacy site monolith
+✅ Relations: print output hides navigation panel
+✅ Postbuild: only Atlas browser runtime is materialized
+✅ Postbuild: relation projector is a fail-closed phase
+✅ Atlas: SSR, no-JS and endpoint share immutable composition root
+✅ Atlas: runtime no longer fetches raw graph/series
+✅ Atlas: runtime is fail-closed and never sanitizes a damaged graph into partial truth
+✅ Atlas: zoom, pan, focus, list and deep links remain
+✅ Atlas: relation filters own edge focus, detail neighbors and active-focus refresh
+✅ Atlas: group navigation clears stale focus from the URL
+✅ Atlas: keyboard graph and search navigation are native contracts
+✅ Atlas: deterministic desktop and compact layouts are first-class profiles
+✅ Atlas: detail rail consumes desktop grid only during focus
+✅ Atlas: compact scenography has a first-class owner and preserves focus contrast
+✅ Atlas: strict-native route has no old MapBody or set:html
+✅ Relations: no Astro surface recompiles graph outside composition root
+✅ JS syntax: src/runtime/reader-actions.js
+✅ JS syntax: src/lib/relations/engine.mjs
+✅ JS syntax: src/runtime/atlas-runtime.js
+✅ JS syntax: scripts/project-relations-to-dist.mjs
+✅ JS syntax: scripts/check-relations.mjs
+✅ JS syntax: scripts/astro-cache-bust-postbuild.js
+✅ catalog schema version
+✅ catalog schema kind enum matches engine — 13/13
+✅ catalog is a relation array
+✅ editorial catalog shape
+✅ compiler schema version
+✅ deterministic compiler output
+✅ graph nodes retained — 61 compiled
+✅ published series order derived — 46
+✅ verified editorial catalog active — 27 compiled
+✅ legacy graph is fallback only — 12 imported / 75 suppressed
+✅ compiler errors empty
+✅ compiled edge integrity
+✅ article projection integrity
+✅ panel statistic exact — 24/24
+✅ Atlas kinds complete
+✅ draft does not suppress verified legacy fallback
+✅ deprecated explicitly suppresses legacy fallback
+✅ draft endpoint must still resolve — Relation compiler rejected 1 issue(s):
+✅ verified rationale is mandatory in compiler — Relation compiler rejected 1 issue(s):
+✅ one route cannot belong to two series — Relation compiler rejected 1 issue(s):
+✅ synthetic series node id collisions fail closed — Relation compiler rejected 1 issue(s):
+✅ catalog schema version is fail-closed — Relation compiler rejected 1 issue(s):
+
+✅ relation contracts: 61 nodes, 85 edges, 24 article panels, 27 editorial relations
+✅ Relations: real data passes compiler contracts
+✅ CSS syntax: css/site.css
+✅ CSS AST: css/site.css
+✅ CSS syntax: css/floating-cluster.css
+✅ CSS AST: css/floating-cluster.css
+✅ CSS syntax: css/mobile-hotfix.css
+✅ CSS AST: css/mobile-hotfix.css
+✅ CSS syntax: css/series-samizdat.css
+✅ CSS AST: css/series-samizdat.css
+✅ CSS syntax: css/series-manuscript.css
+✅ CSS AST: css/series-manuscript.css
+✅ CSS syntax: css/nagornaya-mobile-toc.css
+✅ CSS AST: css/nagornaya-mobile-toc.css
+✅ CSS syntax: css/home.css
+✅ CSS AST: css/home.css
+✅ CSS syntax: src/runtime/relationship-panel.css
+✅ CSS AST: src/runtime/relationship-panel.css
+✅ TTS artwork exists
+✅ No orphan shared reader components
+
+✅ engine:contracts — all reader, relation and Atlas contracts are intact.
