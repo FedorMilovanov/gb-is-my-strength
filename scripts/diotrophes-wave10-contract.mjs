@@ -116,6 +116,16 @@ requireValue(!draft.includes('<blockquote'), 'new direct block quotations are fo
 requireValue(!draft.includes('<q'), 'new inline direct quotations are forbidden');
 requireValue(!/[—:-]\s*Диотреф(?:ом|а|ы)?\b/u.test(draft), 'a person or case must not be headlined as Diotrephes');
 
+// Exact 3 John 9–10 is the biblical datum; modern review and information
+// governance are analogies requiring separate evidence, never a translation.
+requireValue(!draft.includes('не принимает свидетельство, которое способно ограничить его положение'), '3 John v9 must not be paraphrased as refusing a modern investigation');
+requireValue(!draft.includes('непринятие свидетельства'), 'quiz must not repeat the v9 evidence/authority conflation');
+requireValue(!draft.includes('Библейский профиль Диотрефа — любовь к первенству, непринятие проверки'), 'biblical profile must not equate accepting the author with modern audit');
+requireValue(draft.includes('не называет церковной должности Диотрефа'), 'Diotrephes office left unspecified by 3 John');
+requireValue(draft.includes('не уточняет процедуру изгнания'), 'Diotrephes excommunication procedure not established');
+requireValue(draft.includes('<strong>богословская аналогия</strong>'), 'modern institutional analogy labeled explicitly');
+requireValue(draft.includes('Стихи не описывают современных процедур независимой проверки'), 'quiz exegesis must retain the boundary');
+
 const quizBlock = extractArrayBlock('quiz');
 const quizQuestions = (quizBlock.match(/^\s*\['/gm) ?? []).length;
 requireValue(quizQuestions === 10, `expected 10 quiz questions, found ${quizQuestions}`);
