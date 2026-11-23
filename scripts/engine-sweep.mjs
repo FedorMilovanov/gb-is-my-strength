@@ -296,6 +296,8 @@ for (const [id, url] of SERIES) {
   const mb = await page.evaluate(() => {
     const play = document.querySelector('.mobile-top-bar .gb-ember');
     const badge = document.querySelector('.mobile-top-bar .mobile-spdbadge');
+    const chip = badge?.querySelector('.reader-mobile-speed-chip');
+    const chipStyle = chip ? getComputedStyle(chip) : null;
     const p = play?.getBoundingClientRect(), b = badge?.getBoundingClientRect();
     if (!p || !b) return null;
     const targetAt = (r) => document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
@@ -310,6 +312,9 @@ for (const [id, url] of SERIES) {
       badgeHit: badgeTarget === badge || badge.contains(badgeTarget),
       badgeWithinViewport: b.left >= -1 && b.right <= innerWidth + 1,
       badgeRadius: getComputedStyle(badge).borderRadius,
+      chipRadius: chipStyle?.borderRadius || null,
+      chipPointerEvents: chipStyle?.pointerEvents || null,
+      chipPainted: !!chipStyle && chipStyle.display !== 'none' && chipStyle.visibility !== 'hidden',
       badgeControls: badge.getAttribute('aria-controls'),
     };
   });
@@ -321,7 +326,11 @@ for (const [id, url] of SERIES) {
     mb.badgeWidth >= 43 && mb.badgeHeight >= 43 &&
     mb.overlap <= .5 && mb.playHit && mb.badgeHit &&
     mb.badgeWithinViewport && mb.badgeControls === 'mobileSpeedrail' &&
-    parseFloat(mb.badgeRadius) >= 10, JSON.stringify(mb));
+    // The real 44px hit target is RECTANGULAR to avoid dead corners.
+    // Its visible tiny speed-echo chip is rounded, non-interactive paint.
+    parseFloat(mb.badgeRadius) === 0 && mb.chipPainted &&
+    parseFloat(mb.chipRadius) >= 10 && mb.chipPointerEvents === 'none',
+    JSON.stringify(mb));
 
   const gear = await page.$('#mobSettingsBtn');
   if (gear) {
