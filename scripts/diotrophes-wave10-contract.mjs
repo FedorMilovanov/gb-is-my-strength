@@ -91,6 +91,30 @@ const uniqueReaderUrls = new Set(readerUrls);
 requireValue(readerUrls.length === 40, `expected exactly 40 reader URLs, found ${readerUrls.length}`);
 requireValue(uniqueReaderUrls.size === 40, `reader URLs must be unique; found ${uniqueReaderUrls.size}`);
 
+// The product bibliography still owns exactly 40 URLs. A selected third
+// tuple field may point a case to an existing Research record, but may never
+// synthesize a court locator, add an unverified document or break the source
+// IDs frozen in the 21-case manifest.
+const caseSourceIds = new Set([...caseBlock.matchAll(/sources:\s*\[([^\]]+)\]/g)]
+  .flatMap((match) => [...match[1].matchAll(/'([^']+)'/g)].map((item) => item[1])));
+const mappedSourceIds = [...sourceBlock.matchAll(/,\s*'([A-Z0-9]+(?:-[A-Z0-9]+)+)'\s*\]/g)]
+  .map((match) => match[1]);
+requireValue(mappedSourceIds.length === 15, `expected 15 case-specific links backed by existing reader URLs, found ${mappedSourceIds.length}`);
+requireValue(new Set(mappedSourceIds).size === mappedSourceIds.length, 'duplicate case-local source ID');
+requireValue(
+  ['WIL-02', 'HYB-02', 'BIC-05'].every((id) => !mappedSourceIds.includes(id)),
+  'generic presbytery/about-us/legislation pages must not masquerade as case-local evidence',
+);
+requireValue(
+  ['BIC-02','W2-MOR-02','W2-MOR-03','SBC-01','SBC-02','PAT-03'].every((id) => mappedSourceIds.includes(id)),
+  'case-specific investigation, legal or institutional evidence dropped',
+);
+
+requireValue(mappedSourceIds.every((id) => caseSourceIds.has(id)), 'case-local link does not belong to any core case source pair');
+requireValue(mappedSourceIds.every((id) => !/^W2-(?:KUZ|SHI)-/.test(id)), 'unverified Russian court locator was promoted into a clickable link');
+requireValue(draft.includes('const readerLinksForCard = (card: CaseCard)'), 'case-local source join is not rendered');
+requireValue((draft.match(/readerLinksForCard\(card\)\.map/g) ?? []).length === 5, 'source links must reach every ordinary case-grid group');
+
 const allowedHosts = [
   'guidepostsolutions.com', 'sbc.net', 'willowcreek.org', 'childabuseroyalcommission.gov.au',
   'crechurches.org', 'thirtyoneeight.org', 'swbts.edu', 'liberty.edu', 'churchofengland.org',
@@ -115,6 +139,35 @@ requireValue(draft.includes('data-reader-links="40"'), '40-link reader marker mi
 requireValue(!draft.includes('<blockquote'), 'new direct block quotations are forbidden');
 requireValue(!draft.includes('<q'), 'new inline direct quotations are forbidden');
 requireValue(!/[—:-]\s*Диотреф(?:ом|а|ы)?\b/u.test(draft), 'a person or case must not be headlined as Diotrephes');
+
+// Exact 3 John 9–10 is the biblical datum; modern review and information
+// governance are analogies requiring separate evidence, never a translation.
+requireValue(!draft.includes('не принимает свидетельство, которое способно ограничить его положение'), '3 John v9 must not be paraphrased as refusing a modern investigation');
+requireValue(!draft.includes('непринятие свидетельства'), 'quiz must not repeat the v9 evidence/authority conflation');
+requireValue(!draft.includes('Библейский профиль Диотрефа — любовь к первенству, непринятие проверки'), 'biblical profile must not equate accepting the author with modern audit');
+requireValue(draft.includes('не называет церковной должности Диотрефа'), 'Diotrephes office left unspecified by 3 John');
+requireValue(draft.includes('не уточняет процедуру изгнания'), 'Diotrephes excommunication procedure not established');
+requireValue(draft.includes('<strong>богословская аналогия</strong>'), 'modern institutional analogy labeled explicitly');
+requireValue(draft.includes('Стихи не описывают современных процедур независимой проверки'), 'quiz exegesis must retain the boundary');
+
+// Court-card provenance is not the same as a read-through of the full judgment.
+// Published claims must stay bounded while official, case-specific locators are HOLD.
+requireValue(draft.includes('их точные публичные локаторы пока не восстановлены'), 'Kuznetsov court-locator HOLD lost');
+requireValue(draft.includes('точный доступный публичный локатор решения не восстановлен'), 'Shin court-locator HOLD lost');
+requireValue(draft.includes('но не заменяют полного мотивированного решения'), 'Moskvitin court-card vs judgment distinction lost');
+requireValue(!draft.includes('Судебное решение фиксирует мошенническое ядро, потерпевших и установленный размер ущерба'), 'Shin unverified verdict/amount returned');
+requireValue(!draft.includes('Судебное решение и апелляция позволяют рассматривать обязательные платежи'), 'Kuznetsov unverified judicial conclusion returned');
+requireValue(draft.includes('Изменения законодательства Миссури не выдаются здесь за доказанное следствие именно этого дела'), 'Bickle legislation causality must remain unasserted');
+requireValue(draft.includes('её прежний адрес ныне недоступен'), 'Journey retrospective URL provenance warning missing');
+
+// Frozen Wave10 bibliography keeps its 40 source identities. The historical
+// Journey page now returns 404 and must not masquerade as a working 40th link.
+requireValue(draft.includes("href === 'https://www.thejourney.org/about/our-story-new'"), 'historic Journey locator must have explicit disabled-reader handling');
+requireValue(draft.includes('data-locator-status="unavailable-404-2026-11-23"'), 'verified Journey 404 status must stay visible');
+requireValue(draft.includes('gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf'), 'case-local primary Journey letter missing');
+requireValue(draft.includes('40 библиографических записей'), 'bibliographic entries must not be conflated with 40 live links');
+requireValue(draft.includes('data-bibliography-records="40" data-reader-source-links="39"'), 'base reader source metadata must distinguish 40 preserved records from 39 clickable URLs');
+requireValue(!draft.includes('40 прямых ссылок'), 'confirmed dead Journey URL counted as a working live reader link');
 
 const quizBlock = extractArrayBlock('quiz');
 const quizQuestions = (quizBlock.match(/^\s*\['/gm) ?? []).length;

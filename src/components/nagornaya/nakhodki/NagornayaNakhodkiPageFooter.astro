@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /**
  * NagornayaNakhodkiPageFooter — native body tail after </main> for /nagornaya/nakhodki//.
  * Extracted as Astro markup from approved legacy HTML; no raw imports.
@@ -9,17 +10,17 @@ import NagornayaProjectNav from '@/components/nagornaya/_shared/NagornayaProject
 
 <!-- .tt tooltip system now handled by nagornaya-mobile-toc.js -->
 
-<!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=a0b23b1c module B -->
+<!-- mobile menu handled by js/nagornaya-mobile-toc.js module B -->
 
 
 
-<script defer src="/js/site-utils.js?v=e80f1dfb" is:inline></script>
-    <script defer src="/js/scroll-perf.js?v=454d6f7b" is:inline></script>
-    <script src="../../js/site.js?v=9fa8818a" defer is:inline></script>
-    <script src="../../js/glossary.js?v=c7f8b6e9" defer is:inline></script>
-<script src="../../js/sw-register.js?v=921dd6a2" defer is:inline></script>
+<script defer src={assetUrl('js/site-utils.js')} is:inline></script>
+    <script defer src={assetUrl('js/scroll-perf.js')} is:inline></script>
+    <script src={assetUrl('js/site.js')} defer is:inline></script>
+    <script src={assetUrl('js/glossary.js')} defer is:inline></script>
+<script src={assetUrl('js/sw-register.js')} defer is:inline></script>
 
-<script src="../../js/highlights.js?v=e3e21e86" defer is:inline></script>
-<script src="../../js/nagornaya-mobile-toc.js?v=a0b23b1c" defer is:inline></script>
-<script src="../../js/enhancements.js?v=15476429" defer is:inline></script>
-<script src="../../js/bookmark-engine.js?v=e7d193e0" defer is:inline></script>
+<script src={assetUrl('js/highlights.js')} defer is:inline></script>
+<script src={assetUrl('js/nagornaya-mobile-toc.js')} defer is:inline></script>
+<script src={assetUrl('js/enhancements.js')} defer is:inline></script>
+<script src={assetUrl('js/bookmark-engine.js')} defer is:inline></script>

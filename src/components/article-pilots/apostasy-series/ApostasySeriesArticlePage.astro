@@ -195,7 +195,7 @@ const siteConfig = {
             <p class="article-byline">
               <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
               <span aria-hidden="true" class="article-byline__sep">·</span>
-              <time datetime={frontmatter.publishedAt}>{dateRu(frontmatter.publishedAt)}</time>
+              <time datetime={frontmatter.publishedAt} data-editorial-slot="published">{dateRu(frontmatter.publishedAt)}</time>
               <span aria-hidden="true" class="article-byline__sep">·</span>
               <span>⏱ {frontmatter.readingTime} мин</span>
             </p>

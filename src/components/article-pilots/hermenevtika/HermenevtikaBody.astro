@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
 
@@ -51,7 +52,7 @@ import ReaderSettings from '../_shared/ReaderSettings.astro'
 <div class="original-author-card__role">Профессор Библии · The Master's University</div>
 </div>
 <p class="article-byline">
-<time datetime="2026-04-13">13 апреля 2026</time><span aria-hidden="true" class="article-byline__sep">·</span><span class="article-byline__updated">Обн. <time class="article-updated" datetime="2026-05-09">9 мая 2026</time></span>
+<time datetime="2026-04-13" data-editorial-slot="published">13 апреля 2026</time><span aria-hidden="true" class="article-byline__sep">·</span><span class="article-byline__updated">Обн. <time class="article-updated" datetime="2026-05-09" data-editorial-slot="modified">9 мая 2026</time></span>
 <span aria-hidden="true" class="article-byline__sep">·</span>
 <span class="article-byline__strong">Редактор: Фёдор Милованов</span>
 <span aria-hidden="true" class="article-byline__sep">·</span>
@@ -306,12 +307,12 @@ import ReaderSettings from '../_shared/ReaderSettings.astro'
 <!-- Shared runtime scripts. Старый .bottom-bar/.btoc-overlay/.bookmark-toast удалён:
      premium SVG FloatingCluster теперь делает всю работу (theme/search/play/save/speed panel).
      действия рельса и мобильной панели принадлежат ReaderActionsRuntime; legacy site.js удалён. -->
-<script is:inline defer="" src="../../js/bookmark-engine.js?v=e7d193e0"></script>
-<script is:inline defer src="../../js/site-utils.js?v=e80f1dfb"></script>
-<script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
-<script is:inline defer="" src="../../js/glossary.js?v=c7f8b6e9"></script>
-<script is:inline defer="" src="../../js/sw-register.js?v=921dd6a2"></script>
+<script is:inline defer="" src={assetUrl('js/bookmark-engine.js')}></script>
+<script is:inline defer src={assetUrl('js/site-utils.js')}></script>
+<script is:inline defer src={assetUrl('js/scroll-perf.js')}></script>
+<script is:inline defer="" src={assetUrl('js/glossary.js')}></script>
+<script is:inline defer="" src={assetUrl('js/sw-register.js')}></script>
 
-<script is:inline defer="" src="../../js/highlights.js?v=e3e21e86"></script>
-<script is:inline defer="" src="../../js/enhancements.js?v=15476429"></script>
+<script is:inline defer="" src={assetUrl('js/highlights.js')}></script>
+<script is:inline defer="" src={assetUrl('js/enhancements.js')}></script>
 <ReaderFloatingControlsRuntime />

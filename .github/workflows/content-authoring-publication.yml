@@ -1,0 +1,65 @@
+name: Content Authoring Publication Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/content-authoring-publication.yml'
+      - 'scripts/content-authoring-publication-contract.mjs'
+      - 'scripts/content-authoring-publication-contract-test.mjs'
+      - 'scripts/series-membership-contract.mjs'
+      - 'scripts/series-membership-contract-test.mjs'
+      - 'data/series.json'
+      - 'src/content/**'
+      - 'src/pages/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/content-authoring-publication.yml'
+      - 'scripts/content-authoring-publication-contract.mjs'
+      - 'scripts/content-authoring-publication-contract-test.mjs'
+      - 'scripts/series-membership-contract.mjs'
+      - 'scripts/series-membership-contract-test.mjs'
+      - 'data/series.json'
+      - 'src/content/**'
+      - 'src/pages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-authoring-publication-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publication-admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.4'
+
+      - name: Test publication admission contract
+        run: node scripts/content-authoring-publication-contract-test.mjs
+
+      - name: Enforce publication admission contract
+        run: node scripts/content-authoring-publication-contract.mjs
+
+      - name: Test series membership contract
+        run: node scripts/series-membership-contract-test.mjs
+
+      - name: Enforce series membership contract
+        run: node scripts/series-membership-contract.mjs
+
+      - name: Ensure validation is read-only
+        if: always()
+        run: git diff --exit-code
