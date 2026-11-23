@@ -350,3 +350,46 @@
 
 **Publication HOLDS без сокращений:** для каждого точного final SHA нужны настоящие CI и article QA, генерация Scripture occurrence index \`--write\` и \`--check\` штатным скриптом и contract, затем реальная mobile/desktop rendered QA у соответствующего Reader owner, включая длинные H2/H3, ссылки, оглавление, печать и TTS. GitHub Action \`queued\`/\`pending\` — не PASS. Никаких direct-main writes, merge в production или изменений Reader в W21. Операционный PR #2368 продолжает быть **Draft, DO NOT MERGE** из-за противоречащей решению владельца обязательной семишаговой архитектуры.
 
+## 15. W22 — независимый интеграционный прогон (2026-11-23)
+
+**Состояние:** это техническая и редакционная проверка изолированной интеграционной копии, не merge, не production deploy и не согласование Reader. Авторизованный Windows desktop DESKTOP-O3FDOA4 найден online через ранее подключённый профиль. Остальные рабочие деревья агентов не изменялись. Сводная проверочная копия **одна**: `E:\\GB_TEEN_W22_QA`, создана как detached worktree из актуального `main=c60b3347dc242b365a93290456601677bba5de8e`. Семь source files восстановлены **только** из соответствующих точных PR-head MDX (no synthetic edits to shared runtime or canonical index). Все 7 source SHA на момент сборки:
+
+| Часть | PR | Взятый исходный commit |
+|---|---|---|
+| I | #2363 | `6430176ceb930a9ddfc40ae1ddf950b7626f370a` |
+| II | #2373 | `f835cfa9e4859ac854f21e4a3cd5268a891ba9ba` |
+| III | #2364 | `0967e5875d759e7b4c4382503fba7dcf79a90b5a` |
+| IV | #2369 | `90d25dc4772876de7e75e7016a5201b6af95cb17` |
+| V | #2366 | `0ceefc17be83c68f8a59f20a76cb7a663f3d6e6e` |
+| VI | #2365 | `c04c571dbf3e811b87a623c95d28635d801cb053` (generated-only bot head after W21 source commit) |
+| VII | #2367 | `849a40b53299d1d9a4157b4a4e81d58460ce9e29` |
+
+**Environment:** local Node.js default `v22.23.1` was below project engines `>=22.23.4`; QA process used already installed `C:\\Users\\Fedor\\AppData\\Local\\nvm\\v22.23.4\\node.exe` via process-local PATH, **without** changing global nvm settings. `npm ci --prefer-offline --no-audit --no-fund` successfully installed 371 dependencies. Main/user Downloads/Reader worktrees untouched.
+
+### Confirmed source-level contract PASS (real program execution)
+
+- `node scripts/build-scripture-occurrence-index.mjs --write` and `--check`: **1397 references / 3575 occurrences / 103 routes**.
+- `node scripts/scripture-occurrence-index-contract.mjs`: **PASS**, 149 curated-text records.
+- `npm run editorial:lint`: PASS.
+- `npm run sources:hygiene`: PASS, 164 files, 0 backstage scaffolding.
+- `npm run article:qa`: PASS, 180 article files, 0 errors, 0 warnings.
+- `npm run content:parity`: PASS, 73 strict-native article routes.
+- `node scripts/check-print-geometry-contract.js`: PASS.
+- `node scripts/teen-series-release-contract.mjs`: PASS **for old seven-mandatory-step architecture only; owner rejected that architecture**. This passing contract is **not** a valid approval of desired new independent series topology.
+- `node scripts/article-mdx-pilot-audit.js --no-build`: completed 0 (source/dist route contract read-only), `node scripts/articles-visual-parity-audit.js --require-dist` subsequently invoked with completed exit 0 (read details from process logs if necessary).
+
+### Production-like build and real-browser checks
+
+- `npm run strangler:build:production-like`: **PASS** with Node 22.23.4, Astro 7.4.12 / MDX 8.1.6; Astro check **670 files, 0 errors, 0 warnings, 7 nonblocking hints**. 112 pages built; relation/notes/metadata projection and heading hygiene passed, 7/7 teen sources projected to reader linear text.
+- `node scripts/scripture-occurrence-index-contract.mjs --dist=dist`: **PASS**, 1397 references, 3575 occurrences, 149 curated text records, **85 dist route witnesses**.
+- Local **actual Chrome 152+** with Playwright 1.62.1 (locally installed Google Chrome), 1440×900 desktop and 390×844 mobile, all 7 live-served dist articles: **14/14 PASS** on HTTP 200, H1, body text, expected new headings, explicit anchor uniqueness, literal hash targets, 19/19 Bible tooltip buttons, no page errors, no document horizontal overflow. Machine JSON and 14 screenshots at `E:\\GB_TEEN_W22_QA\\reports\\teen-w22\\browser-report.json` and `I–VII-{desktop,mobile}.png`. These are **local proof**, not browser CI artifacts and not Firefox/WebKit pass.
+- Chrome printed **7 actual A4 PDF files**, independently inspected via PyPDF 7.1.1 installed only under this QA reports directory: I 24pp, II 30pp, III 22pp, IV 40pp, V 35pp, VI 30pp, VII 46pp = **227 pages**. All 7 have no blank pages by extractable text and contain the new key section; `print-text-report.json` and `I–VII-a4.pdf` are local QA artifacts. **Not** a raster visual inspection and **not** the cross-engine/specialized print-pagination CI matrix.
+
+### Remaining blockers, DO NOT CLAIM ZERO
+
+1. **Legacy Reader architecture remains visible.** On actual II mobile screenshot reader header literally displays `ПОДРОСТОК ЗА КАДРОМ · ЧАСТЬ II · ШАГ 2 ИЗ 7`. This contradicts the owner's accepted independent-articles/no mandatory seven-stage route decision. Old `teen-series-release-contract.mjs` passing just enforces the **wrong** architecture. New Reader owned by another lane; no UI changes made here. #2368 stays **Draft, DO NOT MERGE** until the owner-aligned topology is developed, integrated and browser-checked.
+2. **Reading-time metadata requires content-aware reconciliation**, not fake PASS based on the old hardcoded 32/43/39/35/36/37/42 min series contract. Source word counts have increased with W20/W21 and must be calibrated against actual projected reader text; change cross-route metadata/series config only through release-owner, not independently in article PR.
+3. After bot index normalization PR #2364 HEAD advanced `0967e587` to `2896b93a794c0af298d0e51d2298100db4ed9099`; source MDX unchanged, index bot commit legitimate. #2365 HEAD `c04c571d` already bot-index-only. Both had 16 exact-bot-head workflows `action_required` with no jobs: **not PASS**. An authenticated `gh run rerun` (as original human actor) was accepted on all **31** previously blocked runs (plus one first successful canary = 32 total), resulting in real queued/pending jobs rather than action_required; **31/31 accepted, 0 API errors**, **not yet concluded**. Repeated enqueueing should not be necessary; inspect results on exact SHA. Other article PR checks also queued/pending; no exact-head green matrix established.
+4. Because merged integrated source differs from every one-article PR source tree, each subsequent merge into `main` must regenerate canonical `data/scripture-search-index.json` on its exact new integrated head (`--write/--check` and contract), never manually patch blobs or treat one PR's current bot index as the final seven-source index. The local generated integrated index is **not committed to main**.
+5. Primary historical source for Stennett `Discourses on Domestic Duties` p.127 still requires first-hand manuscript/facsimile reading before stronger attribution; current VII correctly marks Haste's witness as **secondary**.
+6. No GitHub merge, no production publishing, no direct write to Reader, no local deletion of unrelated user files. Full closure requires final exact-head CI, owner-aligned Reader arrangement, print/TTS cross-engine and source witness review; the strong local PASS above cannot replace those checks.
