@@ -1,6 +1,6 @@
 # PR #2352 head `25830c64e` — independent Reader/Table audit
 
-> Correction: §3.3–3.5 conclusions about fonts and the recommended print fix are superseded by [the follow-up](pr2352-head-f908e289e-reader-followup.md). Loading unused font faces before pagination changes the 390px result; this does not fix 320px. Print-media timing alone is not established as root cause.
+> Correction: §3.3–3.5 conclusions about fonts and the recommended print fix are superseded by [the follow-up](pr2352-head-f908e289e-reader-followup.md). Loading unused font faces before pagination changes the 390px result; this does not fix 320px. Print-media timing alone is not established as root cause. The §3.3 text-coordinate assertion was based on an unreliable pypdf transform and should not be treated as proof of off-page clipping; see [later isolation](print-isolation-56160/README.md).
 
 Date: 2026-11-22
 Auditor: Arena agent (independent lane, pilot branch `arena/49cd0103-gb-is-my-strength`)
