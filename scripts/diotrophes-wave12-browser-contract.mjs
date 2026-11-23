@@ -577,6 +577,14 @@ async function inspect(browserType, engine, profile) {
         };
         return {
           firstFoldTitle,
+          socialPreview: {
+            ogImage: document.querySelector('meta[property="og:image"]')?.content || '',
+            twitterImage: document.querySelector('meta[name="twitter:image"]')?.content || '',
+            ogAlt: document.querySelector('meta[property="og:image:alt"]')?.content || '',
+            twitterAlt: document.querySelector('meta[name="twitter:image:alt"]')?.content || '',
+            width: document.querySelector('meta[property="og:image:width"]')?.content || '',
+            height: document.querySelector('meta[property="og:image:height"]')?.content || '',
+          },
           title: document.title,
           antiKicker: document.querySelector('article.article-body .article-header .anti-kicker')?.textContent?.trim() || '',
           h1: document.querySelector('h1')?.textContent?.trim() || '',
@@ -623,6 +631,19 @@ async function inspect(browserType, engine, profile) {
           state.firstFoldTitle.noticeInMainArticle &&
           state.firstFoldTitle.noticeAfterTitle,
         JSON.stringify(state.firstFoldTitle),
+      );
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'dossier-social-preview',
+        state.socialPreview.ogImage === 'https://gospod-bog.ru/images/pastor-series/og-diotrefy-nashego-vremeni.webp' &&
+          state.socialPreview.twitterImage === state.socialPreview.ogImage &&
+          state.socialPreview.width === '1200' &&
+          state.socialPreview.height === '630' &&
+          state.socialPreview.ogAlt === state.socialPreview.twitterAlt &&
+          /зеркал/i.test(state.socialPreview.ogAlt) &&
+          existsSync(join(DIST, 'images', 'pastor-series', 'og-diotrefy-nashego-vremeni.webp')),
+        JSON.stringify(state.socialPreview),
       );
       record(engine, `${profile.id}-${mode}`, 'reader-header-no-internal-wave', state.antiKicker === 'Историко-богословское исследование', JSON.stringify({ heading: state.antiKicker }));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
