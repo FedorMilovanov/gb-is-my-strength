@@ -176,7 +176,16 @@
      outline, including the inline reference links at the very end. Reserve
      physical scrolling room instead of forcing document/root scroll. */
   .journal-edition .je-editorial-rail__scrollport { max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-anchor: none; padding: 8px 8px 26px; margin-inline: -8px; scroll-padding-block: 18px; }
-  .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block: 14px; }
+  /* A symmetric scroll-margin regressed native Chromium Tab on both routes:
+     it moved the article even when the focused link was already on-screen.
+     Reserve below the focused link without changing the root's top alignment. */
+  .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-end: 16px; }
+  /* The dossier's long TOC hits Chromium's sticky-focus jump at the first
+     link; scope its top margin instead of altering the history article. */
+  .journal-edition .journal-dossier-shell .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 16px; }
+  /* A clear 3px focus outline fits short-window scroll edges better than a
+     detached 3px+4px ring; unlike clipping, this remains fully painted. */
+  .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]):focus-visible { outline-offset: 0; }
   .journal-edition .je-editorial-rail__scrollport .je-rail-note a { display: inline-block; padding-block: 8px; }
 }
 @media (max-width: 1199px) and (min-width: 1024px) {
