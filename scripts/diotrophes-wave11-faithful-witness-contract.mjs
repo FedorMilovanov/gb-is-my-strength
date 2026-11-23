@@ -252,18 +252,21 @@ requireValue(
   supplement.includes('совет способен остановить лидера'),
   'The Journey comparator must cite the original 2016 elder letter and distinguish plans from completed meetings',
 );
-// The frozen Wave 11 steps include assertions that exceed what the original
-// three-page 2016 elder letter directly establishes. Verify their reader-side
-// corrections and a reachable case-local primary-document copy.
+// The frozen Wave 11 steps compress two different source dates. Keep the
+// original 2016 letter separate from the institution's later 2017–18 history,
+// and retain both primary document locators in the rendered reader.
 requireValue(
-  supplement.includes("'единогласное отстранение': 'решение совета об отстранении'") &&
-  supplement.includes("'встречи для слушания членов': 'запланированные встречи с общиной") &&
-  supplement.includes("'восстановление миссии': 'объявленные меры для продолжения служения общины") &&
+  supplement.includes("'единогласное отстранение': 'единогласное решение старейшин всех площадок") &&
+  supplement.includes("'встречи для слушания членов': 'встречи с группами общины в начале 2017 года") &&
+  supplement.includes("'восстановление миссии': 'новая формулировка видения и миссии к 2018 году") &&
   supplement.includes("readerStep(pathway.id, step)") &&
   supplement.includes("pathway.id === 'darrin-patrick'") &&
   supplement.includes('www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf') &&
-  supplement.includes('Письмо подтверждает решение об отстранении и анонс'),
-  'Darrin Patrick historical pathway again presents unproved unanimity, planned meetings or subsequent outcomes as completed',
+  supplement.includes('Письмо подтверждает решение об отстранении и анонс') &&
+  supplement.includes('официальная история The Journey') &&
+  supplement.includes('встречах с группами общины в начале 2017 года') &&
+  supplement.includes('https://www.thejourney.org/about/our-story-new'),
+  'Journey pathways lost the distinct 2016 letter and later 2017–18 source attribution',
 );
 requireValue(
   seriesConfig.includes("href: '#faithful-witness-sources'") &&
