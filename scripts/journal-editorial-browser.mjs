@@ -700,7 +700,10 @@ try {
             return { href: state.href, y: state.rect.top, bottom: state.rect.bottom, outline: state.outline };
           };
           await summary.focus();
+          await settleWithoutScripts(page);
           item.afterSummaryFocus = await railState();
+          assert.ok(Math.abs(item.afterSummaryFocus.y - item.before.y) < 1,
+            'native TOC summary focus must not move the reading position before Tab');
           item.keyboardForward = [];
           for (const href of links) { await page.keyboard.press('Tab'); item.keyboardForward.push(await focused(href)); }
           if (width === 1440 && height === 480) {

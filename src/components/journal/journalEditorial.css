@@ -180,9 +180,10 @@
      it moved the article even when the focused link was already on-screen.
      Reserve below the focused link without changing the root's top alignment. */
   .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-end: 16px; }
-  /* The dossier's long TOC hits Chromium's sticky-focus jump at the first
-     link; scope its top margin instead of altering the history article. */
-  .journal-edition .journal-dossier-shell:not(.je-history-article) .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 16px; }
+  /* Native Chromium at 1440x390/480: a 16px scroll margin moves root
+     scrollY by 6px on summary.focus() even before the first Tab.
+     Keep focus within the nested scrollport without moving the reader. */
+  .journal-edition .journal-dossier-shell:not(.je-history-article) .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 0; }
   /* A clear 3px focus outline fits short-window scroll edges better than a
      detached 3px+4px ring; unlike clipping, this remains fully painted. */
   .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]):focus-visible { outline-offset: 0; }
