@@ -9,7 +9,8 @@ import { assetUrl } from '@/lib/asset-version';
 const canonical = `${SITE.url}/podrostok-za-kadrom/`;
 const ogImagePath = TEEN_SERIES_MEDIA.series.hero;
 const ogImage = `${SITE.url}${ogImagePath}`;
-const title = 'Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя';
+const collectionTitle = 'Подросток за кадром: двойная жизнь, семья и взросление';
+const title = `${collectionTitle} | Господь Бог — Сила Моя`;
 const description = 'Три материала о двойной жизни подростка и отдельный цикл из четырёх самостоятельных исследований об отношениях со взрослыми детьми — с Писанием как главным ориентиром.';
 const items = TEEN_DOUBLE_LIFE_SERIES.items;
 const cards = items.map((item) => ({ ...item, media: teenSeriesMediaFor(item.id) }));
@@ -37,13 +38,13 @@ const jsonLd = {
       '@type': 'CollectionPage',
       '@id': canonical,
       url: canonical,
-      name: TEEN_DOUBLE_LIFE_SERIES.seriesTitleFull,
+      name: collectionTitle,
       description,
       inLanguage: 'ru',
       isPartOf: { '@id': SITE.websiteId },
       publisher: { '@id': SITE.orgId },
       primaryImageOfPage: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 },
-      hasPart: items.map((item) => ({
+      hasPart: [...items, ...ADULT_CHILDREN_SERIES.items].map((item) => ({
         '@type': 'Article',
         name: item.title,
         url: `${SITE.url}${item.href}`,

@@ -1,8 +1,8 @@
-# Teen double-life series — publication contract
+# Family studies — publication contract (3+4)
 
 ## Editorial direction HOLD — independent studies (owner, 2026-11-23)
 
-**Do not merge this draft as a single seven-step reader narrative.** The I–VII order, 264-minute cumulative progress, seven-step `coreSequence`, and related tests **below document the still-unmerged candidate implementation in PR #2368**, not the selected future editorial architecture. This docs-only note neither implements nor authorizes a change to Reader, routes, MDX, registries or publication.
+**Current SYSTEM candidate #2368: Draft / release HOLD.** The seven-step design is superseded by W25's 3+4 implementation. Preserve the existing published routes; this candidate is not evidence of a new production release. The earlier decisions and research are retained in `TEEN-ADULT-EDITORIAL-RECONCILIATION.md` and Git history.
 
 The editorial direction is **one site section with independent, situation-based studies**; there is **no two-volume biography**, no thesis that a troubled teenager necessarily grows into a conflicted adult, and no mandatory cross-series “next step”:
 
@@ -11,39 +11,30 @@ The editorial direction is **one site section with independent, situation-based 
 - **Study B (separate readership and thesis; display-name review):** the earlier working title «Взрослые дети и родители: отношения и ответственность» is **too narrow as an umbrella for the transition of growing up**. Proposed broader display wording: «Когда дети взрослеют: отношения, границы и ответственность». This is an editorial candidate, **not** approval to rename individual MDX titles, canonical routes or Reader configs. The four existing articles have concrete adult-life emphases: becoming legally adult and the changing form of parental authority (foundation); co-residence and shared resources; conflict-related departure/contact and possible restoration (specific difficult case); an adult daughter's marriage choice and paternal involvement (specialist study). Their moral and relational questions often arise before eighteen, but their legal assumptions and adult agency must **not** be projected automatically onto minors. Conversely, these studies must not imply that growing up is always crisis, rebellion or concealed sin. All four remain independently selectable by situation, not mandatory sequential stages or a sequel to teenage double life.
 - **Future card ONLY, not an article or live route:** «Родители и подростки: когда поколения не понимают друг друга». Teaser: «Родители выросли в другом мире — с другими привычками, музыкой, способами общения и представлениями о досуге. Как услышать подростка, отличить реальные нравственные опасности от непривычных интересов и сохранить уважительный разговор, не выдавая вкусы своего поколения за Божьи заповеди?» State: «В планах». **Do not frame this card around whether a child shares a parent's faith.** No publication date, reading time, link to empty route, sitemap entry, or Reader progress.
 - **Cross-study navigation:** model “другая ситуация” and “подробное разъяснение” as meaningful relations, projected from existing canonical relation owners where possible; do not duplicate manually worded “Читайте также” across MDX, and do not introduce a cross-series next-step link. Each study has its own TOC, ordering and truthful progress.
-- **Reader compatibility:** the shared engine currently forbids `coreSequence` together with `shape: 'book'`. The current `teen-double-life` config and release guards still require seven core steps. Any change needs a separately owned SYSTEM migration after W57/reader shared work is ready; preserve every one of the seven canonical article URLs, 181 historical explicit IDs and related deep links, annotations, bookmarks, TTS, print, mobile accessibility, Pagefind, metadata and search discovery. Position in a study is **not** proof of completion.
+- **Reader compatibility:** the shared engine still forbids `coreSequence` together with `shape: 'book'`. Use the two typed configs in `teenSeriesConfig.ts`, not a separate runtime. Preserve all seven canonical article URLs, 181 historical explicit IDs and related deep links, annotations, bookmarks, TTS, print, mobile accessibility, Pagefind, metadata and search discovery. Position in a study is **not** proof of completion.
 - **Editorial scope:** retain good prose and exegesis; do not rewrite or shorten seven articles merely to fit the umbrella. Check genuinely duplicated arguments and inaccurate labels separately with current MDX owners. A title/teaser decision does not itself change the content of the original study.
-- **Release HOLD:** candidate #2368 stays Draft; do not merge the currently contradictory seven-step product design. Obtain exact-head checks, active-author lane integration and browser proof for the separately authorized successor. Do not transplant green checks from another SHA.
+- **Release HOLD:** candidate #2368 stays Draft until exact integrated-head checks, shared Reader compatibility, visual/browser evidence and editorial release authorization are complete. Do not transplant green checks from another SHA.
+- **Independent emotional letter (#2377):** author-owned draft with `draft: true` and `noindex: true`. No public route or card until separately approved atomic integration. It is not a fourth chapter or an eighth step; do not edit its active author lane.
 
-The rest of this file remains an **as-built contract for the current seven-step candidate** until a coherent replacement changes all technical authorities atomically. It must not be treated as permission to preserve the seven-step story in the future product.
+## Current canonical topology
 
----
+One shared landing `/podrostok-za-kadrom/` contains two clearly separated groups, derived from the existing typed configs.
 
-Status: **PUBLISHED / POST-RELEASE CONTRACT**
+| Group | Display mark | Slug | Reading time |
+| --- | --- | --- | ---: |
+| Teen trilogy | I | `podrostok-za-kadrom-dvoynaya-zhizn` | 32 min |
+| Teen trilogy | II | `podrostok-za-kadrom-roditelyam-posle-razoblacheniya` | 43 min |
+| Teen trilogy | III | `podrostok-za-kadrom-chto-delat-tserkvi` | 39 min |
+| Adult studies | ОСНОВА | `sovershennoletie-roditelskaya-vlast-chto-menyaetsya` | 35 min |
+| Adult studies | ДОМ | `vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya` | 36 min |
+| Adult studies | УХОД | `vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie` | 37 min |
+| Adult studies | БРАК | `vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti` | 42 min |
 
-This contract records the canonical seven-article teen/adult-child publication shape and remains the post-release regression authority for sequence, metadata, reader behavior and safeguarding boundaries. The routes, discovery entries, media and indexability are already published.
+`teen-double-life`: ordered I → II → III, 114 minutes in current metadata, with cumulative offsets 0/32/75.
 
-## Canonical linear order
+`adult-children-family`: four independently selectable topics with label marks, article-local progress (offset 0; total equals the individual reading time). In-group previous/next links are navigation, not mandatory stages. No cross-group series-next edge, no seven-step sequence, no combined progress. The reading times above are current metadata, not a new measurement.
 
-All seven articles are first-class **core** reading steps with sequential Roman marks **I–VII**. Each part is a full chapter of the series; none is a `letter`/`satellite` item in the shared series engine.
-
-| Step | Display mark | Slug | Mobile label | Reading time |
-| --- | --- | --- | --- | ---: |
-| 1 | I | `podrostok-za-kadrom-dvoynaya-zhizn` | Двойная жизнь | 32 min |
-| 2 | II | `podrostok-za-kadrom-roditelyam-posle-razoblacheniya` | После разоблачения | 43 min |
-| 3 | III | `podrostok-za-kadrom-chto-delat-tserkvi` | Что делает церковь | 39 min |
-| 4 | IV | `sovershennoletie-roditelskaya-vlast-chto-menyaetsya` | Власть после 18 | 35 min |
-| 5 | V | `vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya` | Дом и деньги | 36 min |
-| 6 | VI | `vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie` | Ушёл из дома | 37 min |
-| 7 | VII | `vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti` | Дочь и брак | 42 min |
-
-Total reading time: **264 min**.
-
-Required prev/next chain:
-
-`I -> II -> III -> IV -> V -> VI -> VII`
-
-The shared `mark.kind: 'letter'` means a satellite that is excluded from normal prev/next and desktop rail. Therefore none of I–VII may use that semantic; the shared series config must use core `roman` marks consistently.
+The shared landing CollectionPage JSON-LD enumerates all seven visible articles exactly once, without implying a seven-step progression. The release contract checks rendered JSON-LD and canonical deep links. The earlier I–VII terminology in the historical reconciliation ledger records provenance only.
 
 ## Shared reader engine
 
@@ -95,7 +86,7 @@ Before indexability, each article must have an authoritative publication project
 - Pagefind/search metadata;
 - feed/sitemap membership.
 
-The series registry, TypeScript config, frontmatter projection, route profiles, landing order and prev/next chain must agree on all seven slugs and order. New logical order from 2026-11-23: adolescence I–III → adulthood and parental authority IV → shared home and money V → departure and restoration VI → marriage VII. Old slug/route and OG asset names are stable identifiers and must not be renamed to mirror new step numbers. A valid registry on one side is not sufficient if another projection disagrees.
+The series registry, TypeScript configs, frontmatter projection, route profiles, landing groups and within-group navigation must agree on all seven slugs and their group membership. No cross-group prev/next chain. Old slug/route and OG asset names are stable identifiers and must not be renamed to mirror display marks. A valid registry on one side is not sufficient if another projection disagrees.
 
 ## Scripture references and glossary
 
@@ -126,12 +117,12 @@ Internal production language must not leak into published prose. Replace phrases
 
 ## Everyday family life — bounded editorial allocation
 
-An editorial audit identified a real gap between extensive crisis/jurisdiction analysis and everyday family culture. Do not create a surprise eighth core chapter or duplicate the Reader series rail. Preserve the approved I–VII order, stable canonical routes, historical anchors and chapter-specific thesis:
+An editorial audit identified a real gap between extensive crisis/jurisdiction analysis and everyday family culture. Do not create a surprise new core chapter or duplicate the Reader series rail. Preserve the independent adult-study topics, stable canonical routes, historical anchors and each article's thesis:
 
-- **IV — adulthood and authority:** four relations (father/son, mother/son, father/daughter, mother/daughter) as non-exhaustive pastoral illustrations; transition from command to mature counsel; dangers of treating an adult child as a substitute spouse; parental example of apology, mutual respect and care for their own parents.
-- **V — adult still at home:** ordinary hospitality, respectful speech, shared meals, gratitude, body/room privacy and non-shaming clothing conversations; distinguish direct moral commands from negotiable household conventions; conversation and open presence rather than habitual surveillance; housing/tenancy law remains jurisdiction-dependent.
-- **VI — adult who left:** preserve the specific departure/contact/repentance/reconciliation arc. Link back to IV/V where ordinary domestic culture is context; do not copy their full sections into this chapter.
-- **VII — adult daughter, father and marriage:** why deserved parental trust is built before courtship; respectful, non-coerced warmth and daughter’s control of physical boundaries; example of how parents treat each other; moral modesty and legitimate personal taste without an invented dress-length law or blaming women for another person’s conduct.
+- **ОСНОВА — adulthood and authority:** four relations (father/son, mother/son, father/daughter, mother/daughter) as non-exhaustive pastoral illustrations; transition from command to mature counsel; dangers of treating an adult child as a substitute spouse; parental example of apology, mutual respect and care for their own parents.
+- **ДОМ — adult still at home:** ordinary hospitality, respectful speech, shared meals, gratitude, body/room privacy and non-shaming clothing conversations; distinguish direct moral commands from negotiable household conventions; conversation and open presence rather than habitual surveillance; housing/tenancy law remains jurisdiction-dependent.
+- **УХОД — adult who left:** preserve the specific departure/contact/repentance/reconciliation arc. Link back to the authority/home studies where ordinary domestic culture is context; do not copy their full sections into this chapter.
+- **БРАК — adult daughter, father and marriage:** why deserved parental trust is built before courtship; respectful, non-coerced warmth and daughter’s control of physical boundaries; example of how parents treat each other; moral modesty and legitimate personal taste without an invented dress-length law or blaming women for another person’s conduct.
 
 Every substantive addition must say what is **direct scriptural teaching**, what is **prudential inference** or analogy, and what is a **mutual household agreement**. Scripture context matters: Prov. 27:23 concerns stewardship of flocks, not parental access to private messages; Titus 2:3–5 teaches older women mentoring younger women, not sole custodianship of a daughter's appearance; 1 Tim. 2:9–10 addresses godly modesty and good works, not a universal measurement chart. No claim that warm fatherhood guarantees immunity to predatory conduct, or that failure to follow household etiquette is invariably a named sin. Safety exceptions for abuse, intimidation and minors must remain visible.
 

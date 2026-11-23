@@ -422,6 +422,31 @@ if (fs.existsSync(DIST)) {
         fail(route + ': independent-cycle progress mismatch');
     }
     if (route === LANDING) {
+      // The shared collection exposes both groups, not a mandatory reading chain.
+      const collections = [];
+      for (const match of html.matchAll(/<script\b[^>]*\btype=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+        try {
+          const data = JSON.parse(match[1]);
+          const nodes = Array.isArray(data) ? data : (data['@graph'] || [data]);
+          collections.push(...nodes.filter((node) => node['@type'] === 'CollectionPage' && node['@id'] === expectedCanonical));
+        } catch (error) {
+          fail(route + ': invalid JSON-LD: ' + error.message);
+        }
+      }
+      if (collections.length !== 1) {
+        fail(route + ': expected one canonical CollectionPage');
+      } else {
+        const expectedParts = ITEMS.map(([, , slug]) => SITE + '/articles/' + slug + '/');
+        const parts = collections[0].hasPart;
+        if (!Array.isArray(parts) || parts.length !== expectedParts.length ||
+            new Set(parts.map((part) => part?.url)).size !== expectedParts.length ||
+            parts.some((part, index) => part?.['@type'] !== 'Article' || part?.url !== expectedParts[index] || !part?.name)) {
+          fail(route + ': CollectionPage must describe all seven visible articles exactly once (3+4)');
+        }
+        const manifestEntry = readJson('data/search-manifest.json').items.find((item) => item.url === LANDING);
+        if (!manifestEntry || collections[0].name !== manifestEntry.title)
+          fail(route + ': CollectionPage name must match the shared landing search title');
+      }
       if (!html.includes(SERIES_RAIL)) fail(route + ': responsive hero derivative missing');
       if (!html.includes('id="adult-studies"') || !html.includes('adult-studies-title'))
         fail(route + ': independent adult study group missing');
