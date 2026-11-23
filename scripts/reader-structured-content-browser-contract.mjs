@@ -296,9 +296,10 @@ try {
     scenarios += 2;
     await ctx.close();
 
-    // W99b owner-requested frontmatter correction: Context and Handbook
-    // have editorial links without circular bullets, continuous rails or
-    // a redundant second Listen button. Numbered chapter TOCs retain dots.
+    // Frontmatter lists keep their editorial-link treatment (no decorative
+    // bullets or progress rail), while their native TOC footer exposes the
+    // contextual "Слушать статью" action beside Continue and PDF. Numbered
+    // chapter TOCs retain their dots and their own contextual Listen label.
     for (const route of ['/articles/dzhon-gill-istoricheskiy-kontekst/',
                          '/articles/dzhon-gill-spravochnik/']) {
       for (const width of [320, 390, 768]) {
@@ -330,7 +331,14 @@ try {
           const captionBox=caption?.getBoundingClientRect();
           const layoutReady=!!(firstBox?.width && captionBox?.width);
           const nums=[...document.querySelectorAll('#partTocOverlay .gbat-num:not(.gbat-num--label)')];
-          const footer=document.querySelector('#partTocOverlay .gbat-foot--frontmatter');
+          const footer=document.querySelector('#partTocOverlay .gbat-foot');
+          const listen=footer?.querySelector('[data-gbat-listen]');
+          const listenLabel=listen?.querySelector('.gbat-fbtn-txt b');
+          const listenRect=listen?.getBoundingClientRect();
+          const footerTargets=[...(footer?.querySelectorAll('button')||[])].map(button=>{
+            const r=button.getBoundingClientRect();
+            return {left:r.left,right:r.right,width:r.width,height:r.height};
+          });
           return {
             matched:!!item, dots:dots.length,
             visibleDots:dots.filter(e=>getComputedStyle(e).display!=='none').length,
@@ -344,7 +352,13 @@ try {
               const cs=getComputedStyle(e);return parseFloat(cs.fontSize)>=24 && cs.fontStyle==='normal';
             }),
             footerButtons:footer?.querySelectorAll('button').length,
-            redundantListen:footer?.querySelectorAll('[data-gbat-listen]').length,
+            listenCount:footer?.querySelectorAll('[data-gbat-listen]').length,
+            listenLabel:listenLabel?.textContent?.trim()||'',
+            listenVisible:!!(listen&&listenRect?.width>0&&listenRect?.height>0&&
+              getComputedStyle(listen).display!=='none'&&getComputedStyle(listen).visibility!=='hidden'),
+            listenLabelClipped:!!(listenLabel&&listenLabel.scrollWidth>listenLabel.clientWidth+1),
+            footerTargets,
+            xOverflow:document.documentElement.scrollWidth-innerWidth,
             nextExists:!!footer?.querySelector('[data-gbat-continue]'),
             pdfExists:!!footer?.querySelector('[data-action="print"]'),
             footerColumns:footer?getComputedStyle(footer).gridTemplateColumns:null,
@@ -359,11 +373,19 @@ try {
         assert.ok(tocResult.textInBounds,tag+' typographic frontmatter links fit without bullet gaps');
         assert.notEqual(tocResult.numberedDot,'none',tag+' numbered chapter dot untouched');
         assert.ok(tocResult.romanLargeUpright,tag+' all four Roman headings >=24px, not italic');
-        assert.equal(tocResult.footerButtons,2,tag+' reference has only Continue and PDF footer');
-        assert.equal(tocResult.redundantListen,0,tag+' no duplicate footer Play on frontmatter');
+        assert.equal(tocResult.footerButtons,3,tag+' frontmatter footer has Listen, Continue and PDF');
+        assert.equal(tocResult.listenCount,1,tag+' exactly one contextual TOC Listen action');
+        assert.equal(tocResult.listenLabel,'Слушать статью',tag+' frontmatter Listen is labeled as an article');
+        assert.ok(tocResult.listenVisible&&!tocResult.listenLabelClipped,
+          tag+' Listen label is visible and unclipped');
+        assert.ok(tocResult.footerTargets.length===3&&tocResult.footerTargets.every(target=>
+          target.left>=-1&&target.right<=width+1&&target.width>=40&&target.height>=44),
+          tag+' all three footer actions remain visible and tappable inside the viewport');
+        assert.ok(tocResult.xOverflow<=1,tag+' three-column footer creates no horizontal overflow');
         assert.ok(tocResult.nextExists&&tocResult.pdfExists,tag+' footer navigation and PDF still exist');
-        assert.ok(tocResult.footerColumns?.split(' ').length===2,tag+' two usable footer grid columns');
-        assert.equal(tocResult.topPlayCount,1,tag+' one canonical top audio Play remains');
+        assert.ok(tocResult.footerColumns?.trim().split(/\s+/).length===3,
+          tag+' Listen, Continue and PDF retain three footer columns');
+        assert.equal(tocResult.topPlayCount,1,tag+' one canonical top audio Play remains alongside the TOC action');
         await tocPage.screenshot({path:path.join(shots,engine+'-'+width+'-'+route.split('/')[2]+'-toc.jpg'),
           type:'jpeg',quality:76,animations:'disabled'});
         scenarios++;
