@@ -20,6 +20,8 @@ All rows include the final paragraph sentinel. At 320 all repeat results matched
 
 The forced-after rule is not merely inert: for 320 run 1, the following heading «Что эта модель утверждает…» moves from page 3 to page 4, while the cold PDF remains 12 pages and the closing text is still missing. On a separately instrumented 320 run the matched print-time computed values were baseline `inside=avoid, before=auto, after=auto`; after `avoid/auto/page`; auto `auto/auto/auto`; autoBefore `auto/page/auto`. Instrumentation reads the print media change listener, not the physical print snapshot; this is not a full causal proof.
 
+A static exact-class inventory of this build finds **39 `/articles/` routes with 40 `.summary-card` roots** ([inventory](summary-inventory.json), [script](summary-inventory.py)). This is markup scope, not a claim all cards become atomic or are affected in print; it underscores why a global override requires route-level regression.
+
 **Interpretation:** under this narrow harness, adding a forced break or gap while retaining the existing atomic treatment did not recover the tail. Allowing the card to split alone did, but combining it with a forced break failed again. This narrows a candidate space and illustrates sensitivity to total pagination; it does not establish that page-count caching is the browser's cause or that a global CSS policy is safe. Explicit forced pages could create blank pages and degrade other articles. Need a print-owner solution preserving atomic rules across all routes, same-scenario red/green, real Chrome Save as PDF and font-failure timeout. #2349 remains open.
 
 ## Reproduce
