@@ -1,0 +1,15 @@
+# W94 TOC Listen: W57 breakpoint boundary — diagnostic at `643c619e`
+
+Independent read-only browser witness requested by the W94 source-only handoff. Exact detached `643c619e3d15699ebe275e632ad504c8b7e1a747`, Astro 112 pages + production-like copy-legacy; real `research/reader-w57-pilot/preview.py` from same source/dist (the running preview script is byte-identical to this commit; only its README changed since process started). Linux headless Chromium 153, fresh contexts, service workers blocked, reduced motion. No changes to owner/product branch. [Raw](results.json), [probe](capture.mjs). Test logs the actual Play `.gb-ember` click dispatched by TOC Listen and its geometry; not audible speech or an engine playback test.
+
+| width | TOC open | W57 | 85em | Play clicked by Listen | Play box when clicked |
+|---|---|---|---|---|---|
+| 320 / 390 / 1120 | real click on visible `#mobPartTocBtn`, then real Listen click | no | false | mobile | 44×44 |
+| 1121 / 1280 / 1359 | **synthetic click** on hidden `#mobPartTocBtn`, then real Listen click | yes | false | mobile | **0×0** |
+| 1360 / 1440 | **synthetic click** on hidden `#mobPartTocBtn`, then real Listen click | yes | true | desktop | 32×32 |
+
+All eight close the TOC, one delegated Play click is recorded, 0 uncaught page errors. Play click itself is `.click()` dispatched by the real TOC handler and therefore `isTrusted=false` even though Listen is clicked through Playwright. The chosen mobile control at 1121–1359 is hidden by W57 preview despite the 85em media query still selecting it; the visible desktop control has 32×32 geometry in that preview. This is a **boundary mismatch under a synthetic opening**, not proof a user can reach this mobile TOC at desktop width, not proof playback fails, and not a production regression claim. At desktop the normal `#mobPartTocBtn` has no box, so the probe intentionally marks synthetic opening; no assertion of real desktop discoverability. W57's left-panel TOC is a separate UI. Need an actual user-reachable route into this sheet at those widths (or an explicit product decision that none exists) and live TTS witness before calling it a user-facing bug.
+
+**Owner handoff:** W94's assumption that 85em always selects the visible Play does not hold for the W57 preview at 1121–1359. Test owner should include both product-native and actual preview boundary, distinguish visible control and hidden DOM child, and verify which control really receives playback; do not revert or add a parallel TTS owner. If the sheet cannot be reached at these widths, treat this as future integration/guard coverage rather than an established user issue. Don't assume matchMedia alone describes W57 overrides or treat synthetic browser `.click()` as a physical device test.
+
+Reproduce from an isolated exact build with preview.py pointing at the same dist: `PREVIEW_URL=http://127.0.0.1:19064 CHROMIUM_EXECUTABLE=/path/to/chromium node capture.mjs` with Playwright resolvable. `OUTPUT` changes output path. The script is diagnostic (exit 0 does not certify correctness); no WebKit, Firefox, physical device, native speech synthesis or cross-route acceptance.

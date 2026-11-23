@@ -1,0 +1,322 @@
+[
+  {
+    "width": 320,
+    "openMode": "real",
+    "before": {
+      "w57": false,
+      "match": false,
+      "open": "false",
+      "listenBox": {
+        "x": 16,
+        "y": 834,
+        "width": 135.984375,
+        "height": 52,
+        "top": 834,
+        "right": 151.984375,
+        "bottom": 886,
+        "left": 16
+      },
+      "mobile": {
+        "width": 44,
+        "height": 44
+      },
+      "desktop": {
+        "width": 0,
+        "height": 0
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": true,
+          "desktop": false,
+          "width": 44,
+          "height": 44,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 390,
+    "openMode": "real",
+    "before": {
+      "w57": false,
+      "match": false,
+      "open": "false",
+      "listenBox": {
+        "x": 16,
+        "y": 834,
+        "width": 165.8125,
+        "height": 52,
+        "top": 834,
+        "right": 181.8125,
+        "bottom": 886,
+        "left": 16
+      },
+      "mobile": {
+        "width": 44,
+        "height": 44
+      },
+      "desktop": {
+        "width": 0,
+        "height": 0
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": true,
+          "desktop": false,
+          "width": 44,
+          "height": 44,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1120,
+    "openMode": "real",
+    "before": {
+      "w57": false,
+      "match": false,
+      "open": "false",
+      "listenBox": {
+        "x": 343,
+        "y": 813,
+        "width": 207.265625,
+        "height": 52,
+        "top": 813,
+        "right": 550.265625,
+        "bottom": 865,
+        "left": 343
+      },
+      "mobile": {
+        "width": 44,
+        "height": 44
+      },
+      "desktop": {
+        "width": 0,
+        "height": 0
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": true,
+          "desktop": false,
+          "width": 44,
+          "height": 44,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1121,
+    "openMode": "synthetic",
+    "before": {
+      "w57": true,
+      "match": false,
+      "open": "false",
+      "listenBox": {
+        "x": 343.5,
+        "y": 813,
+        "width": 207.265625,
+        "height": 52,
+        "top": 813,
+        "right": 550.765625,
+        "bottom": 865,
+        "left": 343.5
+      },
+      "mobile": {
+        "width": 0,
+        "height": 0
+      },
+      "desktop": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": true,
+          "desktop": false,
+          "width": 0,
+          "height": 0,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "openMode": "synthetic",
+    "before": {
+      "w57": true,
+      "match": false,
+      "open": "false",
+      "listenBox": {
+        "x": 423,
+        "y": 813,
+        "width": 207.265625,
+        "height": 52,
+        "top": 813,
+        "right": 630.265625,
+        "bottom": 865,
+        "left": 423
+      },
+      "mobile": {
+        "width": 0,
+        "height": 0
+      },
+      "desktop": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": true,
+          "desktop": false,
+          "width": 0,
+          "height": 0,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1359,
+    "openMode": "synthetic",
+    "before": {
+      "w57": true,
+      "match": false,
+      "open": "false",
+      "listenBox": {
+        "x": 462.5,
+        "y": 813,
+        "width": 207.265625,
+        "height": 52,
+        "top": 813,
+        "right": 669.765625,
+        "bottom": 865,
+        "left": 462.5
+      },
+      "mobile": {
+        "width": 0,
+        "height": 0
+      },
+      "desktop": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": true,
+          "desktop": false,
+          "width": 0,
+          "height": 0,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1360,
+    "openMode": "synthetic",
+    "before": {
+      "w57": true,
+      "match": true,
+      "open": "false",
+      "listenBox": {
+        "x": 55.625,
+        "y": 817,
+        "width": 174.53125,
+        "height": 52,
+        "top": 817,
+        "right": 230.15625,
+        "bottom": 869,
+        "left": 55.625
+      },
+      "mobile": {
+        "width": 0,
+        "height": 0
+      },
+      "desktop": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": false,
+          "desktop": true,
+          "width": 32,
+          "height": 32,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "openMode": "synthetic",
+    "before": {
+      "w57": true,
+      "match": true,
+      "open": "false",
+      "listenBox": {
+        "x": 57.546875,
+        "y": 817,
+        "width": 174.53125,
+        "height": 52,
+        "top": 817,
+        "right": 232.078125,
+        "bottom": 869,
+        "left": 57.546875
+      },
+      "mobile": {
+        "width": 0,
+        "height": 0
+      },
+      "desktop": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    "after": {
+      "overlay": "true",
+      "events": [
+        {
+          "mobile": false,
+          "desktop": true,
+          "width": 32,
+          "height": 32,
+          "isTrusted": false
+        }
+      ]
+    },
+    "errors": []
+  }
+]
