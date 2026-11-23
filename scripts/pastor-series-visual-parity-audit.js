@@ -185,7 +185,8 @@ must(stats, 'минута канонического ядра I–IX', 'canonica
 must(stats, '>1</div>', 'one published dossier stat');
 must(stats, 'опубликованное Досье A', 'Dossier A companion stat label');
 must(stats, '>181</div>', 'Dossier A source-count stat');
-must(stats, 'источник в Досье A', 'Dossier A source-count label');
+must(stats, 'запись в реестре Досье A', 'Dossier A authority-record label');
+mustNot(stats, 'источник в Досье A', 'research record count must not be presented as reader-openable sources');
 mustNot(stats, '>10</div>', 'core and dossier conflated into one publication stat');
 
 const pastorSeries = seriesRegistry['pastor-series'];
