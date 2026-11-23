@@ -70,6 +70,13 @@ const sources = sourceData.readerSources ?? [];
 requireValue(pathways.length === 15, `expected 15 pathways, found ${pathways.length}`);
 requireValue(responses.length === 20, `expected 20 responses, found ${responses.length}`);
 requireValue(sources.length === 33, `expected 33 reader sources, found ${sources.length}`);
+const historicalJourneySources = sources.filter((item) => item.href === 'https://www.thejourney.org/about/our-story-new');
+requireValue(
+  historicalJourneySources.length === 1 && historicalJourneySources[0]?.id === 'FW10-DPA-01',
+  'exactly one frozen Journey 404 source record must remain identifiable',
+);
+const nonDisabledReaderLinks = sources.length - historicalJourneySources.length;
+requireValue(nonDisabledReaderLinks === 32, `expected 32 non-disabled reader URLs, found ${nonDisabledReaderLinks}`);
 
 const caseIds = pathways.map((item) => item.id);
 requireValue(new Set(caseIds).size === 15, 'case pathway ids must be unique');
@@ -298,6 +305,13 @@ requireValue(
 );
 requireValue(!supplement.includes('Research records:'), 'raw Research ids leaked into public supplementary prose');
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
+requireValue(
+  supplement.includes('data-bibliography-records={content.counts.newReaderLinks}') &&
+  supplement.includes("data-reader-source-links={readerSources.filter((source) => source.id !== 'FW10-DPA-01').length}") &&
+  supplement.includes('33 библиографические записи') &&
+  !supplement.includes('data-new-reader-links='),
+  'public supplement must distinguish 33 source records from 32 linkable URLs',
+);
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
 requireValue(wrapper.includes("import DiotrophesDraft from './DiotrophesDraft.astro'"), 'wrapper lost Wave 10 draft');
 requireValue(wrapper.includes("import FaithfulWitnessSupplement from './FaithfulWitnessSupplement.astro'"), 'wrapper lost supplement');
@@ -315,4 +329,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✅ Diotrophes Wave 11 evidence snapshot passed: 15 pathways, 20 responses, 33 links, 181-source authority, ${russianWords} Russian data words, successor=${successorRelease?.authorityId ?? 'none'}`);
+console.log(`✅ Diotrophes Wave 11 evidence snapshot passed: 15 pathways, 20 responses, 33 bibliography records, ${nonDisabledReaderLinks} non-disabled source links, 181-source authority, ${russianWords} Russian data words, successor=${successorRelease?.authorityId ?? 'none'}`);
