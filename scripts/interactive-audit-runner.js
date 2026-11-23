@@ -294,6 +294,10 @@ async function runInteractiveContracts(baseUrl) {
   if (printPreflightCode !== 0) return printPreflightCode;
   const printBrowserCode = await runNodeScript(READER_MOBILE_PRINT_LOCK_GUARD, [], { AUDIT_BASE: baseUrl });
   if (printBrowserCode !== 0) return printBrowserCode;
+  // Run the dedicated Pagefind handoff proof before the broad legacy audit so
+  // unrelated site-contract failures cannot suppress W123 browser evidence.
+  const pagefindHandoffCode = await runPagefindSearchHandoffGuard(baseUrl);
+  if (pagefindHandoffCode !== 0) return pagefindHandoffCode;
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
   const resumeCode = await runHomepageResumeBrowserGuard(baseUrl);
@@ -302,8 +306,6 @@ async function runInteractiveContracts(baseUrl) {
   if (quizCode !== 0) return quizCode;
   const sourceHandoffCode = await runSeriesQuizSourceHandoffGuard(baseUrl);
   if (sourceHandoffCode !== 0) return sourceHandoffCode;
-  const pagefindHandoffCode = await runPagefindSearchHandoffGuard(baseUrl);
-  if (pagefindHandoffCode !== 0) return pagefindHandoffCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
   if (tooltipCode !== 0) return tooltipCode;
   const scriptureCode = await runScriptureTooltipProjectionGuard(baseUrl);

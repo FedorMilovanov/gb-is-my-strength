@@ -699,6 +699,11 @@ function checkSupportingWorkflows(workflowTexts) {
   const interactiveRunnerPath = 'scripts/interactive-audit-runner.js';
   const interactiveRunner = read(interactiveRunnerPath);
   must(interactiveRunnerPath, interactiveRunner, /w121-search-contract\.mjs/, 'must execute the Pagefind search-handoff browser contract');
+  const pagefindHandoffCall = interactiveRunner.indexOf('const pagefindHandoffCode = await runPagefindSearchHandoffGuard(baseUrl);');
+  const broadAuditCall = interactiveRunner.indexOf('const auditCode = await runAudit(baseUrl);');
+  if (pagefindHandoffCall === -1 || broadAuditCall === -1 || pagefindHandoffCall >= broadAuditCall) {
+    issues.push(`${interactiveRunnerPath}: Pagefind handoff browser contract must run before the broad site audit can short-circuit it`);
+  }
 
   const sharedPath = '.github/workflows/shared-files-guard.yml';
   const shared = workflowTexts[sharedPath] || read(sharedPath);
