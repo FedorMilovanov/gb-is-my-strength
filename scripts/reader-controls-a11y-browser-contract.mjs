@@ -480,7 +480,10 @@ async function auditMobile(browser, origin, routeInfo) {
         const settings = top?.querySelector('#mobSettingsBtn');
         const play = top?.querySelector('.reader-mobile-play-group')?.getBoundingClientRect();
         const gear = settings?.getBoundingClientRect();
-        const save = top?.querySelector('.mobile-top-save')?.getBoundingClientRect();
+        const search = top?.querySelector('.reader-mobile-top-search')?.getBoundingClientRect();
+        const saveNode = document.querySelector('.mobile-top-save');
+        const save = saveNode?.getBoundingClientRect();
+        const saveBelow = Boolean(saveNode && bottom?.contains(saveNode));
         const section = bottom?.querySelector('#mobPartTocBtn')?.getBoundingClientRect();
         const actions = bottom?.querySelector('.reader-mobile-action-cluster');
         return {
@@ -488,7 +491,12 @@ async function auditMobile(browser, origin, routeInfo) {
           top: Boolean(settings), bottom: Boolean(bottom?.querySelector('#mobSettingsBtn')),
           controls: settings?.getAttribute('aria-controls'), label: settings?.getAttribute('aria-label'),
           target: Boolean(document.getElementById('gillSettingsOverlay')),
-          order: Boolean(play && gear && save && gear.x >= play.right - 1 && gear.right <= save.x + 1),
+          order: Boolean(play && search && gear && save &&
+            search.x >= play.right - 1 && search.x - play.right <= 4 &&
+            gear.x >= search.right - 1 && gear.x - search.right <= 4 &&
+            (saveBelow || (save.x >= gear.right - 1 && save.x - gear.right <= 4))),
+          saveBelow, save44: Boolean(save && save.width >= 44 && save.height >= 44),
+          saveCount: document.querySelectorAll('.mobile-top-save').length,
           target44: Boolean(gear && gear.width >= 44 && gear.height >= 44),
           chapterWidth: section?.width || 0,
           dockActions: actions?.querySelectorAll('.reader-mobile-action').length || 0,
@@ -496,8 +504,10 @@ async function auditMobile(browser, origin, routeInfo) {
           overflow: document.documentElement.scrollWidth - innerWidth,
         };
       });
-      record(checks, 'gill-mobile-10', 'exactly one settings trigger beside Play, before bookmark',
-        placement.count === 1 && placement.top && !placement.bottom && placement.order && placement.target44, placement);
+      record(checks, 'gill-mobile-10', 'one Settings follows Play then Search, with one reachable Save',
+        placement.count === 1 && placement.top && !placement.bottom &&
+        placement.order && placement.target44 && placement.save44 &&
+        placement.saveCount === 1 && placement.saveBelow, placement);
       record(checks, 'gill-mobile-11', 'settings shares existing reader dialog and accessible name',
         placement.controls === 'gillSettingsOverlay' && placement.target && Boolean(placement.label), placement);
       record(checks, 'gill-mobile-12', 'bottom chapter reclaims 44px without displacing library/PDF/share',
@@ -511,19 +521,23 @@ async function auditMobile(browser, origin, routeInfo) {
         const rate = bar?.querySelector('#mobSpdBadge');
         const play = bar?.querySelector('.reader-mobile-play');
         const settings = bar?.querySelector('#mobSettingsBtn');
+        const search = bar?.querySelector('.reader-mobile-top-search');
         const chip = bar?.querySelector('.reader-mobile-speed-chip');
-        if (!rate || !play || !settings || !chip) return null;
+        if (!rate || !play || !settings || !search || !chip) return null;
         const r = rate.getBoundingClientRect(), p = play.getBoundingClientRect();
-        const s = settings.getBoundingClientRect(), c = chip.getBoundingClientRect();
+        const s = settings.getBoundingClientRect(), se = search.getBoundingClientRect();
+        const c = chip.getBoundingClientRect();
         const ownerAt = (x, y) => {
           const b = document.elementFromPoint(x, y)?.closest('button');
           return b?.id || b?.getAttribute('data-fc-action') || '';
         };
         return {
-          widths: [r.width, p.width, s.width], heights: [r.height, p.height, s.height],
-          inline: Math.abs(r.right - p.left) <= .5 && Math.abs(p.right - s.left) <= .5,
-          paintGap: s.x + s.width / 2 - (p.x + p.width / 2),
-          chipInBounds: c.right <= s.left + .5 && c.left >= p.left - .5,
+          widths: [r.width, p.width, se.width, s.width],
+          heights: [r.height, p.height, se.height, s.height],
+          inline: Math.abs(r.right - p.left) <= .5 &&
+            se.x >= p.right - .5 && se.x - p.right <= 4 &&
+            s.x >= se.right - .5 && s.x - se.right <= 4,
+          chipInBounds: c.right <= se.left + .5 && c.left >= p.left - .5,
           rateOwner: ownerAt(r.x + r.width / 2, r.y + r.height / 2),
           playOwner: ownerAt(p.x + p.width / 2, p.y + p.height / 2),
           gearOwner: ownerAt(s.x + 2, s.y + s.height / 2),
@@ -535,17 +549,16 @@ async function auditMobile(browser, origin, routeInfo) {
           ringStroke: Number(getComputedStyle(play.querySelector('.gb-ember__ring-progress')).strokeWidth.replace('px','')),
         };
       });
-      record(checks, 'gill-mobile-13', 'rate Play Settings are separate 44px targets with adjacent Play and safe chip',
+      record(checks, 'gill-mobile-13', 'rate Play Search Settings remain distinct 44px targets with safe speed echo',
         Boolean(tight && tight.widths.every(v => v >= 44) && tight.heights.every(v => v >= 44) &&
-          tight.inline && tight.paintGap <= 44.5 && tight.chipInBounds &&
+          tight.inline && tight.chipInBounds &&
           tight.rateOwner === 'mobSpdBadge' && tight.playOwner === 'play' &&
           tight.gearOwner === 'mobSettingsBtn' && tight.chipOwner === 'play' &&
           tight.chipPointerEvents === 'none' &&
           tight.ringStroke >= 3.5 && tight.ringStroke <= 3.7), tight);
       record(checks, 'gill-mobile-15', 'painted 1x echo cannot steal Play taps; speed retains separate 44px hit area',
         Boolean(tight && tight.playTapGrid.length === 16 &&
-          tight.playTapGrid.filter(v => v === 'play').length >= 13 &&
-          tight.playTapGrid.every(v => v === 'play' || v === '') &&
+          tight.playTapGrid.every(v => v === 'play') &&
           tight.rateOwner === 'mobSpdBadge'), tight);
     }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
