@@ -126,12 +126,19 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
         <p class="source-ref">
           <strong>Документальные ссылки:</strong>
           {readerSources.filter((source) => pathway.sourceIds.includes(source.id)).map((source, index) => (
-            <span>{index > 0 ? ' · ' : ' '}<a href={source.href} rel="noopener noreferrer">{source.label}</a></span>
+            <span>
+              {index > 0 ? ' · ' : ' '}
+              {source.id === 'FW10-DPA-01' ? (
+                <span data-locator-status="unavailable-404-2026-11-23" data-historical-href={source.href}>{source.label} (исторический адрес сейчас недоступен; см. письмо старейшин ниже)</span>
+              ) : (
+                <a href={source.href} rel="noopener noreferrer">{source.label}</a>
+              )}
+            </span>
           ))}
           {pathway.id === 'darrin-patrick' && (
             <span>
               {' '}<a href="https://www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf" rel="noopener noreferrer">Копия первичного письма старейшин The Journey, апрель 2016 года (PDF, 3 страницы)</a>.
-              {' '}Письмо подтверждает решение об отстранении и анонс предстоящих собраний; оно не доказывает, что именно эти встречи затем состоялись. Поздняя <a href="https://www.thejourney.org/about/our-story-new" rel="noopener noreferrer">история самой The Journey</a> отдельно сообщает о единогласном решении 2016 года и встречах с группами общины в 2017 году.
+              {' '}Письмо подтверждает решение об отстранении и анонс предстоящих собраний; оно не доказывает, что именно эти встречи затем состоялись. В ранее опубликованной истории самой The Journey сообщалось о единогласном решении 2016 года и встречах с группами общины в 2017 году; исходный адрес этой страницы сейчас возвращает 404, поэтому её локатор требует восстановления.
             </span>
           )}
           {pathway.id === 'paige-patterson' && (
@@ -164,7 +171,7 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
       В нём говорится о намерении провести встречи с общиной, но само письмо не
       подтверждает, что эти встречи позднее состоялись.
       {' '}<a href="https://www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf" rel="noopener noreferrer">Доступная копия PDF</a> размещена отдельно от первоначальной рассылки.
-      Более поздняя <a href="https://www.thejourney.org/about/our-story-new" rel="noopener noreferrer">официальная история The Journey</a> сообщает о единогласном голосовании старейшин 13 апреля 2016 года, встречах с группами общины в начале 2017 года и пересмотре видения и миссии к 2018 году. Эти позднейшие сведения нельзя выдавать за содержание письма 2016 года или независимое судебное заключение.
+      Более поздняя официальная история The Journey сообщала о единогласном голосовании старейшин 13 апреля 2016 года, встречах с группами общины в начале 2017 года и пересмотре видения и миссии к 2018 году. Однако исходный адрес этой истории сейчас возвращает 404. Эти более поздние заявления организации не следует выдавать за содержание письма 2016 года или независимое судебное заключение.
     </p>
     <p class="muted">
       Последующая трагическая смерть Darrin Patrick не используется для объяснения её причин,
@@ -227,7 +234,7 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
   <section class="reading-list-section" id="faithful-witness-sources" data-new-reader-links={content.counts.newReaderLinks}>
     <h2>Документы и свидетельства: дополнительная подборка</h2>
     <p>
-      Здесь приведены 33 ссылки; в основном разделе размещены ещё 40. Некоторые документы
+      Здесь приведены 33 библиографические записи; у одной исторической страницы The Journey адрес сейчас недоступен (404). В основном разделе размещены ещё 40 записей. Некоторые документы
       встречаются в обеих подборках: повторная ссылка помогает найти их в контексте истории,
       но не означает нового независимого свидетельства. Подборка включает официальные документы,
       независимые отчёты и публикации, уточняющие хронологию и позиции участников.
@@ -237,7 +244,11 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
     <ol>
       {readerSources.map((source) => (
         <li>
-          <a href={source.href} rel="noopener noreferrer">{source.label}</a>
+          {source.id === 'FW10-DPA-01' ? (
+            <span data-locator-status="unavailable-404-2026-11-23" data-historical-href={source.href}>{source.label} (первоначальная страница недоступна; выше приведена открываемая копия письма старейшин 2016 года, не тождественная поздней истории организации)</span>
+          ) : (
+            <a href={source.href} rel="noopener noreferrer">{source.label}</a>
+          )}
           <span class="muted" data-evidence-class={source.class}>
             {' — '}{source.class === 'B1' ? 'дополнительная публикация' : 'документальный источник'}
           </span>
