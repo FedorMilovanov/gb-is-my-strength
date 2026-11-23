@@ -19,6 +19,7 @@ const LOT_PUBLICATION_BROWSER_GUARD = path.join(__dirname, 'lot-publication-brow
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_RESUME_BROWSER_GUARD = path.join(__dirname, 'homepage-resume-browser-contract.mjs');
 const SERIES_QUIZ_SOURCE_HANDOFF_GUARD = path.join(__dirname, 'series-quiz-source-handoff-browser-contract.mjs');
+const PAGEFIND_SEARCH_HANDOFF_GUARD = path.join(__dirname, 'w121-search-contract.mjs');
 const CHROME_LABEL_FOCUS_GUARD = path.join(__dirname, 'chrome-label-focus-traversal-contract.mjs');
 const HOME_AMBIENT_CLS_GUARD = path.join(__dirname, 'home-ambient-cls-contract.mjs');
 const NAGORNAYA_JUSTIFICATION_GUARD = path.join(__dirname, 'nagornaya-justification-contract.mjs');
@@ -170,6 +171,13 @@ function runSeriesQuizSourceHandoffGuard(baseUrl) {
   return runNodeScript(SERIES_QUIZ_SOURCE_HANDOFF_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runPagefindSearchHandoffGuard(baseUrl) {
+  if (!fs.existsSync(PAGEFIND_SEARCH_HANDOFF_GUARD)) {
+    throw new Error(`Pagefind search handoff guard is missing at ${PAGEFIND_SEARCH_HANDOFF_GUARD}`);
+  }
+  return runNodeScript(PAGEFIND_SEARCH_HANDOFF_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
 function runChromeLabelFocusGuard(baseUrl) {
   if (!fs.existsSync(CHROME_LABEL_FOCUS_GUARD)) {
     throw new Error(`Chrome-label focus traversal guard is missing at ${CHROME_LABEL_FOCUS_GUARD}`);
@@ -294,6 +302,8 @@ async function runInteractiveContracts(baseUrl) {
   if (quizCode !== 0) return quizCode;
   const sourceHandoffCode = await runSeriesQuizSourceHandoffGuard(baseUrl);
   if (sourceHandoffCode !== 0) return sourceHandoffCode;
+  const pagefindHandoffCode = await runPagefindSearchHandoffGuard(baseUrl);
+  if (pagefindHandoffCode !== 0) return pagefindHandoffCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
   if (tooltipCode !== 0) return tooltipCode;
   const scriptureCode = await runScriptureTooltipProjectionGuard(baseUrl);
