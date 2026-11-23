@@ -166,6 +166,7 @@ requireValue(draft.includes("href === 'https://www.thejourney.org/about/our-stor
 requireValue(draft.includes('data-locator-status="unavailable-404-2026-11-23"'), 'verified Journey 404 status must stay visible');
 requireValue(draft.includes('gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf'), 'case-local primary Journey letter missing');
 requireValue(draft.includes('40 библиографических записей'), 'bibliographic entries must not be conflated with 40 live links');
+requireValue(draft.includes('data-bibliography-records="40" data-reader-source-links="39"'), 'base reader source metadata must distinguish 40 preserved records from 39 clickable URLs');
 requireValue(!draft.includes('40 прямых ссылок'), 'confirmed dead Journey URL counted as a working live reader link');
 
 const quizBlock = extractArrayBlock('quiz');
