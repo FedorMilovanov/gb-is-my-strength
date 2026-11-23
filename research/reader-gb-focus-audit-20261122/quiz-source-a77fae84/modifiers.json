@@ -1,0 +1,233 @@
+[
+  {
+    "mode": "Enter",
+    "checks": [
+      {
+        "name": "Natural shuffled question source is current document",
+        "pass": true,
+        "data": {
+          "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-academies",
+          "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-academies",
+          "question": "Чем для нонконформистов были диссентерские академии?",
+          "hash": ""
+        }
+      },
+      {
+        "name": "Source reached by real Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Plain Enter closes sheet, keeps native hash and exact source focus",
+        "pass": true,
+        "data": {
+          "hash": "#sec-academies",
+          "focus": "sec-academies",
+          "hidden": "true",
+          "top": 371.328125,
+          "height": 844,
+          "overflow": "clip visible"
+        }
+      },
+      {
+        "name": "Plain Enter actually unlocks article scroll",
+        "pass": true,
+        "data": {
+          "before": 19346,
+          "after": 19746
+        }
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "source": {
+      "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-academies",
+      "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-academies",
+      "question": "Чем для нонконформистов были диссентерские академии?",
+      "hash": ""
+    },
+    "after": {
+      "hash": "#sec-academies",
+      "focus": "sec-academies",
+      "hidden": "true",
+      "top": 371.328125,
+      "height": 844,
+      "overflow": "clip visible"
+    },
+    "popup": null,
+    "wheel": {
+      "before": 19346,
+      "after": 19746
+    }
+  },
+  {
+    "mode": "Control+Enter",
+    "checks": [
+      {
+        "name": "Natural shuffled question source is current document",
+        "pass": true,
+        "data": {
+          "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+          "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+          "question": "В каком году произошло Великое изгнание нонконформистского духовенства?",
+          "hash": ""
+        }
+      },
+      {
+        "name": "Source reached by real Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens browser tab without changing source sheet/hash",
+        "pass": false,
+        "data": {
+          "after": {
+            "hash": "#sec-great-ejection",
+            "focus": "sec-great-ejection",
+            "hidden": "true",
+            "top": 394.15625,
+            "height": 844,
+            "overflow": "clip visible"
+          },
+          "popup": null
+        }
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "source": {
+      "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+      "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+      "question": "В каком году произошло Великое изгнание нонконформистского духовенства?",
+      "hash": ""
+    },
+    "after": {
+      "hash": "#sec-great-ejection",
+      "focus": "sec-great-ejection",
+      "hidden": "true",
+      "top": 394.15625,
+      "height": 844,
+      "overflow": "clip visible"
+    },
+    "popup": null
+  },
+  {
+    "mode": "Control+click",
+    "checks": [
+      {
+        "name": "Natural shuffled question source is current document",
+        "pass": true,
+        "data": {
+          "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-salters-hall",
+          "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-salters-hall",
+          "question": "В каком году произошёл доктринальный раскол на Солтерс-Холл?",
+          "hash": ""
+        }
+      },
+      {
+        "name": "Source reached by real Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens browser tab without changing source sheet/hash",
+        "pass": false,
+        "data": {
+          "after": {
+            "hash": "#sec-salters-hall",
+            "focus": "sec-salters-hall",
+            "hidden": "true",
+            "top": 384.453125,
+            "height": 844,
+            "overflow": "clip visible"
+          },
+          "popup": null
+        }
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "source": {
+      "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-salters-hall",
+      "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-salters-hall",
+      "question": "В каком году произошёл доктринальный раскол на Солтерс-Холл?",
+      "hash": ""
+    },
+    "after": {
+      "hash": "#sec-salters-hall",
+      "focus": "sec-salters-hall",
+      "hidden": "true",
+      "top": 384.453125,
+      "height": 844,
+      "overflow": "clip visible"
+    },
+    "popup": null
+  },
+  {
+    "mode": "middle",
+    "checks": [
+      {
+        "name": "Natural shuffled question source is current document",
+        "pass": true,
+        "data": {
+          "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+          "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+          "question": "В каком году произошло Великое изгнание нонконформистского духовенства?",
+          "hash": ""
+        }
+      },
+      {
+        "name": "Source reached by real Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens browser tab without changing source sheet/hash",
+        "pass": true,
+        "data": {
+          "after": {
+            "hash": "",
+            "focus": "glsQuizSource",
+            "hidden": "false",
+            "top": 12643.515625,
+            "height": 844,
+            "overflow": "hidden"
+          },
+          "popup": {
+            "url": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "source": {
+      "href": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+      "raw": "../../articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+      "question": "В каком году произошло Великое изгнание нонконформистского духовенства?",
+      "hash": ""
+    },
+    "after": {
+      "hash": "",
+      "focus": "glsQuizSource",
+      "hidden": "false",
+      "top": 12643.515625,
+      "height": 844,
+      "overflow": "hidden"
+    },
+    "popup": {
+      "url": "http://127.0.0.1:8496/articles/dzhon-gill-istoricheskiy-kontekst/#sec-great-ejection",
+      "error": null
+    }
+  }
+]
