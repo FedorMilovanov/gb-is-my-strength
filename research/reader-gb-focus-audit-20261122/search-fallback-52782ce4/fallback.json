@@ -1,0 +1,620 @@
+[
+  {
+    "width": 390,
+    "checks": [
+      {
+        "name": "Search 0 has expected focus/selection",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 279.6875,
+          "bottom": 612.40625,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": false,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 5517,
+          "study": 1
+        }
+      },
+      {
+        "name": "Search 0 consumes one-shot and preserves surface",
+        "pass": true
+      },
+      {
+        "name": "Search 0 emits truthful event",
+        "pass": true,
+        "data": {
+          "name": "gb:search-source-focused",
+          "detail": {
+            "query": "беспрецедентным",
+            "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+          }
+        }
+      },
+      {
+        "name": "Search 1 has expected focus/selection",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "H1",
+          "focusText": "Джон Гилл (1697–1771). Часть II: Учёный",
+          "top": 72.0625,
+          "bottom": 135.5,
+          "selection": "",
+          "pending": null,
+          "w57": false,
+          "literal": false,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            }
+          ],
+          "scrollY": 236,
+          "study": 1
+        }
+      },
+      {
+        "name": "Search 1 consumes one-shot and preserves surface",
+        "pass": true
+      },
+      {
+        "name": "Search 1 emits truthful event",
+        "pass": true,
+        "data": {
+          "name": "gb:search-source-fallback",
+          "detail": {
+            "query": "беспрецедентный",
+            "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+            "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+            "reason": "literal-occurrence-not-found",
+            "fallbackFocused": true
+          }
+        }
+      },
+      {
+        "name": "Search 2 has expected focus/selection",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 279.6875,
+          "bottom": 612.40625,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": false,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            },
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 5517,
+          "study": 1
+        }
+      },
+      {
+        "name": "Search 2 consumes one-shot and preserves surface",
+        "pass": true
+      },
+      {
+        "name": "Search 2 emits truthful event",
+        "pass": true,
+        "data": {
+          "name": "gb:search-source-focused",
+          "detail": {
+            "query": "беспрецедентным",
+            "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+          }
+        }
+      },
+      {
+        "name": "Reload does not replay consumed source",
+        "pass": true,
+        "data": {
+          "pending": null,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            },
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "No JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "steps": [
+      {
+        "query": "беспрецедентным",
+        "labels": [
+          "Джон Гилл (1697–1771). Часть II: Учёныйтакой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл работал после Буксторфов, Лайтфута, Покока и других учёных. Его"
+        ],
+        "after": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 279.6875,
+          "bottom": 612.40625,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": false,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 5517,
+          "study": 1
+        }
+      },
+      {
+        "query": "беспрецедентный",
+        "labels": [
+          "Джон Гилл (1697–1771). Часть II: Учёныйтакой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл работал после Буксторфов, Лайтфута, Покока и других учёных. Его"
+        ],
+        "after": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "H1",
+          "focusText": "Джон Гилл (1697–1771). Часть II: Учёный",
+          "top": 72.0625,
+          "bottom": 135.5,
+          "selection": "",
+          "pending": null,
+          "w57": false,
+          "literal": false,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            }
+          ],
+          "scrollY": 236,
+          "study": 1
+        }
+      },
+      {
+        "query": "беспрецедентным",
+        "labels": [
+          "Джон Гилл (1697–1771). Часть II: Учёныйтакой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл работал после Буксторфов, Лайтфута, Покока и других учёных. Его"
+        ],
+        "after": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 279.6875,
+          "bottom": 612.40625,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": false,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            },
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 5517,
+          "study": 1
+        }
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "checks": [
+      {
+        "name": "Search 0 has expected focus/selection",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 519.5625,
+          "bottom": 692.34375,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": true,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 3743,
+          "study": 1
+        }
+      },
+      {
+        "name": "Search 0 consumes one-shot and preserves surface",
+        "pass": true
+      },
+      {
+        "name": "Search 0 emits truthful event",
+        "pass": true,
+        "data": {
+          "name": "gb:search-source-focused",
+          "detail": {
+            "query": "беспрецедентным",
+            "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+          }
+        }
+      },
+      {
+        "name": "Search 1 has expected focus/selection",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "H1",
+          "focusText": "Джон Гилл (1697–1771). Часть II: Учёный",
+          "top": 132.078125,
+          "bottom": 229.671875,
+          "selection": "",
+          "pending": null,
+          "w57": true,
+          "literal": false,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            }
+          ],
+          "scrollY": 485,
+          "study": 1
+        }
+      },
+      {
+        "name": "Search 1 consumes one-shot and preserves surface",
+        "pass": true
+      },
+      {
+        "name": "Search 1 emits truthful event",
+        "pass": true,
+        "data": {
+          "name": "gb:search-source-fallback",
+          "detail": {
+            "query": "беспрецедентный",
+            "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+            "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+            "reason": "literal-occurrence-not-found",
+            "fallbackFocused": true
+          }
+        }
+      },
+      {
+        "name": "Search 2 has expected focus/selection",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 519.5625,
+          "bottom": 692.34375,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": true,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            },
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 3743,
+          "study": 1
+        }
+      },
+      {
+        "name": "Search 2 consumes one-shot and preserves surface",
+        "pass": true
+      },
+      {
+        "name": "Search 2 emits truthful event",
+        "pass": true,
+        "data": {
+          "name": "gb:search-source-focused",
+          "detail": {
+            "query": "беспрецедентным",
+            "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+          }
+        }
+      },
+      {
+        "name": "Reload does not replay consumed source",
+        "pass": true,
+        "data": {
+          "pending": null,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            },
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "No JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "steps": [
+      {
+        "query": "беспрецедентным",
+        "labels": [
+          "Джон Гилл (1697–1771). Часть II: Учёныйтакой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл работал после Буксторфов, Лайтфута, Покока и других учёных. Его"
+        ],
+        "after": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 519.5625,
+          "bottom": 692.34375,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": true,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 3743,
+          "study": 1
+        }
+      },
+      {
+        "query": "беспрецедентный",
+        "labels": [
+          "Джон Гилл (1697–1771). Часть II: Учёныйтакой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл работал после Буксторфов, Лайтфута, Покока и других учёных. Его"
+        ],
+        "after": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "H1",
+          "focusText": "Джон Гилл (1697–1771). Часть II: Учёный",
+          "top": 132.078125,
+          "bottom": 229.671875,
+          "selection": "",
+          "pending": null,
+          "w57": true,
+          "literal": false,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            }
+          ],
+          "scrollY": 485,
+          "study": 1
+        }
+      },
+      {
+        "query": "беспрецедентным",
+        "labels": [
+          "Джон Гилл (1697–1771). Часть II: Учёныйтакой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл работал после Буксторфов, Лайтфута, Покока и других учёных. Его"
+        ],
+        "after": {
+          "url": "http://127.0.0.1:8500/articles/dzhon-gill-chast-2-uchenyi/",
+          "focus": "P",
+          "focusText": "Для баптистского пастора без университетского образования такой объём работы с еврейским и раввинистическим корпусом был чрезвычайно необычен. Однако это не было беспрецедентным для христианской гебраистики вообще: Гилл ",
+          "top": 519.5625,
+          "bottom": 692.34375,
+          "selection": "беспрецедентным",
+          "pending": null,
+          "w57": true,
+          "literal": true,
+          "events": [
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            },
+            {
+              "name": "gb:search-source-fallback",
+              "detail": {
+                "query": "беспрецедентный",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "targetPath": "/articles/dzhon-gill-chast-2-uchenyi/",
+                "reason": "literal-occurrence-not-found",
+                "fallbackFocused": true
+              }
+            },
+            {
+              "name": "gb:search-source-focused",
+              "detail": {
+                "query": "беспрецедентным",
+                "path": "/articles/dzhon-gill-chast-2-uchenyi/"
+              }
+            }
+          ],
+          "scrollY": 3743,
+          "study": 1
+        }
+      }
+    ]
+  }
+]
