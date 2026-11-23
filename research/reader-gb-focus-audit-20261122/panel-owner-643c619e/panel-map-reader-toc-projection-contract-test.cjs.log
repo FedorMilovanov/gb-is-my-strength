@@ -1,0 +1,16 @@
+PASS actual Gill: all six pages project without changing chronological/menu order
+PASS historical Gill pre-v16 last-pages anchor and label preserved
+PASS Gill endpapers are unchanged label marks (Introduction, Reference)
+PASS actual Baptist book: four chapters plus the existing reference endpaper
+PASS book section labels reuse original SeriesConfig roman-prefix policy
+PASS DOM reconciliation admits nested H4-H6 without changing canonical H2/H3
+PASS no silent reordering of pre-v16 Gill canonical headings
+PASS missing historical DOM target fails closed
+PASS duplicate canonical fragments fail closed
+PASS broken percentages, empty fragments and missing active page fail closed
+PASS standalone H2-H6 nested hierarchy with exact Unicode headings
+PASS satellite rows are not accidentally added to desktop top-level rail
+PASS all seven real series families project every published page
+PASS actual Genesis 6 satellite pages retain parent ownership, not duplicate rail items
+PASS series data and published routes remained byte-identical
+READER TOC PROJECTION: 15/15 PASS (real Gill + Baptist + negative/deep fixtures)

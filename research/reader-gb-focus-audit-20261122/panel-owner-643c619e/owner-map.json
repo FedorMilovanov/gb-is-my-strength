@@ -1,0 +1,297 @@
+{
+  "sha": "643c619e3d15699ebe275e632ad504c8b7e1a747",
+  "scope": "source/import-graph only; no rendered DOM, state convergence, production W57 or browser proof",
+  "routes": [
+    {
+      "route": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+      "surface": "article",
+      "seriesShape": null,
+      "routeType": "article",
+      "routeRole": "reading",
+      "migrationLane": "content",
+      "section": "articles",
+      "legacyStatus": "reference-only",
+      "owner": "astro",
+      "status": "production-dist",
+      "source": "src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.astro",
+      "profileFile": "data/route-profiles/articles-hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.json",
+      "chrome": {
+        "engine": "article",
+        "adapter": "hermenevtika",
+        "mount": "static",
+        "owner": "mobile-registry"
+      },
+      "settingsCapability": "reader-ui",
+      "configSources": [],
+      "facts": {
+        "importsSeriesFacade": false,
+        "importsBookConfig": false,
+        "hasExplicitSeriesConfig": false,
+        "historicalImplementationLeaks": []
+      }
+    },
+    {
+      "route": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "surface": "series",
+      "seriesShape": "flat",
+      "routeType": "article",
+      "routeRole": "reading",
+      "migrationLane": "content",
+      "section": "articles",
+      "legacyStatus": "reference-only",
+      "owner": "astro",
+      "status": "production-dist",
+      "source": "src/pages/articles/dzhon-gill-chast-2-uchenyi/index.astro",
+      "profileFile": "data/route-profiles/articles-dzhon-gill-chast-2-uchenyi.json",
+      "chrome": {
+        "engine": "series",
+        "adapter": "gill",
+        "mount": "static",
+        "owner": "mobile-registry"
+      },
+      "settingsCapability": "reader-ui",
+      "configSources": [
+        "src/components/article-pilots/_shared/series/seriesConfig.ts#GILL_SERIES"
+      ],
+      "facts": {
+        "importsSeriesFacade": true,
+        "importsBookConfig": false,
+        "hasExplicitSeriesConfig": false,
+        "historicalImplementationLeaks": []
+      }
+    },
+    {
+      "route": "/baptisty-rossii/noch-na-kure/",
+      "surface": "series",
+      "seriesShape": "book",
+      "routeType": "series-article",
+      "routeRole": "reading",
+      "migrationLane": "content",
+      "section": "baptisty-rossii",
+      "legacyStatus": "reference-only",
+      "owner": "astro",
+      "status": "production-dist",
+      "source": "src/pages/baptisty-rossii/noch-na-kure/index.astro",
+      "profileFile": "data/route-profiles/baptisty-rossii-noch-na-kure.json",
+      "chrome": {
+        "engine": "series",
+        "adapter": "series-reader",
+        "mount": "static",
+        "owner": "SeriesReaderChrome"
+      },
+      "settingsCapability": "reader-ui",
+      "configSources": [
+        "src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts",
+        "src/components/article-pilots/_shared/series/baptistSeriesConfig.ts",
+        "src/components/article-pilots/_shared/series/seriesConfig.ts"
+      ],
+      "facts": {
+        "importsSeriesFacade": true,
+        "importsBookConfig": false,
+        "hasExplicitSeriesConfig": true,
+        "historicalImplementationLeaks": []
+      }
+    },
+    {
+      "route": "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+      "surface": "series",
+      "seriesShape": "flat",
+      "routeType": "series-article",
+      "routeRole": "reading",
+      "migrationLane": "content",
+      "section": "hard-texts",
+      "legacyStatus": "absent",
+      "owner": "astro",
+      "status": "production-dist",
+      "source": "src/pages/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/index.astro",
+      "profileFile": "data/route-profiles/hard-texts-kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom.json",
+      "chrome": {
+        "engine": "series",
+        "adapter": "series-reader",
+        "mount": "static",
+        "owner": "SeriesReaderChrome"
+      },
+      "settingsCapability": "reader-ui",
+      "configSources": [
+        "src/components/article-pilots/_shared/series/genesis6SeriesConfig.ts",
+        "src/components/article-pilots/_shared/series/seriesConfig.ts"
+      ],
+      "facts": {
+        "importsSeriesFacade": true,
+        "importsBookConfig": false,
+        "hasExplicitSeriesConfig": true,
+        "historicalImplementationLeaks": []
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "id": "single-rail-composition",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaRail.astro",
+      "line": 22,
+      "sha256": "376b1df6c212b6a80bfe75c9d02d310c41311af3e07efd8a76292f5dc80afd37",
+      "excerpt": "---\n<ReaderRail eyebrow={eyebrow} title={title} backHref={backHref} toc={HERMENEVTIKA_TOC} settingsTrigger=\"hm\" grokPilot={grokPilot} grokNodes={grokNodes} />\n"
+    },
+    {
+      "id": "single-projection",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaRail.astro",
+      "line": 17,
+      "sha256": "376b1df6c212b6a80bfe75c9d02d310c41311af3e07efd8a76292f5dc80afd37",
+      "excerpt": "const grokPilot = import.meta.env.PUBLIC_GB_GROK_HERMENEUTICS_PILOT !== '0';\nconst grokNodes = grokPilot ? projectStandaloneReaderToc(\n  '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',\n  HERMENEVTIKA_TOC.map(({ href, label, level }) => ({ id: href.slice(1), label, level })),\n) : undefined;"
+    },
+    {
+      "id": "series-single-quiz",
+      "file": "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro",
+      "line": 51,
+      "sha256": "72c0aa205b0679b5f7e1766db0610dd7db8e33ed9980b33aae4c008178a76950",
+      "excerpt": "  <GillPartTocOverlay pageId={pageId} config={config} />\n  <GillAnalyticsStudy pageId={pageId} config={config} />\n  <GillReaderSettingsSheet config={config} />\n  <GillMobileOverlayActivationBoundary />\n</div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->"
+    },
+    {
+      "id": "series-native-left",
+      "file": "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro",
+      "line": 41,
+      "sha256": "72c0aa205b0679b5f7e1766db0610dd7db8e33ed9980b33aae4c008178a76950",
+      "excerpt": "<div class=\"gbs2-world\" data-reader-engine=\"series\" data-reader-shape={config.shape ?? 'flat'} data-gill-v16={pageId} data-series-theme={config.theme}>\n  <GillSeriesRail pageId={pageId} config={config} />\n\n  <div class=\"page-wrap\" id=\"content\">\n    <nav aria-label=\"Хлебные крошки\" class=\"breadcrumb\"><ol class=\"breadcrumb__list\"><li class=\"breadcrumb__item\"><a class=\"breadcrumb__link\" href=\"../../\"><span aria-hidden=\"true\" class=\"breadcrumb__home\">⌂</span> Главная</a></li><li class=\"breadcrumb__item\"><a class=\"breadcrumb__link\" href={config.breadcrumbParent.href}>{config.breadcrumbParent.label}</a></li><li aria-current=\"page\" class=\"breadcrumb__item\"><span class=\"breadcrumb__current\">{page.label}</span></li></ol></nav>"
+    },
+    {
+      "id": "canonical-heading-model",
+      "file": "src/components/article-pilots/_shared/series/readerTocProjection.ts",
+      "line": 24,
+      "sha256": "0bcabd69160e40bb92320d5771dfd15f4c0f75d4a82a67f17cabce3bd793a5b7",
+      "excerpt": "/** Values in this projection are separate from (and never mutate) SeriesConfig. */\nexport interface ReaderTocNode {\n  readonly key: string;\n  readonly kind: ReaderTocKind;\n  readonly label: string;"
+    },
+    {
+      "id": "satellite-actual-identity",
+      "file": "src/components/article-pilots/_shared/series/readerTocProjection.ts",
+      "line": 271,
+      "sha256": "0bcabd69160e40bb92320d5771dfd15f4c0f75d4a82a67f17cabce3bd793a5b7",
+      "excerpt": "    nodes, activePath: Object.freeze([...activePath]), currentPageKey,\n    actualPageId: activePageId,\n    satellitePageId: active.tier === 'satellite' ? activePageId : undefined,\n  });\n}"
+    },
+    {
+      "id": "single-state-subscription",
+      "file": "src/components/article-pilots/_shared/ReaderRail.astro",
+      "line": 1167,
+      "sha256": "d5fa72c95b03ed9a2e7eca6ba6780e0f56a964ae633448a9bcd2f7f6b31c4ecd",
+      "excerpt": "      readerState.configure({ headingSelector }).init();\n      readerState.subscribe((reader: any) => {\n        const sectionId = String(reader?.sectionId || '');\n        const idx = links.findIndex((link) => !!link && (link.getAttribute('href') || '').replace(/^#/, '') === sectionId);\n        setActive(idx, String(reader?.phase || 'before-content'));"
+    },
+    {
+      "id": "series-state-subscription",
+      "file": "js/floating-cluster-controller.js",
+      "line": 2991,
+      "sha256": "e96b04d119b9b0fc3c975e9c1336a8171409d32f87f597c539d9dc275842d903",
+      "excerpt": "      }).init();\n      readerState.subscribe(renderReaderState);\n    }\n\n    // Initial population"
+    },
+    {
+      "id": "reading-key",
+      "file": "js/reader-state.js",
+      "line": 111,
+      "sha256": "51c2c01a086f2d1ef3d05593de15de758c7f51746d5dbf6b1d84b309fafea9d0",
+      "excerpt": "  function getCanonicalKey() {\n    return STORAGE_PREFIX + getSiteId() + ':' + getRoutePath();\n  }\n\n  function detectSeriesMeta() {"
+    },
+    {
+      "id": "native-panel-owners",
+      "file": "js/floating-cluster-controller.js",
+      "line": 1627,
+      "sha256": "e96b04d119b9b0fc3c975e9c1336a8171409d32f87f597c539d9dc275842d903",
+      "excerpt": "      seriesTocOverlay: 'gill-series-toc',\n      partTocOverlay: 'gill-part-toc',\n      gillSettingsOverlay: 'gill-settings'\n    };\n"
+    },
+    {
+      "id": "single-modal-owner",
+      "file": "src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro",
+      "line": 431,
+      "sha256": "e906c813d18b047e7a4c6125908212c727a51a19f0a3f5bd5e6fda9190f81ff4",
+      "excerpt": "    const sectionBtn = document.getElementById('hmSectionBtn');\n    const OVERLAY_OWNER = 'hermenevtika-toc';\n    const overlayRuntime = () => (window as any).OverlayRuntime || null;\n    const fallbackUtils = () => (window as any).SiteUtils || null;\n"
+    },
+    {
+      "id": "single-overlay-api",
+      "file": "js/site-utils.js",
+      "line": 718,
+      "sha256": "e3bc870e50c72ddb2c4819ae2ea0c7edcc4539234caeda7cc6897cc62abec149",
+      "excerpt": "  try {\n    Object.defineProperty(window, 'OverlayRuntime', {\n      configurable: false,\n      enumerable: true,\n      get: function () { return overlayApi; },"
+    },
+    {
+      "id": "quiz-session-key",
+      "file": "src/runtime/reader-analytics-study.js",
+      "line": 23,
+      "sha256": "8398d5ead17810f21bb9559ebfc98f20faf43b9b69f0a1f6db043db6d7fd2849",
+      "excerpt": "    root.hidden=false;\n    const sessionKey='gb-reader-study-v1:'+location.pathname;\n    // A saved attempt is valid only for the exact authored answer bank.\n    // Question text/IDs alone were insufficient: changing options or a correct\n    // index could silently resume and grade a stale response."
+    },
+    {
+      "id": "quiz-host-move",
+      "file": "src/runtime/reader-analytics-study.js",
+      "line": 224,
+      "sha256": "8398d5ead17810f21bb9559ebfc98f20faf43b9b69f0a1f6db043db6d7fd2849",
+      "excerpt": "    else document.querySelector('main')?.append(root);\n    function moveTo(host){\n      if(!host||root.parentElement===host)return;\n      const focusWasInside=root.contains(document.activeElement);\n      host.append(root);if(focusWasInside)root.querySelector('summary')?.focus({preventScroll:true});"
+    },
+    {
+      "id": "quiz-desktop-host",
+      "file": "src/runtime/reader-analytics-study.js",
+      "line": 244,
+      "sha256": "8398d5ead17810f21bb9559ebfc98f20faf43b9b69f0a1f6db043db6d7fd2849",
+      "excerpt": "        if(mobileContent)moveTo(mobileContent);\n      }else if(v.w57){const host=v.research.querySelector('.np-u-right-scroll');if(host)moveTo(host);}\n      else if(inline)moveTo(inline);\n      else if(article)moveTo(article);\n      if(inlineLaunch)inlineLaunch.hidden=root.parentElement===inline;"
+    },
+    {
+      "id": "legacy-toc-collapse-key",
+      "file": "js/floating-cluster-controller.js",
+      "line": 1325,
+      "sha256": "e96b04d119b9b0fc3c975e9c1336a8171409d32f87f597c539d9dc275842d903",
+      "excerpt": "\n    var TOC_KEY = 'gb:rail:toc-collapsed';\n\n    var tocToggle = qs('#gbsTocToggle');\n    var current = qs('.gbs2-current', rail);"
+    },
+    {
+      "id": "preview-model-inspection",
+      "file": "research/reader-w57-pilot/assets/reader_universal_preview.js",
+      "line": 9,
+      "sha256": "604cb9814ad6f7dc207ede1ef2ffffbbf551d5412959c2de2f6cace0269f9bb5",
+      "excerpt": " if(!c || document.getElementById('npUniversalDemo'))return;\n const model=c.inspect(document), check=c.validate(model);\n if(!check.valid)return;\n // Source root is resolved ONCE by the semantic Reader contract.\n const article=c.articleRoot(document);"
+    },
+    {
+      "id": "preview-kind-heuristic",
+      "file": "research/reader-w57-pilot/assets/reader_universal_contract.js",
+      "line": 26,
+      "sha256": "3473bf6c7027357bf3288870982fa87474adcdad0b19897af9bdfabc0f0ef59d",
+      "excerpt": "  if(/справочник|глоссарий|лексикон/i.test(title)||/(?:spravochnik|glossary)(?:\\/|$)/.test(path))return 'reference';\n  if(/^\\/baptisty-rossii\\//.test(path))return 'series-chapter';\n  // Five actual chapters of the Sermon on the Mount, not an unrelated article.\n  if(/^\\/nagornaya\\/chast-\\d+\\//.test(path))return 'series-chapter';\n  if(/dzhon-gill-chast-/.test(path)||/chast-\\d+/.test(path))return 'series-chapter';"
+    },
+    {
+      "id": "preview-grouping",
+      "file": "research/reader-w57-pilot/assets/reader_universal_contract.js",
+      "line": 55,
+      "sha256": "3473bf6c7027357bf3288870982fa87474adcdad0b19897af9bdfabc0f0ef59d",
+      "excerpt": "  // individual nodes. Preserve explicit Roman chapters as authored.\n  const groupLimit=romanAlready?primary.length:primary.length>8?7:primary.length;\n  const chunkSize=Math.ceil(primary.length/groupLimit);\n  const out=[];\n  for(let i=0;i<primary.length;i+=chunkSize){"
+    },
+    {
+      "id": "preview-research-follow-geometry",
+      "file": "research/reader-w57-pilot/assets/reader_universal_preview.js",
+      "line": 1003,
+      "sha256": "604cb9814ad6f7dc207ede1ef2ffffbbf551d5412959c2de2f6cace0269f9bb5",
+      "excerpt": " }\n function currentGroupIndex(){\n  const top=innerHeight*.3;\n  let found=0;\n  for(let i=0;i<sections.length;i++){"
+    },
+    {
+      "id": "preview-follow-scroll-listener",
+      "file": "research/reader-w57-pilot/assets/reader_universal_preview.js",
+      "line": 1972,
+      "sha256": "604cb9814ad6f7dc207ede1ef2ffffbbf551d5412959c2de2f6cace0269f9bb5",
+      "excerpt": " syncInteractivity();\n addEventListener('scroll',()=>{if(!browserStore.frame){browserStore.frame=true;requestAnimationFrame(()=>{browserStore.frame=false;updateScroll();});}},{passive:true});\n installArgonCentralOverview();\n supplemental();show(currentGroupIndex());\n window.__NP_UNIVERSAL_PREVIEW__={"
+    },
+    {
+      "id": "preview-research-fold",
+      "file": "research/reader-w57-pilot/assets/reader_universal_preview.js",
+      "line": 1932,
+      "sha256": "604cb9814ad6f7dc207ede1ef2ffffbbf551d5412959c2de2f6cace0269f9bb5",
+      "excerpt": " $('#npUFold',root).addEventListener('click',toggleLeft);\n const setRightOpen=(isOpen)=>{\n  manualRightChoice=true;\n  root.classList.toggle('np-u-hide-right',!isOpen);\n  document.body.classList.toggle('np-u-hide-right',!isOpen);"
+    },
+    {
+      "id": "continue-close-only",
+      "file": "src/components/article-pilots/gill-series/GillPartTocOverlay.astro",
+      "line": 225,
+      "sha256": "dcad4d21f841eef5b1ae48c6737a6f16a1b2d1050b6109dd4558470dcf2859e6",
+      "excerpt": "  var cont = ov.querySelector('[data-gbat-continue]');\n  if (cont) cont.addEventListener('click', closeOverlay);\n})();\n</script>\n"
+    },
+    {
+      "id": "listen-native-breakpoint",
+      "file": "src/components/article-pilots/gill-series/GillPartTocOverlay.astro",
+      "line": 215,
+      "sha256": "dcad4d21f841eef5b1ae48c6737a6f16a1b2d1050b6109dd4558470dcf2859e6",
+      "excerpt": "       Play on desktop (or the hidden desktop rail on mobile). */\n    var desktop = window.matchMedia('(min-width: 85em)').matches;\n    var ember = document.querySelector(desktop\n      ? '.gbs-theme-corner .gb-ember'\n      : '.mobile-top-bar .gb-ember');"
+    }
+  ]
+}

@@ -1,0 +1,335 @@
+{
+  "headRefOid": "643c619e3d15699ebe275e632ad504c8b7e1a747",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307128/job/138042160581",
+      "name": "Grok flag-ON and flag-OFF real Product browser contract",
+      "startedAt": "2026-11-23T21:55:32Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "Grok Hermeneutics Product Pilot"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307111/job/138042155132",
+      "name": "Chromium + Firefox + WebKit Reader controls and real-asset contracts",
+      "startedAt": "2026-11-23T21:54:45Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "Reader Controls Accessibility"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307541/job/138042140512",
+      "name": "Home Chromium WebKit contract",
+      "startedAt": "2026-11-23T21:57:15Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "Runtime Interactive Audit"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307352/job/138042146208",
+      "name": "Chromium + WebKit full-site menu contract",
+      "startedAt": "2026-11-23T21:54:23Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "Site Sections Menu Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307095/job/138041981715",
+      "name": "Playback FSM and every production route",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "TTS Reader Polish"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:03Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306899/job/138041984562",
+      "name": "Placement and asset autofix",
+      "startedAt": "2026-11-23T21:54:04Z",
+      "status": "COMPLETED",
+      "workflowName": "Glossary Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:03Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306915/job/138041984056",
+      "name": "Canonical headline autofix",
+      "startedAt": "2026-11-23T21:54:04Z",
+      "status": "COMPLETED",
+      "workflowName": "Metadata & IndexNow Readiness"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:58:48Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307012/job/138041981646",
+      "name": "Native owners + Chromium WebKit",
+      "startedAt": "2026-11-23T21:54:24Z",
+      "status": "COMPLETED",
+      "workflowName": "Article Capability Completeness"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T22:00:28Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307329/job/138041983819",
+      "name": "Chromium WebKit Atlas focus lifecycle",
+      "startedAt": "2026-11-23T21:55:31Z",
+      "status": "COMPLETED",
+      "workflowName": "Atlas Focus State Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:57:32Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307067/job/138041982123",
+      "name": "production-like-coverage",
+      "startedAt": "2026-11-23T21:54:32Z",
+      "status": "COMPLETED",
+      "workflowName": "Content Source Truth Coverage"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:31Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306922/job/138041980449",
+      "name": "validate-draft",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Diotrophes Wave 10 Product Draft"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:22Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307445/job/138041982748",
+      "name": "validate",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Document Authority"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:58:33Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307499/job/138041984518",
+      "name": "Source and Chromium favorite-store contract",
+      "startedAt": "2026-11-23T21:54:21Z",
+      "status": "COMPLETED",
+      "workflowName": "Favorite Store Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:27Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306928/job/138041980853",
+      "name": "Build and audit curated projection",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Genealogy v2 Publishable Projection"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:13Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307081/job/138041981037",
+      "name": "audit",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Gill Final Source Reconciliation"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:59:21Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307075/job/138041982261",
+      "name": "Chromium WebKit reduced-motion contract",
+      "startedAt": "2026-11-23T21:54:21Z",
+      "status": "COMPLETED",
+      "workflowName": "Konfessii Reduced Motion Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:57:07Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307068/job/138041981744",
+      "name": "Chromium WebKit Intro focus lifecycle",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "MapEngine Intro Focus Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:58:29Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306913/job/138041981573",
+      "name": "built-index-contract",
+      "startedAt": "2026-11-23T21:54:23Z",
+      "status": "COMPLETED",
+      "workflowName": "Pagefind Landing Body Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:57:20Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306911/job/138041981714",
+      "name": "Chromium WebKit reader semantic projection",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Reader Linear Text Projection Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:58:12Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307073/job/138041983599",
+      "name": "Source and Chromium projection contract",
+      "startedAt": "2026-11-23T21:54:39Z",
+      "status": "COMPLETED",
+      "workflowName": "Reader Projection Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:55:29Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307085/job/138041982143",
+      "name": "Chromium WebKit status and reload action",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "SW Register Accessibility Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:57:36Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307246/job/138041982542",
+      "name": "Binary header + JSON-LD mutation contract",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Schema Image Dimensions Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:59:53Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307069/job/138042137706",
+      "name": "Chromium WebKit cold bootstrap",
+      "startedAt": "2026-11-23T21:54:23Z",
+      "status": "COMPLETED",
+      "workflowName": "Search Cold Bootstrap Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:55:29Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307202/job/138042142431",
+      "name": "Consent, assets and release source contract",
+      "startedAt": "2026-11-23T21:55:06Z",
+      "status": "COMPLETED",
+      "workflowName": "TTS Download Consent"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:57:49Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307353/job/138041988442",
+      "name": "Source and Chromium lifecycle contracts",
+      "startedAt": "2026-11-23T21:57:09Z",
+      "status": "COMPLETED",
+      "workflowName": "TTS SharedWorker Client Lifecycle"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:43Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307096/job/138041982078",
+      "name": "Vosk loader retry contract",
+      "startedAt": "2026-11-23T21:54:28Z",
+      "status": "COMPLETED",
+      "workflowName": "Vosk Loader Failure State"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:43Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307544/job/138041984057",
+      "name": "Machine writer lease and workflow CAS contract",
+      "startedAt": "2026-11-23T21:54:15Z",
+      "status": "COMPLETED",
+      "workflowName": "Writer Lease Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "0001-01-01T00:00:00Z",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307202/job/138042142110",
+      "name": "Consent UI and reader-route browser contract",
+      "startedAt": "2026-11-23T21:54:44Z",
+      "status": "IN_PROGRESS",
+      "workflowName": "TTS Download Consent"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:37Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306899/job/138041982338",
+      "name": "Source contract",
+      "startedAt": "2026-11-23T21:54:22Z",
+      "status": "COMPLETED",
+      "workflowName": "Glossary Contract"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:54:22Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306915/job/138041981815",
+      "name": "Validate source metadata without building dist",
+      "startedAt": "2026-11-23T21:54:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Metadata & IndexNow Readiness"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T22:00:35Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307541/job/138042141168",
+      "name": "Hermenevtika Chromium WebKit chrome contract",
+      "startedAt": "2026-11-23T21:57:17Z",
+      "status": "COMPLETED",
+      "workflowName": "Runtime Interactive Audit"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:57:13Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274307095/job/138041982509",
+      "name": "Real Vosk cache, audio and UI responsiveness",
+      "startedAt": "2026-11-23T21:54:06Z",
+      "status": "COMPLETED",
+      "workflowName": "TTS Reader Polish"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-23T21:55:05Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/45274306899/job/138041981703",
+      "name": "Browser contract",
+      "startedAt": "2026-11-23T21:54:20Z",
+      "status": "COMPLETED",
+      "workflowName": "Glossary Contract"
+    }
+  ]
+}
