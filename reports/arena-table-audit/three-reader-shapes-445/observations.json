@@ -1,0 +1,597 @@
+[
+  {
+    "kind": "series",
+    "route": "/articles/dzhon-gill-chast-2-uchenyi/",
+    "status": 200,
+    "shape": "flat",
+    "sourceRows": 6,
+    "missing": 0,
+    "duplicate": 0,
+    "notVisible": 0,
+    "order": true,
+    "dom": [
+      {
+        "href": "#sec-hebrew",
+        "label": "Раввинист — христианин с Мишной в руках",
+        "level": 3,
+        "id": "sec-hebrew",
+        "count": 1,
+        "tag": "H3",
+        "visible": true,
+        "outer": "<h3 class=\"reveal\" id=\"sec-hebrew\" data-reader-section=\"sec-hebrew\" data-reader-section-label=\"Раввинист — христианин с Мишной в руках\" aria-labelledby=\"gb-heading-name-sec-hebrew\"><span class=\"headin"
+      },
+      {
+        "href": "#sec-canticles",
+        "label": "Песнь Песней: самый личный труд Гилла",
+        "level": 3,
+        "id": "sec-canticles",
+        "count": 1,
+        "tag": "H3",
+        "visible": true,
+        "outer": "<h3 class=\"reveal\" id=\"sec-canticles\" data-reader-section=\"sec-canticles\" data-reader-section-label=\"Песнь Песней: самый личный труд Гилла\" aria-labelledby=\"gb-heading-name-sec-canticles\"><span class="
+      },
+      {
+        "href": "#sec-ordinances",
+        "label": "Церковные установления: крещение и Вечеря",
+        "level": 3,
+        "id": "sec-ordinances",
+        "count": 1,
+        "tag": "H3",
+        "visible": true,
+        "outer": "<h3 class=\"reveal\" id=\"sec-ordinances\" data-reader-section=\"sec-ordinances\" data-reader-section-label=\"Церковные установления: крещение и Вечеря\" aria-labelledby=\"gb-heading-name-sec-ordinances\"><span"
+      },
+      {
+        "href": "#sec-eschatology",
+        "label": "Эсхатология: духовное и личное царствование Христа",
+        "level": 3,
+        "id": "sec-eschatology",
+        "count": 1,
+        "tag": "H3",
+        "visible": true,
+        "outer": "<h3 class=\"reveal\" id=\"sec-eschatology\" data-reader-section=\"sec-eschatology\" data-reader-section-label=\"Эсхатология: духовное и личное царствование Христа\" aria-labelledby=\"gb-heading-name-sec-eschat"
+      },
+      {
+        "href": "#sec-systematics",
+        "label": "«Полный свод богословия» — зрелая баптистская систематика",
+        "level": 3,
+        "id": "sec-systematics",
+        "count": 1,
+        "tag": "H3",
+        "visible": true,
+        "outer": "<h3 class=\"reveal\" id=\"sec-systematics\" data-reader-section=\"sec-systematics\" data-reader-section-label=\"«Полный свод богословия» — зрелая баптистская систематика\" aria-labelledby=\"gb-heading-name-sec"
+      },
+      {
+        "href": "#sec-quiz",
+        "label": "Проверь себя",
+        "level": 2,
+        "id": "sec-quiz",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"sec-quiz\" data-reader-section=\"sec-quiz\" data-reader-section-label=\"Проверь себя\" aria-labelledby=\"gb-heading-name-sec-quiz\"><span class=\"heading-anchor__name\" id=\"gb-heading-name-sec-quiz\">Пр"
+      }
+    ],
+    "projection": {
+      "actualPageId": "part2",
+      "activePath": [
+        "series:dzhon-gill:page:part2"
+      ],
+      "rootKinds": [
+        "endpaper",
+        "page",
+        "page",
+        "page",
+        "page",
+        "endpaper"
+      ],
+      "rootLabels": [
+        "Исторический контекст",
+        "Часть I. Человек",
+        "Часть II. Учёный",
+        "Часть III. Экзегет",
+        "Часть IV. Наследие",
+        "Справочник по Гиллу"
+      ],
+      "headings": [
+        {
+          "href": "/articles/dzhon-gill-chast-2-uchenyi/#sec-hebrew",
+          "label": "Раввинист — христианин с Мишной в руках",
+          "depth": 1
+        },
+        {
+          "href": "/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+          "label": "Песнь Песней: самый личный труд Гилла",
+          "depth": 2
+        },
+        {
+          "href": "/articles/dzhon-gill-chast-2-uchenyi/#sec-ordinances",
+          "label": "Церковные установления: крещение и Вечеря",
+          "depth": 2
+        },
+        {
+          "href": "/articles/dzhon-gill-chast-2-uchenyi/#sec-eschatology",
+          "label": "Эсхатология: духовное и личное царствование Христа",
+          "depth": 2
+        },
+        {
+          "href": "/articles/dzhon-gill-chast-2-uchenyi/#sec-systematics",
+          "label": "«Полный свод богословия» — зрелая баптистская систематика",
+          "depth": 2
+        },
+        {
+          "href": "/articles/dzhon-gill-chast-2-uchenyi/#sec-quiz",
+          "label": "Проверь себя",
+          "depth": 1
+        }
+      ]
+    },
+    "projectionError": null
+  },
+  {
+    "kind": "book",
+    "route": "/articles/krajne-li-isporcheno-serdce/",
+    "status": 200,
+    "shape": "book",
+    "sourceRows": 14,
+    "missing": 0,
+    "duplicate": 0,
+    "notVisible": 0,
+    "order": true,
+    "dom": [
+      {
+        "href": "#istoricheskiy-fon",
+        "label": "I. Исторический фон: почему Иеремия говорит так резко",
+        "level": 2,
+        "id": "istoricheskiy-fon",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"istoricheskiy-fon\" data-reader-section=\"istoricheskiy-fon\" data-reader-section-label=\"I. Исторический фон: почему Иеремия говорит так резко\" aria-labelledby=\"gb-heading-name-istoricheskiy-fon\""
+      },
+      {
+        "href": "#greh-vyrezannyy",
+        "label": "II. Иеремия 17:1–4 — грех, вырезанный в человеке",
+        "level": 2,
+        "id": "greh-vyrezannyy",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"greh-vyrezannyy\" data-reader-section=\"greh-vyrezannyy\" data-reader-section-label=\"II. Иеремия 17:1–4 — грех, вырезанный в человеке\" aria-labelledby=\"gb-heading-name-greh-vyrezannyy\"><span clas"
+      },
+      {
+        "href": "#dva-obraza-doveriya",
+        "label": "III. Иеремия 17:5–8 — два образа доверия",
+        "level": 2,
+        "id": "dva-obraza-doveriya",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"dva-obraza-doveriya\" data-reader-section=\"dva-obraza-doveriya\" data-reader-section-label=\"III. Иеремия 17:5–8 — два образа доверия\" aria-labelledby=\"gb-heading-name-dva-obraza-doveriya\"><span "
+      },
+      {
+        "href": "#serdce-istochnik-samoobmana",
+        "label": "IV. Иеремия 17:9–10 — сердце как источник самообмана",
+        "level": 2,
+        "id": "serdce-istochnik-samoobmana",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"serdce-istochnik-samoobmana\" data-reader-section=\"serdce-istochnik-samoobmana\" data-reader-section-label=\"IV. Иеремия 17:9–10 — сердце как источник самообмана\" aria-labelledby=\"gb-heading-name"
+      },
+      {
+        "href": "#otnositsya-li-k-veruyushchemu",
+        "label": "V. Относится ли Иеремия 17:9 к верующему?",
+        "level": 2,
+        "id": "otnositsya-li-k-veruyushchemu",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"otnositsya-li-k-veruyushchemu\" data-reader-section=\"otnositsya-li-k-veruyushchemu\" data-reader-section-label=\"V. Относится ли Иеремия 17:9 к верующему?\" aria-labelledby=\"gb-heading-name-otnosi"
+      },
+      {
+        "href": "#chto-izmenilos",
+        "label": "VI. Что изменилось у верующего — и что ещё не исчезло",
+        "level": 2,
+        "id": "chto-izmenilos",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"chto-izmenilos\" data-reader-section=\"chto-izmenilos\" data-reader-section-label=\"VI. Что изменилось у верующего — и что ещё не исчезло\" aria-labelledby=\"gb-heading-name-chto-izmenilos\"><span cl"
+      },
+      {
+        "href": "#kak-greh-stanovitsya-strukturoy",
+        "label": "VII. Как грех становится структурой",
+        "level": 2,
+        "id": "kak-greh-stanovitsya-strukturoy",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"kak-greh-stanovitsya-strukturoy\" data-reader-section=\"kak-greh-stanovitsya-strukturoy\" data-reader-section-label=\"VII. Как грех становится структурой\" aria-labelledby=\"gb-heading-name-kak-greh"
+      },
+      {
+        "href": "#kak-nelzya-primenyat",
+        "label": "VIII. Как нельзя применять эти тексты к христианину",
+        "level": 2,
+        "id": "kak-nelzya-primenyat",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"kak-nelzya-primenyat\" data-reader-section=\"kak-nelzya-primenyat\" data-reader-section-label=\"VIII. Как нельзя применять эти тексты к христианину\" aria-labelledby=\"gb-heading-name-kak-nelzya-pri"
+      },
+      {
+        "href": "#praktika",
+        "label": "IX. Практика: как жить с этим диагнозом",
+        "level": 2,
+        "id": "praktika",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"praktika\" data-reader-section=\"praktika\" data-reader-section-label=\"IX. Практика: как жить с этим диагнозом\" aria-labelledby=\"gb-heading-name-praktika\"><span class=\"heading-anchor__name\" id=\"g"
+      },
+      {
+        "href": "#velikaya-nadezhda",
+        "label": "X. Великая надежда: Бог пишет поверх того, что не смогли стереть мы",
+        "level": 2,
+        "id": "velikaya-nadezhda",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"velikaya-nadezhda\" data-reader-section=\"velikaya-nadezhda\" data-reader-section-label=\"X. Великая надежда: Бог пишет поверх того, что не смогли стереть мы\" aria-labelledby=\"gb-heading-name-veli"
+      },
+      {
+        "href": "#sec-quiz",
+        "label": "Проверь себя",
+        "level": 2,
+        "id": "sec-quiz",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"sec-quiz\" data-reader-section=\"sec-quiz\" data-reader-section-label=\"Проверь себя\" aria-labelledby=\"gb-heading-name-sec-quiz\"><span class=\"heading-anchor__name\" id=\"gb-heading-name-sec-quiz\">Пр"
+      },
+      {
+        "href": "#zaklyuchenie",
+        "label": "Заключение",
+        "level": 2,
+        "id": "zaklyuchenie",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"zaklyuchenie\" data-reader-section=\"zaklyuchenie\" data-reader-section-label=\"Заключение\" aria-labelledby=\"gb-heading-name-zaklyuchenie\"><span class=\"heading-anchor__name\" id=\"gb-heading-name-za"
+      },
+      {
+        "href": "#istochniki",
+        "label": "Использованные источники",
+        "level": 2,
+        "id": "istochniki",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"istochniki\" data-reader-section=\"istochniki\" data-reader-section-label=\"Использованные источники\" aria-labelledby=\"gb-heading-name-istochniki\"><span class=\"heading-anchor__name\" id=\"gb-heading"
+      },
+      {
+        "href": "#spravka",
+        "label": "Часто задаваемые вопросы",
+        "level": 2,
+        "id": "spravka",
+        "count": 1,
+        "tag": "H2",
+        "visible": true,
+        "outer": "<h2 id=\"spravka\" data-reader-section=\"spravka\" data-reader-section-label=\"Часто задаваемые вопросы\" aria-labelledby=\"gb-heading-name-spravka\"><span class=\"heading-anchor__name\" id=\"gb-heading-name-spr"
+      }
+    ],
+    "projection": {
+      "actualPageId": "krajne",
+      "activePath": [
+        "series:hard-texts:chapter:ch1",
+        "series:hard-texts:page:krajne"
+      ],
+      "rootKinds": [
+        "endpaper",
+        "chapter",
+        "chapter",
+        "chapter",
+        "chapter",
+        "endpaper"
+      ],
+      "rootLabels": [
+        "Библейская кардиология",
+        "Глава I. Диагноз сердца",
+        "Глава II. Сердце на войне",
+        "Глава III. Перелом и перемена",
+        "Глава IV. Жизнь Духом",
+        "Справочник"
+      ],
+      "headings": [
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#istoricheskiy-fon",
+          "label": "Исторический фон: почему Иеремия говорит так резко",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#greh-vyrezannyy",
+          "label": "Иеремия 17:1–4 — грех, вырезанный в человеке",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#dva-obraza-doveriya",
+          "label": "Иеремия 17:5–8 — два образа доверия",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#serdce-istochnik-samoobmana",
+          "label": "Иеремия 17:9–10 — сердце как источник самообмана",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#otnositsya-li-k-veruyushchemu",
+          "label": "Относится ли Иеремия 17:9 к верующему?",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#chto-izmenilos",
+          "label": "Что изменилось у верующего — и что ещё не исчезло",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#kak-greh-stanovitsya-strukturoy",
+          "label": "Как грех становится структурой",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#kak-nelzya-primenyat",
+          "label": "Как нельзя применять эти тексты к христианину",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#praktika",
+          "label": "Практика: как жить с этим диагнозом",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#velikaya-nadezhda",
+          "label": "Великая надежда: Бог пишет поверх того, что не смогли стереть мы",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#sec-quiz",
+          "label": "Проверь себя",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#zaklyuchenie",
+          "label": "Заключение",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#istochniki",
+          "label": "Использованные источники",
+          "depth": 2
+        },
+        {
+          "href": "/articles/krajne-li-isporcheno-serdce/#spravka",
+          "label": "Часто задаваемые вопросы",
+          "depth": 2
+        }
+      ]
+    },
+    "projectionError": null
+  },
+  {
+    "kind": "article",
+    "route": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+    "status": 200,
+    "shape": "flat",
+    "sourceRows": 13,
+    "missing": 0,
+    "duplicate": 0,
+    "notVisible": 0,
+    "order": true,
+    "dom": [
+      {
+        "href": "#sec-definitions",
+        "label": "Герменевтические определения",
+        "id": "sec-definitions",
+        "count": 1,
+        "tag": "H2",
+        "level": 2,
+        "visible": true,
+        "outer": "<h2 id=\"sec-definitions\" data-reader-section=\"sec-definitions\" data-reader-section-label=\"Герменевтические определения\" aria-labelledby=\"gb-heading-name-sec-definitions\"><span class=\"heading-anchor__n"
+      },
+      {
+        "href": "#sec-explanation",
+        "label": "Объяснение христоцентричной герменевтики",
+        "id": "sec-explanation",
+        "count": 1,
+        "tag": "H2",
+        "level": 2,
+        "visible": true,
+        "outer": "<h2 id=\"sec-explanation\" data-reader-section=\"sec-explanation\" data-reader-section-label=\"Объяснение христоцентричной герменевтики\" aria-labelledby=\"gb-heading-name-sec-explanation\"><span class=\"headi"
+      },
+      {
+        "href": "#sec-what-is",
+        "label": "Что такое христоцентричная герменевтика?",
+        "id": "sec-what-is",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-what-is\" data-reader-section=\"sec-what-is\" data-reader-section-label=\"Что такое христоцентричная герменевтика?\" aria-labelledby=\"gb-heading-name-sec-what-is\"><span class=\"heading-anchor__n"
+      },
+      {
+        "href": "#sec-how-achieves",
+        "label": "Как она достигает своих целей",
+        "id": "sec-how-achieves",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-how-achieves\" data-reader-section=\"sec-how-achieves\" data-reader-section-label=\"Как христоцентричная герменевтика достигает своих целей\" aria-labelledby=\"gb-heading-name-sec-how-achieves\">"
+      },
+      {
+        "href": "#sec-why",
+        "label": "Почему она стремится к такому толкованию",
+        "id": "sec-why",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-why\" data-reader-section=\"sec-why\" data-reader-section-label=\"Почему она стремится к такому толкованию\" aria-labelledby=\"gb-heading-name-sec-why\"><span class=\"heading-anchor__name\" id=\"gb-"
+      },
+      {
+        "href": "#sec-assessment",
+        "label": "Оценка христоцентричной герменевтики",
+        "id": "sec-assessment",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-assessment\" data-reader-section=\"sec-assessment\" data-reader-section-label=\"Оценка христоцентричной герменевтики\" aria-labelledby=\"gb-heading-name-sec-assessment\"><span class=\"heading-anch"
+      },
+      {
+        "href": "#sec-question-posed",
+        "label": "Вопрос поставлен: Есть ли исключения из правил?",
+        "id": "sec-question-posed",
+        "count": 1,
+        "tag": "H4",
+        "level": 4,
+        "visible": true,
+        "outer": "<h4 id=\"sec-question-posed\" data-reader-section=\"sec-question-posed\" data-reader-section-label=\"Вопрос поставлен: Есть ли исключения из правил?\" aria-labelledby=\"gb-heading-name-sec-question-posed\"><s"
+      },
+      {
+        "href": "#sec-exceptions-passages",
+        "label": "Есть ли исключения из правила? Взгляд на конкретные отрывки",
+        "id": "sec-exceptions-passages",
+        "count": 1,
+        "tag": "H4",
+        "level": 4,
+        "visible": true,
+        "outer": "<h4 id=\"sec-exceptions-passages\" data-reader-section=\"sec-exceptions-passages\" data-reader-section-label=\"Есть ли исключения из правила? Взгляд на конкретные отрывки\" aria-labelledby=\"gb-heading-name-"
+      },
+      {
+        "href": "#sec-exceptions-theological",
+        "label": "Есть ли исключения из правила? Взгляд на библейско-богословское обоснование",
+        "id": "sec-exceptions-theological",
+        "count": 1,
+        "tag": "H4",
+        "level": 4,
+        "visible": true,
+        "outer": "<h4 id=\"sec-exceptions-theological\" data-reader-section=\"sec-exceptions-theological\" data-reader-section-label=\"Есть ли исключения из правила? Взгляд на библейско-богословское обоснование\" aria-labell"
+      },
+      {
+        "href": "#sec-consequences",
+        "label": "Последствия христоцентричной герменевтики",
+        "id": "sec-consequences",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-consequences\" data-reader-section=\"sec-consequences\" data-reader-section-label=\"Последствия христоцентричной герменевтики\" aria-labelledby=\"gb-heading-name-sec-consequences\"><span class=\"h"
+      },
+      {
+        "href": "#sec-sufficiency",
+        "label": "Достаточность грамматико-исторической герменевтики",
+        "id": "sec-sufficiency",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-sufficiency\" data-reader-section=\"sec-sufficiency\" data-reader-section-label=\"Установление достаточности грамматико-исторической герменевтики\" aria-labelledby=\"gb-heading-name-sec-sufficie"
+      },
+      {
+        "href": "#sec-conclusion",
+        "label": "Заключение",
+        "id": "sec-conclusion",
+        "count": 1,
+        "tag": "H3",
+        "level": 3,
+        "visible": true,
+        "outer": "<h3 id=\"sec-conclusion\" data-reader-section=\"sec-conclusion\" data-reader-section-label=\"Заключение\" aria-labelledby=\"gb-heading-name-sec-conclusion\"><span class=\"heading-anchor__name\" id=\"gb-heading-n"
+      },
+      {
+        "href": "#spravka",
+        "label": "Часто задаваемые вопросы",
+        "id": "spravka",
+        "count": 1,
+        "tag": "H2",
+        "level": 2,
+        "visible": true,
+        "outer": "<h2 id=\"spravka\" data-reader-section=\"spravka\" data-reader-section-label=\"Часто задаваемые вопросы\" aria-labelledby=\"gb-heading-name-spravka\"><span class=\"heading-anchor__name\" id=\"gb-heading-name-spr"
+      }
+    ],
+    "projection": {
+      "rootKinds": [
+        "heading",
+        "heading",
+        "heading"
+      ],
+      "headings": [
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-definitions",
+          "label": "Герменевтические определения",
+          "depth": 0
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-explanation",
+          "label": "Объяснение христоцентричной герменевтики",
+          "depth": 0
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-what-is",
+          "label": "Что такое христоцентричная герменевтика?",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-how-achieves",
+          "label": "Как она достигает своих целей",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-why",
+          "label": "Почему она стремится к такому толкованию",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-assessment",
+          "label": "Оценка христоцентричной герменевтики",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-question-posed",
+          "label": "Вопрос поставлен: Есть ли исключения из правил?",
+          "depth": 2
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-passages",
+          "label": "Есть ли исключения из правила? Взгляд на конкретные отрывки",
+          "depth": 2
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-exceptions-theological",
+          "label": "Есть ли исключения из правила? Взгляд на библейско-богословское обоснование",
+          "depth": 2
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-consequences",
+          "label": "Последствия христоцентричной герменевтики",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-sufficiency",
+          "label": "Достаточность грамматико-исторической герменевтики",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#sec-conclusion",
+          "label": "Заключение",
+          "depth": 1
+        },
+        {
+          "href": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/#spravka",
+          "label": "Часто задаваемые вопросы",
+          "depth": 0
+        }
+      ]
+    },
+    "projectionError": null
+  }
+]

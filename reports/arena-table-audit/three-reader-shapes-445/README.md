@@ -1,0 +1,46 @@
+# Книга, серия, одиночная статья: одна платформа и разные структуры
+
+## Уточнение владельца
+
+Нужно поддержать **книгу, серию и одиночную статью**, не сводя их структуру к одной плоской таблице. Цель остаётся: единый Reader core и общие TOC, левая/правая выдвижные панели; индивидуальные темы/цвета/типографика/карточки и сведения каждой публикации. Книга — `series.shape='book'`, **не новый движок**; плоская серия и standalone — другие data adapters для тех же общих panel/lifecycle/state контрактов. Предыдущее исследование общих панелей: [unified-panels-ce08](../unified-panels-ce08/README.md).
+
+Прочитаны последние комментарии #2352 до [W136 follow-up](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2352#issuecomment-7114429014): старые `engine:contracts`/`engine:sweep` отказы уже исправлены на `2bfe65b`/`4454460`, то есть не переносить старый RED на новый HEAD; правильное поведение `Продолжить` — только закрытие с сохранением позиции, явная ссылка раздела — отдельная навигация. Search/CI, W57 product integration, SYS join, notes и cold PDF остаются отдельными gates. Product/owner ветки не менялись.
+
+## Независимое измерение 3 типов на exact `445446050`
+
+Отдельный detached `445446050ebb8cebee612d2ea5c195ddc954a60a`, Astro 112 pages + production-like legacy copy; не полный `strangler:build` и не production release. Direct dist, Chromium 153 Linux, 1440×900, service workers blocked, реальные TypeScript config/projection через `typescript.transpileModule`; один свежий context на тип, повторная независимая прогонка сохранённого скрипта exit 0. [Сырые записи](observations.json), [скрипт](probe.cjs).
+
+| Вид | Реальный пример / источник TOC | Наблюдение |
+|---|---|---|
+| Плоская серия | Gill II, `GILL_SERIES.pages.part2.partToc` | 6 targets, все существуют единожды, имеют layout box и идут в DOM-порядке; projection activePath = `series:dzhon-gill:page:part2`, hierarchy содержит endpaper/page + headings. |
+| Книга | «Крайне ли испорчено сердце верующего?», `HARD_TEXTS_SERIES.pages.krajne.partToc` | 14 targets, все существуют единожды, имеют layout box и идут в порядке; activePath = `series:hard-texts:chapter:ch1` → `series:hard-texts:page:krajne`. Главы и части сохраняются как отдельные узлы; section labels используют существующую нормализацию римского префикса. |
+| Одиночная | «Герменевтика», фактические ссылки `#hrailToc` и целевые h2–h6 | 13 targets, все существуют единожды, имеют layout box и идут в порядке; `projectStandaloneReaderToc` построил иерархию без ошибки. Это использует текущий rail DOM как вход — не независимое доказательство отсутствия пропущенных разделов. |
+
+У всех 33 проверенных target отсутствовали missing/duplicate по всему документу; наличие layout box **не доказывает видимость во viewport, кликабельность, focus, scrollspy или доступность**. Структура книги может иметь chapter и первую страницу с одинаковым href, но разными ключами/ролями — объединять nodes по URL запрещено. `depth` projection зависит от родительской структуры (серия 1/2, книга 2, статья 0/1); нельзя сопоставлять его напрямую с HTML `H2/H3` или без контекста. Историческая формулировка «Baptist flat» в некоторых документах неточна для текущего `BAPTIST_SERIES.shape='book'` — классифицировать по реальной конфигурации, а не по имени коллекции.
+
+На этом SHA `node scripts/reader-toc-projection-contract-test.cjs` = **15/15 PASS** (в т.ч. активная ветка книги, satellite, missing/duplicate/reordered и глубокие fixtures); `node scripts/check-engine-contracts.js` **exit 0**. Это source/DOM proof, не full browser acceptance; про `engine:sweep` здесь не заявляем собственный новый прогон. На ce08 ранее этот source gate был красным; на 445 старое утверждение исправлено.
+
+## Общий контракт и различия данных
+
+| Функция | Книга | Плоская серия | Одиночная статья | Владелец |
+|---|---|---|---|---|
+| Левая панель/TOC | `chapter → article → H2–H6`, активный путь содержит главу и статью; endpaper и satellite имеют свою роль | `part/endpaper → H2–H6`; порядок серии из конфигурации | `H2–H6`; не придумывать главу/предыдущую статью | общий panel shell и единый действующий scrollspy/history/focus owner; `readerTocProjection.ts` — data-only |
+| Прогресс | отдельно статья, глава и книга, если в source есть достоверные данные | статья и серия с реальным порядком | только документ; серия/книга не показываются | существующий ReaderState/progress, без фальшивого автоматического «прочитано» |
+| Правая панель | только доступные Писание, понятия, контекст, пометы, quiz; смысл источника и active article не теряются | те же capabilities по реальным данным и разрешениям | тот же shell; нет данных — корректное отсутствие или пустое состояние | один Analytics controller, Snapshot/Projection, существующая Library и quiz/search owners |
+| Навигация | chapter href может совпадать с первой статьёй; реальные satellites не подменяются родителем | исторические ссылки и endpaper сохраняются | прямые фрагменты не меняются | стабильный identity = тип/источник/путь/узел, не один href и не индекс массива |
+| Внешний вид | тема книги, обложки, фактуры, typography/numbering | тема и редакционные slots серии | тема и editorial slots статьи | theme/adapter tokens, не отдельный event/storage engine |
+
+Панели могут визуально раскрываться как desktop rails или mobile sheets, но контракты open/close, focus, Escape, scroll, history и восстановление едины; два независимых состояния слева/справа принадлежат одному контролируемому runtime, не двум конкурирующим подписчикам. Первый пилот может хранить старые presentation adapters за выключателем; **конечная цель — общая panel composition**, не вечные параллельные реализации и не массовая косметическая замена.
+
+## Следующая последовательность внедрения
+
+1. **Цепочка доказательств:** обновить exact HEAD и все владельческие решения; проверить статический и собранный route profile, ownership, source import и реальные владельцы TOC/панелей для трёх видов. Не генерировать включение автоматически по имени route или профилю `series` — классификация не равна разрешению. Дополнить fixtures: flat с endpapers, реальная книга с совпадением chapter/article URL, standalone с H4–H6, satellite с сохранением настоящего route, missing/duplicate/reorder и изменённый документ.
+2. **Общая модель, не новый parser:** existing `SeriesConfig`/`readerTocProjection`, `GBReaderProjection`, `ReaderSemanticSnapshot`, `GBReaderState`, `GBReaderAnchors` и OverlayRuntime. Data-only projection не выдавать за существующий UI controller. Единый validated action для TOC и sidebar; явный fail-closed на неоднозначную цель. Различать `Закрыть/Продолжить` (точно восстановить позицию) и `Перейти к заголовку` (история, фокус и подтверждённая позиция).
+3. **OFF-by-default вертикаль:** согласованный two-route Baptist/Teen pilot по W117, source data+exact visible occurrence, отдельная проверка desktop-монтажа в production-like dist **без preview.py**, native mobile + W57. Сверить две разные `2 Тим. 2:22` на Teen по реальному DOM и сохранять старые записи OFF→ON→OFF. Baptist исторический chapter — существующий book-shaped config, а не подтверждённый MDX; не выдумывать ссылки. Координировать Teen с #2368.
+4. **Панели для трёх представителей:** series Gill II, book Heart chapter, standalone Hermenevtika. В каждом: один видимый владелец левой панели/TOC и один правой, четыре сочетания открыт/закрыт, resize мобильный↔desktop и reload, текущий узел и ancestor path, естественная клавиатура и Back/Forward, никаких двойных note painters/search/quiz listeners. Тема отличается намеренно: регрессионные screenshots и owner review подтверждают сохранение серии/книги/статьи, а не одинаковый облик. Подтвердить доступность, 44px targets, контраст, 320/390/768/1120/1121/1440/1920, zoom и реальный screen reader/устройства.
+5. **Малые когорты и rollback:** после явной приёмки по одному представителю открывать следующие book/flat/article семейства, с владельцем и explicit route allowlist, локальным выключением и сохранением всех библиотечных данных. NEWS/G3/JOURNAL, Нагорная, карты, приложения и хабы не переключать в Reader без отдельного согласования владельцев. Общие применимые standards/capabilities возможны без навязывания article-панелей.
+6. **Ворота релиза:** exact final-SHA CI, реальная семантическая навигация, cross-tab notes fail-closed и защита черновиков при ошибках, PDF #2349 первый/повторный в настоящем диалоге, таблицы #577 визуально/AT, SYS совмещение и canonical index/hash/SW. Для противоречивых Windows/Linux cold PDF хранить оба свидетельства. Не приравнивать 15/15 проекции к готовому sitewide UI, а локальный W57 preview — к production desktop.
+
+## Повторить этот измерительный проход
+
+Собрать отдельно exact SHA: `node scripts/astro-cli.mjs build` + `node scripts/copy-legacy-to-dist.js --production-like --no-manifest`; для полного release gate использовать штатный `strangler:build:production-like`. Поднять локальный сервер dist. Запустить `SOURCE_ROOT=/path/to/isolated/checkout BASE_URL=http://127.0.0.1:8083 CHROMIUM_EXECUTABLE=/path/to/chromium node probe.cjs`. Нужны TypeScript и Playwright в этом checkout; `OUTPUT` задаёт JSON. Проба завершает процесс с ошибкой при отсутствии/дубле/перестановке цели или ошибке projection. Она не нажимает TOC, не проводит визуальную приёмку и не обходит owner checks.
