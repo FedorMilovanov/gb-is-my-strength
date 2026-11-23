@@ -502,6 +502,14 @@ async function inspect(browserType, engine, profile) {
       page.on('pageerror', (error) => pageErrors.push(error.message));
       await page.route(/mc\.yandex|gospod-bog\.ru/, (request) => request.abort());
       const response = await page.goto(base + ROUTE, { waitUntil: javaScriptEnabled ? 'networkidle' : 'domcontentloaded' });
+      if (!javaScriptEnabled) {
+        // DOMContentLoaded may precede the final stylesheet/font layout in WebKit.
+        // Wait for actual static resources, never for the H1 assertion itself.
+        await page.waitForLoadState('load');
+        await page.evaluate(async () => {
+          if (document.fonts?.ready) await document.fonts.ready;
+        });
+      }
       record(engine, `${profile.id}-${mode}`, 'http-200', response?.status() === 200, `status=${response?.status()}`);
       const state = await page.evaluate(({ staleReaderLinks, canonicalBaseReaderLinks, historicalJourneyUrl }) => {
         const bodyText = document.body.innerText;
@@ -553,7 +561,22 @@ async function inspect(browserType, engine, profile) {
             return rightScore - leftScore;
           })
           .slice(0, 12);
+        const articleTitle = document.querySelector('article.article-body .article-header h1');
+        const titleRect = articleTitle?.getBoundingClientRect();
+        const methodologicalNotice = document.querySelector('#wave12-publication-heading');
+        const firstFoldTitle = {
+          titleCount: document.querySelectorAll('article.article-body h1').length,
+          titleTop: titleRect ? Math.round(titleRect.top) : null,
+          titleBottom: titleRect ? Math.round(titleRect.bottom) : null,
+          viewportHeight: window.innerHeight,
+          fullyInFirstViewport: Boolean(titleRect && titleRect.top >= 0 && titleRect.bottom <= window.innerHeight),
+          noticeCount: document.querySelectorAll('#wave12-publication-heading').length,
+          noticeInMainArticle: Boolean(methodologicalNotice?.closest('main article.article-body')),
+          noticeAfterTitle: Boolean(articleTitle && methodologicalNotice &&
+            (articleTitle.compareDocumentPosition(methodologicalNotice) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        };
         return {
+          firstFoldTitle,
           title: document.title,
           antiKicker: document.querySelector('article.article-body .article-header .anti-kicker')?.textContent?.trim() || '',
           h1: document.querySelector('h1')?.textContent?.trim() || '',
@@ -590,6 +613,17 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'single-main', state.mainCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'single-article', state.articleCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'title-first-fold',
+        state.firstFoldTitle.titleCount === 1 &&
+          state.firstFoldTitle.fullyInFirstViewport &&
+          state.firstFoldTitle.noticeCount === 1 &&
+          state.firstFoldTitle.noticeInMainArticle &&
+          state.firstFoldTitle.noticeAfterTitle,
+        JSON.stringify(state.firstFoldTitle),
+      );
       record(engine, `${profile.id}-${mode}`, 'reader-header-no-internal-wave', state.antiKicker === 'Историко-богословское исследование', JSON.stringify({ heading: state.antiKicker }));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'authority-marker', state.sourceAuthority === '148', JSON.stringify(state));
