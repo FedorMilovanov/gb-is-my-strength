@@ -356,6 +356,35 @@ async function inspectArticle(page, spec, vp) {
   report.scenes.push({ route, viewport, metrics, pageErrors: errors });
 }
 
+function landingLabelGeometry() {
+  const bounds = (element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const box = element.getBoundingClientRect();
+    const card = element.closest('.teen-series-card').getBoundingClientRect();
+    return {
+      label: element.textContent.trim(),
+      fits: [...range.getClientRects()].every((rect) =>
+        rect.left >= Math.max(box.left, card.left) - 1 &&
+        rect.right <= Math.min(box.right, card.right) + 1 &&
+        rect.top >= Math.max(box.top, card.top) - 1 &&
+        rect.bottom <= Math.min(box.bottom, card.bottom) + 1),
+    };
+  };
+  return {
+    roman: [...document.querySelectorAll('#series-order ~ .teen-series-grid .teen-series-card__mark')].map(bounds),
+    topics: [...document.querySelectorAll('#adult-studies .teen-series-card__topic')].map(bounds),
+    adultCircles: document.querySelectorAll('#adult-studies .teen-series-card__mark').length,
+  };
+}
+function checkLandingLabels(metrics, route, viewport) {
+  check(metrics.roman.map((item) => item.label).join(',') === 'I,II,III' && metrics.roman.every((item) => item.fits),
+    route, viewport, 'teen roman marks must fit their circles: ' + JSON.stringify(metrics.roman));
+  check(metrics.topics.map((item) => item.label).join(',') === 'ОСНОВА,ДОМ,УХОД,БРАК' &&
+    metrics.topics.every((item) => item.fits) && metrics.adultCircles === 0,
+    route, viewport, 'adult topic labels must fit without roman circles: ' + JSON.stringify(metrics));
+}
+
 async function inspectLanding(page, vp) {
   const route = '/podrostok-za-kadrom/';
   const viewport = vp.name;
@@ -435,6 +464,16 @@ async function inspectLanding(page, vp) {
   check(metrics.cardImages.every((img) => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0 && img.currentSrc),
     route, viewport, 'landing card image failed to load');
   check(metrics.h1Count === 1, route, viewport, `landing H1 count=${metrics.h1Count}`);
+  await page.evaluate(() => document.fonts.ready);
+  metrics.cardLabels = await page.evaluate(landingLabelGeometry);
+  checkLandingLabels(metrics.cardLabels, route, viewport);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.locator('.teen-series-card').first().hover();
+  const reducedTransform = await page.locator('.teen-series-card').first().evaluate((element) => getComputedStyle(element).transform);
+  check(reducedTransform === 'none', route, viewport, 'reduced-motion card hover must not translate: ' + reducedTransform);
+  await page.mouse.move(0, 0);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.evaluate(() => window.scrollTo(0, 0));
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
     await captureViewportEvidence(page, {
       route,
@@ -520,6 +559,11 @@ async function captureDark(browser, base, spec, vp) {
     }));
     check(metrics.scrollWidth <= metrics.width + 2, spec.route, `${vp.name}-dark`, 'dark-mode horizontal overflow');
     check(metrics.dark, spec.route, `${vp.name}-dark`, 'dark theme did not apply');
+    if (spec.route === '/podrostok-za-kadrom/') {
+      await page.evaluate(() => document.fonts.ready);
+      metrics.cardLabels = await page.evaluate(landingLabelGeometry);
+      checkLandingLabels(metrics.cardLabels, spec.route, `${vp.name}-dark`);
+    }
     await captureViewportEvidence(page, {
       route: spec.route,
       viewport: `${vp.name}-dark`,
@@ -565,7 +609,7 @@ try {
 
   await inspectLandingDpr2(browser, base);
 
-  for (const spec of [ARTICLE_ROUTES[0], ARTICLE_ROUTES.at(-1)]) {
+  for (const spec of [ARTICLE_ROUTES[0], ARTICLE_ROUTES.at(-1), { route: '/podrostok-za-kadrom/' }]) {
     for (const vp of VIEWPORTS.filter((item) => item.width === 390 || item.width === 1440)) {
       await captureDark(browser, base, spec, vp);
     }
@@ -590,7 +634,7 @@ assert.equal(report.scenes.length, ARTICLE_ROUTES.length * VIEWPORTS.length + VI
   'quality audit scene count drifted');
 assert.equal(report.responsiveScenes.length, 1,
   'quality audit responsive DPR witness count drifted');
-assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 4,
+assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 6,
   'quality audit screenshot evidence count drifted');
 assert.equal(report.screenshots.filter((entry) => entry.bytes <= 1024).length, 0,
   'quality audit contains empty or invalid screenshot evidence');
