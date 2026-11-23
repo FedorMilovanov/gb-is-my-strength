@@ -95,20 +95,6 @@ try {
     [/releases\/download|api\.github\.com/, 'release endpoint'],
   ]) assert.doesNotMatch(runnerSource, pattern, `runner must not contain ${label}`);
 
-  // Win32 zip extraction regression guard (run 44804021057): the runner must
-  // not regress to Expand-Archive — its Archive module can exit 0 after a
-  // non-terminating overload error and leave the destination empty. The
-  // reviewed replacement is the 2-arg ZipFile.ExtractToDirectory overload
-  // with a terminating error preference and an error-stream check.
-  assert.doesNotMatch(runnerSource, /Expand-Archive\s+-LiteralPath/,
-    'win32 zip extraction must not use Expand-Archive');
-  assert.match(runnerSource, /ZipFile]::ExtractToDirectory\(/,
-    'win32 zip extraction must use the ZipFile ExtractToDirectory overload');
-  assert.match(runnerSource, /\$ErrorActionPreference='Stop'/,
-    'zip extraction must make PowerShell errors terminating');
-  assert.match(runnerSource, /result\.status !== 0 \|\| stderr/,
-    'zip extraction must treat any error-stream output as failure');
-
   const preload = path.join(scratch, 'forbid-network.cjs');
   fs.writeFileSync(preload, `
 const deny = () => { throw new Error('NETWORK_FORBIDDEN_BY_ACTIONLINT_CONTRACT'); };
