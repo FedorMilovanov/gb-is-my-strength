@@ -110,11 +110,18 @@ function facadeUsages(record, readText = defaultReadText) {
         }
         const configIdentifier = configMatch[1];
         const binding = namedImport(source, configIdentifier);
+        // A shared page wrapper may choose between two literal, imported series
+        // configs by pageId. Prove the route's pageId and unique config ownership.
+        const dynamic = binding ? null : resolveRouteDynamicConfig(
+          record, file, source, configIdentifier, readText
+        );
         usages.push({
           componentFile: file,
           componentName: localName,
-          configIdentifier: binding?.imported || configIdentifier,
-          configSource: binding ? resolvedImport(record, file, binding.specifier) : null,
+          configIdentifier: binding?.imported || dynamic?.imported || configIdentifier,
+          configSource: binding
+            ? resolvedImport(record, file, binding.specifier)
+            : dynamic?.configSource || null,
           implicitDefault: false,
         });
       }
@@ -135,6 +142,54 @@ function configDeclaration(source, identifier) {
   const seriesId = block.match(/\bseriesId\s*:\s*['"]([^'"]+)['"]/)?.[1] || null;
   const shape = block.match(/\bshape\s*:\s*['"](flat|book)['"]/)?.[1] || 'flat';
   return { seriesId, shape, block };
+}
+
+// Resolve only a narrowly proven, two-branch pageId discriminator. Never infer
+// ownership from merely importing a config or from unrelated file text.
+function resolveRouteDynamicConfig(record, wrapperFile, wrapperSource, identifier, readText) {
+  const selector = new RegExp(
+    `\\bconst\\s+${escapeRegExp(identifier)}\\s*=\\s*` +
+    `([A-Za-z_$][\\w$]*)\\.pages\\[pageId\\]\\s*\\?\\s*\\1\\s*:\\s*` +
+    `([A-Za-z_$][\\w$]*)\\.pages\\[pageId\\]\\s*\\?\\s*\\2\\s*:\\s*null\\s*;`
+  ).exec(wrapperSource);
+  if (!selector || selector[1] === selector[2]) return null;
+
+  const routeFile = record.sourceRel;
+  const wrapperImport = (record.inspection?.imports || []).filter(
+    (item) => item.importer === routeFile && item.resolved === wrapperFile
+  );
+  if (wrapperImport.length !== 1) return null;
+  let routeSource;
+  try { routeSource = readText(routeFile); } catch { return null; }
+  const wrapperName = defaultImportName(routeSource, wrapperImport[0].specifier);
+  if (!wrapperName) return null;
+  const pageTag = new RegExp(
+    `<${escapeRegExp(wrapperName)}\\b[^>]*\\bpageId\\s*=\\s*["']([^"']+)["']`, 'g'
+  );
+  const pageIds = [...routeSource.matchAll(pageTag)].map((match) => match[1]);
+  if (pageIds.length !== 1) return null;
+
+  const matches = [];
+  for (const localName of [selector[1], selector[2]]) {
+    const binding = namedImport(wrapperSource, localName);
+    if (!binding) return null;
+    const configSource = resolvedImport(record, wrapperFile, binding.specifier);
+    if (!configSource) return null;
+    let configText;
+    try { configText = readText(configSource); } catch { return null; }
+    const config = configDeclaration(configText, binding.imported);
+    if (!config?.seriesId) return null;
+    const pageDefinitions = config.block.split(/\bpages\s*:\s*\{/)[1];
+    if (!pageDefinitions) return null;
+    const pageKey = new RegExp(
+      `(?:^|\\n)\\s*['"]${escapeRegExp(pageIds[0])}['"]\\s*:\\s*\\{`
+    );
+    if (pageKey.test(pageDefinitions)) matches.push({
+      imported: binding.imported,
+      configSource,
+    });
+  }
+  return matches.length === 1 ? matches[0] : null;
 }
 
 function declaredSeriesIds(record, readText = defaultReadText) {
@@ -348,6 +403,59 @@ function runSeriesCapabilityMutationSuite() {
     };
     delete exception.capabilities.print;
     check('exception missing one capability fails', () => validate(record, entry('/exception/'), { '/exception/': exception }).some((error) => error.includes('capability print')));
+  }
+
+  {
+    const route = '/family-variant/';
+    const routeFile = 'src/pages/family-variant.astro';
+    const wrapperFile = 'src/components/family-variant.astro';
+    const configFile = 'src/config/family-series.ts';
+    const wrapperSpecifier = '@/components/family-variant.astro';
+    const configSpecifier = '@/config/family-series';
+    fileMap.set(configFile, [
+      "export const TEEN: SeriesConfig = defineSeriesConfig({",
+      "  seriesId: 'teen-fixture',",
+      "  pages: {",
+      "    'teen-fixture-page': { id: 'teen-fixture-page' },",
+      "  },",
+      "});",
+      "export const ADULT: SeriesConfig = defineSeriesConfig({",
+      "  seriesId: 'adult-fixture',",
+      "  pages: {",
+      "    'adult-fixture-page': { id: 'adult-fixture-page' },",
+      "  },",
+      "});",
+    ].join('\n'));
+    fileMap.set(wrapperFile, [
+      `import SeriesReaderChrome from '${facadeSpecifier}';`,
+      `import { TEEN, ADULT } from '${configSpecifier}';`,
+      'const series = TEEN.pages[pageId] ? TEEN : ADULT.pages[pageId] ? ADULT : null;',
+      '<SeriesReaderChrome pageId={pageId} config={series}></SeriesReaderChrome>',
+    ].join('\n'));
+    const routeSource = (pageId) => [
+      `import FamilyPage from '${wrapperSpecifier}';`,
+      `<FamilyPage pageId="${pageId}"></FamilyPage>`,
+    ].join('\n');
+    fileMap.set(routeFile, routeSource('teen-fixture-page'));
+    const record = syntheticRecord({
+      route, source: routeFile, files: [routeFile, wrapperFile, configFile],
+      imports: [
+        { importer: routeFile, specifier: wrapperSpecifier, resolved: wrapperFile },
+        { importer: wrapperFile, specifier: facadeSpecifier, resolved: SERIES_FACADE },
+        { importer: wrapperFile, specifier: configSpecifier, resolved: configFile },
+      ],
+    });
+    check('route-bound two-series discriminator passes', () => validate(record, entry(route)).length === 0);
+    fileMap.set(routeFile, routeSource('missing-page'));
+    check('unknown pageId cannot borrow unrelated config', () =>
+      validate(record, entry(route)).some((error) => error.includes('not bound')));
+    fileMap.set(routeFile, routeSource('teen-fixture-page'));
+    const missingConfig = syntheticRecord({
+      route, source: routeFile, files: [routeFile, wrapperFile, configFile],
+      imports: record.inspection.imports.filter((item) => item.resolved !== configFile),
+    });
+    check('unresolved variant config import is rejected', () =>
+      validate(missingConfig, entry(route)).some((error) => error.includes('not bound')));
   }
 
   return failures;

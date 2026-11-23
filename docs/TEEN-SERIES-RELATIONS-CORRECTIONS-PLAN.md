@@ -22,7 +22,7 @@ Therefore the teen series MUST NOT add a teen-specific `Читайте такж�
 
 The seven-part reader rail owns the canonical linear sequence:
 
-`I -> II -> III -> A -> B -> C -> D`
+`I -> II -> III -> IV -> V -> VI -> VII`
 
 The relation panel should not repeat those seven items merely to mimic prev/next.
 

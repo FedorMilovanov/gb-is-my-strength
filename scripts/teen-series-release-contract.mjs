@@ -13,16 +13,21 @@ const SITE = 'https://gospod-bog.ru';
 const RELEASE_DATE = '2026-09-10T00:00:00+03:00';
 const LANDING = '/podrostok-za-kadrom/';
 const SERIES_KEY = 'teen-double-life';
+const ADULT_KEY = 'adult-children-family';
 const SERIES_OG = '/images/teen-series/series-cover.webp';
 const SERIES_RAIL = '/images/teen-series/series-cover-600w.webp';
 const ITEMS = [
   ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0, '01-double-life.webp'],
   ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32, '02-after-disclosure.webp'],
   ['III', 'teen-church-response', 'podrostok-za-kadrom-chto-delat-tserkvi', 39, 75, '03-church-response.webp'],
-  ['A', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 114, '04-left-home.webp'],
-  ['B', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 151, '05-home-money.webp'],
-  ['C', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 187, '06-adult-authority.webp'],
-  ['D', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222, '07-daughter-marriage.webp'],
+  ['ОСНОВА', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 0, '06-adult-authority.webp'],
+  ['ДОМ', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 0, '05-home-money.webp'],
+  ['УХОД', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 0, '04-left-home.webp'],
+  ['БРАК', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 0, '07-daughter-marriage.webp'],
+];
+const GROUPS = [
+  { key: SERIES_KEY, configName: 'TEEN_DOUBLE_LIFE_SERIES', rows: ITEMS.slice(0, 3), kind: 'roman', total: 114 },
+  { key: ADULT_KEY, configName: 'ADULT_CHILDREN_SERIES', rows: ITEMS.slice(3), kind: 'label' },
 ];
 const railFor = (heroFile) => heroFile.replace(/\.webp$/, '-600w.webp');
 
@@ -52,6 +57,7 @@ const frontmatterScalar = (source, key) => {
 };
 const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
+const publishedAnchorBaseline = readJson('data/teen-series-anchor-baseline.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
 const mediaSource = read('src/components/article-pilots/_shared/series/teenSeriesMedia.ts');
 const mediaAltFor = (pageId) => {
@@ -60,6 +66,20 @@ const mediaAltFor = (pageId) => {
   const end = mediaSource.indexOf('\n    },', start);
   const block = end < 0 ? mediaSource.slice(start) : mediaSource.slice(start, end);
   return block.match(/\balt:\s*'([^']+)'/u)?.[1] || '';
+};
+// Reader anchors may be attached to spans after editorial H2/H3 consolidation;
+// never treat a valid span id as a missing destination.
+const teenTocAnchorsFor = (pageId) => {
+  const pagesStart = config.indexOf('  pages: {', config.indexOf('export const TEEN_DOUBLE_LIFE_SERIES'));
+  const pageStart = config.indexOf("'" + pageId + "': {", pagesStart);
+  const pageEnd = config.indexOf('\n    },', pageStart);
+  if (pagesStart < 0 || pageStart < 0 || pageEnd < 0) return null;
+  const tocName = config.slice(pageStart, pageEnd).match(/\bpartToc:\s*(\w+)/)?.[1];
+  if (!tocName) return null;
+  const tocStart = config.indexOf('const ' + tocName + ' = toc(');
+  const tocEnd = config.indexOf('\n);', tocStart);
+  if (tocStart < 0 || tocEnd < 0) return null;
+  return [...config.slice(tocStart, tocEnd).matchAll(/\bhref:\s*'#([^']+)'/g)].map((x) => x[1]);
 };
 const siteData = read('src/data/site.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
@@ -108,23 +128,30 @@ for (const rel of ['images/teen-series/series-hero.svg', 'images/teen-series/ser
   if (exists(rel)) fail(`superseded root teen asset must stay deleted: ${rel}`);
 }
 
-if (!config.includes("seriesId: 'teen-double-life'")) fail('teen config seriesId drift');
-// GBS-TEEN-SERIES-CORE-STEP-PROGRESS: seven first-class core steps must be
-// declared once in the typed config, not patched per route. The rail and the
-// article header both consume coreStepMeta(), so this single declaration is
-// the owner of «Шаг N из 7» on desktop and mobile.
-if (!config.includes("coreSequence: { stepLabel: 'Шаг' }")) fail('teen config lost its explicit seven-step coreSequence');
-if (!read('src/components/article-pilots/gill-series/GillSeriesRail.astro').includes('coreStepMeta(config, parentId)')) {
-  fail('shared rail no longer consumes the typed core sequence progress');
-}
-if (!wrapper.includes('coreStep.text')) fail('teen article header lost its visible core step position');
-if (!config.includes("railBackHref: '/podrostok-za-kadrom/'")) fail('teen config landing href drift');
-if (!config.includes("teenSeriesMediaFor")) fail('teen config must use route-specific media authority');
-if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png|TEEN_SERIES_RAIL_COVER/.test(config)) fail('legacy/prepublication rail cover leaked into release config');
+if (!config.includes("seriesId: 'teen-double-life'") ||
+    !config.includes("seriesId: 'adult-children-family'"))
+  fail('reader configs must include separate teen/adult series IDs');
+if (config.includes("coreSequence: { stepLabel: 'Шаг' }"))
+  fail('forbidden forced seven-step core sequence');
+if (!read('src/components/article-pilots/gill-series/GillSeriesRail.astro').includes('coreStepMeta(config, parentId)'))
+  fail('shared rail no longer consumes optional typed core progress');
+if (!wrapper.includes('const series = TEEN_DOUBLE_LIFE_SERIES.pages[pageId]') ||
+    !wrapper.includes('ADULT_CHILDREN_SERIES.pages[pageId]') ||
+    !wrapper.includes('config={series}') ||
+    !wrapper.includes('data-gbs2-series={series.seriesId}'))
+  fail('article wrapper must select correct series by pageId');
+if (!config.includes("railBackHref: '/podrostok-za-kadrom/'") ||
+    !config.includes("railBackHref: '/podrostok-za-kadrom/#adult-studies'"))
+  fail('independent series landing destinations missing');
+if (!config.includes('teenSeriesMediaFor')) fail('route-specific media authority missing');
+if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png|TEEN_SERIES_RAIL_COVER/.test(config))
+  fail('legacy/prepublication rail cover leaked into reader config');
 for (const [, pageId] of ITEMS) {
-  if (!config.includes(`railCover: teenSeriesMediaFor('${pageId}').rail`)) fail(`${pageId}: route-specific rail cover missing`);
+  if (!config.includes("railCover: teenSeriesMediaFor('" + pageId + "').rail"))
+    fail(pageId + ': route-specific rail cover missing');
 }
-if (!wrapper.includes('data-gbs2-series="teen-double-life"')) fail('teen wrapper series identity missing');
+if (!landingSource.includes('adultCards') || !landingSource.includes('id="adult-studies"'))
+  fail('separate adult thematic landing section missing');
 if (wrapper.includes('PASTOR_SERIES') || wrapper.includes('pastor-series/og-hero')) fail('pastor-series metadata leaked into teen wrapper');
 if (!wrapper.includes('const media = teenSeriesMediaFor(pageId);')) fail('article wrapper media authority missing');
 if (!wrapper.includes('srcset={`${media.rail} 600w, ${media.hero} 1200w`}')) fail('article responsive hero contract missing');
@@ -150,26 +177,56 @@ for (const [name, workflow] of [
   }
 }
 
-const registered = series[SERIES_KEY];
-if (!registered) fail('data/series.json missing teen-double-life');
 const expectedSlugs = ITEMS.map(([, , slug]) => slug);
-const siteOrderBody = siteData.match(/['"]teen-double-life['"]\s*:\s*\[([\s\S]*?)\]/u)?.[1] || '';
-const siteOrder = [...siteOrderBody.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]);
-if (siteOrder.length !== expectedSlugs.length || siteOrder.some((slug, index) => slug !== expectedSlugs[index])) {
-  fail(`src/data/site.ts teen SERIES_ORDER drift: ${siteOrder.join(' -> ') || 'missing'}`);
-}
-else {
-  if (registered.baseUrl !== '/articles/') fail(`series baseUrl=${registered.baseUrl}`);
-  if (registered.searchPolicy?.landingRoute !== LANDING) fail('series landingRoute policy drift');
-  if ((registered.parts || []).length !== ITEMS.length) fail(`series parts=${registered.parts?.length || 0}, expected 7`);
-  ITEMS.forEach(([mark, , slug, minutes], index) => {
-    const part = registered.parts?.[index];
-    if (!part || String(part.n) !== mark || part.slug !== slug || part.readingTime !== minutes || part.status !== 'published') {
-      fail(`series part ${index + 1} parity mismatch`);
-    }
+for (const group of GROUPS) {
+  const registered = series[group.key];
+  if (!registered) { fail('data/series.json missing ' + group.key); continue; }
+  const cfgIndex = config.indexOf('export const ' + group.configName);
+  const configItemStart = config.indexOf('  items: [', cfgIndex);
+  const configItemEnd = config.indexOf('\n  pages: {', configItemStart);
+  if (cfgIndex < 0 || configItemStart < 0 || configItemEnd < 0)
+    fail(group.key + ': config item/page boundaries missing');
+  const itemSource = configItemStart < 0 || configItemEnd < 0 ? '' : config.slice(configItemStart, configItemEnd);
+  const foundOrder = [...itemSource.matchAll(/\bhref:\s*'\/articles\/([^/]+)\/'/g)].map((x) => x[1]);
+  const expected = group.rows.map(([, , slug]) => slug);
+  if (foundOrder.length !== expected.length || foundOrder.some((slug, i) => slug !== expected[i]))
+    fail(group.key + ': reader item order mismatch: ' + foundOrder.join(' -> '));
+  for (const [mark, pageId, slug, minutes, done] of group.rows) {
+    const start = itemSource.indexOf("id: '" + pageId + "'");
+    const stop = itemSource.indexOf('\n    },', start);
+    const item = start < 0 || stop < 0 ? '' : itemSource.slice(start, stop);
+    const expectedMark = "mark: { kind: '" + group.kind + "', value: '" + mark + "' }";
+    if (!item.includes(expectedMark)) fail(slug + ': reader mark must reflect separate series');
+    if (!item.includes("readingTime: '" + minutes + " мин'")) fail(slug + ': reading minutes drift');
+    const pageStart = config.indexOf("'" + pageId + "': {", configItemEnd);
+    const pageEnd = config.indexOf('\n    },', pageStart);
+    const page = pageStart < 0 || pageEnd < 0 ? '' : config.slice(pageStart, pageEnd);
+    if (!page.includes('readingProgressDoneMin: ' + done)) fail(slug + ': progress offset drift');
+    if (!page.includes('readingProgressPartMin: ' + minutes)) fail(slug + ': reading minutes drift');
+    const total = group.kind === 'roman' ? 'TEEN_TOTAL_MIN' : String(minutes);
+    if (!page.includes('readingProgressTotalMin: ' + total))
+      fail(slug + ': independent progress total missing');
+  }
+  const siteKey = "'" + group.key + "': [";
+  const ix = siteData.indexOf(siteKey);
+  const siteBody = ix >= 0 ? siteData.slice(ix + siteKey.length, siteData.indexOf(']', ix)) : '';
+  const order = [...siteBody.matchAll(/['"]([^'"]+)['"]/g)].map((x) => x[1]);
+  if (order.length !== expected.length || order.some((slug, i) => slug !== expected[i]))
+    fail(group.key + ': src/data/site.ts SERIES_ORDER mismatch');
+  if (registered.baseUrl !== '/articles/') fail(group.key + ': wrong registry baseUrl');
+  if (registered.searchPolicy?.landingRoute !== LANDING) fail(group.key + ': wrong landing');
+  if ((registered.parts || []).length !== group.rows.length)
+    fail(group.key + ': series part count mismatch');
+  group.rows.forEach(([mark, , slug, minutes], i) => {
+    const entry = registered.parts?.[i];
+    const n = group.kind === 'roman' ? mark : String(i + 1);
+    if (!entry || String(entry.n) !== n || entry.slug !== slug ||
+        entry.readingTime !== minutes || entry.status !== 'published')
+      fail(group.key + ': registry/reader mismatch for ' + slug);
   });
 }
-
+if (new Set(expectedSlugs).size !== 7)
+  fail('seven canonical source article routes must remain unique');
 const requiredOwnership = [
   [LANDING, 'src/pages/podrostok-za-kadrom/index.astro'],
   ...ITEMS.map(([, , slug]) => [`/articles/${slug}/`, `src/pages/articles/${slug}/index.astro`]),
@@ -195,13 +252,15 @@ for (const [route, source] of requiredOwnership) {
 
 for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   const sourceRel = `src/content/articles/${slug}.mdx`;
+  const group = GROUPS.find((g) => g.rows.some((row) => row[1] === pageId));
+  if (!group) { fail(slug + ': unexpected source series ownership'); continue; }
   const mdx = read(sourceRel);
   const requiredSourceFields = [
     'contentStatus: "published"',
     'draft: false',
     'noindex: false',
     'sourcesRequired: true',
-    'series: "teen-double-life"',
+    'series: "' + group.key + '"',
     `canonicalOverride: "${SITE}/articles/${slug}/"`,
     `ogImage: "/images/teen-series/${heroFile}"`,
   ];
@@ -220,6 +279,27 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   }
   if (/<!--|-->/.test(mdx)) fail(`${slug}: raw HTML comment marker remains in published MDX`);
 
+  const tocAnchors = teenTocAnchorsFor(pageId);
+  if (!tocAnchors?.length) {
+    fail(`${slug}: Reader partToc missing or unparsable`);
+  } else {
+    const ids = [...mdx.matchAll(/<[a-z][^>]*\bid=["']([^"']+)["']/gi)].map((x) => x[1]);
+    const available = new Set(ids);
+    for (const id of tocAnchors) {
+      if (!available.has(id)) fail(`${slug}: Reader TOC #${id} has no MDX target`);
+    }
+    if (new Set(tocAnchors).size !== tocAnchors.length) fail(`${slug}: Reader TOC duplicates target IDs`);
+    if (available.size !== ids.length) fail(`${slug}: duplicate id attributes in published MDX`);
+    const legacy = publishedAnchorBaseline.articles?.[slug];
+    if (publishedAnchorBaseline.seriesId !== SERIES_KEY || publishedAnchorBaseline.version !== 1 || !Array.isArray(legacy) || !legacy.length) {
+      fail(`${slug}: missing stable published deep-link baseline`);
+    } else {
+      for (const id of legacy) {
+        if (!available.has(id)) fail(`${slug}: published deep-link #${id} removed; restore an id alias`);
+      }
+    }
+  }
+
   const routeRel = `src/pages/articles/${slug}/index.astro`;
   const source = read(routeRel);
   if (!source.includes(`pageId="${pageId}"`)) fail(`${slug}: pageId mismatch`);
@@ -227,9 +307,13 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   if (/publishedFrontmatter|\b(?:draft|noindex|publishedAt|updatedAt|canonicalOverride)\s*:/.test(source)) {
     fail(`${slug}: route must not shadow canonical publication frontmatter`);
   }
-  if (!config.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: cumulative progress ${done} missing`);
-  if (!config.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: reading time ${minutes} missing`);
-  if (['A','B','C','D'].includes(mark) && !config.includes(`mark: { kind: 'label', value: '${mark}' }`)) fail(`${slug}: ${mark} must remain core label`);
+  if (!config.includes('readingProgressDoneMin: ' + done))
+    fail(slug + ': series progress offset drift');
+  if (!config.includes('readingProgressPartMin: ' + minutes))
+    fail(slug + ': reading-time witness drift');
+  if (!config.includes("mark: { kind: '" + group.kind + "', value: '" + mark + "' }"))
+    fail(slug + ': typed mark drift');
+
 }
 
 if (exists('data/route-search-policy.json')) {
@@ -245,11 +329,65 @@ if (exists('data/route-search-policy.json')) {
   }
 }
 
+let checkedInternalLinks = 0;
+let checkedInternalAnchors = 0;
 if (fs.existsSync(DIST)) {
+  // Validate actual rendered links, not merely declared Reader TOC / historic anchors.
+  // Missing target files and fragment IDs must fail the atomic 3+4 release contract.
+  const linkedHtml = new Map();
+  const linkedIds = new Map();
+  const scanRenderedLinks = (route, html) => {
+    for (const hit of html.matchAll(/<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
+      const href = (hit[1] ?? hit[2]).replace(/&amp;/g, '&');
+      let target;
+      try {
+        target = new URL(href, SITE + route);
+      } catch {
+        fail(route + ': malformed rendered link ' + href);
+        continue;
+      }
+      if (target.origin !== SITE) continue;
+      checkedInternalLinks += 1;
+      let relative;
+      try {
+        relative = decodeURIComponent(target.pathname).replace(/^\/+/, '');
+      } catch {
+        fail(route + ': invalid percent encoding in local link ' + href);
+        continue;
+      }
+      const candidate = path.join(DIST, relative.endsWith('/') || !path.extname(relative)
+        ? relative + 'index.html' : relative);
+      if (!fs.existsSync(candidate)) {
+        fail(route + ': rendered internal link is missing from dist: ' + href);
+        continue;
+      }
+      if (!target.hash) continue;
+      checkedInternalAnchors += 1;
+      let id;
+      try {
+        id = decodeURIComponent(target.hash.slice(1));
+      } catch {
+        fail(route + ': invalid anchor encoding ' + href);
+        continue;
+      }
+      if (!linkedHtml.has(candidate)) {
+        linkedHtml.set(candidate, candidate === routeFile(route) ? html : fs.readFileSync(candidate, 'utf8'));
+      }
+      if (!linkedIds.has(candidate)) {
+        linkedIds.set(candidate, new Set([...linkedHtml.get(candidate).matchAll(
+          /<[a-z][^>]*\s+id=["']([^"']+)["'][^>]*>/gi
+        )].map((match) => match[1])));
+      }
+      if (!linkedIds.get(candidate).has(id)) {
+        fail(route + ': rendered internal anchor is missing from dist: ' + href);
+      }
+    }
+  };
   for (const [route] of requiredOwnership) {
     const file = routeFile(route);
     if (!fs.existsSync(file)) { fail(`${route}: missing production-like dist HTML`); continue; }
     const html = fs.readFileSync(file, 'utf8');
+    scanRenderedLinks(route, html);
     const expectedCanonical = `${SITE}${route}`;
     if (canonical(html) !== expectedCanonical) fail(`${route}: canonical mismatch`);
     if (/\bnoindex\b/i.test(meta(html, 'robots'))) fail(`${route}: live candidate remains noindex`);
@@ -261,12 +399,59 @@ if (fs.existsSync(DIST)) {
     const expectedOg = route === LANDING ? SERIES_OG : `/images/teen-series/${row?.[5] || ''}`;
     if (!html.includes(expectedOg)) fail(`${route}: route-specific raster social metadata missing (${expectedOg})`);
     if (route !== LANDING && rowIndex >= 0) {
-      const stepText = `Шаг ${rowIndex + 1} из ${ITEMS.length}`;
-      if (!html.includes(stepText)) fail(`${route}: owner-approved core step position «${stepText}» missing from built HTML`);
-      if (/Часть \d+ из 3/.test(html)) fail(`${route}: legacy roman-only «Часть N из 3» progress still shipped`);
+      // A source-level id is not sufficient when the MDX renderer changes.
+      // Keep every previously published deep link in the actual dist DOM.
+      const renderBaselineIds = publishedAnchorBaseline.articles?.[row[2]] || [];
+      const rendered = [...html.matchAll(/<[a-z][^>]*\s+id=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1]);
+      const renderedSet = new Set(rendered);
+      for (const id of renderBaselineIds) {
+        if (!renderedSet.has(id)) fail(`${route}: published deep-link #${id} missing from built HTML`);
+        if (rendered.filter((value) => value === id).length !== 1) {
+          fail(`${route}: published deep-link #${id} is not unique in built HTML`);
+        }
+      }
+      const adult = rowIndex >= 3;
+      const groupName = adult ? ADULT_KEY : SERIES_KEY;
+      if (/Шаг\s+[0-9]+\s+из\s+7/u.test(html))
+        fail(route + ': forced seven-stage reader still published');
+      if (!html.includes('data-gbs2-series="' + groupName + '"'))
+        fail(route + ': rendered article series identity drifted');
+      const total = adult ? row[3] : 114;
+      if (!html.includes('data-gbs2-done-min="' + row[4] + '"') ||
+          !html.includes('data-gbs2-total-min="' + total + '"'))
+        fail(route + ': independent-cycle progress mismatch');
     }
     if (route === LANDING) {
-      if (!html.includes(SERIES_RAIL)) fail(`${route}: responsive series-cover derivative missing`);
+      // The shared collection exposes both groups, not a mandatory reading chain.
+      const collections = [];
+      for (const match of html.matchAll(/<script\b[^>]*\btype=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+        try {
+          const data = JSON.parse(match[1]);
+          const nodes = Array.isArray(data) ? data : (data['@graph'] || [data]);
+          collections.push(...nodes.filter((node) => node['@type'] === 'CollectionPage' && node['@id'] === expectedCanonical));
+        } catch (error) {
+          fail(route + ': invalid JSON-LD: ' + error.message);
+        }
+      }
+      if (collections.length !== 1) {
+        fail(route + ': expected one canonical CollectionPage');
+      } else {
+        const expectedParts = ITEMS.map(([, , slug]) => SITE + '/articles/' + slug + '/');
+        const parts = collections[0].hasPart;
+        if (!Array.isArray(parts) || parts.length !== expectedParts.length ||
+            new Set(parts.map((part) => part?.url)).size !== expectedParts.length ||
+            parts.some((part, index) => part?.['@type'] !== 'Article' || part?.url !== expectedParts[index] || !part?.name)) {
+          fail(route + ': CollectionPage must describe all seven visible articles exactly once (3+4)');
+        }
+        const manifestEntry = readJson('data/search-manifest.json').items.find((item) => item.url === LANDING);
+        if (!manifestEntry || collections[0].name !== manifestEntry.title)
+          fail(route + ': CollectionPage name must match the shared landing search title');
+      }
+      if (!html.includes(SERIES_RAIL)) fail(route + ': responsive hero derivative missing');
+      if (!html.includes('id="adult-studies"') || !html.includes('adult-studies-title'))
+        fail(route + ': independent adult study group missing');
+      if (/Шаг\s+[0-9]+\s+из\s+7/u.test(html))
+        fail(route + ': forced seven-step landing remains');
       for (const [, , , , , heroFile] of ITEMS) {
         const cardImage = `/images/teen-series/${railFor(heroFile)}`;
         if (!html.includes(cardImage)) fail(`${route}: card derivative missing (${cardImage})`);
@@ -276,7 +461,9 @@ if (fs.existsSync(DIST)) {
       if (!html.includes(expectedRail)) fail(`${route}: responsive card/rail derivative missing (${expectedRail})`);
     }
     if (route !== LANDING) {
-      if (!html.includes('data-gbs2-series="teen-double-life"')) fail(`${route}: reader series identity missing`);
+      const groupName = rowIndex >= 3 ? ADULT_KEY : SERIES_KEY;
+      if (!html.includes('data-gbs2-series="' + groupName + '"'))
+        fail(route + ': rendered series identity missing');
       if (!/<section\b[^>]*class="sources-block"[^>]*data-reader-exclude[^>]*data-pagefind-ignore/iu.test(html)) {
         fail(`${route}: bibliography boundary is not static in built HTML before Pagefind`);
       }
@@ -293,10 +480,11 @@ if (errors.length) {
   process.exit(1);
 }
 console.log('✅ Teen series release contract PASS');
-console.log(`  routes: ${requiredOwnership.length} (landing + 7 articles)`);
-console.log('  order: I -> II -> III -> A -> B -> C -> D');
+console.log('  routes: ' + requiredOwnership.length + ' (shared landing, 3 teen + 4 adult articles)');
+console.log('  groups: teen trilogy 114m and four independent adult topics');
 console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
 console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical frontmatter');
 console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail family');
 console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
+if (fs.existsSync(DIST)) console.log('  rendered links: ' + checkedInternalLinks + ' internal, ' + checkedInternalAnchors + ' fragment anchors, 0 missing targets');
 console.log('  production ownership: astro/production-dist');

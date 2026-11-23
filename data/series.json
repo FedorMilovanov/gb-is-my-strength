@@ -345,7 +345,7 @@
     "searchPolicy": {
       "landingRoute": "/podrostok-za-kadrom/",
       "librarySection": "Семья",
-      "topicCategory": "Подростки и взрослые дети",
+      "topicCategory": "Подростки",
       "includeLandingInManifest": true,
       "landingPublishedTime": "2026-09-10T00:00:00+03:00",
       "landingModifiedTime": "2026-09-10T00:00:00+03:00"
@@ -371,30 +371,42 @@
         "title": "Что должна делать церковь",
         "status": "published",
         "readingTime": 39
-      },
+      }
+    ]
+  },
+  "adult-children-family": {
+    "title": "Взрослые дети: почитание, границы и ответственность",
+    "baseUrl": "/articles/",
+    "searchPolicy": {
+      "landingRoute": "/podrostok-za-kadrom/",
+      "librarySection": "Семья",
+      "topicCategory": "Взрослые дети и родители",
+      "includeLandingInManifest": false
+    },
+    "parts": [
       {
-        "n": "A",
-        "slug": "vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
-        "title": "Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение",
-        "status": "published",
-        "readingTime": 37
-      },
-      {
-        "n": "B",
-        "slug": "vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
-        "title": "Взрослый ребёнок дома: правила, деньги, помощь и последствия",
-        "status": "published",
-        "readingTime": 36
-      },
-      {
-        "n": "C",
+        "n": 1,
         "slug": "sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
         "title": "Совершеннолетие и родительская власть: что меняется, что остаётся",
         "status": "published",
         "readingTime": 35
       },
       {
-        "n": "D",
+        "n": 2,
+        "slug": "vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
+        "title": "Взрослый ребёнок дома: правила, деньги, помощь и последствия",
+        "status": "published",
+        "readingTime": 36
+      },
+      {
+        "n": 3,
+        "slug": "vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
+        "title": "Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение",
+        "status": "published",
+        "readingTime": 37
+      },
+      {
+        "n": 4,
         "slug": "vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
         "title": "Взрослая дочь, отец и брак: согласие и границы власти",
         "status": "published",

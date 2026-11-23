@@ -15,9 +15,9 @@ const ARTICLE_ROUTES = [
   { route: '/articles/podrostok-za-kadrom-dvoynaya-zhizn/', id: 'teen-double-life', refs: 3, hero: '01-double-life.webp' },
   { route: '/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', id: 'teen-parents-after-disclosure', refs: 3, hero: '02-after-disclosure.webp' },
   { route: '/articles/podrostok-za-kadrom-chto-delat-tserkvi/', id: 'teen-church-response', refs: 3, hero: '03-church-response.webp' },
-  { route: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', id: 'adult-child-left-home', refs: 2, hero: '04-left-home.webp' },
-  { route: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', id: 'adult-child-home-money', refs: 3, hero: '05-home-money.webp' },
   { route: '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/', id: 'adult-child-authority', refs: 2, hero: '06-adult-authority.webp' },
+  { route: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', id: 'adult-child-home-money', refs: 3, hero: '05-home-money.webp' },
+  { route: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', id: 'adult-child-left-home', refs: 2, hero: '04-left-home.webp' },
   { route: '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/', id: 'adult-daughter-marriage', refs: 3, hero: '07-daughter-marriage.webp' },
 ];
 
@@ -294,7 +294,7 @@ async function inspectArticle(page, spec, vp) {
   check(metrics.sourceHeading, route, viewport, 'reader-facing sources heading missing');
   check(metrics.correction && metrics.correctionExcluded, route, viewport,
     'correction boundary missing or not excluded from reader/Pagefind projection');
-  check(metrics.seriesIdentity === 'teen-double-life', route, viewport,
+  check(metrics.seriesIdentity === (spec.id.startsWith('adult-') ? 'adult-children-family' : 'teen-double-life'), route, viewport,
     `series identity drifted: ${metrics.seriesIdentity}`);
 
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
@@ -356,13 +356,68 @@ async function inspectArticle(page, spec, vp) {
   report.scenes.push({ route, viewport, metrics, pageErrors: errors });
 }
 
+function landingLabelGeometry() {
+  const bounds = (element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const box = element.getBoundingClientRect();
+    const card = element.closest('.teen-series-card').getBoundingClientRect();
+    return {
+      label: element.textContent.trim(),
+      fits: [...range.getClientRects()].every((rect) =>
+        rect.left >= Math.max(box.left, card.left) - 1 &&
+        rect.right <= Math.min(box.right, card.right) + 1 &&
+        rect.top >= Math.max(box.top, card.top) - 1 &&
+        rect.bottom <= Math.min(box.bottom, card.bottom) + 1),
+    };
+  };
+  return {
+    roman: [...document.querySelectorAll('#series-order ~ .teen-series-grid .teen-series-card__mark')].map(bounds),
+    topics: [...document.querySelectorAll('#adult-studies .teen-series-card__topic')].map(bounds),
+    adultCircles: document.querySelectorAll('#adult-studies .teen-series-card__mark').length,
+  };
+}
+function checkLandingLabels(metrics, route, viewport) {
+  check(metrics.roman.map((item) => item.label).join(',') === 'I,II,III' && metrics.roman.every((item) => item.fits),
+    route, viewport, 'teen roman marks must fit their circles: ' + JSON.stringify(metrics.roman));
+  check(metrics.topics.map((item) => item.label).join(',') === 'ОСНОВА,ДОМ,УХОД,БРАК' &&
+    metrics.topics.every((item) => item.fits) && metrics.adultCircles === 0,
+    route, viewport, 'adult topic labels must fit without roman circles: ' + JSON.stringify(metrics));
+}
+
 async function inspectLanding(page, vp) {
   const route = '/podrostok-za-kadrom/';
   const viewport = vp.name;
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
+  const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 45_000 });
   check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+  // Do not hide a cold-load overflow by awaiting fonts or network idle.
+  const skipGeometry = () => page.locator('.skip-link').evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+      viewport: innerWidth, docWidth: document.documentElement.scrollWidth,
+      focused: document.activeElement === element, outline: getComputedStyle(element).outlineStyle };
+  });
+  const coldSkip = await skipGeometry();
+  check(coldSkip.left >= -1 && coldSkip.right <= coldSkip.viewport + 1 &&
+    coldSkip.docWidth <= coldSkip.viewport + 2, route, viewport,
+    'cold skip-link must remain horizontally contained: ' + JSON.stringify(coldSkip));
+  await page.keyboard.press('Tab');
+  const focusedSkip = await skipGeometry();
+  check(focusedSkip.focused && focusedSkip.top >= 0 && focusedSkip.bottom > focusedSkip.top &&
+    focusedSkip.left >= -1 && focusedSkip.right <= focusedSkip.viewport + 1 && focusedSkip.outline !== 'none',
+    route, viewport, 'keyboard skip-link must be visible and contained: ' + JSON.stringify(focusedSkip));
+  await page.keyboard.press('Enter');
+  check(await page.evaluate(() => location.hash === '#main-content'), route, viewport,
+    'keyboard skip-link must reach main content');
+  await page.waitForLoadState('networkidle', { timeout: 45_000 });
+  // Scroll every native lazy card image into view before asserting decode/readiness.
+  for (const img of await page.locator('.teen-series-card__image').all()) {
+    await img.scrollIntoViewIfNeeded();
+    await img.evaluate((element) => element.decode().catch(() => {}));
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
   const metrics = await page.evaluate(() => {
     const cards = [...document.querySelectorAll('.teen-series-card')];
     const hero = document.querySelector('.teen-series-hero img');
@@ -373,6 +428,9 @@ async function inspectLanding(page, vp) {
       innerWidth: window.innerWidth,
       docWidth: document.documentElement.scrollWidth,
       cardCount: cards.length,
+      teenCardCount: document.querySelectorAll('section[aria-labelledby="series-order"] .teen-series-card').length,
+      adultCardCount: document.querySelectorAll('#adult-studies .teen-series-card').length,
+      forbiddenForcedSeven: /Шаг [0-9]+ из 7/.test(document.body.innerText),
       uniqueLinks: new Set(links).size,
       heroWidthAttr: hero?.getAttribute('width'),
       heroHeightAttr: hero?.getAttribute('height'),
@@ -395,6 +453,8 @@ async function inspectLanding(page, vp) {
   check(errors.length === 0, route, viewport, `pageerror: ${errors.join('; ')}`);
   check(metrics.docWidth <= metrics.innerWidth + 2, route, viewport,
     `landing horizontal overflow: ${metrics.docWidth} > ${metrics.innerWidth}`);
+  check(metrics.teenCardCount === 3 && metrics.adultCardCount === 4 && !metrics.forbiddenForcedSeven, route, viewport,
+    'landing must show a 3-part teen trilogy and 4 separately labeled adult studies without a forced seven-step rail');
   check(metrics.cardCount === 7 && metrics.uniqueLinks === 7, route, viewport,
     `landing card projection drifted: cards=${metrics.cardCount}, unique=${metrics.uniqueLinks}`);
   check(metrics.heroWidthAttr === '1200' && metrics.heroHeightAttr === '630', route, viewport,
@@ -424,6 +484,16 @@ async function inspectLanding(page, vp) {
   check(metrics.cardImages.every((img) => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0 && img.currentSrc),
     route, viewport, 'landing card image failed to load');
   check(metrics.h1Count === 1, route, viewport, `landing H1 count=${metrics.h1Count}`);
+  await page.evaluate(() => document.fonts.ready);
+  metrics.cardLabels = await page.evaluate(landingLabelGeometry);
+  checkLandingLabels(metrics.cardLabels, route, viewport);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.locator('.teen-series-card').first().hover();
+  const reducedTransform = await page.locator('.teen-series-card').first().evaluate((element) => getComputedStyle(element).transform);
+  check(reducedTransform === 'none', route, viewport, 'reduced-motion card hover must not translate: ' + reducedTransform);
+  await page.mouse.move(0, 0);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.evaluate(() => window.scrollTo(0, 0));
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
     await captureViewportEvidence(page, {
       route,
@@ -450,6 +520,12 @@ async function inspectLandingDpr2(browser, base) {
   try {
     const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
     check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+    // Verify DPR2 responsive candidates after native lazy cards have entered view.
+    for (const img of await page.locator('.teen-series-card__image').all()) {
+      await img.scrollIntoViewIfNeeded();
+      await img.evaluate((element) => element.decode().catch(() => {}));
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
     const metrics = await page.evaluate(() => {
       const hero = document.querySelector('.teen-series-hero img');
       const cards = [...document.querySelectorAll('.teen-series-card__image')];
@@ -503,6 +579,11 @@ async function captureDark(browser, base, spec, vp) {
     }));
     check(metrics.scrollWidth <= metrics.width + 2, spec.route, `${vp.name}-dark`, 'dark-mode horizontal overflow');
     check(metrics.dark, spec.route, `${vp.name}-dark`, 'dark theme did not apply');
+    if (spec.route === '/podrostok-za-kadrom/') {
+      await page.evaluate(() => document.fonts.ready);
+      metrics.cardLabels = await page.evaluate(landingLabelGeometry);
+      checkLandingLabels(metrics.cardLabels, spec.route, `${vp.name}-dark`);
+    }
     await captureViewportEvidence(page, {
       route: spec.route,
       viewport: `${vp.name}-dark`,
@@ -548,7 +629,7 @@ try {
 
   await inspectLandingDpr2(browser, base);
 
-  for (const spec of [ARTICLE_ROUTES[0], ARTICLE_ROUTES.at(-1)]) {
+  for (const spec of [ARTICLE_ROUTES[0], ARTICLE_ROUTES.at(-1), { route: '/podrostok-za-kadrom/' }]) {
     for (const vp of VIEWPORTS.filter((item) => item.width === 390 || item.width === 1440)) {
       await captureDark(browser, base, spec, vp);
     }
@@ -573,7 +654,7 @@ assert.equal(report.scenes.length, ARTICLE_ROUTES.length * VIEWPORTS.length + VI
   'quality audit scene count drifted');
 assert.equal(report.responsiveScenes.length, 1,
   'quality audit responsive DPR witness count drifted');
-assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 4,
+assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 6,
   'quality audit screenshot evidence count drifted');
 assert.equal(report.screenshots.filter((entry) => entry.bytes <= 1024).length, 0,
   'quality audit contains empty or invalid screenshot evidence');

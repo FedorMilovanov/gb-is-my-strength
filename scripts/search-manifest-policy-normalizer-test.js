@@ -279,6 +279,40 @@ assert.deepEqual(
 assert.equal(seriesReadingTimes(seriesData).get('/hard-texts/fixture-part/'), 31);
 assert.equal(seriesReadingTimes(seriesData).has('/hard-texts/planned-part/'), false);
 
+const sharedLandingSeries = {
+  teens: {
+    baseUrl: '/articles/',
+    searchPolicy: {
+      landingRoute: '/family/',
+      librarySection: 'Family',
+      topicCategory: 'Teens',
+      includeLandingInManifest: true,
+    },
+    parts: [{ slug: 'teen-part', status: 'published', readingTime: 12 }],
+  },
+  adults: {
+    baseUrl: '/articles/',
+    searchPolicy: {
+      landingRoute: '/family/',
+      librarySection: 'Family',
+      topicCategory: 'Adults',
+      includeLandingInManifest: false,
+    },
+    parts: [{ slug: 'adult-part', status: 'published', readingTime: 15 }],
+  },
+};
+assert.deepEqual(
+  seriesPolicySeeds(sharedLandingSeries).map((seed) => seed.route),
+  ['/articles/adult-part/', '/articles/teen-part/', '/family/']
+);
+assert.equal(
+  seriesPolicySeeds(sharedLandingSeries).find((seed) => seed.route === '/family/').policy.topicCategory,
+  'Teens'
+);
+const conflictingLandingSeries = structuredClone(sharedLandingSeries);
+conflictingLandingSeries.adults.searchPolicy.includeLandingInManifest = true;
+assert.throws(() => seriesPolicySeeds(conflictingLandingSeries), /duplicate series search policy seed/);
+
 const seriesRegistry = { version: 1, routes: {} };
 const seriesManifest = { version: 1, items: [] };
 const seriesRecords = [

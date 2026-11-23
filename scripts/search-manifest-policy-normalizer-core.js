@@ -263,7 +263,9 @@ function seriesPolicySeeds(seriesData) {
       byRoute.set(normalized, { route: normalized, policy });
     };
 
-    if (declaration.landingRoute) {
+    // A companion series can share a landing without claiming its discovery policy.
+    // Only the canonical landing owner seeds that route; both series seed their parts.
+    if (declaration.landingRoute && declaration.includeLandingInManifest !== false) {
       addSeed(declaration.landingRoute, {
         indexPolicy: 'index',
         pagefindPolicy: 'include',

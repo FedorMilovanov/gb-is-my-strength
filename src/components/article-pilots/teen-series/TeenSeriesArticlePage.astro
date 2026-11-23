@@ -2,7 +2,7 @@
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
-import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
+import { TEEN_DOUBLE_LIFE_SERIES, ADULT_CHILDREN_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
 import { teenSeriesMediaFor } from '@/components/article-pilots/_shared/series/teenSeriesMedia';
 import { seriesItem, coreStepMeta } from '@/components/article-pilots/_shared/series/seriesConfig';
 import TeenSeriesCorrectionBoundary from '@/components/article-pilots/teen-series/TeenSeriesCorrectionBoundary.astro';
@@ -50,8 +50,14 @@ function assertFrontmatter(value: unknown): asserts value is Frontmatter {
 }
 
 assertFrontmatter(frontmatter);
-const item = seriesItem(TEEN_DOUBLE_LIFE_SERIES, pageId);
-const page = TEEN_DOUBLE_LIFE_SERIES.pages[pageId];
+const series = TEEN_DOUBLE_LIFE_SERIES.pages[pageId]
+  ? TEEN_DOUBLE_LIFE_SERIES
+  : ADULT_CHILDREN_SERIES.pages[pageId]
+    ? ADULT_CHILDREN_SERIES
+    : null;
+if (!series) throw new Error(`Unknown family article page: ${pageId}`);
+const item = seriesItem(series, pageId);
+const page = series.pages[pageId];
 if (!page) throw new Error(`Unknown teen-series page: ${pageId}`);
 
 const canonical = frontmatter.canonicalOverride || `${SITE.url}/articles/${frontmatter.slug}/`;
@@ -66,10 +72,10 @@ const personId = `${SITE.url}/about/#person`;
 const breadcrumbsId = `${canonical}#breadcrumbs`;
 const articleId = `${canonical}#article`;
 const markText = String(item.mark.value);
-const partLabel = item.mark.kind === 'roman' ? `Часть ${markText}` : `Раздел ${markText}`;
-// Та же семишаговая позиция, что и на лендинге/в desktop-рельсе. Шапка
-// статьи видна и на desktop, и на mobile, поэтому закрывает обе поверхности.
-const coreStep = coreStepMeta(TEEN_DOUBLE_LIFE_SERIES, pageId);
+const partLabel = item.mark.kind === 'roman' ? `Часть ${markText}` : 'Самостоятельное исследование';
+// Независимые серии не навязывают общего «Шаг N из 7». Только явный coreSequence
+// может вывести дополнительную метку в шапке выбранного цикла.
+const coreStep = coreStepMeta(series, pageId);
 const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
 }).format(new Date(value));
@@ -118,7 +124,7 @@ const jsonLd = {
       publisher: { '@id': SITE.orgId },
       isPartOf: {
         '@type': 'CreativeWorkSeries',
-        name: TEEN_DOUBLE_LIFE_SERIES.seriesTitleFull,
+        name: series.seriesTitleFull,
         url: `${SITE.url}/podrostok-za-kadrom/`,
       },
       mainEntityOfPage: { '@id': canonical },
@@ -128,7 +134,7 @@ const jsonLd = {
       '@id': breadcrumbsId,
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
-        { '@type': 'ListItem', position: 2, name: 'Подросток за кадром', item: `${SITE.url}/podrostok-za-kadrom/` },
+        { '@type': 'ListItem', position: 2, name: series.seriesTitle, item: `${SITE.url}/podrostok-za-kadrom/` },
         { '@type': 'ListItem', position: 3, name: item.shortTitle, item: canonical },
       ],
     },
@@ -175,12 +181,12 @@ const siteConfig = {
   </head>
   <body
     class="gbs-world"
-    data-gbs2-series="teen-double-life"
+    data-gbs2-series={series.seriesId}
     data-gbs2-done-min={page.readingProgressDoneMin}
     data-gbs2-part-min={frontmatter.readingTime}
     data-gbs2-total-min={page.readingProgressTotalMin}
   >
-    <SeriesReaderChrome pageId={pageId} config={TEEN_DOUBLE_LIFE_SERIES}>
+    <SeriesReaderChrome pageId={pageId} config={series}>
       <main class="article-main" id="main-content">
         <article data-pagefind-body={indexable ? '' : undefined} data-teen-series-article={pageId}>
           {indexable && (
@@ -188,17 +194,17 @@ const siteConfig = {
               <span data-pagefind-meta="image" hidden>{ogImagePath}</span>
               <span data-pagefind-meta="author" hidden>Фёдор Милованов</span>
               <span data-pagefind-meta="readTime" hidden>{frontmatter.readingTime}</span>
-              <span data-pagefind-meta="category" hidden>Подростки и взрослые дети</span>
+              <span data-pagefind-meta="category" hidden>{series.seriesId === 'teen-double-life' ? 'Подростки' : 'Взрослые дети и родители'}</span>
             </>
           )}
           <header class="article-header gbs2-head">
             <span aria-hidden="true" class="gbs2-kinetic">{markText}</span>
-            <p class="section-label">Подросток за кадром · {partLabel}{coreStep ? ` · ${coreStep.text}` : ''}</p>
+            <p class="section-label">{series.seriesTitle} · {partLabel}{coreStep ? ` · ${coreStep.text}` : ''}</p>
             <h1>{frontmatter.h1}</h1>
             <p class="article-byline">
               <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
               <span aria-hidden="true" class="article-byline__sep">·</span>
-              <time datetime={frontmatter.publishedAt}>{dateRu(frontmatter.publishedAt)}</time>
+              <time datetime={frontmatter.publishedAt} data-editorial-slot="published">{dateRu(frontmatter.publishedAt)}</time>
               <span aria-hidden="true" class="article-byline__sep">·</span>
               <span>⏱ {frontmatter.readingTime} мин</span>
             </p>
@@ -257,7 +263,7 @@ const siteConfig = {
    * at the exact 1024px desktop breakpoint.
    */
   @media (min-width: 85rem) {
-    body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap {
+    body:is([data-gbs2-series="teen-double-life"], [data-gbs2-series="adult-children-family"]) [data-gill-v16] .page-wrap {
       box-sizing: border-box;
       /* The Teen surface uses the exact same reader-measure token as Gill.
          The rail reserve is a safety bound only; it must never replace the
@@ -266,7 +272,7 @@ const siteConfig = {
       max-width: min(calc(var(--gb-reader-measure, 46rem) + 48px), 900px, calc(100% - var(--gb-rail-reserve)));
     }
 
-    body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap > main.article-main {
+    body:is([data-gbs2-series="teen-double-life"], [data-gbs2-series="adult-children-family"]) [data-gill-v16] .page-wrap > main.article-main {
       box-sizing: border-box;
       width: 100%;
       max-width: 100%;

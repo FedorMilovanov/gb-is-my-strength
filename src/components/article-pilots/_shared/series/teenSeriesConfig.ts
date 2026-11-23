@@ -2,14 +2,13 @@
  * teenSeriesConfig.ts — reader config for the seven-part
  * «Подросток за кадром» / adult-child continuation series.
  *
- * IMPORTANT: A-D are first-class core reading steps. In the shared engine
- * mark.kind='letter' has satellite semantics and would remove them from the
- * normal rail/prev-next flow. Therefore A-D use core `label` marks.
+ * IMPORTANT: I–VII are seven first-class core reading steps, not satellites.
+ * Roman marks reflect the actual sequential book order.
  */
 import { SERIES_CONFIGS, type SeriesConfig, type SeriesPartTocItem, defineSeriesConfig } from './seriesConfig';
 import { teenSeriesMediaFor } from './teenSeriesMedia';
 
-const TOTAL_MIN = 264;
+const TEEN_TOTAL_MIN = 114;
 const toc = (...items: SeriesPartTocItem[]): SeriesPartTocItem[] => items;
 
 const teenDoubleLifeToc = toc(
@@ -17,6 +16,7 @@ const teenDoubleLifeToc = toc(
   { href: '#sladost', label: 'Почему грех хочется защищать', level: 2 },
   { href: '#infrastruktura', label: 'Инфраструктура тайной жизни', level: 2 },
   { href: '#safety', label: 'Граница: грех, вред и эксплуатация', level: 2 },
+  { href: '#gnev-i-beschinstvo', label: 'Раздражительность и бесчинство', level: 2 },
   { href: '#lozh', label: 'Тайна и управление правдой', level: 2 },
   { href: '#sovest', label: 'Как притупляется совесть', level: 2 },
   { href: '#diagnoz', label: 'Лицемер, павший или необращённый?', level: 2 },
@@ -25,15 +25,16 @@ const teenDoubleLifeToc = toc(
 );
 
 const teenParentsToc = toc(
-  { href: '#ne-spasiteli-ne-zriteli', label: 'Родители не спасители — и не зрители', level: 2, current: true },
-  { href: '#urovni-trebovaniy', label: 'Заповедь, мудрость и домашнее правило', level: 2 },
-  { href: '#den-obnaruzheniya', label: 'День обнаружения: сначала различить', level: 2 },
-  { href: '#poiman-ne-raven-pokayalsya', label: 'Пойман — не значит покаялся', level: 2 },
-  { href: '#kak-vyglyadit-pokayanie', label: 'Как начинает выглядеть покаяние', level: 2 },
-  { href: '#doverie-ne-pereklyuchatel', label: 'Доверие — не один переключатель', level: 2 },
-  { href: '#ispravit-vred', label: 'Покаяние смотрит на причинённый вред', level: 2 },
-  { href: '#roditeli-tozhe-na-svet', label: 'Родители тоже выходят на свет', level: 2 },
-  { href: '#bog-daet-serdce', label: 'Бог даёт новое сердце', level: 2 },
+  { href: '#den-obnaruzheniya', label: 'Первые часы: защита прежде дисциплины', level: 2, current: true },
+  { href: '#granitsy-tela-v-seme', label: 'Телесные границы внутри семьи', level: 2 },
+  { href: '#ne-spasiteli-ne-zriteli', label: 'Родители не спасители — и не зрители', level: 2 },
+  { href: '#pravda-po-chastyam', label: 'Правда, которую нельзя вытянуть силой', level: 2 },
+  { href: '#vlast-bez-tiranii', label: 'Власть, которая отвечает перед Богом', level: 2 },
+  { href: '#gnev-nepokornost-beschinstvo', label: 'Гнев, непокорность и бесчинство', level: 2 },
+  { href: '#rebenok-kotoryy-est', label: 'Границы и новая жизнь', level: 2 },
+  { href: '#poiman-ne-raven-pokayalsya', label: 'Печаль, покаяние и плоды перемен', level: 2 },
+  { href: '#doverie-ne-pereklyuchatel', label: 'Прощение и восстановление доверия', level: 2 },
+  { href: '#roditeli-tozhe-na-svet', label: 'Когда родители выходят на свет', level: 2 },
   { href: '#part3', label: 'Что дальше', level: 2 },
 );
 
@@ -67,6 +68,7 @@ const adultChildHomeToc = toc(
   { href: '#vzroslyy-v-dome-ne-gost-i-ne-rebenok', label: 'Взрослый дома: не гость и не ребёнок', level: 2, current: true },
   { href: '#chetyre-urovnya-trebovaniy', label: 'Четыре уровня требований', level: 2 },
   { href: '#otdelnoe-prozhivanie-ne-bibleyskaya-kara', label: 'Отдельное проживание — не кара', level: 2 },
+  { href: '#bezopasnost-bratev-i-sester-v-obschem-dome', label: 'Безопасность братьев и сестёр дома', level: 3 },
   { href: '#pomoshch-ne-ravna-nalichnym', label: 'Помощь не равна наличным', level: 2 },
   { href: '#dengi-ne-pokupayut-vlast', label: 'Деньги не покупают тотальную власть', level: 2 },
   { href: '#poruchitelstvo-ne-obyazannost-lyubvi', label: 'Поручительство — не обязанность любви', level: 2 },
@@ -86,6 +88,7 @@ const adultAuthorityToc = toc(
   { href: '#roditeli-ne-imeyut-prava-na-tiraniyu', label: 'Пятая заповедь не оправдывает тиранию', level: 2 },
   { href: '#kak-reshat-spor', label: 'Как разбирать конкретный спор', level: 2 },
   { href: '#syn-i-doch-obshaya-osnova', label: 'Сын и дочь: общая основа', level: 2 },
+  { href: '#granitsy-semejnoi-blizosti', label: 'Границы семейной близости', level: 2 },
   { href: '#cerkov-ne-zamena-seme', label: 'Церковь не заменяет семью', level: 2 },
   { href: '#novyy-dom-posle-braka', label: 'Брак создаёт новый дом', level: 2 },
   { href: '#gospel-center', label: 'Ни автономия, ни контроль не дают новое сердце', level: 2 },
@@ -109,13 +112,8 @@ const adultDaughterToc = toc(
 export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'teen-double-life',
   seriesTitle: 'Подросток за кадром',
-  seriesTitleFull: 'Подросток за кадром: двойная жизнь, семья и взросление',
+  seriesTitleFull: 'Подросток за кадром: двойная жизнь подростка',
   railBackHref: '/podrostok-za-kadrom/',
-  // GBS-TEEN-SERIES-CORE-STEP-PROGRESS: все семь материалов — равноправные
-  // first-class шаги. Лендинг уже обещает «Шаг N из 7»; рельс и мобильная
-  // шапка статьи обязаны показывать ту же позицию, а не «Часть 3 из 3» и
-  // голые буквы A–D. Марки I–III/A–D сохраняются без перенумерации.
-  coreSequence: { stepLabel: 'Шаг' },
   quiz: [],
   breadcrumbParent: { label: 'Подросток за кадром', href: '/podrostok-za-kadrom/' },
   items: [
@@ -143,38 +141,6 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       href: '/articles/podrostok-za-kadrom-chto-delat-tserkvi/',
       readingTime: '39 мин',
     },
-    {
-      id: 'adult-child-left-home',
-      mark: { kind: 'label', value: 'A' },
-      title: 'A. Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение',
-      shortTitle: 'Ушёл из дома',
-      href: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/',
-      readingTime: '37 мин',
-    },
-    {
-      id: 'adult-child-home-money',
-      mark: { kind: 'label', value: 'B' },
-      title: 'B. Взрослый ребёнок дома: правила, деньги, помощь и последствия',
-      shortTitle: 'Дом и деньги',
-      href: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/',
-      readingTime: '36 мин',
-    },
-    {
-      id: 'adult-child-authority',
-      mark: { kind: 'label', value: 'C' },
-      title: 'C. Совершеннолетие и родительская власть: что меняется, что остаётся',
-      shortTitle: 'Власть после 18',
-      href: '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/',
-      readingTime: '35 мин',
-    },
-    {
-      id: 'adult-daughter-marriage',
-      mark: { kind: 'label', value: 'D' },
-      title: 'D. Взрослая дочь, отец и брак: согласие и границы власти',
-      shortTitle: 'Дочь и брак',
-      href: '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/',
-      readingTime: '42 мин',
-    },
   ],
   pages: {
     'teen-double-life': {
@@ -185,7 +151,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       partLabel: 'Часть I · Содержание',
       readingProgressDoneMin: 0,
       readingProgressPartMin: 32,
-      readingProgressTotalMin: TOTAL_MIN,
+      readingProgressTotalMin: TEEN_TOTAL_MIN,
       railNowTitle: 'Как рождается двойная жизнь',
       railCover: teenSeriesMediaFor('teen-double-life').rail,
       partDialogLabel: 'Часть I · Двойная жизнь',
@@ -199,7 +165,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       partLabel: 'Часть II · Содержание',
       readingProgressDoneMin: 32,
       readingProgressPartMin: 43,
-      readingProgressTotalMin: TOTAL_MIN,
+      readingProgressTotalMin: TEEN_TOTAL_MIN,
       railNowTitle: 'Что делать родителям после разоблачения',
       railCover: teenSeriesMediaFor('teen-parents-after-disclosure').rail,
       partDialogLabel: 'Часть II · После разоблачения',
@@ -213,69 +179,115 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       partLabel: 'Часть III · Содержание',
       readingProgressDoneMin: 75,
       readingProgressPartMin: 39,
-      readingProgressTotalMin: TOTAL_MIN,
+      readingProgressTotalMin: TEEN_TOTAL_MIN,
       railNowTitle: 'Что должна делать церковь',
       railCover: teenSeriesMediaFor('teen-church-response').rail,
       partDialogLabel: 'Часть III · Церковь',
       partToc: teenChurchToc,
     },
-    'adult-child-left-home': {
+  },
+});
+
+export const ADULT_CHILDREN_SERIES: SeriesConfig = defineSeriesConfig({
+  seriesId: 'adult-children-family',
+  seriesTitle: 'Взрослые дети и родители',
+  seriesTitleFull: 'Взрослые дети: почитание, границы и ответственность',
+  railBackHref: '/podrostok-za-kadrom/#adult-studies',
+  quiz: [],
+  breadcrumbParent: { label: 'Взрослые дети и родители', href: '/podrostok-za-kadrom/#adult-studies' },
+  items: [
+    {
+      id: 'adult-child-authority',
+      mark: { kind: 'label', value: 'ОСНОВА' },
+      title: 'Совершеннолетие и родительская власть: что меняется, что остаётся',
+      shortTitle: 'Власть после 18',
+      href: '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/',
+      readingTime: '35 мин',
+    },
+    {
+      id: 'adult-child-home-money',
+      mark: { kind: 'label', value: 'ДОМ' },
+      title: 'Взрослый ребёнок дома: правила, деньги, помощь и последствия',
+      shortTitle: 'Дом и деньги',
+      href: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/',
+      readingTime: '36 мин',
+    },
+    {
       id: 'adult-child-left-home',
-      label: 'Ушёл из дома',
-      title: 'A. Взрослый ребёнок ушёл',
-      mobileSection: 'Ушёл из дома',
-      partLabel: 'A · Содержание',
-      readingProgressDoneMin: 114,
-      readingProgressPartMin: 37,
-      readingProgressTotalMin: TOTAL_MIN,
-      railNowTitle: 'Контакт, ожидание, покаяние и возвращение',
-      railCover: teenSeriesMediaFor('adult-child-left-home').rail,
-      partDialogLabel: 'A · Взрослый ребёнок ушёл',
-      partToc: adultChildLeftToc,
+      mark: { kind: 'label', value: 'УХОД' },
+      title: 'Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение',
+      shortTitle: 'Ушёл из дома',
+      href: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/',
+      readingTime: '37 мин',
+    },
+    {
+      id: 'adult-daughter-marriage',
+      mark: { kind: 'label', value: 'БРАК' },
+      title: 'Взрослая дочь, отец и брак: согласие и границы власти',
+      shortTitle: 'Дочь и брак',
+      href: '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/',
+      readingTime: '42 мин',
+    },
+  ],
+  pages: {
+    'adult-child-authority': {
+      id: 'adult-child-authority',
+      label: 'Власть после 18',
+      title: 'Совершеннолетие и родительская власть',
+      mobileSection: 'Власть после 18',
+      partLabel: 'Тема · Содержание',
+      readingProgressDoneMin: 0,
+      readingProgressPartMin: 35,
+      readingProgressTotalMin: 35,
+      railNowTitle: 'Что меняется, что остаётся',
+      railCover: teenSeriesMediaFor('adult-child-authority').rail,
+      partDialogLabel: 'Тема · Родительская власть',
+      partToc: adultAuthorityToc,
     },
     'adult-child-home-money': {
       id: 'adult-child-home-money',
       label: 'Дом и деньги',
-      title: 'B. Взрослый ребёнок дома',
+      title: 'Взрослый ребёнок дома',
       mobileSection: 'Дом и деньги',
-      partLabel: 'B · Содержание',
-      readingProgressDoneMin: 151,
+      partLabel: 'Тема · Содержание',
+      readingProgressDoneMin: 0,
       readingProgressPartMin: 36,
-      readingProgressTotalMin: TOTAL_MIN,
+      readingProgressTotalMin: 36,
       railNowTitle: 'Правила, деньги, помощь и последствия',
       railCover: teenSeriesMediaFor('adult-child-home-money').rail,
-      partDialogLabel: 'B · Дом и деньги',
+      partDialogLabel: 'Тема · Дом и деньги',
       partToc: adultChildHomeToc,
     },
-    'adult-child-authority': {
-      id: 'adult-child-authority',
-      label: 'Власть после 18',
-      title: 'C. Совершеннолетие и родительская власть',
-      mobileSection: 'Власть после 18',
-      partLabel: 'C · Содержание',
-      readingProgressDoneMin: 187,
-      readingProgressPartMin: 35,
-      readingProgressTotalMin: TOTAL_MIN,
-      railNowTitle: 'Что меняется, что остаётся',
-      railCover: teenSeriesMediaFor('adult-child-authority').rail,
-      partDialogLabel: 'C · Родительская власть',
-      partToc: adultAuthorityToc,
+    'adult-child-left-home': {
+      id: 'adult-child-left-home',
+      label: 'Ушёл из дома',
+      title: 'Взрослый ребёнок ушёл',
+      mobileSection: 'Ушёл из дома',
+      partLabel: 'Тема · Содержание',
+      readingProgressDoneMin: 0,
+      readingProgressPartMin: 37,
+      readingProgressTotalMin: 37,
+      railNowTitle: 'Контакт, ожидание, покаяние и возвращение',
+      railCover: teenSeriesMediaFor('adult-child-left-home').rail,
+      partDialogLabel: 'Тема · Взрослый ребёнок ушёл',
+      partToc: adultChildLeftToc,
     },
     'adult-daughter-marriage': {
       id: 'adult-daughter-marriage',
       label: 'Дочь и брак',
-      title: 'D. Взрослая дочь, отец и брак',
+      title: 'Взрослая дочь, отец и брак',
       mobileSection: 'Дочь и брак',
-      partLabel: 'D · Содержание',
-      readingProgressDoneMin: 222,
+      partLabel: 'Тема · Содержание',
+      readingProgressDoneMin: 0,
       readingProgressPartMin: 42,
-      readingProgressTotalMin: TOTAL_MIN,
+      readingProgressTotalMin: 42,
       railNowTitle: 'Согласие и границы власти',
       railCover: teenSeriesMediaFor('adult-daughter-marriage').rail,
-      partDialogLabel: 'D · Дочь, отец и брак',
+      partDialogLabel: 'Тема · Дочь, отец и брак',
       partToc: adultDaughterToc,
     },
   },
 });
 
 SERIES_CONFIGS[TEEN_DOUBLE_LIFE_SERIES.seriesId] = TEEN_DOUBLE_LIFE_SERIES;
+SERIES_CONFIGS[ADULT_CHILDREN_SERIES.seriesId] = ADULT_CHILDREN_SERIES;
