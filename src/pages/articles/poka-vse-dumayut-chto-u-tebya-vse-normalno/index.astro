@@ -1,0 +1,15 @@
+---
+import { getCollection } from 'astro:content';
+import Content from '@/content/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno.mdx';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const slug = 'poka-vse-dumayut-chto-u-tebya-vse-normalno';
+const entry = (await getCollection('articles')).find(({ data }) => data.slug === slug);
+if (!entry) throw new Error(`Missing article content entry: ${slug}`);
+
+const canonical = `${SITE.url}/articles/${slug}/`;
+---
+<ArticleLayout entry={entry} canonical={canonical} robots="noindex, follow">
+  <Content />
+</ArticleLayout>
