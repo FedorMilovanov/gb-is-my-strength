@@ -582,7 +582,9 @@ async function testMobileTargetGeometry(browser) {
         '#mobBackBtn',
         '#mobHomeBtn',
         '.mobile-top-bar [data-fc-action="play"]',
-        '.mobile-top-bar [data-fc-action="save"]',
+        '.mobile-top-bar .reader-mobile-top-search',
+        '.mobile-bottom-bar .mobile-top-save[data-fc-action="save"]',
+        '.mobile-bottom-bar [data-action="print"]',
         '#mobPartTocBtn',
         // Themes moved into the canonical Settings sheet; no duplicate theme button.
         '#mobSettingsBtn',
@@ -616,9 +618,16 @@ async function testMobileTargetGeometry(browser) {
           if (w > 0.5 && h > 0.5) overlaps.push({ a: a.selector, b: b.selector, area: w * h });
         }
       }
-      return { rows, overlaps, xOverflow: document.documentElement.scrollWidth - innerWidth };
+      return {
+        rows,
+        overlaps,
+        saveCount: document.querySelectorAll('.mobile-top-save[data-fc-action="save"]').length,
+        saveInBottom: Boolean(document.querySelector('.mobile-bottom-bar .mobile-top-save[data-fc-action="save"]')),
+        xOverflow: document.documentElement.scrollWidth - innerWidth,
+      };
     });
-    assert(geometry.rows.every((row) => !row.missing), 'mobile 320: canonical controls are present', JSON.stringify(geometry.rows));
+    assert(geometry.rows.every((row) => !row.missing) && geometry.saveCount === 1 && geometry.saveInBottom,
+      'mobile 320: all canonical controls exist; exactly one Save is docked below', JSON.stringify(geometry));
     assert(
       geometry.rows.filter((row) => !row.missing).every((row) => row.width >= 43.5 && row.height >= 43.5),
       'mobile 320: primary interactive targets are physical 44px boxes',
