@@ -14,6 +14,8 @@ const description = 'Семь материалов о скрытой жизни 
 const items = TEEN_DOUBLE_LIFE_SERIES.items;
 const cards = items.map((item) => ({ ...item, media: teenSeriesMediaFor(item.id) }));
 const totalMinutes = items.reduce((sum, item) => sum + Number.parseInt(item.readingTime, 10), 0);
+// Editorial letter is preview-only until publication review and route promotion.
+const showTeenLetterDraft = import.meta.env.DEV;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -119,6 +121,7 @@ const jsonLd = {
           />
         </figure>
 
+        {showTeenLetterDraft && (
         <section class="teen-letter-entry" aria-labelledby="teen-letter-entry-title">
           <p class="section-label">Личное обращение к подростку</p>
           <h2 id="teen-letter-entry-title">А если всё «нормально» только для других?</h2>
@@ -126,6 +129,7 @@ const jsonLd = {
           <p><a class="gb-text-link teen-letter-entry__link" href="/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno/">Читать «Пока все думают, что у тебя всё нормально»</a></p>
           <p class="teen-letter-entry__note">Самостоятельное письмо перед серией — не дополнительный обязательный шаг.</p>
         </section>
+        )}
 
         <section aria-labelledby="series-order">
           <h2 id="series-order">Читать по порядку</h2>
