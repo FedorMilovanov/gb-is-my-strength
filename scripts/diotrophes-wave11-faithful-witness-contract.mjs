@@ -145,7 +145,7 @@ for (const marker of [
   'Двадцать верных ответов',
   'Практическая лестница различения',
   'Документы и свидетельства: дополнительная подборка',
-  'Контрпример: когда совет действительно действует',
+  'id="positive-board-comparator"',
 ]) requireValue(supplement.includes(marker), `supplement marker missing: ${marker}`);
 requireValue(supplement.includes("data-evidence-records={pathway.sourceIds.join(',')}"), 'internal source provenance should remain machine-readable');
 requireValue(supplement.includes('readerSources.filter((source) => pathway.sourceIds.includes(source.id))'), 'reader source ids must resolve against curated public sources');
@@ -248,8 +248,22 @@ requireValue(
 requireValue(
   supplement.includes('gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf') &&
   /не\s+подтверждает,\s+что эти встречи позднее состоялись\./.test(supplement) &&
-  !supplement.includes('позднее проводили встречи, где'),
+  !supplement.includes('позднее проводили встречи, где') &&
+  supplement.includes('совет способен остановить лидера'),
   'The Journey comparator must cite the original 2016 elder letter and distinguish plans from completed meetings',
+);
+// The frozen Wave 11 steps include assertions that exceed what the original
+// three-page 2016 elder letter directly establishes. Verify their reader-side
+// corrections and a reachable case-local primary-document copy.
+requireValue(
+  supplement.includes("'единогласное отстранение': 'решение совета об отстранении'") &&
+  supplement.includes("'встречи для слушания членов': 'запланированные встречи с общиной") &&
+  supplement.includes("'восстановление миссии': 'объявленные меры для продолжения служения общины") &&
+  supplement.includes("readerStep(pathway.id, step)") &&
+  supplement.includes("pathway.id === 'darrin-patrick'") &&
+  supplement.includes('www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf') &&
+  supplement.includes('Письмо подтверждает решение об отстранении и анонс'),
+  'Darrin Patrick historical pathway again presents unproved unanimity, planned meetings or subsequent outcomes as completed',
 );
 requireValue(
   seriesConfig.includes("href: '#faithful-witness-sources'") &&
