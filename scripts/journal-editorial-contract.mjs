@@ -147,8 +147,24 @@ if (!process.argv.includes('--source-only')) {
     const covers = nodes.filter((node) => node.tagName === 'source' && attr(node, 'type') === 'image/avif');
     assert.equal(covers.length, 1, `exactly one responsive AVIF cover at ${route}`);
     const fontHints = nodes.filter((node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'font');
-    assert.equal(fontHints.length, 4, `one critical font-hint set at ${route}`);
-    assert.equal(new Set(fontHints.map((node) => attr(node, 'href'))).size, 4, 'no duplicate font hints');
+    // The Journal collection retains its four existing critical faces.
+    // Only the two published G3 Article routes preload the two additional
+    // pinned semibold Cyrillic faces; reject any missing, extra, or duplicate
+    // hint rather than relaxing the original exact-set contract.
+    const expectedFontHints = [
+      '/fonts/PlayfairDisplay/playfairdisplay-cyrillic-600.woff2',
+      '/fonts/Lora/lora-cyrillic-400.woff2',
+      '/fonts/SourceSans3/sourcesans3-cyrillic-400.woff2',
+      '/fonts/SourceSans3/sourcesans3-latin-400.woff2',
+      ...(type === 'Article' ? [
+        '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
+        '/fonts/Lora/lora-cyrillic-600.woff2',
+      ] : []),
+    ];
+    const actualFontHints = fontHints.map((node) => attr(node, 'href'));
+    assert.deepEqual([...actualFontHints].sort(), [...expectedFontHints].sort(),
+      `exact Journal/G3 critical local font-hint set at ${route}`);
+    assert.equal(new Set(actualFontHints).size, expectedFontHints.length, 'no duplicate font hints');
     for (const hint of fontHints) assert.ok(fs.existsSync(path.join(root, attr(hint, 'href'))), 'font hints must reuse existing local files');
     assert.ok(!html.includes('localhost') && !html.includes('127.0.0.1'), 'browser-facing URLs must not point to the sandbox loopback');
     const sourceAdapters = nodes.filter((node) => node.tagName === 'script' && text(node).includes('journalSourceNavigationBound'));
