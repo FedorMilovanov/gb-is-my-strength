@@ -58,8 +58,8 @@ const page = config.pages[pageId];
 <script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
 <script is:inline defer src="../../js/glossary.js?v=c7f8b6e9"></script>
 <script is:inline defer src="../../js/sw-register.js?v=921dd6a2"></script>
-<!-- Canonical Pagefind palette, shared by mobile Analytics and desktop W57. -->
-<script is:inline defer src="../../js/search.js?v=75df3eab"></script>
+<!-- One canonical Search owner: ReaderPreferencesHead loads Pagefind on demand.
+     Reader's handoff listener below attaches to that same palette instance. -->
 <script>
   import '@/runtime/reader-search-handoff.js';
 </script>

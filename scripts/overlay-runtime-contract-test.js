@@ -44,6 +44,11 @@ for (const owner of ['gill-series-toc', 'gill-part-toc', 'gill-settings', 'gbs2-
 }
 assert.ok(!floating.includes('gill-learning'), 'retired Gill Learning overlay must not be reintroduced');
 const seriesChrome = fs.readFileSync('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro', 'utf8');
+// W95: ReaderPreferencesHead is the sole Pagefind/command-palette loader.
+// An eager series-level search.js script loaded a second live palette: Esc
+// closed the overlay owner, but left the duplicate dialog open on Gill/book.
+assert.ok(!/<script\b[^>]*\bsrc=["'][^"']*\/js\/search\.js(?:\?[^"']*)?["'][^>]*><\/script>/.test(seriesChrome),
+  'series chrome must not mount a duplicate search.js; keep shared lazy search owner');
 const gillPartToc = fs.readFileSync('src/components/article-pilots/gill-series/GillPartTocOverlay.astro', 'utf8');
 // W94: the TOC Listen CTA must activate the visible Play owner for the same
 // desktop/mobile breakpoint used by floating-cluster.css; never hidden mobile.

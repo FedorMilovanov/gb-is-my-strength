@@ -895,6 +895,14 @@ async function checkSearchShortcuts(browser) {
     }));
     if (!ctrlK.cpOpen || !ctrlK.inputFocused) push('ctrl-k-command-palette-not-open', url, ctrlK);
     if (ctrlK.cpOpen) {
+      const paletteState = await page.evaluate(() => ({
+        palettes: document.querySelectorAll('.cp-backdrop').length,
+        openPalettes: document.querySelectorAll('.cp-backdrop.is-open').length,
+        runtimeScripts: [...document.scripts].filter(script => /\/js\/search\.js(?:\?|$)/.test(script.src)).length,
+      }));
+      if (paletteState.palettes !== 1 || paletteState.openPalettes !== 1 || paletteState.runtimeScripts !== 1) {
+        push('command-palette-duplicate-runtime', url, paletteState);
+      }
       await page.keyboard.type('Гилл');
       // Pagefind fetch/index hydration on production-like dist can take >450ms
       // under CI load; wait long enough to avoid false negatives while still
@@ -904,8 +912,12 @@ async function checkSearchShortcuts(browser) {
       if (results.items < 1) push('command-palette-no-results-for-gill', url, results);
       await page.keyboard.press('Escape');
       await page.waitForTimeout(150);
-      const closed = await page.evaluate(() => !document.querySelector('.cp-backdrop.is-open'));
-      if (!closed) push('command-palette-escape-did-not-close', url, null);
+      const closed = await page.evaluate(() => ({
+        openPalettes: document.querySelectorAll('.cp-backdrop.is-open').length,
+        overlayOwners: window.OverlayRuntime?.snapshot?.() || [],
+        focusedTag: document.activeElement?.tagName || null,
+      }));
+      if (closed.openPalettes !== 0) push('command-palette-escape-did-not-close', url, closed);
     }
     stats.search++;
     await page.close();
