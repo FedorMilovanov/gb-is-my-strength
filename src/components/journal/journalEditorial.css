@@ -1,5 +1,10 @@
 /* Journal-only editorial layer. Vite owns its content hash. */
 @import '../../styles/editorial-edition.css';
+
+/* Inverse-color skip navigation is outside .journal-edition by design.
+   Site-wide html.dark a is more specific than the base .skip-link rule;
+   restore the canonical canvas foreground without altering global links. */
+body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition :is(.journal-dossier-shell, .journal-landing) { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 40px; }
 .journal-edition .dossier { padding-block: 30px 72px; }
 .journal-edition :is(#lead-dossier, #method-title) { scroll-margin-block-start: 76px; }
