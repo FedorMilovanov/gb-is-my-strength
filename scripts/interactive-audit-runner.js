@@ -175,7 +175,17 @@ function runPagefindSearchHandoffGuard(baseUrl) {
   if (!fs.existsSync(PAGEFIND_SEARCH_HANDOFF_GUARD)) {
     throw new Error(`Pagefind search handoff guard is missing at ${PAGEFIND_SEARCH_HANDOFF_GUARD}`);
   }
-  return runNodeScript(PAGEFIND_SEARCH_HANDOFF_GUARD, [], { AUDIT_BASE: baseUrl });
+  // W121 asserts a REAL W57 desktop opt-in after Pagefind navigation.
+  // The production-like server must remain the authority for all other
+  // interactive audits, while this single guard uses the W57-injecting
+  // research preview on the SAME dist. Do not weaken W57/keyboard assertions.
+  const pilotBase = String(process.env.READER_W57_AUDIT_BASE || '').trim().replace(/\\/$/, '');
+  if (!/^http:\/\/127\\.0\\.0\\.1:\\d+$/.test(pilotBase)) {
+    console.error('W121 requires READER_W57_AUDIT_BASE=http://127.0.0.1:<W57 preview.py port>; plain dist cannot mount the pilot');
+    return Promise.resolve(1);
+  }
+  console.log(`W121 real W57 preview: ${pilotBase} (native audit: ${baseUrl})`);
+  return runNodeScript(PAGEFIND_SEARCH_HANDOFF_GUARD, [], { AUDIT_BASE: pilotBase });
 }
 
 function runChromeLabelFocusGuard(baseUrl) {
