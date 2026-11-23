@@ -499,7 +499,16 @@ async function auditMobile(browser, origin, routeInfo) {
           saveCount: document.querySelectorAll('.mobile-top-save').length,
           target44: Boolean(gear && gear.width >= 44 && gear.height >= 44),
           chapterWidth: section?.width || 0,
+          chapterHeight: section?.height || 0,
+          // A single 44px Save target joins the dock below 440px; it consumes
+          // precisely that much width instead of displacing PDF or Share.
+          minChapterWidth: 185 - (saveBelow ? (save?.width || 0) : 0),
+          chapterHasText: Boolean(bottom?.querySelector('#gbs2MobSec')?.textContent?.trim()),
           dockActions: actions?.querySelectorAll('.reader-mobile-action').length || 0,
+          dockTargets44: Array.from(actions?.querySelectorAll('.reader-mobile-action') || []).every((button) => {
+            const rect = button.getBoundingClientRect();
+            return rect.width >= 44 && rect.height >= 44;
+          }),
           library: Boolean(actions?.querySelector('#gb-hl-fab')),
           overflow: document.documentElement.scrollWidth - innerWidth,
         };
@@ -510,8 +519,11 @@ async function auditMobile(browser, origin, routeInfo) {
         placement.saveCount === 1 && placement.saveBelow, placement);
       record(checks, 'gill-mobile-11', 'settings shares existing reader dialog and accessible name',
         placement.controls === 'gillSettingsOverlay' && placement.target && Boolean(placement.label), placement);
-      record(checks, 'gill-mobile-12', 'bottom chapter reclaims 44px without displacing library/PDF/share',
-        placement.chapterWidth >= 185 && placement.dockActions === 2 && placement.library && placement.overflow === 0, placement);
+      record(checks, 'gill-mobile-12', 'chapter remains readable with one 44px Save and independent 44px PDF/share',
+        placement.chapterWidth >= placement.minChapterWidth && placement.chapterHeight >= 44 &&
+        placement.chapterHasText && placement.saveBelow && placement.save44 &&
+        placement.dockActions === 2 && placement.dockTargets44 &&
+        placement.library && placement.overflow === 0, placement);
 
       // W99 owner geometry regression: 44px speed FIRST, then 44px Play,
       // then 44px Settings. Prior W77 pushed the visible Play a full slot
