@@ -1,0 +1,837 @@
+{
+  "browser": "Chromium 153.0.8010.0 Linux",
+  "rows": [
+    {
+      "width": 320,
+      "mode": "mobile-dpr1",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-dpr1-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr1",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-dpr1-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr1",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-dpr1-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr1",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-dpr1-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr2",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-dpr2-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr2",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-dpr2-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr2",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-dpr2-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr2",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-dpr2-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr3",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-dpr3-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr3",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-dpr3-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr3",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-dpr3-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-dpr3",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-dpr3-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 959.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "desktop-dpr1",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "320-desktop-dpr1-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "desktop-dpr1",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "320-desktop-dpr1-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "desktop-dpr1",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "320-desktop-dpr1-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "desktop-dpr1",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "320-desktop-dpr1-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-fonts",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-fonts-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-fonts",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-fonts-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-fonts",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "320-mobile-fonts-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 320,
+      "mode": "mobile-fonts",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "320-mobile-fonts-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 320,
+        "summary": {
+          "width": 246.390625,
+          "height": 968.265625
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr1",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-dpr1-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr1",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-dpr1-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr1",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-dpr1-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr1",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-dpr1-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr2",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-dpr2-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr2",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-dpr2-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr2",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-dpr2-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr2",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-dpr2-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 2,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr3",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-dpr3-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr3",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-dpr3-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr3",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-dpr3-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-dpr3",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-dpr3-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 3,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 747.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "desktop-dpr1",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "390-desktop-dpr1-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "desktop-dpr1",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "390-desktop-dpr1-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "desktop-dpr1",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "390-desktop-dpr1-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "desktop-dpr1",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "390-desktop-dpr1-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 12,
+          "unloaded": 49
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-fonts",
+      "run": 1,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-fonts-1-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-fonts",
+      "run": 1,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-fonts-1-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-fonts",
+      "run": 2,
+      "copy": 1,
+      "status": 200,
+      "file": "390-mobile-fonts-2-1.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "mode": "mobile-fonts",
+      "run": 2,
+      "copy": 2,
+      "status": 200,
+      "file": "390-mobile-fonts-2-2.pdf",
+      "before": {
+        "mediaPrint": false,
+        "devicePixelRatio": 1,
+        "fonts": {
+          "loaded": 61
+        },
+        "width": 390,
+        "summary": {
+          "width": 310.796875,
+          "height": 754.6875
+        }
+      }
+    }
+  ]
+}
