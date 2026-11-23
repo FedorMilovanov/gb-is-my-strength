@@ -14,3 +14,5 @@ Static fixture embeds donor matrix data, CSS and JS and the actual JournalSource
 
 ## V5 fixes (MAX 0 review #7117497680)
 Dynamic validated year sequence (1–9); no unchecked source-ID cast. Typed canonical source mapping and runtime registry check; production-default data still 7 years/37 associations. H-T expansion JSON is a separate PUBLICATION_HOLD proposal, not imported by component. The 9-year static review fixture has 26 names/60 pairs. Hashchange restores a filtered-out destination and focus without replacing native history or JournalSourceReturn. Local adapted V4 fixture passed 88 geometry cases (7/9 years × 11 widths × 2 themes × JS/noJS), hidden-row return/back/forward, and filtered print all rows. New repo fixtures require exact rerun with matrix-geometry-qa.py; no Astro claim. No public routing changes.
+
+The local adapted V5 fixture also passed 388/388 individual link round trips (37+60 associations × 2 widths × JS/noJS), and generated two filtered-state PDFs with all rows visible. `source-return-qa.py` now exercises both committed witnesses; run it against the exact checkout before merge. No new browser engine or full build claim.
