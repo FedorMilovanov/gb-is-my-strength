@@ -37,9 +37,27 @@ assert.ok(!specialDirectWriter.test(mindMap3D), 'MindMap3D must not write html/b
 assert.ok(reader.includes("OVERLAY_OWNER = 'reader-settings'"));
 assert.ok(reader.includes("unlockScroll?.('hermenevtika-toc')"), 'fallback switch must release the Hermenevtika owner');
 assert.ok(hermenevtika.includes("OVERLAY_OWNER = 'hermenevtika-toc'"));
-for (const owner of ['gill-series-toc', 'gill-part-toc', 'gill-learning', 'gill-settings', 'gbs2-sheet']) {
+// The retired "Learning" overlay must NEVER be resurrected to satisfy a
+// stale test: one canonical Analytics study lives under SeriesReaderChrome.
+for (const owner of ['gill-series-toc', 'gill-part-toc', 'gill-settings', 'gbs2-sheet']) {
   assert.ok(floating.includes(owner), `floating cluster must register ${owner}`);
 }
+assert.ok(!floating.includes('gill-learning'), 'retired Gill Learning overlay must not be reintroduced');
+const seriesChrome = fs.readFileSync('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro', 'utf8');
+const gillPartToc = fs.readFileSync('src/components/article-pilots/gill-series/GillPartTocOverlay.astro', 'utf8');
+const study = fs.readFileSync('src/components/article-pilots/gill-series/GillAnalyticsStudy.astro', 'utf8');
+assert.equal((seriesChrome.match(/<GillAnalyticsStudy\\b/g) || []).length, 1,
+  'each SeriesReaderChrome must mount exactly one canonical Analytics study');
+assert.ok(gillPartToc.includes('id="gbrMarginaliaTab"') &&
+  gillPartToc.includes('data-gbr-tab="research"') &&
+  gillPartToc.includes('id="partTocOverlay"'),
+  'native Gill Analytics belongs to the same real part-TOC sheet');
+assert.equal((study.match(/id="gbAnalyticsStudy"/g) || []).length, 1,
+  'Analytics study must have one unique DOM root');
+assert.ok(study.includes('id="gbAnalyticsQuiz"') && study.includes('initReaderAnalyticsStudy()'),
+  'the existing shared study runtime must own the single quiz');
+assert.ok(!seriesChrome.includes('GillLearningOverlay') && !gillPartToc.includes('gill-learning'),
+  'series and part TOC must not compose a duplicate Learning overlay');
 assert.ok(mapEngine.includes('special:map:'), 'map instances must use namespaced special owners');
 assert.ok(mapEngine.includes('panelOverlayOwner') && mapEngine.includes('photoOverlayOwner'), 'map panel and photo must have separate owners');
 assert.ok(!mapEngine.includes('Focus trap in panel'), 'map panel must use the shared focus trap');
