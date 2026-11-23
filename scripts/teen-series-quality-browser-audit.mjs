@@ -390,8 +390,28 @@ async function inspectLanding(page, vp) {
   const viewport = vp.name;
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
+  const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 45_000 });
   check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+  // Do not hide a cold-load overflow by awaiting fonts or network idle.
+  const skipGeometry = () => page.locator('.skip-link').evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+      viewport: innerWidth, docWidth: document.documentElement.scrollWidth,
+      focused: document.activeElement === element, outline: getComputedStyle(element).outlineStyle };
+  });
+  const coldSkip = await skipGeometry();
+  check(coldSkip.left >= -1 && coldSkip.right <= coldSkip.viewport + 1 &&
+    coldSkip.docWidth <= coldSkip.viewport + 2, route, viewport,
+    'cold skip-link must remain horizontally contained: ' + JSON.stringify(coldSkip));
+  await page.keyboard.press('Tab');
+  const focusedSkip = await skipGeometry();
+  check(focusedSkip.focused && focusedSkip.top >= 0 && focusedSkip.bottom > focusedSkip.top &&
+    focusedSkip.left >= -1 && focusedSkip.right <= focusedSkip.viewport + 1 && focusedSkip.outline !== 'none',
+    route, viewport, 'keyboard skip-link must be visible and contained: ' + JSON.stringify(focusedSkip));
+  await page.keyboard.press('Enter');
+  check(await page.evaluate(() => location.hash === '#main-content'), route, viewport,
+    'keyboard skip-link must reach main content');
+  await page.waitForLoadState('networkidle', { timeout: 45_000 });
   // Scroll every native lazy card image into view before asserting decode/readiness.
   for (const img of await page.locator('.teen-series-card__image').all()) {
     await img.scrollIntoViewIfNeeded();

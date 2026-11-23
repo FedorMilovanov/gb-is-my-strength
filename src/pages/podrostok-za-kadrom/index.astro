@@ -190,6 +190,10 @@ const jsonLd = {
     </main>
     <script is:inline src={assetUrl('js/sw-register.js')} defer></script>
     <style>
+      /* Center by layout, not horizontal transform: cold WebKit may paint
+         before a legacy transform transition settles. Keep keyboard focus visible. */
+      .skip-link{left:0;right:0;margin-inline:auto;width:max-content;max-width:calc(100% - 24px);box-sizing:border-box;white-space:normal;transform:translateY(-110%);transition:none}
+      .skip-link:focus,.skip-link:focus-visible{transform:translateY(20px)}
       .teen-series-hero{margin:2rem 0 2.5rem}.teen-series-hero img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover;border-radius:1.5rem}
       .teen-series-grid{display:grid;gap:1rem;margin:1.25rem 0 2.5rem}
       .teen-series-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:1rem;text-decoration:none;color:inherit;background:color-mix(in srgb,Canvas 94%,currentColor 6%)}
