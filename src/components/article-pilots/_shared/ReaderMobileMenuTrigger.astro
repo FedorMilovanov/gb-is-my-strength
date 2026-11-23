@@ -3,18 +3,17 @@
  * Icon is taken from ReaderRail.astro (#hMobileMenuBtn), not redesigned.
  * Runtime forwards to the corresponding canonical TOC button.
  */
-interface Props { targetId?: string; mode?: 'toc' | 'learning' | 'research'; }
+interface Props { targetId?: string; mode?: 'toc' | 'research'; }
 const { targetId, mode = 'toc' }=Astro.props as Props;
 ---
 <button
   class="reader-mobile-menu-trigger"
   type="button"
   data-reader-mobile-menu-target={mode === 'toc' ? targetId : undefined}
-  data-gill-learning-open={mode === 'learning' ? '' : undefined}
   data-gill-marginalia-open={mode === 'research' ? '' : undefined}
-  aria-controls={mode === 'learning' ? 'gillLearningOverlay' : mode === 'research' ? 'partTocOverlay' : undefined}
-  aria-expanded={mode === 'learning' || mode === 'research' ? 'false' : undefined}
-  aria-label={mode === 'research' ? 'Открыть раздел «Аналитика»: определения и контекст статьи' : mode === 'learning' ? 'Открыть обучение: термины, конспект, тест и заметки' : 'Открыть оглавление и поиск'}
+  aria-controls={mode === 'research' ? 'partTocOverlay' : undefined}
+  aria-expanded={mode === 'research' ? 'false' : undefined}
+  aria-label={mode === 'research' ? 'Открыть раздел «Аналитика»: определения и контекст статьи' : 'Открыть оглавление и поиск'}
   aria-haspopup="dialog"
 >
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -23,16 +22,9 @@ const { targetId, mode = 'toc' }=Astro.props as Props;
         <path d="M5 3.5h11.5a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2z" />
         <path d="M8.5 9.5h6M8.5 13h6" />
       </Fragment>
-    ) : mode === 'learning' ? (
-      <Fragment>
-        <!-- Original Gill v5 «Обучение» academic cap, not the TOC hamburger. -->
-        <path d="M2 10l10-5 10 5-10 5z" />
-        <path d="M6 12v5c3 2 9 2 12 0v-5" />
-        <path d="M22 10v6" />
-      </Fragment>
     ) : <path d="M4 7h16M4 12h16M4 17h16" />}
   </svg>
-  <span>{mode === 'research' ? 'Аналитика' : mode === 'learning' ? 'Обучение' : 'Оглавление'}</span>
+  <span>{mode === 'research' ? 'Аналитика' : 'Оглавление'}</span>
 </button>
 <script>
   function bindReaderMobileMenuTriggers() {

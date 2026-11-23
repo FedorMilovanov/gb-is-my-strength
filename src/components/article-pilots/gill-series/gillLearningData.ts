@@ -1,7 +1,7 @@
 import type { GillSeriesPageId } from './gillSeriesData';
 
 /**
- * Gill mobile Learning sheet — «Тест» tab data contract.
+ * Series Analytics quiz — source-authorized practice data contract.
  *
  * This is deliberately a flat, infinite-shuffle practice pool (Fisher–Yates
  * over the full set, no repeat of the previous cycle's last question first),

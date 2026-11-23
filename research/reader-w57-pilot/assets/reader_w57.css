@@ -512,8 +512,3 @@ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontScrim[hidden]{display:no
  }
  body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
 }
-/* Native Gill learning remains a separate action above the settings/TOC. */
-body.np-w57-ready #gillLearningOverlay.is-open{z-index:20030}
-body.np-w57-ready:has(#gillLearningOverlay.is-open) #npUniversalDemo :is(#npUFontPanel,#npUFontScrim,#npUOutline,#npUBackdrop){
- visibility:hidden!important;pointer-events:none!important;
-}

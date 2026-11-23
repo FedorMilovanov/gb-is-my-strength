@@ -583,7 +583,6 @@ async function testMobileTargetGeometry(browser) {
         '#mobHomeBtn',
         '.mobile-top-bar [data-fc-action="play"]',
         '.mobile-top-bar [data-fc-action="save"]',
-        '#mobLearningBtn',
         '#mobPartTocBtn',
         // Themes moved into the canonical Settings sheet; no duplicate theme button.
         '#mobSettingsBtn',

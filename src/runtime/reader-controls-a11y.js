@@ -280,7 +280,6 @@
       { trigger: '#mobPartTocBtn, .mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
       { trigger: '#mobTocBtn', target: '#seriesTocOverlay', fallbackId: 'seriesTocOverlay', popup: 'dialog' },
       { trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', fallbackId: 'gillSettingsOverlay', popup: 'dialog' },
-      { trigger: '[data-gill-learning-open]', target: '#gillLearningOverlay', fallbackId: 'gillLearningOverlay', popup: 'dialog' },
       { trigger: '#hMobileMenuBtn', target: '#hMobileNav', fallbackId: 'hMobileNav', popup: null },
     ].forEach(bindSurfaceRelation);
   }

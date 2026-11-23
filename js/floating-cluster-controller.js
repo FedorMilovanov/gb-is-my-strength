@@ -1625,7 +1625,6 @@
     var GILL_OVERLAY_OWNERS = {
       seriesTocOverlay: 'gill-series-toc',
       partTocOverlay: 'gill-part-toc',
-      gillLearningOverlay: 'gill-learning',
       gillSettingsOverlay: 'gill-settings'
     };
 
@@ -1724,7 +1723,7 @@
         qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open').forEach(function (ov) {
           closeOverlay(ov, 'breakpoint', false);
         });
-        qsa('[aria-expanded="true"][data-gill-settings-open], #mobLearningBtn[aria-expanded="true"]')
+        qsa('[aria-expanded="true"][data-gill-settings-open]')
           .forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
       });
     }
@@ -1777,15 +1776,8 @@
     // is driven centrally by updateScrollProgress() below — no separate
     // listener needed here (avoids two writers racing on the same nodes).
 
-    // ── Learning & Settings sheets (Gill mobile v5) ──────────────────────
-    // Additive: only present on routes that ship GillLearningSheet.astro /
-    // GillReaderSettingsSheet.astro (the 6 Gill mobile routes). Reuses the
-    // same openOverlay/closeOverlay primitives as series/part above, so
-    // Hermenevtika/GillContext (which use .toc-overlay for OTHER ids) are
-    // completely unaffected — these selectors simply don't match there.
-    var learningOverlay = qs('#gillLearningOverlay');
+    // Single Settings sheet; research/study live only in native Analytics.
     var settingsOverlay = qs('#gillSettingsOverlay');
-    var learningBtns = qsa('[data-gill-learning-open]');
     // Settings sheet can now have TWO triggers (mobile bottom-bar gear +
     // desktop rail-foot gear) — both carry [data-gill-settings-open], so we
     // bind every match instead of a single #mobSettingsBtn id. Opening/closing
@@ -1793,7 +1785,7 @@
     // given viewport width, but keeping both in sync is free and correct).
     var settingsBtns = qsa('[data-gill-settings-open]');
     var settingsOpener = null;
-    var extraOverlays = [learningOverlay, settingsOverlay].filter(function(el) { return !!el; });
+    var extraOverlays = [settingsOverlay].filter(function(el) { return !!el; });
 
     extraOverlays.forEach(function(overlay) {
       if (!overlay.classList.contains('is-open')) overlay.setAttribute('aria-hidden', 'true');
@@ -1802,7 +1794,6 @@
     });
 
     function triggersFor(overlay) {
-      if (overlay === learningOverlay) return learningBtns;
       if (overlay === settingsOverlay) return settingsBtns;
       return [];
     }
@@ -1824,21 +1815,10 @@
       if (!getOverlayRuntime() && restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
     }
 
-    if (learningBtns.length && learningOverlay) {
-      learningBtns.forEach(function(btn) {
-        addCleanListener(btn, 'click', function(e) {
-          e.preventDefault();
-          closeGillSheet(settingsOverlay, false, 'switch');
-          var returnTarget = settingsOverlay && settingsOverlay.contains(btn) ? settingsOpener : btn;
-          openGillSheet(learningOverlay, learningBtns, returnTarget);
-        });
-      });
-    }
     if (settingsBtns.length && settingsOverlay) {
       settingsBtns.forEach(function(btn) {
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
-          closeGillSheet(learningOverlay, false, 'switch');
           settingsOpener = e.currentTarget;
           openGillSheet(settingsOverlay, settingsBtns, settingsOpener);
         });
@@ -1873,7 +1853,6 @@
       addCleanListener(document, 'keydown', function(e) {
         if (getOverlayRuntime() || e.key !== 'Escape') return;
         if (settingsOverlay && settingsOverlay.classList.contains('is-open')) closeGillSheet(settingsOverlay, true, 'escape');
-        else if (learningOverlay && learningOverlay.classList.contains('is-open')) closeGillSheet(learningOverlay, true, 'escape');
       });
     }
   }
@@ -2347,7 +2326,7 @@
     // The inline rail temporarily replaces the leading navigation in the
     // same 44px-high top bar; never leave faded controls keyboard-focusable.
     var leadingControls = Array.prototype.slice.call(
-      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger, .reader-mobile-menu-trigger[data-gill-learning-open]')
+      root.querySelectorAll('#mobBackBtn, #mobHomeBtn')
     );
     function setOpen(next) {
       clearTimeout(foldTimer);

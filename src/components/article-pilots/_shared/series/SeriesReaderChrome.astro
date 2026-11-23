@@ -7,7 +7,7 @@ import GillSeriesMobileBar from '../../gill-series/GillSeriesMobileBar.astro';
 import GillMobileOverlayActivationBoundary from '../../gill-series/GillMobileOverlayActivationBoundary.astro';
 import GillSeriesOverlay from '../../gill-series/GillSeriesOverlay.astro';
 import GillPartTocOverlay from '../../gill-series/GillPartTocOverlay.astro';
-import GillLearningSheet from '../../gill-series/GillLearningSheet.astro';
+import GillAnalyticsStudy from '../../gill-series/GillAnalyticsStudy.astro';
 import GillReaderSettingsSheet from '../../gill-series/GillReaderSettingsSheet.astro';
 import GillSeriesImagePremium from '../../gill-series/GillSeriesImagePremium.astro';
 import GillSeriesResponsiveStyles from '../../gill-series/GillSeriesResponsiveStyles.astro';
@@ -48,7 +48,7 @@ const page = config.pages[pageId];
   <GillSeriesMobileBar pageId={pageId} config={config} />
   <GillSeriesOverlay pageId={pageId} config={config} />
   <GillPartTocOverlay pageId={pageId} config={config} />
-  <GillLearningSheet pageId={pageId} config={config} />
+  <GillAnalyticsStudy pageId={pageId} config={config} />
   <GillReaderSettingsSheet config={config} />
   <GillMobileOverlayActivationBoundary />
 </div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->

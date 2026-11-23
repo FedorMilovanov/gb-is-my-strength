@@ -218,11 +218,6 @@
   original.replaceWith(trigger);
   return trigger;
  });
- const learningButton=document.getElementById('mobLearningBtn');
- const learningOverlay=document.getElementById('gillLearningOverlay');
- if(learningButton&&learningOverlay){
-  fontPanel.lastElementChild.prepend(learningButton);
- }
  const fontToggles=[fullFontButton,compactFontButton,...nativeSettings];
  let fontOpener=null;
  const restoreFontFocus=()=>fontOpener?.focus({preventScroll:true});
@@ -300,14 +295,13 @@
    if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
  });
  document.addEventListener('pointerdown',event=>{
-  if(learningOverlay?.classList.contains('is-open'))return;
   if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target))){
    setFontOpen(false);
    restoreFontFocus();
   }
  },true);
  document.addEventListener('keydown',event=>{
-  if(fontPanel.hidden||learningOverlay?.classList.contains('is-open'))return;
+  if(fontPanel.hidden)return;
   // A native Product Library/Search dialog remains higher priority.
   if(event.target.closest?.('#gb-hl-panel,.cp-backdrop'))return;
   if(event.key==='Escape'){

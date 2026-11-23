@@ -96,7 +96,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     }
     function elements(selector) {
       return Array.from(article.querySelectorAll(selector)).filter(function (el) {
-        return inSection(el) && !el.closest('nav,aside,footer,.related-articles,.faq-accordion');
+        return inSection(el) && !el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]');
       });
     }
     var paras = elements('p,blockquote').filter(function (p) { return visibleText(p).length >= 95; });
@@ -405,7 +405,10 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
       else if (originalDialogLabel !== null) dialog.setAttribute('aria-label', originalDialogLabel);
       else dialog.removeAttribute('aria-label');
     }
-    if (research) render();
+    if (research) {
+      render();
+      document.dispatchEvent(new CustomEvent('gb:analytics-study-place'));
+    }
     if (keyboard) tabs.find(function (tab) { return tab.dataset.gbrTab === which; }).focus();
   }
   tabs.forEach(function (tab) {

@@ -11,7 +11,7 @@ const FACADE = path.join(ROOT, 'src/components/article-pilots/_shared/series/Ser
 const SERIES_LAYOUT = path.join(ROOT, 'src/layouts/SeriesArticleLayout.astro');
 const HEART_SERIES_DATA = path.join(ROOT, 'src/components/article-pilots/_shared/heartSeriesData.ts');
 const MOBILE_BAR = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
-const LEARNING_SHEET = path.join(ROOT, 'src/components/article-pilots/gill-series/GillLearningSheet.astro');
+const ANALYTICS_STUDY = path.join(ROOT, 'src/components/article-pilots/gill-series/GillAnalyticsStudy.astro');
 const SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/seriesConfig.ts');
 const BAPTIST_SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts');
 const DIST = path.join(ROOT, 'dist');
@@ -63,7 +63,7 @@ assert.match(heartProgress[0], /partMin:\s*item\.minutes/, 'heartProgress must u
 assert.doesNotMatch(heartProgress[0], /HEART_SERIES_ITEMS\[idx\]\.minutes/, 'heartProgress must not dereference an unchecked index');
 
 const mobileBar = fs.readFileSync(MOBILE_BAR, 'utf8');
-const learningSheet = fs.readFileSync(LEARNING_SHEET, 'utf8');
+const analyticsStudy = fs.readFileSync(ANALYTICS_STUDY, 'utf8');
 const mobileTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro'), 'utf8');
 const mobilePlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro'), 'utf8');
 const mobileRuntime = fs.readFileSync(path.join(ROOT, 'js/floating-cluster-controller.js'), 'utf8');
@@ -89,14 +89,16 @@ assert.match(mobileRuntime, /topResearchBtns = qsa\('\[data-gill-marginalia-open
 assert.match(mobileRuntime, /var MOB_SEC_INITIAL = \(function \(\)/, 'series progress must preserve the original SSR chapter caption before its first H2');
 assert.match(mobileRuntime, /hasActiveSection \? reader\.sectionTitle : \(MOB_SEC_INITIAL \|\| 'Начало части'\)/, 'before-content placeholder Введение must not overwrite the SSR title');
 assert.match(partOverlay, /gb:gill-select-part-panel/, 'research tab must be selected through the native Part TOC sheet');
-assert.match(settingsSheet, /id="mobLearningBtn"[^>]*data-gill-learning-open/, 'Learning must remain available from Settings without top-level duplication');
+assert.doesNotMatch(settingsSheet, /mobLearningBtn|gillLearningOverlay|Обучение/, 'Settings must contain reading preferences only');
+assert.match(analyticsStudy, /id="gbAnalyticsStudy"/, 'unified Analytics quiz must be mounted once');
+assert.match(fs.readFileSync(FACADE, 'utf8'), /<GillAnalyticsStudy pageId=\{pageId\} config=\{config\}/, 'series chrome must own one Analytics study');
 // Historical #75 slot-swap: speeds REPLACE the research capsule, never descend
 // across the hero. One ReaderSpeedOptions/speedSlot owner serves both readers.
 assert.match(mobileBar, /<ReaderMobilePlayGroup engine="series" slot="top-playback"/, 'Gill keeps canonical Play, without bloom opt-in');
 assert.match(mobileBar, /<ReaderSpeedOptions id="mobileSpeedrail"[^>]*initiallyInert/, 'Gill mounts shared six-rate horizontal speed rail');
 assert.match(mobileBar, /'data-gb-speed-custom': true/, 'Gill TTS controller skips competing vertical speed bloom');
 assert.match(mobileBar, /mobile-top-bar\.speed-open \.mobile-top-slot \.reader-mobile-speedrail/, 'Gill speeds live in vacated top slot');
-assert.match(mobilePlay, /\{!bloom && <button/, 'shared Play retains selected-rate badge');
+assert.match(mobilePlay, /<ReaderMobileSpeedBadge engine=\{engine\}/, 'shared Play retains selected-rate badge');
 assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play ring remains visible');
 assert.match(sharedSpeedSlot, /rateTrigger\.querySelector\('\.reader-mobile-speed-chip'\) \|\| rateTrigger/, 'Hermenevtika shared speed state must remain intact');
 const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
@@ -105,21 +107,9 @@ assert.match(seriesConfig, /railBackHref:\s*string;/, 'SeriesConfig must keep ra
 assert.match(mobileBar, /data-home-href=\{config\.railBackHref\}/, 'shared mobile Back must derive its fallback from config.railBackHref');
 assert.doesNotMatch(mobileBar, /data-home-href=["']\.\.\/\.\.\/biografii\//, 'shared mobile Back must not hardcode Gill biographies');
 assert.match(baptistSeriesConfig, /quiz:\s*\[\]/, 'Baptist no-quiz series must declare the empty quiz authority explicitly');
-assert.match(
-  learningSheet,
-  /\{hasQuiz\s*&&\s*<button[^>]*id="tabQuiz"[^>]*aria-controls="panelQuiz"/,
-  'Quiz tab must remain conditional on hasQuiz',
-);
-assert.match(
-  learningSheet,
-  /\{hasQuiz\s*&&\s*\(\s*<section[^>]*id="panelQuiz"[^>]*aria-labelledby="tabQuiz"/,
-  'Quiz panel must be gated by the same hasQuiz condition as its labelling tab',
-);
-assert.match(
-  learningSheet,
-  /<input\b(?=[^>]*\bid="learningSearchInput")(?=[^>]*\btype="search")(?=[^>]*\baria-label="Найти в этой статье")(?=[^>]*\bplaceholder="Найти в этой статье")[^>]*>/,
-  'Learning-sheet search must keep a persistent accessible name independent of its placeholder',
-);
+assert.match(analyticsStudy, /data-study=\{studyData\}/, 'study must have explicit SeriesConfig data');
+assert.doesNotMatch(analyticsStudy, /gillLearningOverlay|mobLearningBtn/, 'study must not own modal Learning');
+assert.doesNotMatch(fs.readFileSync(FACADE,'utf8'), /<GillLearningSheet/, 'retired Learning sheet cannot mount');
 
 const sourceFiles = walk(path.join(ROOT, 'src')).filter((file) => /\.(?:astro|ts|tsx|js|jsx|mjs|cjs)$/.test(file));
 const illegal = [];
@@ -218,4 +208,4 @@ assert.match(canonicalSpeedCss,
   /min-width:\s*44px;\s*min-height:\s*44px;\s*height:\s*44px;/,
   'canonical mobile speed options retain 44px touch targets');
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Analytics mode conditional; no competing Learning modal; ${strictFragmentSummary}`);

@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v223-reader-filter-reconcile-20261122';
+const CACHE_VERSION = 'gb-v224-learning-analytics-unified-20261123';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -42,7 +42,7 @@ const PRECACHE_ASSETS = [
   '/js/reader-library-dock.js?v=706a54b0',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
-  '/js/floating-cluster-controller.js?v=81cb2e7f',
+  '/js/floating-cluster-controller.js?v=25a761e7',
   '/js/reader-preferences-head.js?v=bd4355e3',
   '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=af589b59',

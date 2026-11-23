@@ -1,5 +1,5 @@
 {
-  "source": "W57 left typography/read settings and exclusive research cards — 2026-11-20",
+  "source": "W57 preserved reading geometry and unified Analytics migration — 2026-11-23",
   "files": [
     {
       "name": "reader_universal_preview.css",
@@ -28,8 +28,8 @@
     },
     {
       "name": "reader_w57.css",
-      "sha256": "aac6f8e646281dfcca0f04beefafb3cf0903b0528db273b18193d2a46b5380fb",
-      "bytes": 29059
+      "sha256": "bc2f46ac587e06710523d6e47a6ca0e65ef4c72af7c088adca229432b9553086",
+      "bytes": 28730
     },
     {
       "name": "reader_universal_contract.js",
@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "6cd81a922b0fc1bccef94dd642bd297dd942c26c3df30a6d49f1973487ecdb85",
-      "bytes": 134253
+      "sha256": "604cb9814ad6f7dc207ede1ef2ffffbbf551d5412959c2de2f6cace0269f9bb5",
+      "bytes": 133914
     },
     {
       "name": "reader_editorial_refinement.js",
@@ -62,5 +62,5 @@
       "bytes": 28799
     }
   ],
-  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD."
+  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD. W121 removes old Learning UI declarations; no authored content, approved geometry or notes storage changed."
 }
