@@ -1,0 +1,3140 @@
+{
+  "screen": {
+    "page": [
+      320,
+      320
+    ],
+    "tables": [
+      {
+        "heads": [
+          "Год",
+          "Событие",
+          "Что менялось"
+        ],
+        "rows": 8,
+        "tableW": 246.390625,
+        "wrap": [
+          246,
+          246
+        ],
+        "cells": [
+          {
+            "text": "1559",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 7734.703125,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 7734.703125,
+              "right": 282.1875,
+              "bottom": 7776.296875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Елизаветинское религиозное урегулирование",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 7776.296875,
+              "width": 244.390625,
+              "height": 90.40625,
+              "top": 7776.296875,
+              "right": 282.1875,
+              "bottom": 7866.703125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Церковь Англии получает восстановленную государственную форму; спор о пределах дальнейшей реформы продолжается внутри и вне неё.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 7866.703125,
+              "width": 244.390625,
+              "height": 156.734375,
+              "top": 7866.703125,
+              "right": 282.1875,
+              "bottom": 8023.4375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1609",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8045.4375,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 8045.4375,
+              "right": 282.1875,
+              "bottom": 8087.03125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Община Джона Смита в Амстердаме",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8087.03125,
+              "width": 244.390625,
+              "height": 90.40625,
+              "top": 8087.03125,
+              "right": 282.1875,
+              "bottom": 8177.4375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Английские сепаратисты принимают крещение исповедующих веру. Это ранняя английская баптистская община, находившаяся в изгнании в Нидерландах.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8177.4375,
+              "width": 244.390625,
+              "height": 178.84375,
+              "top": 8177.4375,
+              "right": 282.1875,
+              "bottom": 8356.28125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1611–1612",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8378.28125,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 8378.28125,
+              "right": 282.1875,
+              "bottom": 8419.875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Возвращение Томаса Хелвиса",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8419.875,
+              "width": 244.390625,
+              "height": 68.296875,
+              "top": 8419.875,
+              "right": 282.1875,
+              "bottom": 8488.171875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Хелвис и его единомышленники создают раннее баптистское собрание на английской земле и публично защищают свободу совести.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8488.171875,
+              "width": 244.390625,
+              "height": 156.734375,
+              "top": 8488.171875,
+              "right": 282.1875,
+              "bottom": 8644.90625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1630-е–1644",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8666.90625,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 8666.90625,
+              "right": 282.1875,
+              "bottom": 8708.5,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Формирование партикулярных баптистских общин",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8708.5,
+              "width": 244.390625,
+              "height": 90.40625,
+              "top": 8708.5,
+              "right": 282.1875,
+              "bottom": 8798.90625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Из лондонской сепаратистской среды возникают церкви реформатского богословия; семь общин публикуют Первое лондонское исповедание.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8798.90625,
+              "width": 244.390625,
+              "height": 156.734375,
+              "top": 8798.90625,
+              "right": 282.1875,
+              "bottom": 8955.640625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1662",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 8977.640625,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 8977.640625,
+              "right": 282.1875,
+              "bottom": 9019.234375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Акт о единообразии",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9019.234375,
+              "width": 244.390625,
+              "height": 68.296875,
+              "top": 9019.234375,
+              "right": 282.1875,
+              "bottom": 9087.53125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Служители, не принявшие восстановленный англиканский порядок, лишаются приходов и официального положения.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9087.53125,
+              "width": 244.390625,
+              "height": 134.625,
+              "top": 9087.53125,
+              "right": 282.1875,
+              "bottom": 9222.15625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1664–1665",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9244.15625,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 9244.15625,
+              "right": 282.1875,
+              "bottom": 9285.75,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Акты о собраниях и пяти милях",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9285.75,
+              "width": 244.390625,
+              "height": 68.296875,
+              "top": 9285.75,
+              "right": 282.1875,
+              "bottom": 9354.046875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Отдельные законы усиливают давление на неангликанское богослужение, передвижение и преподавание бывших служителей.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9354.046875,
+              "width": 244.390625,
+              "height": 156.734375,
+              "top": 9354.046875,
+              "right": 282.1875,
+              "bottom": 9510.78125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1689",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9532.78125,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 9532.78125,
+              "right": 282.1875,
+              "bottom": 9574.375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Акт о веротерпимости",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9574.375,
+              "width": 244.390625,
+              "height": 68.296875,
+              "top": 9574.375,
+              "right": 282.1875,
+              "bottom": 9642.671875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Зарегистрированное протестантское диссентерское богослужение получает правовую защиту при выполнении условий; гражданское и академическое равноправие не наступает.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9642.671875,
+              "width": 244.390625,
+              "height": 178.84375,
+              "top": 9642.671875,
+              "right": 282.1875,
+              "bottom": 9821.515625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "1697",
+            "label": "Год",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9843.515625,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 9843.515625,
+              "right": 282.1875,
+              "bottom": 9885.109375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Рождение Джона Гилла",
+            "label": "Событие",
+            "pseudo": "\"Событие\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9885.109375,
+              "width": 244.390625,
+              "height": 68.296875,
+              "top": 9885.109375,
+              "right": 282.1875,
+              "bottom": 9953.40625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Он принадлежит к поколению ограниченной терпимости: регулярная церковная жизнь стала возможнее, но государственная церковь по-прежнему определяла значительную часть публичного порядка.",
+            "label": "Что менялось",
+            "pseudo": "\"Что менялось\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 9953.40625,
+              "width": 244.390625,
+              "height": 223.0625,
+              "top": 9953.40625,
+              "right": 282.1875,
+              "bottom": 10176.46875,
+              "left": 37.796875
+            }
+          }
+        ]
+      },
+      {
+        "heads": [
+          "Вопрос",
+          "Партикулярные баптисты",
+          "Генеральные баптисты"
+        ],
+        "rows": 5,
+        "tableW": 246.390625,
+        "wrap": [
+          246,
+          246
+        ],
+        "cells": [
+          {
+            "text": "Искупление и избрание",
+            "label": "Вопрос",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 11988.6875,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 11988.6875,
+              "right": 282.1875,
+              "bottom": 12030.28125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Реформатское учение об избрании и особом искуплении: смерть Христа спасительно предназначена для избранных.",
+            "label": "Партикулярные баптисты",
+            "pseudo": "\"Партикулярные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12030.28125,
+              "width": 244.390625,
+              "height": 134.625,
+              "top": 12030.28125,
+              "right": 282.1875,
+              "bottom": 12164.90625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Общее искупление: Христос умер за всех, а спасительный ответ человека связывается с действием благодати и верой.",
+            "label": "Генеральные баптисты",
+            "pseudo": "\"Генеральные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12164.90625,
+              "width": 244.390625,
+              "height": 134.625,
+              "top": 12164.90625,
+              "right": 282.1875,
+              "bottom": 12299.53125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Ранние исповедные ориентиры",
+            "label": "Вопрос",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12321.53125,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 12321.53125,
+              "right": 282.1875,
+              "bottom": 12363.125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Первое лондонское исповедание 1644/1646; Второе лондонское исповедание 1677/1689; местные декларации отдельных общин.",
+            "label": "Партикулярные баптисты",
+            "pseudo": "\"Партикулярные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12363.125,
+              "width": 244.390625,
+              "height": 134.625,
+              "top": 12363.125,
+              "right": 282.1875,
+              "bottom": 12497.75,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "«Стандартное исповедание» 1660 года и другие собственные исповедные документы; внутри традиции также существовали различия.",
+            "label": "Генеральные баптисты",
+            "pseudo": "\"Генеральные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12497.75,
+              "width": 244.390625,
+              "height": 156.734375,
+              "top": 12497.75,
+              "right": 282.1875,
+              "bottom": 12654.484375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Церковная форма",
+            "label": "Вопрос",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12676.484375,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 12676.484375,
+              "right": 282.1875,
+              "bottom": 12718.078125,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Самостоятельные поместные общины, связанные перепиской, ассоциациями, фондами и совместными собраниями, но без единого центрального управления.",
+            "label": "Партикулярные баптисты",
+            "pseudo": "\"Партикулярные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12718.078125,
+              "width": 244.390625,
+              "height": 178.84375,
+              "top": 12718.078125,
+              "right": 282.1875,
+              "bottom": 12896.921875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Сходная конгрегациональная основа и собственные генеральные собрания; степень объединения менялась по времени и региону.",
+            "label": "Генеральные баптисты",
+            "pseudo": "\"Генеральные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 12896.921875,
+              "width": 244.390625,
+              "height": 156.734375,
+              "top": 12896.921875,
+              "right": 282.1875,
+              "bottom": 13053.65625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Внутреннее разнообразие",
+            "label": "Вопрос",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 13075.65625,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 13075.65625,
+              "right": 282.1875,
+              "bottom": 13117.25,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Споры о гимнах, завете, границах искупления, церковной практике и евангельском призыве; пример Томаса Коллиера показывает, что «доктринальная стабильность» не была автоматической.",
+            "label": "Партикулярные баптисты",
+            "pseudo": "\"Партикулярные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 13117.25,
+              "width": 244.390625,
+              "height": 178.84375,
+              "top": 13117.25,
+              "right": 282.1875,
+              "bottom": 13296.09375,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Наряду с антитринитарным дрейфом части общин сохранялись ортодоксальные служители; позднее евангельское обновление связано с Дэном Тейлором и «Новым объединением» (New Connexion).",
+            "label": "Генеральные баптисты",
+            "pseudo": "\"Генеральные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 13296.09375,
+              "width": 244.390625,
+              "height": 200.953125,
+              "top": 13296.09375,
+              "right": 282.1875,
+              "bottom": 13497.046875,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "XVIII век",
+            "label": "Вопрос",
+            "pseudo": "none",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 13519.046875,
+              "width": 244.390625,
+              "height": 41.59375,
+              "top": 13519.046875,
+              "right": 282.1875,
+              "bottom": 13560.640625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Гилл, Джон Брайн и позднее Эндрю Фуллер представляли разные стадии и акценты внутри одной широкой традиции.",
+            "label": "Партикулярные баптисты",
+            "pseudo": "\"Партикулярные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 13560.640625,
+              "width": 244.390625,
+              "height": 134.625,
+              "top": 13560.640625,
+              "right": 282.1875,
+              "bottom": 13695.265625,
+              "left": 37.796875
+            }
+          },
+          {
+            "text": "Старые структуры ослабевали и в ряде мест принимали арианские или унитарианские позиции, но традиция не исчезла одномоментно и не сводится к истории упадка.",
+            "label": "Генеральные баптисты",
+            "pseudo": "\"Генеральные баптисты\"",
+            "display": "block",
+            "rect": {
+              "x": 37.796875,
+              "y": 13695.265625,
+              "width": 244.390625,
+              "height": 178.84375,
+              "top": 13695.265625,
+              "right": 282.1875,
+              "bottom": 13874.109375,
+              "left": 37.796875
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "ax": {
+    "table": {
+      "nodes": [
+        {
+          "nodeId": "712",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "table"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 167
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "relatedElement",
+                "nativeSource": "tablecaption"
+              },
+              {
+                "type": "attribute",
+                "attribute": "summary"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "711",
+          "childIds": [
+            "713",
+            "721"
+          ],
+          "backendDOMNodeId": 712
+        },
+        {
+          "nodeId": "713",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "rowgroup"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 146
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "712",
+          "childIds": [
+            "714"
+          ],
+          "backendDOMNodeId": 713
+        },
+        {
+          "nodeId": "721",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "712",
+          "childIds": [
+            "722",
+            "732",
+            "742",
+            "752",
+            "762",
+            "772",
+            "782",
+            "792"
+          ],
+          "backendDOMNodeId": 721
+        },
+        {
+          "nodeId": "722",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "723",
+            "726",
+            "729"
+          ],
+          "backendDOMNodeId": 722
+        },
+        {
+          "nodeId": "732",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "733",
+            "736",
+            "739"
+          ],
+          "backendDOMNodeId": 732
+        },
+        {
+          "nodeId": "742",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "743",
+            "746",
+            "749"
+          ],
+          "backendDOMNodeId": 742
+        },
+        {
+          "nodeId": "752",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "753",
+            "756",
+            "759"
+          ],
+          "backendDOMNodeId": 752
+        },
+        {
+          "nodeId": "762",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "763",
+            "766",
+            "769"
+          ],
+          "backendDOMNodeId": 762
+        },
+        {
+          "nodeId": "772",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "773",
+            "776",
+            "779"
+          ],
+          "backendDOMNodeId": 772
+        },
+        {
+          "nodeId": "782",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "783",
+            "786",
+            "789"
+          ],
+          "backendDOMNodeId": 782
+        },
+        {
+          "nodeId": "792",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "793",
+            "796",
+            "799"
+          ],
+          "backendDOMNodeId": 792
+        },
+        {
+          "nodeId": "711",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "15",
+          "childIds": [
+            "712"
+          ],
+          "backendDOMNodeId": 711
+        },
+        {
+          "nodeId": "15",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "article"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 5
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "543",
+          "childIds": [
+            "16",
+            "563",
+            "600",
+            "606",
+            "624",
+            "626",
+            "630",
+            "636",
+            "641",
+            "643",
+            "645",
+            "651",
+            "685",
+            "690",
+            "694",
+            "696",
+            "702",
+            "704",
+            "709",
+            "711",
+            "802",
+            "827",
+            "829",
+            "835",
+            "837",
+            "896",
+            "898",
+            "948",
+            "952",
+            "958",
+            "960",
+            "962",
+            "968",
+            "970",
+            "972",
+            "974",
+            "978",
+            "984",
+            "986",
+            "991",
+            "1080",
+            "1088",
+            "1093",
+            "1098",
+            "1116",
+            "1120",
+            "1126",
+            "1134",
+            "1136",
+            "1138",
+            "1140",
+            "1185",
+            "1187",
+            "1191",
+            "1197",
+            "1199",
+            "1204",
+            "1245",
+            "1247",
+            "1265",
+            "1267",
+            "1310",
+            "1314",
+            "1320",
+            "1322",
+            "1324",
+            "1375",
+            "1409",
+            "1411",
+            "1415",
+            "1421",
+            "1439",
+            "1444",
+            "1446",
+            "1466",
+            "1503",
+            "1505",
+            "1523",
+            "1528",
+            "1532",
+            "1538",
+            "1544",
+            "1546",
+            "1548",
+            "1550",
+            "1555",
+            "1594",
+            "1596",
+            "1598",
+            "1602",
+            "1608",
+            "1612",
+            "1646",
+            "1648",
+            "1654",
+            "1687",
+            "1708",
+            "1712",
+            "2099",
+            "2112",
+            "2122"
+          ],
+          "backendDOMNodeId": 15
+        },
+        {
+          "nodeId": "543",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "main"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 118
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "529",
+          "childIds": [
+            "544",
+            "552",
+            "15",
+            "2160"
+          ],
+          "backendDOMNodeId": 543
+        },
+        {
+          "nodeId": "529",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "176",
+          "childIds": [
+            "543"
+          ],
+          "backendDOMNodeId": 529
+        },
+        {
+          "nodeId": "176",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "99",
+          "childIds": [
+            "529",
+            "2168",
+            "2352",
+            "2354",
+            "2802",
+            "2812",
+            "2814",
+            "2816",
+            "2818",
+            "2821",
+            "2827",
+            "2935",
+            "2997",
+            "3018"
+          ],
+          "backendDOMNodeId": 176
+        },
+        {
+          "nodeId": "99",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "21",
+          "childIds": [
+            "101",
+            "109",
+            "3269",
+            "3270",
+            "116",
+            "176",
+            "3112",
+            "3113",
+            "3122",
+            "3145",
+            "3286",
+            "3160",
+            "3291",
+            "3292",
+            "3176"
+          ],
+          "backendDOMNodeId": 99
+        },
+        {
+          "nodeId": "21",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "2",
+          "childIds": [
+            "99"
+          ],
+          "backendDOMNodeId": 21
+        },
+        {
+          "nodeId": "2",
+          "ignored": false,
+          "role": {
+            "type": "internalRole",
+            "value": "RootWebArea"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 144
+          },
+          "name": {
+            "type": "computedString",
+            "value": "Джон Гилл: исторический контекст — мир пуритан и баптистов XVIII века | Господь Бог — Сила Моя",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label",
+                "superseded": true
+              },
+              {
+                "type": "relatedElement",
+                "value": {
+                  "type": "computedString",
+                  "value": "Джон Гилл: исторический контекст — мир пуритан и баптистов XVIII века | Господь Бог — Сила Моя"
+                },
+                "nativeSource": "title"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "focusable",
+              "value": {
+                "type": "booleanOrUndefined",
+                "value": true
+              }
+            },
+            {
+              "name": "focused",
+              "value": {
+                "type": "booleanOrUndefined",
+                "value": true
+              }
+            },
+            {
+              "name": "url",
+              "value": {
+                "type": "string",
+                "value": "http://127.0.0.1:8083/articles/dzhon-gill-istoricheskiy-kontekst/"
+              }
+            }
+          ],
+          "childIds": [
+            "21"
+          ],
+          "backendDOMNodeId": 2,
+          "frameId": "DC000C12544C56E5613F0FDE4192730D"
+        }
+      ]
+    },
+    "cell": {
+      "nodes": [
+        {
+          "nodeId": "726",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "cell"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 13
+          },
+          "name": {
+            "type": "computedString",
+            "value": "СОБЫТИЕ Елизаветинское религиозное урегулирование",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "contents",
+                "value": {
+                  "type": "computedString",
+                  "value": "СОБЫТИЕ Елизаветинское религиозное урегулирование"
+                }
+              },
+              {
+                "type": "attribute",
+                "attribute": "title",
+                "superseded": true
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "722",
+          "childIds": [
+            "727",
+            "728"
+          ],
+          "backendDOMNodeId": 726
+        },
+        {
+          "nodeId": "727",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "726",
+          "childIds": [
+            "-1000000270"
+          ],
+          "backendDOMNodeId": 727
+        },
+        {
+          "nodeId": "728",
+          "ignored": false,
+          "role": {
+            "type": "internalRole",
+            "value": "StaticText"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 158
+          },
+          "name": {
+            "type": "computedString",
+            "value": "Елизаветинское религиозное урегулирование",
+            "sources": [
+              {
+                "type": "contents",
+                "value": {
+                  "type": "computedString",
+                  "value": "Елизаветинское религиозное урегулирование"
+                }
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "726",
+          "childIds": [
+            "-1000000272",
+            "-1000000273"
+          ],
+          "backendDOMNodeId": 728
+        },
+        {
+          "nodeId": "722",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "721",
+          "childIds": [
+            "723",
+            "726",
+            "729"
+          ],
+          "backendDOMNodeId": 722
+        },
+        {
+          "nodeId": "721",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "712",
+          "childIds": [
+            "722",
+            "732",
+            "742",
+            "752",
+            "762",
+            "772",
+            "782",
+            "792"
+          ],
+          "backendDOMNodeId": 721
+        },
+        {
+          "nodeId": "712",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "table"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 167
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "relatedElement",
+                "nativeSource": "tablecaption"
+              },
+              {
+                "type": "attribute",
+                "attribute": "summary"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "711",
+          "childIds": [
+            "713",
+            "721"
+          ],
+          "backendDOMNodeId": 712
+        },
+        {
+          "nodeId": "711",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "15",
+          "childIds": [
+            "712"
+          ],
+          "backendDOMNodeId": 711
+        },
+        {
+          "nodeId": "15",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "article"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 5
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "543",
+          "childIds": [
+            "16",
+            "563",
+            "600",
+            "606",
+            "624",
+            "626",
+            "630",
+            "636",
+            "641",
+            "643",
+            "645",
+            "651",
+            "685",
+            "690",
+            "694",
+            "696",
+            "702",
+            "704",
+            "709",
+            "711",
+            "802",
+            "827",
+            "829",
+            "835",
+            "837",
+            "896",
+            "898",
+            "948",
+            "952",
+            "958",
+            "960",
+            "962",
+            "968",
+            "970",
+            "972",
+            "974",
+            "978",
+            "984",
+            "986",
+            "991",
+            "1080",
+            "1088",
+            "1093",
+            "1098",
+            "1116",
+            "1120",
+            "1126",
+            "1134",
+            "1136",
+            "1138",
+            "1140",
+            "1185",
+            "1187",
+            "1191",
+            "1197",
+            "1199",
+            "1204",
+            "1245",
+            "1247",
+            "1265",
+            "1267",
+            "1310",
+            "1314",
+            "1320",
+            "1322",
+            "1324",
+            "1375",
+            "1409",
+            "1411",
+            "1415",
+            "1421",
+            "1439",
+            "1444",
+            "1446",
+            "1466",
+            "1503",
+            "1505",
+            "1523",
+            "1528",
+            "1532",
+            "1538",
+            "1544",
+            "1546",
+            "1548",
+            "1550",
+            "1555",
+            "1594",
+            "1596",
+            "1598",
+            "1602",
+            "1608",
+            "1612",
+            "1646",
+            "1648",
+            "1654",
+            "1687",
+            "1708",
+            "1712",
+            "2099",
+            "2112",
+            "2122"
+          ],
+          "backendDOMNodeId": 15
+        },
+        {
+          "nodeId": "543",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "main"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 118
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "529",
+          "childIds": [
+            "544",
+            "552",
+            "15",
+            "2160"
+          ],
+          "backendDOMNodeId": 543
+        },
+        {
+          "nodeId": "529",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "176",
+          "childIds": [
+            "543"
+          ],
+          "backendDOMNodeId": 529
+        },
+        {
+          "nodeId": "176",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "99",
+          "childIds": [
+            "529",
+            "2168",
+            "2352",
+            "2354",
+            "2802",
+            "2812",
+            "2814",
+            "2816",
+            "2818",
+            "2821",
+            "2827",
+            "2935",
+            "2997",
+            "3018"
+          ],
+          "backendDOMNodeId": 176
+        },
+        {
+          "nodeId": "99",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "21",
+          "childIds": [
+            "101",
+            "109",
+            "3269",
+            "3270",
+            "116",
+            "176",
+            "3112",
+            "3113",
+            "3122",
+            "3145",
+            "3286",
+            "3160",
+            "3291",
+            "3292",
+            "3176"
+          ],
+          "backendDOMNodeId": 99
+        },
+        {
+          "nodeId": "21",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "2",
+          "childIds": [
+            "99"
+          ],
+          "backendDOMNodeId": 21
+        },
+        {
+          "nodeId": "2",
+          "ignored": false,
+          "role": {
+            "type": "internalRole",
+            "value": "RootWebArea"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 144
+          },
+          "name": {
+            "type": "computedString",
+            "value": "Джон Гилл: исторический контекст — мир пуритан и баптистов XVIII века | Господь Бог — Сила Моя",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label",
+                "superseded": true
+              },
+              {
+                "type": "relatedElement",
+                "value": {
+                  "type": "computedString",
+                  "value": "Джон Гилл: исторический контекст — мир пуритан и баптистов XVIII века | Господь Бог — Сила Моя"
+                },
+                "nativeSource": "title"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "focusable",
+              "value": {
+                "type": "booleanOrUndefined",
+                "value": true
+              }
+            },
+            {
+              "name": "focused",
+              "value": {
+                "type": "booleanOrUndefined",
+                "value": true
+              }
+            },
+            {
+              "name": "url",
+              "value": {
+                "type": "string",
+                "value": "http://127.0.0.1:8083/articles/dzhon-gill-istoricheskiy-kontekst/"
+              }
+            }
+          ],
+          "childIds": [
+            "21"
+          ],
+          "backendDOMNodeId": 2,
+          "frameId": "DC000C12544C56E5613F0FDE4192730D"
+        }
+      ]
+    },
+    "heading": {
+      "nodes": [
+        {
+          "nodeId": "717",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "columnheader"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 19
+          },
+          "name": {
+            "type": "computedString",
+            "value": "СОБЫТИЕ",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "contents",
+                "value": {
+                  "type": "computedString",
+                  "value": "СОБЫТИЕ"
+                }
+              },
+              {
+                "type": "attribute",
+                "attribute": "title",
+                "superseded": true
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "readonly",
+              "value": {
+                "type": "boolean",
+                "value": false
+              }
+            },
+            {
+              "name": "required",
+              "value": {
+                "type": "boolean",
+                "value": false
+              }
+            }
+          ],
+          "parentId": "714",
+          "childIds": [
+            "718"
+          ],
+          "backendDOMNodeId": 717
+        },
+        {
+          "nodeId": "718",
+          "ignored": false,
+          "role": {
+            "type": "internalRole",
+            "value": "StaticText"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 158
+          },
+          "name": {
+            "type": "computedString",
+            "value": "СОБЫТИЕ",
+            "sources": [
+              {
+                "type": "contents",
+                "value": {
+                  "type": "computedString",
+                  "value": "СОБЫТИЕ"
+                }
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "717",
+          "childIds": [
+            "-1000000266"
+          ],
+          "backendDOMNodeId": 718
+        },
+        {
+          "nodeId": "714",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "row"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 145
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "713",
+          "childIds": [
+            "715",
+            "717",
+            "719"
+          ],
+          "backendDOMNodeId": 714
+        },
+        {
+          "nodeId": "713",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "rowgroup"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 146
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "712",
+          "childIds": [
+            "714"
+          ],
+          "backendDOMNodeId": 713
+        },
+        {
+          "nodeId": "712",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "table"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 167
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "relatedElement",
+                "nativeSource": "tablecaption"
+              },
+              {
+                "type": "attribute",
+                "attribute": "summary"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "711",
+          "childIds": [
+            "713",
+            "721"
+          ],
+          "backendDOMNodeId": 712
+        },
+        {
+          "nodeId": "711",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "15",
+          "childIds": [
+            "712"
+          ],
+          "backendDOMNodeId": 711
+        },
+        {
+          "nodeId": "15",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "article"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 5
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "543",
+          "childIds": [
+            "16",
+            "563",
+            "600",
+            "606",
+            "624",
+            "626",
+            "630",
+            "636",
+            "641",
+            "643",
+            "645",
+            "651",
+            "685",
+            "690",
+            "694",
+            "696",
+            "702",
+            "704",
+            "709",
+            "711",
+            "802",
+            "827",
+            "829",
+            "835",
+            "837",
+            "896",
+            "898",
+            "948",
+            "952",
+            "958",
+            "960",
+            "962",
+            "968",
+            "970",
+            "972",
+            "974",
+            "978",
+            "984",
+            "986",
+            "991",
+            "1080",
+            "1088",
+            "1093",
+            "1098",
+            "1116",
+            "1120",
+            "1126",
+            "1134",
+            "1136",
+            "1138",
+            "1140",
+            "1185",
+            "1187",
+            "1191",
+            "1197",
+            "1199",
+            "1204",
+            "1245",
+            "1247",
+            "1265",
+            "1267",
+            "1310",
+            "1314",
+            "1320",
+            "1322",
+            "1324",
+            "1375",
+            "1409",
+            "1411",
+            "1415",
+            "1421",
+            "1439",
+            "1444",
+            "1446",
+            "1466",
+            "1503",
+            "1505",
+            "1523",
+            "1528",
+            "1532",
+            "1538",
+            "1544",
+            "1546",
+            "1548",
+            "1550",
+            "1555",
+            "1594",
+            "1596",
+            "1598",
+            "1602",
+            "1608",
+            "1612",
+            "1646",
+            "1648",
+            "1654",
+            "1687",
+            "1708",
+            "1712",
+            "2099",
+            "2112",
+            "2122"
+          ],
+          "backendDOMNodeId": 15
+        },
+        {
+          "nodeId": "543",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "main"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 118
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "title"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "529",
+          "childIds": [
+            "544",
+            "552",
+            "15",
+            "2160"
+          ],
+          "backendDOMNodeId": 543
+        },
+        {
+          "nodeId": "529",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "176",
+          "childIds": [
+            "543"
+          ],
+          "backendDOMNodeId": 529
+        },
+        {
+          "nodeId": "176",
+          "ignored": false,
+          "role": {
+            "type": "role",
+            "value": "generic"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 88
+          },
+          "name": {
+            "type": "computedString",
+            "value": "",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              }
+            ]
+          },
+          "properties": [],
+          "parentId": "99",
+          "childIds": [
+            "529",
+            "2168",
+            "2352",
+            "2354",
+            "2802",
+            "2812",
+            "2814",
+            "2816",
+            "2818",
+            "2821",
+            "2827",
+            "2935",
+            "2997",
+            "3018"
+          ],
+          "backendDOMNodeId": 176
+        },
+        {
+          "nodeId": "99",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "21",
+          "childIds": [
+            "101",
+            "109",
+            "3269",
+            "3270",
+            "116",
+            "176",
+            "3112",
+            "3113",
+            "3122",
+            "3145",
+            "3286",
+            "3160",
+            "3291",
+            "3292",
+            "3176"
+          ],
+          "backendDOMNodeId": 99
+        },
+        {
+          "nodeId": "21",
+          "ignored": true,
+          "ignoredReasons": [
+            {
+              "name": "uninteresting",
+              "value": {
+                "type": "boolean",
+                "value": true
+              }
+            }
+          ],
+          "role": {
+            "type": "role",
+            "value": "none"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 0
+          },
+          "parentId": "2",
+          "childIds": [
+            "99"
+          ],
+          "backendDOMNodeId": 21
+        },
+        {
+          "nodeId": "2",
+          "ignored": false,
+          "role": {
+            "type": "internalRole",
+            "value": "RootWebArea"
+          },
+          "chromeRole": {
+            "type": "internalRole",
+            "value": 144
+          },
+          "name": {
+            "type": "computedString",
+            "value": "Джон Гилл: исторический контекст — мир пуритан и баптистов XVIII века | Господь Бог — Сила Моя",
+            "sources": [
+              {
+                "type": "relatedElement",
+                "attribute": "aria-labelledby"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label"
+              },
+              {
+                "type": "attribute",
+                "attribute": "aria-label",
+                "superseded": true
+              },
+              {
+                "type": "relatedElement",
+                "value": {
+                  "type": "computedString",
+                  "value": "Джон Гилл: исторический контекст — мир пуритан и баптистов XVIII века | Господь Бог — Сила Моя"
+                },
+                "nativeSource": "title"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "focusable",
+              "value": {
+                "type": "booleanOrUndefined",
+                "value": true
+              }
+            },
+            {
+              "name": "focused",
+              "value": {
+                "type": "booleanOrUndefined",
+                "value": true
+              }
+            },
+            {
+              "name": "url",
+              "value": {
+                "type": "string",
+                "value": "http://127.0.0.1:8083/articles/dzhon-gill-istoricheskiy-kontekst/"
+              }
+            }
+          ],
+          "childIds": [
+            "21"
+          ],
+          "backendDOMNodeId": 2,
+          "frameId": "DC000C12544C56E5613F0FDE4192730D"
+        }
+      ]
+    }
+  },
+  "keys": [
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Перейти к содержимому"
+    },
+    {
+      "tag": "BUTTON",
+      "inside": false,
+      "label": "Коротко\n5 тезисов\n›"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "диссентерских"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "ковенантного богословия"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "баптистских"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Символическая библиотека реформатских и пуританских авторов рядом с еврейской Библией — открыть просмотр"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Нонконформист"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Козьего двора"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "партикулярных баптистов"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "стойкость святых"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Художественная реконструкция собрания английских диссентеров в частном доме — открыть просмотр"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Инфографическая реконструкция четырёх актов Кларендонского кодекса 1661–1665 годов — открыть просмотр"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Символическая реконструкция правового и общественного давления на английских нонконформистов — открыть просмотр"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "диссентерских"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "общих баптистов"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Хорслидаун"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "вечное рождение"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "баптистские"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "партикулярных баптистов"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Тули-стрит"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Художественная реконструкция проповеди в лондонском Саутварке XVIII века — открыть просмотр"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Gin Craze"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Козий двор"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Картер-Лейн"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Кеннингтон-Коммон"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Художественная реконструкция проповеди Джорджа Уайтфилда на Кеннингтон-Коммон — открыть просмотр"
+    },
+    {
+      "tag": "IMG",
+      "inside": false,
+      "label": "Художественная реконструкция юного читателя в кеттерингской книжной лавке — открыть просмотр"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "вечного оправдания"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Солтерс-Холл"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Часть I «Человек»"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "Кеттеринг"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Часть II «Учёный»"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Часть III «Экзегет»"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Часть IV «Наследие»"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Справочник"
+    },
+    {
+      "tag": "ABBR",
+      "inside": false,
+      "label": "гиперкальвинист"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Act of Uniformity 1662"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Corporation Act 1661"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Conventicle Act 1664"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Five Mile Act 1665"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Test Act 1673"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "UK Parliament: Catholics and Protestants"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Hansard: repeal of Test and Corporation Acts, 1828"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Hansard: Religious Tests in Universities, 1851"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Hansard: Fellows of Colleges Declaration Bill, 186"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Thomas Crosby, The History of the English Baptists"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Adam Taylor, The History of the English General Ba"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "First London Baptist Confession, 1644/1646"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Second London Baptist Confession, 1677/1689"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Robert Land, Doctrinal Controversies of English Pa"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Jonathan Arnold, The Reformed Theology of Benjamin"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Queen Mary Dissenting Academies Project"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Mark Burden, Academical Learning at the Dissenters"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "J. W. A. Smith, The Curriculum of the Dissenting A"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Olive Lewis, The Teaching of Science in English Di"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Irene Parker, Dissenting Academies in England (191"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Particular Baptist Fund: institutional history"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Jesse Owens, The Salters’ Hall Controversy of 1719"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Jesse Owens, “Heresy, Subscription, or Both?”"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Scott Sealy, Church Authority and Non-Subscription"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Roger Thomas, “The Non-Subscription Controversy…”"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "A Charge of Partiality, Imposition, and Assuming A"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "John Rippon, A Brief Memoir of the Life and Writin"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Samuel Paterson, Catalogue of the Library of John "
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "PRDL: John Gill"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "SBJT 25.1 (2021)"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Jonathan White, PhD on Gill and hyper-Calvinism"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Curt Daniel, Hyper-Calvinism and John Gill"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Ruth Macritchie, Glasgow PhD (2025)"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Clive Jarvis, Glasgow PhD (2001)"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "“History of Horselydown”, Surrey Archaeological Co"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "British History Online: Stockwell and Kennington"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Museum of London: Gin Craze"
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Brian Cowan, “What Was Masculine About the Public "
+    },
+    {
+      "tag": "A",
+      "inside": false,
+      "label": "Об авторе →"
+    }
+  ]
+}
