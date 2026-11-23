@@ -209,8 +209,13 @@ const shortTitle = (t: string) => t.replace(/^(?:Часть|Глава)\s+[IVXLC
   var listen = ov.querySelector('[data-gbat-listen]');
   if (listen) listen.addEventListener('click', function () {
     closeOverlay();
-    var ember = document.querySelector('.mobile-top-bar .gb-ember') ||
-                document.querySelector('.gbs-theme-corner .gb-ember');
+    /* Both Play controls exist in the DOM. The inactive one is display:none
+       across the canonical 85em Gill breakpoint. Never click hidden mobile
+       Play on desktop (or the hidden desktop rail on mobile). */
+    var desktop = window.matchMedia('(min-width: 85em)').matches;
+    var ember = document.querySelector(desktop
+      ? '.gbs-theme-corner .gb-ember'
+      : '.mobile-top-bar .gb-ember');
     if (ember) setTimeout(function () { ember.click(); }, 120);
   });
   /* Continue closes the TOC without moving the reader to a section start.

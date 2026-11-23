@@ -45,6 +45,11 @@ for (const owner of ['gill-series-toc', 'gill-part-toc', 'gill-settings', 'gbs2-
 assert.ok(!floating.includes('gill-learning'), 'retired Gill Learning overlay must not be reintroduced');
 const seriesChrome = fs.readFileSync('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro', 'utf8');
 const gillPartToc = fs.readFileSync('src/components/article-pilots/gill-series/GillPartTocOverlay.astro', 'utf8');
+// W94: the TOC Listen CTA must activate the visible Play owner for the same
+// desktop/mobile breakpoint used by floating-cluster.css; never hidden mobile.
+assert.match(gillPartToc, /window\.matchMedia\('\(min-width: 85em\)'\)\.matches/, 'TOC Listen must respect the canonical 85em breakpoint');
+assert.match(gillPartToc, /desktop\s*\?\s*'\.gbs-theme-corner \.gb-ember'\s*:\s*'\.mobile-top-bar \.gb-ember'/, 'TOC Listen must select the visible desktop or mobile Play');
+assert.ok(!gillPartToc.includes("document.querySelector('.mobile-top-bar .gb-ember') ||"), 'TOC Listen must never prioritize a hidden mobile Play on desktop');
 const study = fs.readFileSync('src/components/article-pilots/gill-series/GillAnalyticsStudy.astro', 'utf8');
 assert.equal(seriesChrome.split('<GillAnalyticsStudy ').length - 1, 1,
   'each SeriesReaderChrome must mount exactly one canonical Analytics study');
