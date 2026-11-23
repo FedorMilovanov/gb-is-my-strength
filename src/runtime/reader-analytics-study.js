@@ -21,7 +21,10 @@ export function initReaderAnalyticsStudy() {
     if(!series.length&&!editor.length){root.remove();return;}
     root.hidden=false;
     const sessionKey='gb-reader-study-v1:'+location.pathname;
-    const signature=JSON.stringify({article:editor.map(q=>q.question),series:series.map(q=>q.id)});
+    // A saved attempt is valid only for the exact authored answer bank.
+    // Question text/IDs alone were insufficient: changing options or a correct
+    // index could silently resume and grade a stale response.
+    const signature=JSON.stringify({article:editor,series});
     let current={mode:editor.length?'article':'series',step:0,score:0,cycle:[],last:-1,confidence:null,
       answered:false,selected:-1,seen:0,calibrated:0,streak:0,best:0,practiceScore:0,finished:false};
     try{const saved=JSON.parse(sessionStorage.getItem(sessionKey)||'null');
