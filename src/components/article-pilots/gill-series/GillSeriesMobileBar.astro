@@ -361,7 +361,10 @@ const page = config.pages[pageId];
     position:relative;z-index:1;box-sizing:border-box;
     display:grid;place-items:center;flex:0 0 44px;
     width:44px;height:44px;min-width:44px;min-height:44px;
-    margin:0;padding:0;border:0;border-radius:50%;
+    /* The button's transparent 44px box must remain hit-testable in every
+       corner. A circular border-radius clips pointer targeting at the tiny
+       speed echo even though the painted ring itself is fully circular. */
+    margin:0;padding:0;border:0;border-radius:0;
     background:transparent;color:var(--gill-mobile-bar-ink,#291f1b);
     box-shadow:none;transform:none;
   }
