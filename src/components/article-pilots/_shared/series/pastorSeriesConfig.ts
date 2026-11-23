@@ -339,7 +339,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 35,
       readingProgressTotalMin: 35,
       railNowTitle: 'Диотрефы нашего времени',
-      railCover: '../../images/pastor-series/og-20-antisovetov-pastoru.webp',
+      railCover: '../../images/pastor-series/og-diotrefy-nashego-vremeni.webp',
       partDialogLabel: 'Досье A · Диотрефы нашего времени',
       partToc: [
         { href: '#short-summary', label: 'Коротко', level: 2, current: true, summary: 'Библейский профиль Диотрефа и доказательная рамка досье — без ярлыков и диагнозов.' },

@@ -577,6 +577,7 @@ async function inspect(browserType, engine, profile) {
         };
         return {
           firstFoldTitle,
+          readerRailCover: document.querySelector('.gbs2-current')?.getAttribute('style') || '',
           socialPreview: {
             ogImage: document.querySelector('meta[property="og:image"]')?.content || '',
             twitterImage: document.querySelector('meta[name="twitter:image"]')?.content || '',
@@ -644,6 +645,16 @@ async function inspect(browserType, engine, profile) {
           /зеркал/i.test(state.socialPreview.ogAlt) &&
           existsSync(join(DIST, 'images', 'pastor-series', 'og-diotrefy-nashego-vremeni.webp')),
         JSON.stringify(state.socialPreview),
+      );
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'dossier-reader-rail-cover',
+        state.readerRailCover.includes('url(') &&
+          state.readerRailCover.includes('/images/pastor-series/og-diotrefy-nashego-vremeni.webp') &&
+          !state.readerRailCover.includes('og-20-antisovetov-pastoru.webp') &&
+          existsSync(join(DIST, 'images', 'pastor-series', 'og-diotrefy-nashego-vremeni.webp')),
+        state.readerRailCover,
       );
       record(engine, `${profile.id}-${mode}`, 'reader-header-no-internal-wave', state.antiKicker === 'Историко-богословское исследование', JSON.stringify({ heading: state.antiKicker }));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
