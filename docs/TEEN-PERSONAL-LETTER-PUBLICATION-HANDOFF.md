@@ -2,6 +2,96 @@
 
 Статус: **EDITORIAL DRAFT / НЕ ПУБЛИКОВАТЬ**. Авторский PR: #2377. Системная интеграция: #2368 (3+4). Дата: 2026-11-23.
 
+## W41 — обзор 65 источников и внедрение только 5 микронаблюдений (не психологические диагнозы)
+
+**Объём и метод:** отобрано 65 **различных** ссылок из результатов исследовательского поиска: 30 об отношениях с родителями и скрытности, 16 о сверстниках/онлайне, 13 о стыде и помощи, 6 официальных источников безопасности. Уровни: **A** — просмотр библиографической карточки/аннотации/фрагмента, не заявляется прочтение платного полного текста; **F** — изучен доступный развёрнутый первичный текст/аннотация с методологией; **G** — официальное практическое руководство. **Это тематический обзор и редакционный отбор, не систематический метаанализ, не 65 независимых экспериментальных подтверждений.** Корреляции не превращать в причинность, лабораторные эффекты группы — в обязательные мотивы каждого подростка.
+
+**Содержательный коммит W41:** `11174e700f06b8af7fd346c291d72a180951a0e5`; 5 адресных редактирований, 1987→~2065 слов, пять прежних H2. 
+1. **Компания может не приказывать:** иногда подросток *предполагает* риск отвержения за отказ поддержать травлю. Опора: Gardner–Steinberg; Chein et al.; метаанализ влияния сверстников; Jungert et al. о защитниках.
+2. **Страх разоблачения может заслонить вред жертве:** в рассказе о чате дана возможная внутренняя перемена фокуса «найдут переписку» vs. «её уже увидел пострадавший». Это художественная иллюстрация морального самоустранения, **не установленная универсальная последовательность**.
+3. **Похвала за «без проблем» как возможный источник давления:** не утверждать, что родители реально любят условно. Опора: Assor et al. о переживаемом условном одобрении.
+4. **Честное признание могут припомнить в следующем конфликте:** страх отдалённых последствий отделён от факта, что родитель неизбежно так поступит. Опора: Tilton-Weaver et al. 2010, 982 подростка, 3 волны, семейный ответ и дальнейшее раскрытие; подростку не назначать обязательное признание опасному взрослому.
+5. **Стыд «я весь плохой» vs конкретный поступок:** сохранён приоритет покаяния, исправления вреда и милости во Христе; не утверждать, что стыд, слёзы или постоянная тревога всегда доказывают ожесточение. Опора: Tangney et al.; Stuewig et al.; ограничение из обзора pediatric scrupulosity.
+
+**Не внедрять по итогам 65 ссылок:** формулу «секретность вызывает депрессию» как однозначный закон: Dutch longitudinal Frijns et al. и urban US Smetana/Laird дают разные направленности, поэтому причинность зависит от выборки/модели. Не равнять право не раскрывать медицинский/личный факт добровольному обману. Не классифицировать богословские сомнения как «дым». Не использовать нейроисследования как оправдание жестокости «мозг подростка виноват». Не назначать постоянные тесты нравственной чистоты подростку с навязчивыми религиозными опасениями. Не обещать секретности там, где есть угрозы/насилие. Регистр ниже содержит источники для агентов, **не для размещения 65 ссылок в читательской статье**.
+
+### Регистр просмотренных исследований и рекомендаций
+
+**Родители, автономия, секретность — 30:**
+1. [Stattin & Kerr — Parental Monitoring: A Reinterpretation](https://pubmed.ncbi.nlm.nih.gov/11016567/) — **A**; Знания родителей сильнее связаны с тем, что дети рассказывают сами, чем с надзором.
+2. [Kerr & Stattin — What Parents Know](https://pubmed.ncbi.nlm.nih.gov/10830980/) — **A**; Проверка разницы между слежкой и добровольным раскрытием.
+3. [Smetana et al. — Disclosure and Secrecy](https://pubmed.ncbi.nlm.nih.gov/16460534/) — **A**; Нормы родительского права знать различаются по темам.
+4. [Smetana et al. — Activities in Different Domains](https://pubmed.ncbi.nlm.nih.gov/18708247/) — **A**; Личное, дружеское и рискованное не образуют одну категорию.
+5. [Keijsers & Poulin — Developmental Changes](https://pubmed.ncbi.nlm.nih.gov/23477535/) — **A**; С возрастом меняется объём раскрытия и секретов.
+6. [Tilton-Weaver et al. — Open Up or Close Down](https://pubmed.ncbi.nlm.nih.gov/19716171/) — **F**; 982 подростка, 3 волны: ответ родителя влияет на дальнейшую открытость.
+7. [Tilton-Weaver — Information Management](https://pubmed.ncbi.nlm.nih.gov/24002679/) — **A**; Причины скрытности зависят от поддержки и правил.
+8. [Marshall et al. — Information Management](https://pubmed.ncbi.nlm.nih.gov/16154632/) — **A**; Подростки балансируют самостоятельность и сохранение связи с родителями.
+9. [Cumsille et al. — Shading the Truth](https://pubmed.ncbi.nlm.nih.gov/19926123/) — **A**; Частичное раскрытие, избегание и ложь — разные стратегии.
+10. [Laird et al. — Concealing Misbehavior](https://pubmed.ncbi.nlm.nih.gov/19570571/) — **A**; Сокрытие проступка и социальный контекст; без универсального вывода.
+11. [Authority, Autonomy, and Deception](https://pubmed.ncbi.nlm.nih.gov/29152872/) — **A**; Оценка допустимости родительского контроля зависит от области жизни.
+12. [Frijns et al. — Disclosure–Adjustment Link](https://pubmed.ncbi.nlm.nih.gov/19573902/) — **A**; Различать секретность и отсутствие добровольных рассказов.
+13. [Keijsers et al. — Gender Differences in Secrecy](https://pubmed.ncbi.nlm.nih.gov/20053026/) — **A**; Лонгитюдные различия с возрастом и семейными отношениями.
+14. [Keeping Secrets from Parents: Daily Variations](https://pubmed.ncbi.nlm.nih.gov/19446872/) — **A**; Дневниковые данные о ежедневной динамике сокрытия.
+15. [Disclosure, Secrecy and Lying: Latent Classes](https://pmc.ncbi.nlm.nih.gov/articles/PMC9090863/) — **A**; 332 подростка: различаются сочетания раскрытия, секретов и лжи.
+16. [Voluntariness, Timing and Consistency](https://pubmed.ncbi.nlm.nih.gov/37859549/) — **A**; Добровольность и момент признания — разные измерения.
+17. [I Didn't Want To, But Then I Told](https://pubmed.ncbi.nlm.nih.gov/30507221/) — **A**; Рассказы подростков о трудных признаниях.
+18. [Mother-Adolescent Monitoring Dynamics](https://pubmed.ncbi.nlm.nih.gov/24931554/) — **A**; Родительская вовлечённость работает по-разному при разном признании авторитета.
+19. [Eight-Country Longitudinal Disclosure Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC12894135/) — **A**; Нельзя автоматически приравнивать расспросы к вредному контролю.
+20. [Family Emotional Climate and Communication](https://pmc.ncbi.nlm.nih.gov/articles/PMC7826314/) — **A**; Близость и ощущение чрезмерного контроля меняют взаимосвязи.
+21. [Conditional Positive Regard and Shame](https://pubmed.ncbi.nlm.nih.gov/22078668/) — **A**; Условная похвала может усиливать стыд после неудачи.
+22. [Emotional Costs of Parents' Conditional Regard](https://pubmed.ncbi.nlm.nih.gov/14686884/) — **A**; Цена одобрения, переживаемого как условное.
+23. [Autonomy Support and Honesty](https://pubmed.ncbi.nlm.nih.gov/24636683/) — **A**; Поддержка автономии связана с ценностью правдивости.
+24. [Beliefs About Parents' Right to Know](https://doi.org/10.1111/jora.12194) — **A**; Различия между личными и рискованными вопросами.
+25. [Parental Responses and Guilt Induction (2026)](https://pubmed.ncbi.nlm.nih.gov/42484288/) — **A**; Роль реакции на признание и различия в вине за поступок / стыде.
+26. [Secretive Monitoring and Lying (2026)](https://pubmed.ncbi.nlm.nih.gov/42489010/) — **A**; Подростки оценивают даже родительский обман не единообразно.
+27. [Configurations of Disclosure and Concealment (2026)](https://pmc.ncbi.nlm.nih.gov/articles/PMC13440715/) — **A**; Профили мотивации: приватность, санкции, стыд.
+28. [Parents' Judgments About Lying to Adolescents](https://pubmed.ncbi.nlm.nih.gov/31006944/) — **A**; Двойные стандарты взрослых и детей требуют контекста.
+29. [What Parents Don't Know: Urban Adolescents](https://pmc.ncbi.nlm.nih.gov/articles/PMC5116251/) — **F**; В этой выборке депрессивные симптомы предсказывали дальнейшую секретность.
+30. [Privacy Invasion and Communication Theories](https://doi.org/10.1017/9781009418652.003) — **A**; Вторжение в частную жизнь и информационные границы.
+
+**Сверстники и кибертравля — 16:**
+31. [Gardner & Steinberg — Peer Influence on Risk Taking](https://pubmed.ncbi.nlm.nih.gov/16060809/) — **A**; Эксперимент: присутствие сверстников способно менять оценку риска.
+32. [Chein et al. — Peers Increase Risk Taking](https://pubmed.ncbi.nlm.nih.gov/21499511/) — **A**; Потенциальный механизм вознаграждения при сверстниках.
+33. [Meta-Analysis of Susceptibility to Peer Influence (2026)](https://onlinelibrary.wiley.com/doi/10.1002/jad.70214) — **A**; Влияние различается по методам; литература перекошена к рискованию.
+34. [Peers Increase Risk Taking with Known Probabilities](https://pmc.ncbi.nlm.nih.gov/articles/PMC4305434/) — **A**; Реакция сверстников влияет даже при известном риске.
+35. [Age Differences in Resistance to Peer Influence](https://pmc.ncbi.nlm.nih.gov/articles/PMC2779518/) — **A**; Восприимчивость к ровесникам зависит от возраста.
+36. [Functions of Peer Influence — Synthesis](https://onlinelibrary.wiley.com/doi/full/10.1111/jora.12606) — **A**; Подстройка под компанию не всегда происходит через прямой приказ.
+37. [Suler — Online Disinhibition Effect](https://pubmed.ncbi.nlm.nih.gov/15257832/) — **A**; Шесть механизмов растормаживания, не только отсутствие лица.
+38. [Kowalski et al. — Cyberbullying Meta-analysis](https://pubmed.ncbi.nlm.nih.gov/24512111/) — **A**; Обзор причин и последствий кибертравли.
+39. [Moral Disengagement and Bullying Roles](https://pubmed.ncbi.nlm.nih.gov/30900277/) — **A**; Отличать агрессора, защитника, безучастного свидетеля.
+40. [Moral Disengagement and Cyberbullying — Meta](https://pubmed.ncbi.nlm.nih.gov/34916984/) — **A**; Связь оправданий и киберагрессии, корреляция, не диагноз.
+41. [Early Adolescents' Motivations to Defend Victims](https://pmc.ncbi.nlm.nih.gov/articles/PMC9324175/) — **F**; 460 подростков: автономная мотивация связана с защитой жертв.
+42. [Fear of Being Singled Out in Bullying](https://www.tandfonline.com/doi/full/10.1080/01425692.2020.1789846) — **A**; Свидетели боятся стать следующей мишенью.
+43. [Determinants of Cyberbullying Bystander Behavior](https://pubmed.ncbi.nlm.nih.gov/24359305/) — **A**; Влияние морального оправдания и положения в группе.
+44. [Bystander Intervention: Systematic Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC13612459/) — **A**; Факторы вмешательства свидетелей, без приказа стать героем.
+45. [Internet Impropriety and Moral Identity](https://pubmed.ncbi.nlm.nih.gov/36344780/) — **A**; Моральная идентичность и онлайн-поступки.
+46. [Peer Influences on Adolescent Decision Making](https://pmc.ncbi.nlm.nih.gov/articles/PMC4276317/) — **A**; Критическая рамка: экспериментальная задача не равна всей жизни.
+
+**Стыд, религия, просьба о помощи — 13:**
+47. [Guilt–Shame Proneness in Early Adolescence](https://pubmed.ncbi.nlm.nih.gov/23895166/) — **A**; Стыд за всё «я» и вина за действие связаны с разными реакциями.
+48. [Shame and Guilt Predict Later Risk Behavior](https://pubmed.ncbi.nlm.nih.gov/24842762/) — **A**; Лонгитюд: разные связи с рискованным поведением.
+49. [Shame/Guilt and Responses to Anger](https://pubmed.ncbi.nlm.nih.gov/8636899/) — **A**; Стыд связан с отстранением и агрессией, не сводить к раскаянию.
+50. [Pediatric Scrupulosity Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC12025576/) — **F**; Морально-религиозная тревога не равна реальной нравственной вине.
+51. [Religious Doubts and Mental Health](https://pubmed.ncbi.nlm.nih.gov/20382416/) — **A**; Религиозные сомнения сами по себе не доказывают намеренного зла.
+52. [Young People's Mental Health Help-Seeking Review](https://pubmed.ncbi.nlm.nih.gov/31965309/) — **F**; Обзор 53 исследований: стыд, доверие и секретность как барьеры.
+53. [Adolescents' Disclosure of Mental Illness to Parents](https://pubmed.ncbi.nlm.nih.gov/33106039/) — **A**; Скрываемое состояние здоровья не равняется добровольной лжи.
+54. [Help-Seeking Systematic Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC7291482/) — **A**; Важна фигура одного заслуживающего доверия взрослого.
+55. [Lie-Telling, Secrecy and Depressive Symptoms](https://pubmed.ncbi.nlm.nih.gov/31933060/) — **A**; Продольные связи; без причинных диагнозов.
+56. [Keeping a Secret and Psychosocial Adjustment](https://journals.sagepub.com/doi/10.1177/0165025408098020) — **A**; Один личный секрет не то же, что устойчивая стратегия обмана.
+57. [European Adolescent Mental Health Focus Groups (2026)](https://link.springer.com/article/10.1007/s00787-026-03216-y) — **A**; Страх, что взрослые не воспримут всерьёз.
+58. [Qualitative Interviews on Anxiety Help-Seeking](https://link.springer.com/article/10.1007/s00787-020-01707-0) — **A**; Стыд и зависимость от взрослых как барьеры.
+59. [Parents' Experiences of Adolescent Depression Review](https://link.springer.com/article/10.1186/s40359-025-03923-2) — **A**; Семейный страх стигмы без универсального диагноза подростку.
+
+**Официальная безопасность — 6:**
+60. [StopBullying.gov — Report Cyberbullying](https://www.stopbullying.gov/cyberbullying/how-to-report) — **G**; Не пересылать травлю; сохранять доказательства.
+61. [NCMEC — Sextortion](https://www.ncmec.org/theissues/sextortion) — **G**; Не платить; блокировать, но не удалять сообщения/профиль.
+62. [NCMEC — Take It Down](https://takeitdown.ncmec.org/) — **G**; Не пересылать и не скачивать изображения ради обращения за помощью.
+63. [AAP — Adolescent Confidentiality Policy (2024)](https://publications.aap.org/pediatrics/article/153/5/e2024066326/197124/) — **G**; Конфиденциальность имеет пределы и зависит от ситуации/юрисдикции.
+64. [AAP — Confidentiality Technical Report (2024)](https://publications.aap.org/pediatrics/article/153/5/e2024066327/197125/) — **G**; Личное пространство и безопасность требуют раздельного обсуждения.
+65. [FBI — Sextortion](https://www.fbi.gov/how-we-can-help-you/common-frauds-and-scams/sextortion) — **G**; Угрозы и шантаж требуют помощи, а не наказания жертвы.
+
+**Редакторская граница:** W41 не является допуском к публикации. Title/H1 = `Пока все думают, что у тебя всё «нормально»`, `draft: true`, `noindex: true`, source-only PR #2377, интеграцию и общие файлы не трогать. Проверки на точном SHA записывать отдельно.
+
 ## W40 — независимая вычитка W39, текстовые швы, Евангелие и сохранение доказательств
 
 - Источник: входящий составной редакторский разбор `Вставленный текст(20261123-202323).txt`, ~493 строки с тремя независимыми проходами, рейтингами и патчами. **Оценки 8,8/10, 6,5/10, «после 12 правок будет 10/10» — мнения редакторов, не результаты формального QA**. Не превращать их в публикационный критерий.
