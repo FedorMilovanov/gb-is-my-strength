@@ -33,14 +33,73 @@ async function scene(browser,name,path,width,height){
   folded:document.body.classList.contains('np-u-hide-right'),
   noteCards:document.querySelectorAll('#npW57NotesDetails').length,
   researchCards:document.querySelectorAll('#npUResearch details').length,
-  title:document.querySelector('main h1')?.textContent?.trim().slice(0,100)||''
+  title:document.querySelector('main h1')?.textContent?.trim().slice(0,100)||'',
+  w57RuntimeScripts:[...document.scripts].filter(s=>/\/__reader_w57__\/(?:reader_w57|reader_universal_preview)\.js/.test(s.src)).length,
+  nativeToc:!!document.querySelector('#mobPartTocBtn')?.getClientRects().length,
+  nativeSettings:!!document.querySelector('#mobSettingsBtn')?.getClientRects().length,
+  nativePlay:!!document.querySelector('.reader-mobile-play')?.getClientRects().length,
+  nativeSpeed:!!document.querySelector('#mobSpdBadge')?.getClientRects().length
  }));
  const item={name,path,width,height,response:response?.status(),state,errors};REPORT.scenes.push(item);
- if(response?.status()!==200||!state.ready||!state.annotated||state.noteCards!==1)
-   REPORT.failures.push({name,reason:'W57 pilot not mounted exactly once',item});
+ const pilotExpected=width>=1121;
+ if(response?.status()!==200||
+    (pilotExpected&&(!state.ready||!state.annotated||state.noteCards!==1||state.w57RuntimeScripts<2))||
+    (!pilotExpected&&(state.ready||state.annotated||state.noteCards!==0||
+       state.w57RuntimeScripts!==0||!state.nativeToc||!state.nativeSettings||
+       !state.nativePlay||!state.nativeSpeed)))
+   REPORT.failures.push({name,reason:pilotExpected?'desktop W57 missing or incomplete':'native Reader boundary violated',item});
  return{context,page,item};
 }
 async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000)})}}
+// Mobile and the 1120px boundary use the actual native Reader, never W57 DOM.
+async function nativeChecks(sample) {
+ const {page,item}=sample;
+ const state=await page.evaluate(()=>{
+  const bar=document.querySelector('.mobile-top-bar');
+  const play=document.querySelector('.reader-mobile-play');
+  const r=bar?.getBoundingClientRect(),p=play?.getBoundingClientRect();
+  return {barHeight:r?.height,playWidth:p?.width,playHeight:p?.height,
+   overflow:document.documentElement.scrollWidth-innerWidth,
+   pilot:document.body.classList.contains('np-w57-ready'),
+   w57Scripts:[...document.scripts].some(s=>/\/__reader_w57__\/reader_w57\.js/.test(s.src))};
+ });
+ assert.equal(state.pilot,false,'W57 mounted on native mobile/tablet');
+ assert.equal(state.w57Scripts,false,'W57 JavaScript leaked below 1121px');
+ if(item.width<=768) assert.ok(state.barHeight>=58&&state.barHeight<=60,'native mobile reading bar geometry drift');
+ else assert.ok(state.barHeight>=44&&state.barHeight<=46,'native tablet header geometry drift');
+ assert.ok(state.playWidth>=38&&state.playHeight>=38,'native Play touch geometry shrank');
+ assert.ok(state.overflow<=1,'native mobile horizontal overflow');
+ item.native=state;
+ await page.locator('#mobPartTocBtn').click();
+ await page.locator('#partTocOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
+ assert.ok(await page.locator('#gbrTocTab').isVisible(),'native TOC tab hidden');
+ await page.keyboard.press('Escape');
+ await page.locator('#mobSettingsBtn').click();
+ await page.locator('#gillSettingsOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
+ assert.ok(await page.locator('#gillSettingsOverlay .type-choice').count()>=2,'native font controls missing');
+ await page.keyboard.press('Escape');
+ // Test an actual exposed portion of the clickable rate badge, not its
+ // aria-hidden child span whose centre can sit beneath the painted Play disc.
+ const badgePoint=await page.locator('#mobSpdBadge').evaluate(el=>{
+  const r=el.getBoundingClientRect();
+  for(let iy=1;iy<=4;iy++)for(let ix=1;ix<=4;ix++){
+   const x=r.left+r.width*ix/5,y=r.top+r.height*iy/5;
+   if(el.contains(document.elementFromPoint(x,y)))return{x,y};
+  }
+  return null;
+ });
+ assert.ok(badgePoint,'speed badge has no independently hittable visible point');
+ item.native.badgePoint=badgePoint;
+ await page.mouse.click(badgePoint.x,badgePoint.y);
+ await page.locator('#mobSpdBadge[aria-expanded="true"]').waitFor({state:'visible',timeout:4000});
+ await page.keyboard.press('Escape');
+ const playHit=await page.locator('.reader-mobile-play').evaluate(el=>{
+  const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+  return el.contains(document.elementFromPoint(x,y));
+ });
+ assert.equal(playHit,true,'visible Play triangle no longer owns its centre');
+ assert.ok(await page.locator('.reader-mobile-play').isVisible(),'Play disappeared after native checks');
+}
 async function selectText(page){
  // A real reader scrolls in the article, not in the adjacent research rail.
  // Select only visible prose, never an offscreen paragraph or hidden card.
@@ -109,7 +168,7 @@ try{
    ['main',document.querySelector('main.np-u-reader-main')],
    ['article',document.querySelector('article.article-body')],
    ['hero',[...document.querySelectorAll('article.article-body img')].find(x=>x.getBoundingClientRect().width>300)],
-   ['prose',document.getElementById('gill-search-p-012')],
+   ['prose',document.getElementById('gill-search-p-013')],
   ].map(([key,el])=>{
    const r=el?.getBoundingClientRect();
    return[key,r?{left:+r.left.toFixed(1),right:+r.right.toFixed(1),
@@ -309,8 +368,8 @@ try{
   // Range.toString() includes the hidden tooltip, so the saved quote MUST
   // instead use the author-visible textual projection.
   const fixture=await d.page.evaluate(()=>{
-   const block=document.getElementById('gill-search-p-012');
-   if(!block)return{error:'Gill source paragraph gill-search-p-012 missing'};
+   const block=document.getElementById('gill-search-p-013');
+   if(!block)return{error:'Gill source paragraph gill-search-p-013 missing'};
    const terms=[...block.querySelectorAll('.gterm')];
    const term=terms.find(x=>x.querySelector('.gtip'));
    if(!term)return{error:'Gill glossary gterm/gtip absent'};
@@ -376,7 +435,7 @@ try{
  });
  await safe('desktop-glossary-first-pointer-click',async()=>{
   const p=d.page;
-  const paragraph=p.locator('#gill-search-p-012');
+  const paragraph=p.locator('#gill-search-p-013');
   await paragraph.scrollIntoViewIfNeeded();
   await p.mouse.move(5,5);
   const points=await paragraph.evaluate(el=>{
@@ -413,119 +472,12 @@ try{
  });
  await d.context.close();
  const m=await scene(chrome,'gill-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
- await snap(m.page,'mobile-folded');
- await safe('mobile-panels',async()=>{
-  await m.page.locator('#npUOpenResearch').click();
-  await m.page.locator('#npW57NotesDetails summary').click();
-  m.item.modal=await m.page.evaluate(()=>({right:document.querySelector('#npUniversalDemo').classList.contains('np-u-show-right'),
-   ariaModal:document.querySelector('#npUResearch').getAttribute('aria-modal')}));
-  await snap(m.page,'mobile-annotations');
-  await m.page.locator('#npUCloseRight').click();
-  await m.page.locator('#npUOpenToc').click();
-  const originalInert=await m.page.locator('#npUNativeTools').evaluate(el=>el.inert);
-  await m.page.locator('#npUOutline .np-u-type-open').click();
-  m.item.settings=await m.page.evaluate(()=>({
-   dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
-   dialogAria:document.querySelector('#npUFontPanel')?.getAttribute('aria-modal'),
-   scrimVisible:!document.querySelector('#npUFontScrim')?.hidden,
-   nativeToolsInert:document.querySelector('#npUNativeTools')?.inert,
-   ghostProbe:document.elementsFromPoint(356,660).slice(0,8).map(el=>({
-    tag:el.tagName,id:el.id,class:String(el.className||'').slice(0,90),
-    label:el.getAttribute('aria-label')||el.getAttribute('title')||''
-   })),
-   floatingButtons:[...document.querySelectorAll('#gb-hl-fab,#gbFloatingControls,.mobile-top-save,[data-fc-root]')]
-    .filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0})
-    .map(el=>({id:el.id,class:String(el.className||'').slice(0,65),
-     rect:el.getBoundingClientRect().toJSON()})).slice(0,12),
-   visible:!document.querySelector('#npUFontPanel').hidden,
-   insideAriaModal:document.querySelector('#npUOutline').contains(document.querySelector('#npUFontPanel')),
-   focusInside:document.querySelector('#npUFontPanel').contains(document.activeElement),
-   bounds:document.querySelector('#npUFontPanel').getBoundingClientRect().toJSON()
-  }));
-  assert.equal(m.item.settings.insideAriaModal,true,'mobile font settings outside active aria modal');
-  assert.equal(m.item.settings.dialogRole,'dialog','mobile font settings must expose dialog role');
-  assert.equal(m.item.settings.dialogAria,'true','mobile font dialog must be accessible');
-  assert.equal(m.item.settings.scrimVisible,true,'background native tools must be visually covered');
-  assert.equal(m.item.settings.nativeToolsInert,true,'native TOC controls must be inert behind dialog');
-  assert.equal(m.item.settings.focusInside,true,'mobile font popup focus lost');
-  const audioCard=m.page.locator('#npUniversalDemo .np-u-audio-card');
-  assert.ok(await audioCard.count()>0,'Gill audio card fixture missing');
-  const visibleAudio=()=>audioCard.evaluateAll(cards=>cards.filter(el=>
-   el.getClientRects().length&&getComputedStyle(el).opacity!=='0').length);
-  assert.equal(await visibleAudio(),0,'audio card paints through the settings scrim');
-  await snap(m.page,'mobile-settings');
-  await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();
-  m.item.fontAfterClick=await m.page.evaluate(()=>{
-   const pref=window.GBReaderPreferences?.get(),
-    p=document.getElementById('gill-search-p-012');
-   const examples=[...document.querySelectorAll('article.article-body p')].slice(0,7)
-     .map(el=>({id:el.id,container:el.parentElement?.className||'',font:getComputedStyle(el).fontFamily,
-       text:el.textContent.trim().slice(0,50)}));
-   return {font:pref?.fontFamily,stored:JSON.parse(localStorage.getItem('gb:reader-preferences:v1')||'{}').fontFamily,
-    root:document.documentElement.dataset.readerFontFamily,
-    body:document.body.dataset.npUFont,computed:p?getComputedStyle(p).fontFamily:null,examples,
-    selected:document.querySelector('#npUFontPanel [data-np-u-type-font="cormorant"]')?.getAttribute('aria-pressed')};
-  });
-  assert.equal(m.item.fontAfterClick.font,'cormorant','canonical fontFamily did not update');
-  assert.equal(m.item.fontAfterClick.stored,'cormorant','fontFamily not persisted');
-  assert.equal(m.item.fontAfterClick.root,'cormorant','first paint root not updated');
-  assert.equal(m.item.fontAfterClick.body,'cormorant','W57 adapter did not receive preference');
-  assert.equal(m.item.fontAfterClick.selected,'true','font control not selected');
-  assert.match(m.item.fontAfterClick.computed||'',/Cormorant/i,'article CSS did not adopt the selected font');
-  await snap(m.page,'mobile-settings-cormorant');
-  await m.page.keyboard.press('Escape');
-  m.item.closedFontDialog=await m.page.evaluate(()=>({
-   hidden:document.querySelector('#npUFontPanel')?.hidden,
-   scrimHidden:document.querySelector('#npUFontScrim')?.hidden,
-   role:document.querySelector('#npUFontPanel')?.getAttribute('role'),
-   modal:document.querySelector('#npUFontPanel')?.hasAttribute('aria-modal'),
-   nativeInert:document.querySelector('#npUNativeTools')?.inert,
-   tocStillOpen:document.querySelector('#npUniversalDemo')?.classList.contains('np-u-show-left'),
-   openerExpanded:document.querySelector('.np-u-type-open')?.getAttribute('aria-expanded')
-  }));
-  assert.equal(m.item.closedFontDialog.hidden,true,'Escape failed to hide dialog');
-  assert.equal(m.item.closedFontDialog.scrimHidden,true,'Escape left scrim visible');
-  assert.equal(m.item.closedFontDialog.modal,false,'Escape left aria-modal on');
-  assert.equal(m.item.closedFontDialog.role,'region','Escape left dialog role on');
-  assert.equal(m.item.closedFontDialog.nativeInert,originalInert,'Escape failed to restore original controls');
-  assert.equal(m.item.closedFontDialog.tocStillOpen,true,'Escape closed the parent TOC');
-  assert.equal(m.item.closedFontDialog.openerExpanded,'false','opener remains expanded');
-  assert.ok(await visibleAudio()>0,'audio card must return when settings closes');
-  await m.page.locator('#npUOutline .np-u-type-open').click();
-  await m.page.mouse.click(356,660);
-  assert.equal(await m.page.locator('#npUFontPanel').isVisible(),false,'scrim outside click did not close dialog');
-  assert.equal(await m.page.locator('#npUNativeTools').evaluate(el=>el.inert),originalInert,
-   'scrim outside click did not restore native controls');
-  await m.page.reload({waitUntil:'domcontentloaded'});
-  await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
-  m.item.fontAfterReload=await m.page.evaluate(()=>({
-   font:window.GBReaderPreferences?.get()?.fontFamily,
-   root:document.documentElement.dataset.readerFontFamily,
-   body:document.body.dataset.npUFont,
-   computed:getComputedStyle(document.getElementById('gill-search-p-012')).fontFamily
-  }));
-  assert.equal(m.item.fontAfterReload.font,'cormorant','font preference lost after reload');
-  assert.equal(m.item.fontAfterReload.root,'cormorant','first paint font did not hydrate correctly');
-  assert.match(m.item.fontAfterReload.computed||'',/Cormorant/i,'font not applied after reload');
-  await snap(m.page,'mobile-cormorant-reload');
-  await m.page.goto(BASE+'/articles/kod-da-vinchi/?reader-pilot=1&paper=space',{waitUntil:'domcontentloaded'});
-  await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
-  m.item.crossArticleFont=await m.page.evaluate(()=>({
-   font:window.GBReaderPreferences?.get()?.fontFamily,body:document.body.dataset.npUFont,
-   computed:(()=>{
-    const p=[...document.querySelectorAll('article.article-body p')]
-      .find(el=>el.textContent.trim().length>90&&
-        !el.closest('.notice,.gtip,.btip,.summary-card,.np-u-central-overview,.np-u-central-contents,figcaption'));
-    return p?getComputedStyle(p).fontFamily:null;
-   })()
-  }));
-  assert.equal(m.item.crossArticleFont.font,'cormorant','site-wide preference did not cross articles');
-  assert.match(m.item.crossArticleFont.computed||'',/Cormorant/i,'other article ignored shared typography');
- });
+ await nativeChecks(m);
+ await snap(m.page,'mobile-native-controls');
  await m.context.close();
  // Review layout at the actual user-facing breakpoints, not one 1440px image.
  for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
-  [1280,800,'desktop-1280'],[1366,768,'desktop-1366'],[1440,900,'desktop-1440'],[1920,1080,'desktop-1920']]){
+  [1120,800,'native-1120'],[1121,800,'pilot-1121'],[1280,800,'desktop-1280'],[1366,768,'desktop-1366'],[1440,900,'desktop-1440'],[1920,1080,'desktop-1920']]){
   const extra=await scene(chrome,name,
    '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
   extra.item.geometry=await extra.page.evaluate(()=>{
@@ -552,36 +504,21 @@ try{
     await panel.locator('[data-np-u-type-theme=sepia]').click();
     assert.equal(await p.evaluate(()=>window.GBReaderPreferences.get().theme),'sepia');
     await panel.locator('[data-np-u-type-font=cormorant]').click();
-    assert.match(await p.locator('#gill-search-p-012').evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
+    assert.match(await p.locator('#gill-search-p-013').evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
     await snap(p,name+'-settings');
     await p.keyboard.press('Escape');
     assert.equal(await panel.isHidden(),true);
     assert.equal(await trigger.evaluate(e=>e===document.activeElement),true);
    });
   }
-  if(width===320){
-   await extra.page.locator('#npUOpenToc').click();
-   await extra.page.locator('#npUOutline .np-u-type-open').click();
-   extra.item.settingsBounds=await extra.page.evaluate(()=>{
-    const r=document.querySelector('#npUFontPanel').getBoundingClientRect();
-    return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
-     screenWidth:innerWidth,screenHeight:innerHeight,
-     nativeInert:document.querySelector('#npUNativeTools')?.inert};
-   });
-   assert.ok(extra.item.settingsBounds.left>=0&&extra.item.settingsBounds.right<=320,
-    '320px font dialog clips horizontally');
-   assert.ok(extra.item.settingsBounds.top>=0&&extra.item.settingsBounds.bottom<=700,
-    '320px font dialog clips vertically');
-   assert.equal(extra.item.settingsBounds.nativeInert,true,'320px background is interactive');
-   await snap(extra.page,'mobile-320-settings');
-   await extra.page.keyboard.press('Escape');
-  }
+  if(width<1121) await nativeChecks(extra);
   await extra.context.close();
  }
  const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
  await snap(alt.page,'other-article');await alt.context.close();
  safari=await webkit.launch({headless:true});
  const w=await scene(safari,'webkit-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
+ await nativeChecks(w);
  await snap(w.page,'webkit-mobile');await w.context.close();
 }catch(e){REPORT.failures.push({name:'bootstrap',error:String(e).slice(0,1400)})}
 finally{
