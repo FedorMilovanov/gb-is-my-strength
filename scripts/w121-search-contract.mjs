@@ -18,6 +18,12 @@ p.on('pageerror',e=>errors.push(String(e)));
 try{
  const start=BASE+ROUTE+(w>1120?'?reader-pilot=1&paper=space&panel=open':'');
  await p.goto(start,{waitUntil:'domcontentloaded',timeout:30000});
+ // W92: the W57 preview hydrates asynchronously. Test its actual ready state
+ // before triggering Search, rather than racing the legacy header bootstrap.
+ if(kind==='desktop-W57'){
+   await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true,null,{timeout:25000});
+   ck(name+' W57 ready before initiating first Pagefind search',true);
+ }
  if(kind==='mobile'){
    // W124: Search was removed from Analytics. The native sheet must stay
    // research-only; one accessible Search SVG lives between Play and Settings.
@@ -46,7 +52,19 @@ try{
  await p.waitForURL(url=>url.pathname===ROUTE,{timeout:10000});
  await p.waitForFunction(()=>document.activeElement?.tagName==='P'||document.activeElement?.tagName==='LI'||document.activeElement?.tagName==='BLOCKQUOTE',null,{timeout:12000});
  // W57 is loaded by a deferred pilot bootstrap; do not classify a still-hydrating page as a desktop rollback.
- if(kind==='desktop-W57')await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true,null,{timeout:25000});
+ if(kind==='desktop-W57'){
+   try {await p.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')===true,null,{timeout:25000});}
+   catch(error){
+     const diagnostic=await p.evaluate(()=>({
+       href:location.href,w57:document.body?.classList.contains('np-w57-ready'),
+       focus:document.activeElement?.tagName,selection:window.getSelection()?.toString()?.slice(0,60),
+       pending:sessionStorage.getItem('gb-reader-pagefind-hit-v1'),
+       searchOpen:!!document.querySelector('.cp-backdrop.is-open'),
+       fallback:window.__w121SearchFallbacks?.at(-1)||null
+     })).catch(e=>({inspectError:String(e)}));
+     throw new Error('W57 did not restore after a real Pagefind mouse result: '+JSON.stringify(diagnostic).slice(0,290));
+   }
+ }
  const state=await p.evaluate(()=>({
    pathname:location.pathname,href:location.href,w57:document.body.classList.contains('np-w57-ready'),hash:location.hash,focusTag:document.activeElement?.tagName,
    text:document.activeElement?.textContent?.slice(0,140),selected:window.getSelection()?.toString()?.slice(0,75),
@@ -89,6 +107,19 @@ try{
  // literal query substring. Land honestly at article level, never guess a
  // different wordform or paragraph, and consume the one-shot handoff.
  if(kind==='mobile'){
+   // After a source hit >8k px down, Search is auto-hidden. Recover via a
+   // genuine upward wheel and assert an exposed 44px hit target. Never force.
+   await p.mouse.move(w/2,450);
+   await p.mouse.wheel(0,-1250);
+   await p.waitForFunction(()=>{
+     const el=document.querySelector('.mobile-top-bar .reader-mobile-top-search');
+     if(!(el instanceof HTMLElement))return false;
+     const r=el.getBoundingClientRect();
+     if(r.width<43.5||r.height<43.5||r.top<0||r.bottom>innerHeight)return false;
+     const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+     return hit===el||el.contains(hit);
+   },null,{timeout:9000});
+   ck(name+' mobile Search physically tappable after upward scroll',true);
    await p.locator('.mobile-top-bar .reader-mobile-top-search').click();
  }else{
    await p.locator('#gbSearchBtn:visible,[data-fc-action="search"]:visible,.gb-nav-search-icon:visible').first().click();
