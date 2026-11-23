@@ -1,0 +1,76 @@
+{
+  "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro": [
+    {
+      "sha": "5295083210a564ba4cc321476c02d74a5825d8e3",
+      "subject": "fix(reader): unify Pagefind search and focus source in W57"
+    },
+    {
+      "sha": "868061385a2a561ee0ac7f9c13a093558b867a78",
+      "subject": "feat(reader): unify Learning quiz into Analytics (W121)"
+    },
+    {
+      "sha": "a84995a27499d1bfb3094cb6aa4cc20fe16d5b25",
+      "subject": "fix(reader-library): reconcile selected orphan topic before rendering W90"
+    },
+    {
+      "sha": "ec64cd35f9e9b7e36fce15c31207200f92dd37b7",
+      "subject": "fix(reader): synchronize final shared-series Library asset revision"
+    },
+    {
+      "sha": "9d36e6468d8689b1acc8b159fefc71ba650c5a8e",
+      "subject": "fix(reader): align shared SeriesReaderChrome Library script with governed v221 asset"
+    },
+    {
+      "sha": "f82ba44709bafc3d140f4f6179dc81979caa421d",
+      "subject": "fix(reader): link selection notes only to exact saved quotes"
+    },
+    {
+      "sha": "9ae42766575a2ce8f9242c96f57cce064b7211b1",
+      "subject": "fix(reader): restore mobile sepia library and align theme QA"
+    },
+    {
+      "sha": "d1ea6410173baeaccdf06e8a9cd547db7a940276",
+      "subject": "fix(reader): navigate same-page Library quotes to exact occurrence"
+    }
+  ],
+  "src/components/article-pilots/_shared/series/readerTocProjection.ts": [
+    {
+      "sha": "354222d8b6e20538ca275cb4e84cb0dad84adf27",
+      "subject": "feat(reader): stage-1 lossless TOC projection, real-series tests, safe Grok pilot gate (#2284)"
+    }
+  ],
+  "js/site-utils.js": [
+    {
+      "sha": "06473010aa4033e2846c33603d966b21a28e1b0e",
+      "subject": "fix(reader-mobile): поиск помет по контексту и без учёта регистра, честные сообщения, перекраска вместо молчаливой потери; paint 200 мс → 3–7 мс"
+    },
+    {
+      "sha": "be0c7ee55ae342cb2fe0262cd21e16b05a71c0cc",
+      "subject": "fix(reader): preserve independent anchored quotes through site-wide storage guard"
+    },
+    {
+      "sha": "ba9552dd5a3cc5b16c1a164d471306cbe286d200",
+      "subject": "feat(reader): unify Reader Core and Argon «Коротко»"
+    },
+    {
+      "sha": "dd729c4452efc1f5dd21b853638c9be31cdc0b22",
+      "subject": "fix(print): restore complete mobile PDFs across named overlay locks"
+    },
+    {
+      "sha": "0e83c2adc10c053ed25146fa191f232f2e4a9ae9",
+      "subject": "fix(reader): unify measure tokens and compact desktop capacity (#2206)"
+    },
+    {
+      "sha": "015573af602dd7b8d49feb296638b3447364a529",
+      "subject": "fix(print): W8 — print contrast authority + terminal-region reverify (#2192)"
+    },
+    {
+      "sha": "5ad5501ac71ab78fc0be7b2e3c9b22deb94fad5e",
+      "subject": "fix(runtime): canOverlayFocus не зависит от offsetParent и layout-API"
+    },
+    {
+      "sha": "db28b09f8c96a1c398288442183e0d4492ee7267",
+      "subject": "fix(a11y): фокус возвращается к открывателю синхронно, до перевода панели в inert"
+    }
+  ]
+}

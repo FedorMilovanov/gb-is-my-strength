@@ -1,0 +1,6 @@
+Public surfaces: 113
+Counts: {"page":11,"special":15,"series":82,"article":5}
+Series shapes: {"flat":46,"book":36}
+Governed reading-series routes: 73
+Explicit native exceptions: 5
+✅ public-surface-registry: ownership, shared reader capabilities and generic series configs verified

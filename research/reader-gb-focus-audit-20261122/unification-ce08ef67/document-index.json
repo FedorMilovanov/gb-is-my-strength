@@ -1,0 +1,414 @@
+{
+  "sha": "ce08ef67b975b2264ceda0e45e9cd2eae6bf9fec",
+  "method": "All Markdown bytes under docs/research scanned; matches are discovery only, not manual full reading or authority. Unrelated engine docs are not read end-to-end.",
+  "scannedMarkdown": 342,
+  "matched": 23,
+  "documents": [
+    {
+      "path": "docs/EDITORIAL_COVER_POLICY_2026-11-10.md",
+      "sha256": "97aa47d9481f068d67092f7a5457ca1d616dcb5064873a63a9ae319d57795993",
+      "bytes": 2429,
+      "hits": 1,
+      "headings": [
+        "# Editorial cover and reading-rail policy (2026-11-10)"
+      ]
+    },
+    {
+      "path": "docs/GROK_V17_FOCUS_OWNER_REFERENCE_2026-11-07.md",
+      "sha256": "fa67e1686e7857ea61f14ebcf36147217dce000f3527fa712123c964f5ae867f",
+      "bytes": 14748,
+      "hits": 4,
+      "headings": [
+        "# Grok Focus V17 — исходный эталон и перенос в настоящий Reader",
+        "## Решения, извлечённые из реального V17",
+        "## Текущий исходник и приёмка",
+        "## PlayEmber — окончательный критерий премиальных скоростей",
+        "## Reader popup lifecycle + fold icon first-choice acceptance (2026-11-07)",
+        "## Owner final polishing / parity and release gate (2026-11-07)"
+      ]
+    },
+    {
+      "path": "docs/GROK_V27_PRODUCT_RELEASE_GATE_2026-11-07.md",
+      "sha256": "95aa71f3b539851c2515c7fdcd3929e6496b693e6e9cf10b904b9e0a6a1cc457",
+      "bytes": 14070,
+      "hits": 5,
+      "headings": [
+        "# Grok V26 → реальный сайт: контролируемое внедрение V27",
+        "## Проверенная архитектура",
+        "## Этап A — безопасный общий компонент Product",
+        "## Этап B — сначала один реальный Grok Reader",
+        "## Этап C — книги и циклы",
+        "## Точное определение «готово»",
+        "## Owner override — V27 опубликован, но визуальный дизайн НЕ принят (2026-11-07)",
+        "### Стоп-критерии следующей дизайнерской волны",
+        "## Актуальный эталон: Grok Focus V17 (поступил от владельца 2026-11-07)"
+      ]
+    },
+    {
+      "path": "docs/READER-PLATFORM-ARCHITECTURE-2026-07-21.md",
+      "sha256": "636f7fd281afdab81b1ea026823011e6e4a2d59aa39f82531bf5694b0a1b38de",
+      "bytes": 13583,
+      "hits": 10,
+      "headings": [
+        "# Universal Reader Platform — architecture baseline",
+        "## 1. Owner intent recovered from the Claude export",
+        "## 2. Current source truth",
+        "## 3. Canonical surface model",
+        "### 3.1 `series`",
+        "### 3.2 `article`",
+        "### 3.3 `page`",
+        "### 3.4 `special`",
+        "## 4. Shared preference service",
+        "### 4.1 Legacy key migration",
+        "## 5. Global Sepia",
+        "## 6. Shared head bootstrap",
+        "## 7. Chrome composition",
+        "## 8. Surface registry",
+        "## 9. Performance and mobile contract",
+        "## 10. Migration order",
+        "## 11. Definition of done",
+        "## Source re-audit: one core, three publication structures (2026-11-09)"
+      ]
+    },
+    {
+      "path": "docs/READER-PLATFORM-MIGRATION-MATRIX-2026-07-21.md",
+      "sha256": "cc197bc516b04cccd199f8f6d50ade14a690e94b37104309aa6d9a9db73c50d0",
+      "bytes": 8598,
+      "hits": 8,
+      "headings": [
+        "# Reader Platform — migration matrix",
+        "## 1. Surface classes",
+        "## 2. Current coverage evidence",
+        "### 2.1 Shared platform already present",
+        "### 2.2 Quantified duplication / incompleteness",
+        "## 3. Preference migration table",
+        "## 4. Component migration table",
+        "## 5. Route registry rollout",
+        "### Wave A — representative routes",
+        "### Wave B — every native route",
+        "### Wave C — remove pathname inference",
+        "## 6. System transactions",
+        "### R1 — preferences foundation",
+        "### R2 — Gill + standalone adapters",
+        "### R3 — generic series naming",
+        "### R4 — complete surface registry",
+        "### R5 — PageHead convergence",
+        "### R6 — mobile quality/performance sweep"
+      ]
+    },
+    {
+      "path": "docs/READER-R3-SERIES-FACADE-2026-07-21.md",
+      "sha256": "3858e0b29819be701bd91513210d7d86e399a79f6bdeaa513cd7726266588433",
+      "bytes": 1038,
+      "hits": 2,
+      "headings": [
+        "# Reader R3 — neutral SeriesReaderChrome façade",
+        "## Scope",
+        "## Non-goals",
+        "## Required gates",
+        "## Inventory and implementation"
+      ]
+    },
+    {
+      "path": "docs/READER-R4-PUBLIC-SURFACE-INVENTORY-2026-07-21.md",
+      "sha256": "874dcb0702df14cd75239cc18c680638ad64eb5713152a6b87907e0f417fe696",
+      "bytes": 14427,
+      "hits": 32,
+      "headings": [
+        "# Reader R4 public-surface inventory",
+        "## Candidate surface counts",
+        "## Candidate series shapes",
+        "## Classification gaps",
+        "## Routes"
+      ]
+    },
+    {
+      "path": "docs/READER-R4-PUBLIC-SURFACE-REGISTRY-2026-07-21.md",
+      "sha256": "577c92aca951d3e883678d493af47199ab1a96b31db96b62fc372f24c86e9ba9",
+      "bytes": 2005,
+      "hits": 5,
+      "headings": [
+        "# Reader R4 — public surface registry",
+        "## Canonical model",
+        "## Verified baseline",
+        "## Invariants",
+        "## Change workflow"
+      ]
+    },
+    {
+      "path": "docs/READER-R5-OVERLAY-RUNTIME-INVENTORY-2026-07-21.md",
+      "sha256": "81c40ad4055f7c3583423c83cc30334a72c2460574b6a61f8f13cc054d8b631e",
+      "bytes": 19406,
+      "hits": 1,
+      "headings": [
+        "# Reader R5 overlay runtime inventory",
+        "## Counts by rule",
+        "## Direct body/html style writers",
+        "### `_build-tools/konfessii-baptizm/MindMap3D.tsx`",
+        "### `js/floating-cluster-controller.js`",
+        "### `js/site-utils.js`",
+        "### `js/site.js`",
+        "### `karty/_engine/map-engine.js`",
+        "### `konfessii/russkij-baptizm/_app/index.html`",
+        "### `scripts/gill-v16-mobile-play-smoke.js`",
+        "### `scripts/interactive-audit.js`",
+        "### `scripts/runtime-integrity-test.js`",
+        "## Global scroll API writes",
+        "### `js/highlights.js`",
+        "### `scripts/runtime-integrity-test.js`",
+        "## Highest-density lifecycle candidates",
+        "## Resolution status"
+      ]
+    },
+    {
+      "path": "docs/READER-R5-OVERLAY-RUNTIME-PLAN-2026-07-21.md",
+      "sha256": "a674b69a8471ed6db6c0c8917ae9cf4582d8895cd2bf70f17e8425497440dbac",
+      "bytes": 2737,
+      "hits": 8,
+      "headings": [
+        "# Reader R5 — Unified Overlay Runtime",
+        "## Status",
+        "## Scope",
+        "## Target API",
+        "## Required invariants",
+        "## Transaction order",
+        "## Non-goals"
+      ]
+    },
+    {
+      "path": "docs/READER_AND_COVER_UNIFICATION_WAVES_2026-11-10.md",
+      "sha256": "04ea1d44389782e735ee9b51f4d7abf0b713da618df28eec578183b10f301fe0",
+      "bytes": 12073,
+      "hits": 2,
+      "headings": [
+        "# Reader and cover unification — continuous waves",
+        "## Non-negotiable acceptance",
+        "## References",
+        "## Canonical TOC heading handoff",
+        "## Control audit — 2026-11-11 (PR #2292, fail-closed)",
+        "### 2026-11-11 P0 hover closure: independent triple-engine proof",
+        "### 2026-11-11 professional wave: NoteRegistry and deterministic hover leave"
+      ]
+    },
+    {
+      "path": "docs/READER_TOC_GROK_ADAPTER_GATE_2026-11-06.md",
+      "sha256": "1becbd70e77e08c8cbe153df0a079ec59054bedd1e4cb226197d4366d5859458",
+      "bytes": 6352,
+      "hits": 2,
+      "headings": [
+        "# Grok desktop reader: Stage 1 adapter and safe pilot boundary (2026-11-06)",
+        "## Scope and source authority",
+        "## Added projection contract",
+        "## Verification and limitations",
+        "## Stage 2 (NOT part of this PR): reversible real desktop pilot"
+      ]
+    },
+    {
+      "path": "docs/RESEARCH-NEEDS-MAPS-2026-06-18.md",
+      "sha256": "d6b13c7bd48a019c2246dd4e9faa86a3471312ff70332a696c43494e8e98e5dd",
+      "bytes": 5847,
+      "hits": 1,
+      "headings": [
+        "# RESEARCH-NEEDS — карты: где нужны первоисточники (2026-06-18)",
+        "## Метод",
+        "## 🔴 P0 — maccabim (Маккавеи): НОЛЬ археологии",
+        "## 🟠 P1 — yeshua (Иисус): нет спорных локализаций (dispute=0)",
+        "## 🟠 P2 — early-church (Ранняя Церковь): тонкая археология (38 симв/место)",
+        "## 🟡 P3 — revelation (7 Церквей): сильная arch, но нет dispute/sci",
+        "## 🟢 P4 — унификация качества",
+        "## Источники-источники (рецензируемые, для сверки)"
+      ]
+    },
+    {
+      "path": "docs/SERIES-ENGINE-GUIDE.md",
+      "sha256": "82586eca5f31bf1c3ac7b23e9409ed7aedb838d0a1380bed5d7ade83f6bcc97c",
+      "bytes": 12202,
+      "hits": 2,
+      "headings": [
+        "# SERIES-ENGINE-GUIDE — как встраивать контент в движок серий",
+        "## 0. Железные правила (нарушение = провал ревью)",
+        "## 1. Модель серии: три яруса материалов",
+        "## 2. Добавить статью в СУЩЕСТВУЮЩУЮ серию (чек-лист)",
+        "## 3. Новая СЕРИЯ",
+        "## 3.5. КНИГА-СЕРИЯ (`shape: 'book'`) — когда и как выбирать",
+        "## 4. Почему это безопасно при смене дизайна движка",
+        "## 5. Частые ошибки агентов (уже случались)",
+        "## Общая мобильная панель воспроизведения (2026-11-08)"
+      ]
+    },
+    {
+      "path": "docs/SPECIAL-OVERLAY-ADAPTERS-PLAN-2026-07-21.md",
+      "sha256": "83883f4cf93a50ab2400699fa892f919f7bd232153303d8c87288dd47c841496",
+      "bytes": 2401,
+      "hits": 2,
+      "headings": [
+        "# Special Overlay Adapters — issue #58 completion lane",
+        "## Status",
+        "## Source boundary",
+        "## Confirmed remaining production writers",
+        "## Target ownership",
+        "## Required witnesses",
+        "## Non-goals"
+      ]
+    },
+    {
+      "path": "docs/TEEN-SERIES-PUBLICATION-CONTRACT.md",
+      "sha256": "60ae3bd14b3cab0fb98fb8189fe5c908ab8e2a9297b15b71fa41d3b2577b9fab",
+      "bytes": 7957,
+      "hits": 1,
+      "headings": [
+        "# Teen double-life series — publication contract",
+        "## Canonical linear order",
+        "## Shared reader engine",
+        "### Quiz",
+        "## Published indexing boundary",
+        "## Publication metadata",
+        "## Scripture references and glossary",
+        "## Media contract",
+        "## Reader-facing language",
+        "## Safeguarding boundary",
+        "## TTS / print / accessibility gates",
+        "## Atomic publication transaction — historical release shape",
+        "## Current concurrency boundary"
+      ]
+    },
+    {
+      "path": "docs/TEEN-SERIES-READER-PROJECTION-PLAN.md",
+      "sha256": "069022103c19f1b84e09f6b728cbb53e408d7c22dec6e1fc55b5f3a530591360",
+      "bytes": 5031,
+      "hits": 1,
+      "headings": [
+        "# Teen series — reader projection / TTS / print plan",
+        "## 1. Current shared owner",
+        "## 2. Historical pre-release defect — closed",
+        "## 3. Post-release source-boundary invariant",
+        "## 4. Search versus TTS versus print are separate decisions",
+        "## 5. Tooltip / glossary / TTS interaction",
+        "## 6. Long-article TTS acceptance",
+        "## 7. Print acceptance",
+        "## 8. Release witness"
+      ]
+    },
+    {
+      "path": "docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md",
+      "sha256": "98c6054a6b8e015576fc898d2610d829d032071206e26b21f668f8599446c9da",
+      "bytes": 142319,
+      "hits": 2,
+      "headings": [
+        "# AGENTS.md — gb-is-my-strength (gospod-bog.ru)",
+        "## 🚦 Читать перед работой — единый pre-flight",
+        "### Обязательная последовательность",
+        "### Минимальная декларация lane",
+        "### Три уровня доказательства",
+        "## Work Modes — определи режим перед работой",
+        "### Режимы",
+        "### Перед началом",
+        "### Route authority",
+        "### Проверки",
+        "# FAST iteration",
+        "# + один или несколько релевантных контрактов",
+        "# LANE / shared iteration",
+        "# + route/browser/visual/source checks",
+        "# SYSTEM / control plane",
+        "# Final barrier для production/shared/refactor/system impact",
+        "### Shared / High-Risk поверхность",
+        "### Пересечения и cleanup"
+      ]
+    },
+    {
+      "path": "docs/refactor-2026/REFACTORING_6_0_DEEP_PLAN.md",
+      "sha256": "b7d3ad428003d284165797c05fff1c8909add0dc33ff03329981ed48d008df98",
+      "bytes": 37837,
+      "hits": 1,
+      "headings": [
+        "# РЕФАКТОРИНГ 6.0 — АБСОЛЮТНЫЙ ПЛАН",
+        "## Тотальная диагностика + 12 фаз без единого отката",
+        "## 0. ПОЛНАЯ ДИАГНОСТИКА: почему падали предыдущие рефакторинги",
+        "### 0.1 Классификация 12 критических инцидентов",
+        "### 0.2 5 коренных причин (повторный анализ)",
+        "### 0.3 Текущее состояние (точная инвентаризация)",
+        "## 1. 60+ ИНСАЙТОВ ИЗ 40+ WEB SEARCHES",
+        "### 1.1 Strangler Pattern & Incremental Migration",
+        "### 1.2 Pixel-level Visual Regression",
+        "### 1.3 CSS @layer & Specificity",
+        "### 1.4 JS Memory & Event Listeners",
+        "### 1.5 TypeScript Migration",
+        "### 1.6 Core Web Vitals 2026",
+        "### 1.7 CSP Security",
+        "### 1.8 CI/CD & GitHub Actions",
+        "### 1.9 Map Architecture",
+        "### 1.10 Content & Editorial",
+        "## 2. ПОЛНАЯ ИНВЕНТАРИЗАЦИЯ ДОЛГОВ"
+      ]
+    },
+    {
+      "path": "docs/refactor-2026/REFACTORING_BRAIN_2026-06-23.md",
+      "sha256": "6c975116e9ecf278b7b52bdb771ff39c7c0e20f60a62b6900ff5d019c5e887ba",
+      "bytes": 33704,
+      "hits": 11,
+      "headings": [
+        "# 🧠 МОЗГ рефакторинга — gb-is-my-strength (gospod-bog.ru)",
+        "## 0. Вердикт за 30 секунд",
+        "## 1. Состояние среза (факты)",
+        "## 2. Спектр оставшихся работ (9 пучков)",
+        "### S0. Упрощение системы защиты агентов",
+        "### S1. Native Astro shell — убрать `loadLegacyFullDocument` из рендера",
+        "### S2. Componentized-main — убрать `?raw` фрагменты",
+        "### S3. Нагорная — довести до конца",
+        "### S4. MDX-native статьи",
+        "### S5. Baptisty-россии — series articles",
+        "### S6. CSS завершение",
+        "### S7. JS/TypeScript",
+        "### S8. Maps & Rodosloviye",
+        "### S9. Удаление legacy",
+        "### S10. CI visual parity guard",
+        "## 3. Рекомендуемый план lanes (8 линий) с учётом gist",
+        "## 4. Промпты для агентов",
+        "### Агент 0 — System protection simplification"
+      ]
+    },
+    {
+      "path": "docs/refactor-2026/lanes/nagornaya-componentization.md",
+      "sha256": "d07fe1e17cff606141e28eaed7afcdb428b6d9409bad11447eddcd0ae542572b",
+      "bytes": 2205,
+      "hits": 1,
+      "headings": [
+        "# Lane Report: `nagornaya-componentization`",
+        "## Changed files",
+        "## Checks",
+        "## Out-of-lane findings",
+        "## Merge recommendation",
+        "## Rollback"
+      ]
+    },
+    {
+      "path": "research/WAVE12_DIOTROPHES_PUBLICATION_2026-08-02.md",
+      "sha256": "b87b64c6d7fafbc50d02c9b05bea910fa5e1cc0885e777c69904e9c8505f4ce1",
+      "bytes": 3936,
+      "hits": 1,
+      "headings": [
+        "# Wave 12 — «Диотрефы нашего времени»: публикационная транзакция",
+        "## Что выпущено",
+        "## Публичные поверхности",
+        "## Доказательная граница",
+        "## Preservation gate",
+        "## Граница заявления"
+      ]
+    },
+    {
+      "path": "research/reader-w57-pilot/UNIVERSAL_READER_ROLLOUT.md",
+      "sha256": "950eb0568e333dd4a0d39d3e338d42b58d494ad13638a61e5433131e10e682cb",
+      "bytes": 7434,
+      "hits": 2,
+      "headings": [
+        "# Universal Reader W57 — architecture and visual quality gate",
+        "## Product intent",
+        "## Route cohorts and explicit exceptions",
+        "## One owner per capability",
+        "## Series adapter contract",
+        "## Evidence and release gates",
+        "## Open design decisions for owner"
+      ]
+    }
+  ]
+}
