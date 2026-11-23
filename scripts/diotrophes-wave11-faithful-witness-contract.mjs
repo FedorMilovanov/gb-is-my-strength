@@ -323,7 +323,25 @@ requireValue(
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
 requireValue(wrapper.includes("import DiotrophesDraft from './DiotrophesDraft.astro'"), 'wrapper lost Wave 10 draft');
 requireValue(wrapper.includes("import FaithfulWitnessSupplement from './FaithfulWitnessSupplement.astro'"), 'wrapper lost supplement');
-requireValue(wrapper.includes('<DiotrophesDraft publicationMode={publicationMode} />'), 'base draft must render once with publication state');
+const baseDraftInstances = wrapper.match(/<DiotrophesDraft publicationMode=\{publicationMode\}(?:\s*\/>|>\s*<slot\s*\/>\s*<\/DiotrophesDraft>)/g) ?? [];
+requireValue(baseDraftInstances.length === 1, 'base draft must render once with publication state (direct or single-slot wrapper)');
+if (publishedPage.includes('<DiotrophesWave11Draft publicationMode={true}>')) {
+  const source = readFileSync(baseDraftPath, 'utf8');
+  const headingIndex = source.indexOf('<h1>Диотрефы нашего времени</h1>');
+  const summaryIndex = source.indexOf('<aside class="summary-card"');
+  const noticeSlotIndex = source.indexOf('{publicationMode && <slot />}');
+  const followingSectionIndex = source.indexOf('<h2 id="interpretive-guardrails">');
+  requireValue(
+    publishedPage.includes('aria-labelledby="wave12-publication-heading"') &&
+      wrapper.includes('<slot />') && noticeSlotIndex >= 0,
+    'published methodological notice must propagate through the single article slot',
+  );
+  requireValue(
+    headingIndex >= 0 && headingIndex < summaryIndex && summaryIndex < noticeSlotIndex &&
+      noticeSlotIndex < followingSectionIndex,
+    'published article must render H1 and concise summary before the methodological notice',
+  );
+}
 requireValue((wrapper.match(/<FaithfulWitnessSupplement\s*\/>/g) ?? []).length === 1, 'supplement must render exactly once');
 
 const russianWords = [caseData, responseData, sourceData].map(JSON.stringify).join(' ').match(/[А-Яа-яЁё]{2,}/g)?.length ?? 0;

@@ -6,6 +6,8 @@ import DiotrophesWave11Draft from './DiotrophesWave11Draft.astro';
 
 <SeriesReaderChrome pageId="diotrophes" config={PASTOR_SERIES}>
   <div class="wave12-publication-boundary" data-wave12-publication="true">
+
+    <DiotrophesWave11Draft publicationMode={true}>
     <section class="note-box" aria-labelledby="wave12-publication-heading">
       <h2 id="wave12-publication-heading">Как читать этот материал</h2>
       <p>
@@ -35,6 +37,6 @@ import DiotrophesWave11Draft from './DiotrophesWave11Draft.astro';
         это возможное пастырское применение, требующее отдельной проверки в каждой истории.
       </p>
     </section>
-    <DiotrophesWave11Draft publicationMode={true} />
+    </DiotrophesWave11Draft>
   </div>
 </SeriesReaderChrome>
