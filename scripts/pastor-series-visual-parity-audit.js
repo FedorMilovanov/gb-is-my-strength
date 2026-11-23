@@ -151,7 +151,8 @@ for (const part of expectedCore) {
 must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Dossier A route');
 must(cards, 'data-wave12-series-card="true"', 'Dossier A card authority marker');
 must(cards, `Досье A · ${CONTRACT_COMPANION_MIN} мин`, 'Dossier A duration');
-must(cards, '181 источник', 'Dossier A source-count marker');
+must(cards, 'Источники и сверка', 'Dossier A reader-facing evidence label');
+mustNot(cards, '181 источник', 'research authority count must not masquerade as 181 independently reader-openable sources');
 equal(count(cards, '<a href="../articles/'), 10, 'public link inventory: nine core parts plus Dossier A');
 equal(count(cards, 'aria-disabled="true"'), 1, 'non-public card count: field guide only');
 equal(count(cards, 'data-pagefind-ignore'), 1, 'search-excluded non-public card count: field guide only');
