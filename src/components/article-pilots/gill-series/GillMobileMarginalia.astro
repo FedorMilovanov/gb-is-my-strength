@@ -359,7 +359,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
       lex.appendChild(node('p','gbr-marginalia-empty',data.termScope));
       data.terms.forEach(function (source) {
         var item = node('details', 'gbr-marginalia-term');
-        item.appendChild(node('summary', '', source.dataset.termTitle || source.dataset.term));
+        item.appendChild(node('summary', '', visibleText(source) || source.dataset.termTitle || source.dataset.term));
         var body = node('div', 'gbr-marginalia-term-body');
         if (source.dataset.category) body.appendChild(node('span', 'gbr-marginalia-category', source.dataset.category));
         body.appendChild(node('p', '', text(source.querySelector('.gtip-brief'))));
