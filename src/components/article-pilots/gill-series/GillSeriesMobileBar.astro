@@ -5,9 +5,10 @@
  *   TOP bar: Back(→config.railBackHref) → Home(→«/») → primary
  *     «Аналитика» (opens research tab INSIDE native Part TOC) → canonical
  *     round PlayEmber and the original #83439219 IN-SLOT speed strip + tiny selected-rate
- *     echo → Settings → Save. «Аналитика» yields its place to the speed rail.
- *     Learning remains in the native Reader Settings sheet,
- *     not a competing top-level action. One canonical speedSlot owner.
+ *     echo → Search SVG → Settings → Save. «Аналитика» yields its place
+ *     to the speed rail. At ≤439px the original Save element moves to the
+ *     bottom actions, preserving 44px targets; there is no Learning sheet.
+ *     One canonical speedSlot and one canonical Pagefind owner.
  *     Auto-hides on scroll-down, reveals on scroll-up; stays pinned while
  *     any Gill sheet, the in-slot speed strip or TTS playing/paused
  *     (initGillMobileTopBarAutoHide below implements the exact
@@ -22,9 +23,10 @@
  *
  * data-fc-action="save" and data-action="share" go through the existing
  * global cluster delegation / initActionHandlers() on
- * [data-fc-root]/[data-fc-controls]. Research/TOC/Learning/Settings
+ * [data-fc-root]/[data-fc-controls]. Research/TOC/Settings
  * share the existing initTocPopups() overlay/focus/scroll owner;
- * TTS is owned by floating-cluster-controller; rate UI by speedSlot.ts.
+ * TTS and the Search action are owned by floating-cluster-controller;
+ * rate UI is owned by speedSlot.ts.
  * Only theme sync and top-bar auto-hide are bar-local.
  */
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
@@ -68,6 +70,18 @@ const page = config.pages[pageId];
   <ReaderMobilePlayGroup engine="series" slot="top-playback" />
 
   <Fragment slot="top-trailing">
+    <button
+      class="gb-icon reader-mobile-top-search"
+      type="button"
+      data-fc-action="search"
+      aria-label="Поиск по сайту"
+      title="Поиск по сайту"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="10.8" cy="10.8" r="6.4" />
+        <path d="m15.6 15.6 4.3 4.3" />
+      </svg>
+    </button>
     <ReaderMobileSettingsButton engine="series" top />
     <SaveButton class="mobile-top-save" tip="Сохранить" />
   </Fragment>
@@ -156,7 +170,7 @@ const page = config.pages[pageId];
   // Smart auto-hide (owner: "верхняя как-то умно убирается и появляется…
   // если PLAY нажали, то пускай фиксируется"): hides the top bar on
   // scroll-down, reveals on scroll-up, stays pinned while ANY Gill sheet
-  // (Part/Series TOC, Learning, Settings) or the inline speed rail is open,
+  // (Part/Series TOC, Settings) or the inline speed rail is open,
   // or while TTS is playing/paused. This is also the A−/A+ reflow fix: the
   // hide function only ever toggles the bar's own class and NEVER closes a
   // sheet — a font-size change reflowing the article and nudging scrollTop
@@ -232,8 +246,33 @@ const page = config.pages[pageId];
 
   }
 
+  /* W124: on compact phones the seventh 44px action cannot coexist
+     with the Analytics target and all the original 44px buttons in one row.
+     Move the ONE existing favourite button into the bottom action cluster
+     (not a duplicate). Its canonical delegated data-fc-action="save"
+     continues to work, and resizing restores it to the top. */
+  function initGillCompactFavouritePlacement() {
+    const top = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    const save = top?.querySelector('.mobile-top-save');
+    const bottomActions = document.querySelector('.mobile-bottom-bar[data-gill-mobile-bar] .reader-mobile-action-cluster');
+    if (!(top instanceof HTMLElement) || !(save instanceof HTMLButtonElement)
+        || !(bottomActions instanceof HTMLElement)) return;
+    const compact = window.matchMedia('(max-width:439px)');
+    const place = () => {
+      const parent = compact.matches ? bottomActions : top;
+      if (save.parentElement === parent) return;
+      const focused = document.activeElement === save;
+      if (compact.matches) parent.insertBefore(save, parent.querySelector('[data-action="print"]'));
+      else parent.appendChild(save);
+      if (focused) save.focus({ preventScroll:true });
+    };
+    place();
+    compact.addEventListener('change', place);
+  }
+
   function boot() {
     initGillThemeSync();
+    initGillCompactFavouritePlacement();
     initGillMobileTopBarAutoHide();
 
     const backBtn = document.getElementById('mobBackBtn');
@@ -259,7 +298,7 @@ const page = config.pages[pageId];
     justify-content:flex-start;flex:0 0 88px;width:88px;min-width:88px;
     height:44px;gap:0;margin:0;overflow:visible;
     /* Two non-overlapping 44px targets: rate first, then Play.
-       This positions the visible Play immediately beside Settings. */
+       This positions the visible Play immediately before the Search button. */
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-play {
     --ember-size:44px;
@@ -332,38 +371,21 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .mobile-top-slot {
     position:relative;flex:1 1 auto;min-width:0;z-index:3;
   }
-  /* W104 owner optical contract: centre the complete visible
-     [research SVG + "Аналитика"] group in the gap BETWEEN the right
-     edge of Home's SVG and the left edge of Play's painted circle.
-     Do not centre against viewport edges: W103 created a +25px drift.
-     Above 440px the original full label fits with 48px left padding.
-     On compact phones the full label must stay within its separate
-     hit target and outside the rate badge; shift only painted children.
-     No changes to Home, 44px targets, Play, ring, rail or desktop W57. */
-  @media (min-width:440px) and (max-width:84.999em) {
-    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
-      box-sizing:border-box;
-      padding-inline-start:48px !important;
-    }
+  /* W124: Analytics is centred IN ITS OWN flexible 44px+ slot.
+     No absolute offsets or translated text: adding a 44px Search hitbox
+     must not make the label intercept Play, rate, Settings or Save taps.
+     Narrow screens use an icon-only Analytics trigger with its full
+     accessible name intact; all controls retain independent 44px targets. */
+  [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
+    box-sizing:border-box;justify-content:center;gap:6px;
+    padding-inline:0 !important;
   }
-  /* Keep W103's original compact padding while shifting only ink.
-     Removing it made 390/430px fall back to a different cascade,
-     undoing the measured Home↔Play balance in a production build. */
-  @media (min-width:361px) and (max-width:439px) {
-    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
-      box-sizing:border-box;
-      padding-inline-start:clamp(9px,calc(100% - 102px),99px) !important;
-    }
+  [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger :is(svg,span) {
+    position:static;left:auto;transform:none;
   }
-  @media (min-width:390px) and (max-width:439px) {
-    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
-      /* The full analytics label sits just outside the button at 401px.
-         Tighten only this internal gap; the centered ink group stays put. */
-      gap:5px;
-    }
-    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger :is(svg,span) {
-      position:relative;
-      left:clamp(7px,calc(61.75px - 12.5vw),13px);
+  @media(max-width:374px) {
+    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger span {
+      display:none;
     }
   }
   /* Original Gill #83439219: the rail occupies ONLY the central slot.
@@ -430,7 +452,42 @@ const page = config.pages[pageId];
     opacity:0;transform:none;pointer-events:none;
   }
 }
-/* Optical spacing: independent 44px targets with Play adjacent to Settings. */
+/* W124: Search lives beside Play, outside Analytics. One real 44px
+   accessible search target delegates to the existing Pagefind owner. */
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-top-search {
+    box-sizing:border-box;display:grid;place-items:center;
+    flex:0 0 44px;width:44px;min-width:44px;
+    height:44px;min-height:44px;margin:0;padding:0;
+    border:0;border-radius:50%;box-shadow:none;background:transparent;
+    color:var(--gill-mobile-bar-ink,#291f1b);cursor:pointer;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-top-search::before,
+  [data-gill-v16] .mobile-top-bar .reader-mobile-top-search::after {
+    content:none!important;display:none!important;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-top-search svg {
+    display:block;width:19px;height:19px;fill:none;stroke:currentColor;
+    stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-top-search:hover {
+    color:var(--gill-mobile-bar-gold,#a78252);
+  }
+  [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster > .mobile-top-save {
+    box-sizing:border-box;display:grid;place-items:center;
+    flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;
+    margin:0;padding:0;border:0;border-radius:50%;box-shadow:none;
+    background:transparent;color:inherit;cursor:pointer;
+  }
+  [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster > .mobile-top-save svg {
+    display:block;width:19px;height:19px;stroke:currentColor;
+    /* The canonical .gb-save.is-saved CSS must remain free to fill the bookmark. */
+  }
+  [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster > .mobile-top-save:focus-visible {
+    outline:2px solid currentColor;outline-offset:-3px;
+  }
+}
+/* Optical spacing: independent 44px targets for Play, Search, Settings. */
 @media (min-width:431px) and (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar {gap:2px!important;}
   [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
@@ -457,7 +514,7 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {transition:none;filter:none;}
 }
 
-/* Owner W61: move the existing Settings sheet trigger beside Play.
+/* W124: retain the Settings trigger immediately after the separate Search SVG.
    Its former bottom action is absent, freeing a true 44px for the chapter.
    Every icon remains a 44×44 touch/keyboard target. */
 @media (max-width:84.999em) {
@@ -481,9 +538,9 @@ const page = config.pages[pageId];
     }
   }
 }
-/* The six original top targets total 308px including the central 44px
-   research icon. Use only the leftover spacing at 320px, do not shrink hit
-   areas or squeeze the Play/speed controller into overlapping hitboxes. */
+/* At 320px the compact row has seven independent 44px targets (308px):
+   Back, Home, Analytics, Speed, Play, Search, Settings. The single Save
+   action is preserved in the bottom row until ≥440px. No target shrinks. */
 @media (max-width:430px) {
   [data-gill-v16] .mobile-top-bar {
     gap:clamp(0px,calc(5vw - 16px),4px) !important;

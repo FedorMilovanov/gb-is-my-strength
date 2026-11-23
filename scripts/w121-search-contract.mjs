@@ -15,11 +15,16 @@ try{
  const start=BASE+ROUTE+(w>1120?'?reader-pilot=1&paper=space&panel=open':'');
  await p.goto(start,{waitUntil:'domcontentloaded',timeout:30000});
  if(kind==='mobile'){
-   await p.locator('#mobPartTocBtn').click();
-   await p.locator('#gbrMarginaliaTab').click();
+   // W124: Search was removed from Analytics. The native sheet must stay
+   // research-only; one accessible Search SVG lives between Play and Settings.
+   await p.locator('[data-gill-marginalia-open]').click();
    await p.locator('#gbrMarginalia:not([hidden])').waitFor({timeout:8000});
-   const action=p.getByRole('button',{name:'Поиск по сайту'});
-   ck(name+' mobile Analytics owns search CTA',await action.count()===1);
+   ck(name+' mobile Analytics has no competing Search tile',
+     await p.locator('#gbrMarginalia .gbr-marginalia-search').count()===0);
+   await p.keyboard.press('Escape');
+   await p.waitForFunction(()=>!document.querySelector('#partTocOverlay.is-open'),null,{timeout:8000});
+   const action=p.locator('.mobile-top-bar .reader-mobile-top-search');
+   ck(name+' mobile top Search SVG owns CTA',await action.count()===1);
    await action.click();
  } else {
    const control=p.locator('#gbSearchBtn:visible,[data-fc-action="search"]:visible,.gb-nav-search-icon:visible').first();

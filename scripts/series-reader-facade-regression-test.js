@@ -72,10 +72,21 @@ const partOverlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilo
 const settingsSheet = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro'), 'utf8');
 const actionsSource = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileActions.astro'), 'utf8');
 const settingsTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileSettingsButton.astro'), 'utf8');
-// Reader mobile: ONE research entrance in the top capsule, Part TOC in the
-// native bottom context, Learning remains accessible only via Settings.
+// W124: Research remains the only top Analytics entrance, while Site Search
+// is a separate SVG between Play and Settings. No duplicate search card may
+// appear inside the native Analytics panel.
 assert.match(mobileBar, /<ReaderMobileMenuTrigger mode="research"/, 'Gill top must launch canonical Marginalia');
-assert.match(mobileBar, /<ReaderMobileSettingsButton engine="series" top/, 'Gill settings trigger must be adjacent to top Play');
+assert.match(mobileBar, /<ReaderMobileSettingsButton engine="series" top/, 'Gill settings trigger must remain in the top bar');
+assert.match(mobileBar, /class="gb-icon reader-mobile-top-search"/, 'Gill mobile bar needs exactly one visible Search SVG button');
+assert.match(mobileBar, /data-fc-action="search"/, 'Search must delegate to the existing Pagefind controller');
+const playPosition = mobileBar.indexOf('<ReaderMobilePlayGroup engine="series" slot="top-playback"');
+const searchPosition = mobileBar.indexOf('class="gb-icon reader-mobile-top-search"');
+const settingsPosition = mobileBar.indexOf('<ReaderMobileSettingsButton engine="series" top');
+assert.ok(playPosition >= 0 && playPosition < searchPosition && searchPosition < settingsPosition,
+  'Gill toolbar order must be Play → Search → Settings');
+assert.doesNotMatch(partOverlay, /gbr-marginalia-search/, 'Analytics must not include a competing search action');
+assert.match(mobileBar, /initGillCompactFavouritePlacement\(\)/, 'compact mobile must preserve one favourite control');
+assert.match(mobileBar, /compact\.addEventListener\('change', place\)/, 'Save must return to top when resizing');
 assert.match(mobileBar, /<ReaderMobileActions engine="series" settingsPlacement="none"/, 'Gill bottom bar must reserve space for the current chapter, not duplicate Settings');
 assert.match(actionsSource, /settingsPlacement === 'bottom' && <ReaderMobileSettingsButton engine=\{engine\}/, 'other mobile Reader engines must retain their bottom settings');
 assert.match(settingsTrigger, /id=\{isSeries\?'mobSettingsBtn':'hmSettingsBtn'\}/, 'single settings control must preserve original owner IDs');
