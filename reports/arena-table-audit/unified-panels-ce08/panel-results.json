@@ -1,0 +1,470 @@
+[
+  {
+    "route": "/articles/dzhon-gill-chast-2-uchenyi/",
+    "status": 200,
+    "before": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "closed": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "toggle": "false"
+    },
+    "reopened": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "route": "/articles/chto-bibliya-nazyvaet-serdcem/",
+    "status": 200,
+    "before": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "closed": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "toggle": "false"
+    },
+    "reopened": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "route": "/baptisty-rossii/dva-sezda-1884/",
+    "status": 200,
+    "before": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "closed": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "toggle": "false"
+    },
+    "reopened": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "route": "/articles/podrostok-za-kadrom-dvoynaya-zhizn/",
+    "status": 200,
+    "before": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "closed": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "toggle": "false"
+    },
+    "reopened": {
+      "w57": true,
+      "series": {
+        "count": 1,
+        "paint": true,
+        "display": "block"
+      },
+      "standalone": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "route": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+    "status": 200,
+    "before": {
+      "w57": true,
+      "series": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "standalone": {
+        "count": 1,
+        "paint": false,
+        "display": "block"
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "closed": {
+      "w57": true,
+      "series": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "standalone": {
+        "count": 1,
+        "paint": false,
+        "display": "block"
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "right": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "toggle": "false"
+    },
+    "reopened": {
+      "w57": true,
+      "series": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "standalone": {
+        "count": 1,
+        "paint": false,
+        "display": "block"
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "route": "/articles/kod-da-vinchi/",
+    "status": 200,
+    "before": {
+      "w57": true,
+      "series": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "standalone": {
+        "count": 1,
+        "paint": false,
+        "display": "block"
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "closed": {
+      "w57": true,
+      "series": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "standalone": {
+        "count": 1,
+        "paint": false,
+        "display": "block"
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "right": {
+        "count": 1,
+        "paint": false,
+        "display": "none"
+      },
+      "toggle": "false"
+    },
+    "reopened": {
+      "w57": true,
+      "series": {
+        "count": 0,
+        "paint": false,
+        "display": null
+      },
+      "standalone": {
+        "count": 1,
+        "paint": false,
+        "display": "block"
+      },
+      "previewLeft": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "right": {
+        "count": 1,
+        "paint": true,
+        "display": "flex"
+      },
+      "toggle": "true"
+    },
+    "errors": [],
+    "pass": true
+  }
+]
