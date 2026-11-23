@@ -694,7 +694,13 @@ async function auditGillWideSpeed(browser, origin) {
       const pill=[...rail.querySelectorAll('[data-speed]')];
       const r=rect(rail),p=rect(play),b=rect(rate);
       const last=pill[pill.length-1],l=rect(last);
-      const hit=document.elementFromPoint(l.right-6,l.y+20)?.closest('button');
+      // Last speed may be outside the narrow rail viewport until the user
+      // scrolls horizontally. Check the ACTUAL reachable destination.
+      rail.scrollLeft = rail.scrollWidth;
+      const scrolledLast=last.getBoundingClientRect();
+      const hit=document.elementFromPoint(
+        scrolledLast.left+scrolledLast.width/2,
+        scrolledLast.top+scrolledLast.height/2)?.closest('button');
       const svg=play.querySelector('.gb-ember__ring-svg');
       const active=rail.querySelector('[aria-checked="true"]');
       const arc=play.querySelector('.gb-ember__ring-progress');
@@ -710,8 +716,8 @@ async function auditGillWideSpeed(browser, origin) {
       arc.style.removeProperty('transition');
       return {open:rail.getAttribute('aria-hidden')==='false',r,p,b,ringSvgWidth:svg?.getBoundingClientRect().width,
         selectedShadow:active?getComputedStyle(active).boxShadow:null,progressOffsets,
-        total:pill.length,allVisible:pill.every(e=>{const q=e.getBoundingClientRect();
-          return q.left>=r.x-1&&q.right<=r.right+1}),
+        total:pill.length,minimumRateSize:Math.min(...pill.map(e=>e.getBoundingClientRect().width)),
+        lastVisible:scrolledLast.left>=r.x-1&&scrolledLast.right<=r.right+1,
         gap:p.x-r.right,rateGap:r.right-b.right,scrollLeft:rail.scrollLeft,
         lastHit:hit?.getAttribute('data-speed')||null,
         playHit:document.elementFromPoint(p.x+22,p.y+22)?.closest('button')?.getAttribute('data-fc-action'),
@@ -719,13 +725,21 @@ async function auditGillWideSpeed(browser, origin) {
         progress:parseFloat(getComputedStyle(play.querySelector('.gb-ember__ring-progress')).strokeWidth),
         overflow:document.documentElement.scrollWidth-innerWidth};
     });
-    record(checks,'gill-wide-speed-02','all six 44px rate options are visible without scrolling',
-      geometry.open&&geometry.total===6&&geometry.allVisible&&geometry.scrollLeft===0,geometry);
+    record(checks,'gill-wide-speed-02','six 44px speeds remain reachable, including the last after real horizontal scroll',
+      geometry.open&&geometry.total===6&&geometry.minimumRateSize>=43.5&&
+      geometry.lastVisible&&geometry.lastHit==='2',geometry);
     record(checks,'gill-wide-speed-03','speed rail fills former badge and ends flush before Play',
       geometry.gap>=0&&geometry.gap<=6&&geometry.rateGap<=6&&
       geometry.r.right<=geometry.p.x+.5,geometry);
-    record(checks,'gill-wide-speed-04','last 2x option and Play have independent hit areas',
-      geometry.lastHit==='2'&&geometry.playHit==='play'&&geometry.overflow===0,geometry);
+    await page.locator('#mobileSpeedrail [data-speed="2"]').click();
+    await page.waitForFunction(() => document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded')==='false');
+    const selectedTwo=await page.evaluate(() => ({
+      checked: document.querySelector('#mobileSpeedrail [data-speed="2"]')?.getAttribute('aria-checked'),
+      saved: localStorage.getItem('gb:audio:rate')
+    }));
+    record(checks,'gill-wide-speed-04','last 2x activates after scroll while Play remains a distinct target',
+      geometry.lastHit==='2'&&geometry.playHit==='play'&&geometry.overflow===0&&
+      selectedTwo.checked==='true'&&selectedTwo.saved==='2',{geometry,selectedTwo});
     record(checks,'gill-wide-speed-05','historical W77 fine ring is 3px track and 3.6px progress',
       Math.abs(geometry.track-3)<.15&&Math.abs(geometry.progress-3.6)<.15,geometry);
     record(checks,'gill-wide-speed-06','selected 1x has no rectangular full-button shadow',
