@@ -1,0 +1,388 @@
+[
+  {
+    "width": 390,
+    "mode": "Enter",
+    "checks": [
+      {
+        "name": "Source reached by real Shift+Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Plain Enter closes native modal and focuses visible exact source",
+        "pass": true,
+        "data": {
+          "focus": "sec-canticles",
+          "top": 428.25,
+          "bottom": 479.53125,
+          "height": 900,
+          "open": "true",
+          "owners": 1
+        }
+      },
+      {
+        "name": "Source navigation unlocks article wheel",
+        "pass": true,
+        "data": {
+          "before": 6887,
+          "after": 7287
+        }
+      },
+      {
+        "name": "Reopening quiz retains exact answer/session and one owner",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+          "hash": "#sec-canticles",
+          "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+          "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+          "owners": 1,
+          "feedback": 1,
+          "w57": false
+        }
+      },
+      {
+        "name": "Retired Learning absent",
+        "pass": true
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "before": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": false
+    },
+    "source": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+    "landing": {
+      "focus": "sec-canticles",
+      "top": 428.25,
+      "bottom": 479.53125,
+      "height": 900,
+      "open": "true",
+      "owners": 1
+    },
+    "resumed": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+      "hash": "#sec-canticles",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": false
+    }
+  },
+  {
+    "width": 390,
+    "mode": "Control+Enter",
+    "checks": [
+      {
+        "name": "Source reached by real Shift+Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens actual source URL in new tab",
+        "pass": true,
+        "data": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles"
+      },
+      {
+        "name": "Modified activation preserves original URL/question/attempt",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+          "hash": "",
+          "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+          "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+          "owners": 1,
+          "feedback": 1,
+          "w57": false
+        }
+      },
+      {
+        "name": "Retired Learning absent",
+        "pass": true
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "before": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": false
+    },
+    "source": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+    "popup": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+    "after": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": false
+    }
+  },
+  {
+    "width": 390,
+    "mode": "Control+click",
+    "checks": [
+      {
+        "name": "Source reached by real Shift+Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens actual source URL in new tab",
+        "pass": true,
+        "data": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles"
+      },
+      {
+        "name": "Modified activation preserves original URL/question/attempt",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+          "hash": "",
+          "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+          "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+          "owners": 1,
+          "feedback": 1,
+          "w57": false
+        }
+      },
+      {
+        "name": "Retired Learning absent",
+        "pass": true
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "before": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": false
+    },
+    "source": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+    "popup": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/#sec-canticles",
+    "after": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": false
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "Enter",
+    "checks": [
+      {
+        "name": "Source reached by real Shift+Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Plain Enter closes native modal and focuses visible exact source",
+        "pass": true,
+        "data": {
+          "focus": "sec-canticles",
+          "top": 483.3125,
+          "bottom": 513,
+          "height": 900,
+          "open": "true",
+          "owners": 1
+        }
+      },
+      {
+        "name": "Source navigation unlocks article wheel",
+        "pass": true,
+        "data": {
+          "before": 4893,
+          "after": 5293
+        }
+      },
+      {
+        "name": "Reopening quiz retains exact answer/session and one owner",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+          "hash": "#sec-canticles",
+          "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+          "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+          "owners": 1,
+          "feedback": 1,
+          "w57": true
+        }
+      },
+      {
+        "name": "Retired Learning absent",
+        "pass": true
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "before": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": true
+    },
+    "source": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+    "landing": {
+      "focus": "sec-canticles",
+      "top": 483.3125,
+      "bottom": 513,
+      "height": 900,
+      "open": "true",
+      "owners": 1
+    },
+    "resumed": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+      "hash": "#sec-canticles",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": true
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "Control+Enter",
+    "checks": [
+      {
+        "name": "Source reached by real Shift+Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens actual source URL in new tab",
+        "pass": true,
+        "data": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles"
+      },
+      {
+        "name": "Modified activation preserves original URL/question/attempt",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+          "hash": "",
+          "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+          "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+          "owners": 1,
+          "feedback": 1,
+          "w57": true
+        }
+      },
+      {
+        "name": "Retired Learning absent",
+        "pass": true
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "before": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": true
+    },
+    "source": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+    "popup": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+    "after": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": true
+    }
+  },
+  {
+    "width": 1440,
+    "mode": "Control+click",
+    "checks": [
+      {
+        "name": "Source reached by real Shift+Tab after answer",
+        "pass": true
+      },
+      {
+        "name": "Modified activation opens actual source URL in new tab",
+        "pass": true,
+        "data": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles"
+      },
+      {
+        "name": "Modified activation preserves original URL/question/attempt",
+        "pass": true,
+        "data": {
+          "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+          "hash": "",
+          "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+          "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+          "owners": 1,
+          "feedback": 1,
+          "w57": true
+        }
+      },
+      {
+        "name": "Retired Learning absent",
+        "pass": true
+      },
+      {
+        "name": "Zero original-page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ],
+    "before": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": true
+    },
+    "source": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+    "popup": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open#sec-canticles",
+    "after": {
+      "url": "http://127.0.0.1:8499/articles/dzhon-gill-chast-2-uchenyi/?paper=space&panel=open",
+      "hash": "",
+      "state": "{\"version\":1,\"signature\":\"{\\\"article\\\":[\\\"Почему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\\\",\\\"Что было необычного в присвоении докторской степени Гиллу Маришальским колледжем в Абердине в 1748 году?\\\",\\\"Какой оригинальный богословский вклад внёс Джон Гилл в доктрину вечного совета спасения (<em>pactum salutis</em>), по наблюдению Ричарда Мюллера?\\\",\\\"Какой раввинистический источник Гилл использовал в толковании Бытие 1:2, чтобы показать, как древние евреи понимали «движение Духа Божьего над водами»?\\\"],\\\"series\\\":[\\\"gill.context.great-ejection.year\\\",\\\"gill.context.salters-hall.year\\\",\\\"gill.context.particular-vs-general\\\",\\\"gill.context.academies\\\",\\\"gill.man.horsleydown.years\\\",\\\"gill.man.horsleydown.place\\\",\\\"gill.man.ordination.year\\\",\\\"gill.man.education\\\",\\\"gill.man.goatyard-declaration.year\\\",\\\"gill.scholar.mishnah\\\",\\\"gill.scholar.canticles\\\",\\\"gill.scholar.systematics\\\",\\\"gill.exegete.1tim2-4\\\",\\\"gill.exegete.2pet3-9\\\",\\\"gill.exegete.world-texts\\\",\\\"gill.exegete.rabbi-yohanan\\\",\\\"gill.exegete.rejection-vs-reprobation\\\",\\\"gill.exegete.duty-faith\\\",\\\"gill.legacy.hypercalvinism\\\",\\\"gill.legacy.spurgeon\\\",\\\"gill.legacy.toplady\\\",\\\"gill.legacy.rippon\\\",\\\"gill.legacy.islam\\\",\\\"gill.legacy.rediscovery\\\",\\\"gill.legacy.america\\\",\\\"gill.reference.lifespan\\\",\\\"gill.reference.body-structure\\\",\\\"gill.reference.disputes\\\",\\\"gill.reference.terms\\\",\\\"gill.man.daughter-sermon\\\",\\\"gill.exegete.seven-texts\\\",\\\"gill.exegete.method-coordinates\\\"]}\",\"state\":{\"mode\":\"article\",\"step\":0,\"score\":0,\"cycle\":[],\"last\":-1,\"confidence\":null,\"answered\":true,\"selected\":0,\"seen\":0,\"calibrated\":0,\"streak\":0,\"best\":0,\"practiceScore\":0,\"finished\":false}}",
+      "quiz": "Вопрос 1 из 4\n\nПочему, по собственному признанию Уильяма Уистона, тот отказался идти слушать проповедь Гилла в 1748 году?\nГилл был известен как гиперкальвинист, и Уистон избегал таких споров.\nУистон узнал, что Гилл написал толкование в folio на Песнь Песней, и на этом основании отказался идти его слушать.\nОни расходились в понимании крещения погружением, и Уистон не хотел конфликта.\nУистон считал Гилла богословским дилетантом, не достойным его внимания.\nНеверно\n\nУистон отказался, узнав, что Гилл написал комментарий на Песнь Песней.\n\nУильям Уистон, известный унитарий и переводчик Иосифа Флавия, записал в мемуарах, что отказался идти слушать Гилла, узнав о его книге на Песнь Песней. Для Уистона это было чем-то «недостойным» серьёзного богослова. Риппон иронично прокомментировал этот жест. Эпизод хорошо показывает, насколько необычной для современников казалась широта гилловской экзегезы.\n\nПеречитать раздел · Песнь Песней (1728) — аллегория Христа и Церкви\nСледующий вопрос",
+      "owners": 1,
+      "feedback": 1,
+      "w57": true
+    }
+  }
+]
