@@ -77,6 +77,15 @@ async function run(engine, name) {
     viewport:{width:1440,height:900},locale:'ru-RU',
     reducedMotion:'reduce',serviceWorkers:'block'
   });
+  // Reader data-integrity acceptance is hermetic: third-party Metrika
+  // transport is not part of the test. Intercept only the two actual
+  // telemetry origins; same-origin requests and page errors remain unmocked.
+  await context.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i, route =>
+    route.fulfill({
+      status: 200,
+      contentType: route.request().resourceType() === 'script' ? 'application/javascript' : 'text/plain',
+      body: '',
+    }));
   const errors = [];
   let A, B;
   const seen = p => p.on('pageerror', e => errors.push(String(e)));
