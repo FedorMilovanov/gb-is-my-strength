@@ -13,16 +13,21 @@ const SITE = 'https://gospod-bog.ru';
 const RELEASE_DATE = '2026-09-10T00:00:00+03:00';
 const LANDING = '/podrostok-za-kadrom/';
 const SERIES_KEY = 'teen-double-life';
+const ADULT_KEY = 'adult-children-family';
 const SERIES_OG = '/images/teen-series/series-cover.webp';
 const SERIES_RAIL = '/images/teen-series/series-cover-600w.webp';
 const ITEMS = [
   ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0, '01-double-life.webp'],
   ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32, '02-after-disclosure.webp'],
   ['III', 'teen-church-response', 'podrostok-za-kadrom-chto-delat-tserkvi', 39, 75, '03-church-response.webp'],
-  ['IV', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 114, '06-adult-authority.webp'],
-  ['V', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 149, '05-home-money.webp'],
-  ['VI', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 185, '04-left-home.webp'],
-  ['VII', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222, '07-daughter-marriage.webp'],
+  ['ОСНОВА', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 0, '06-adult-authority.webp'],
+  ['ДОМ', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 0, '05-home-money.webp'],
+  ['УХОД', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 0, '04-left-home.webp'],
+  ['БРАК', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 0, '07-daughter-marriage.webp'],
+];
+const GROUPS = [
+  { key: SERIES_KEY, configName: 'TEEN_DOUBLE_LIFE_SERIES', rows: ITEMS.slice(0, 3), kind: 'roman', total: 114 },
+  { key: ADULT_KEY, configName: 'ADULT_CHILDREN_SERIES', rows: ITEMS.slice(3), kind: 'label' },
 ];
 const railFor = (heroFile) => heroFile.replace(/\.webp$/, '-600w.webp');
 
@@ -123,23 +128,30 @@ for (const rel of ['images/teen-series/series-hero.svg', 'images/teen-series/ser
   if (exists(rel)) fail(`superseded root teen asset must stay deleted: ${rel}`);
 }
 
-if (!config.includes("seriesId: 'teen-double-life'")) fail('teen config seriesId drift');
-// GBS-TEEN-SERIES-CORE-STEP-PROGRESS: seven first-class core steps must be
-// declared once in the typed config, not patched per route. The rail and the
-// article header both consume coreStepMeta(), so this single declaration is
-// the owner of «Шаг N из 7» on desktop and mobile.
-if (!config.includes("coreSequence: { stepLabel: 'Шаг' }")) fail('teen config lost its explicit seven-step coreSequence');
-if (!read('src/components/article-pilots/gill-series/GillSeriesRail.astro').includes('coreStepMeta(config, parentId)')) {
-  fail('shared rail no longer consumes the typed core sequence progress');
-}
-if (!wrapper.includes('coreStep.text')) fail('teen article header lost its visible core step position');
-if (!config.includes("railBackHref: '/podrostok-za-kadrom/'")) fail('teen config landing href drift');
-if (!config.includes("teenSeriesMediaFor")) fail('teen config must use route-specific media authority');
-if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png|TEEN_SERIES_RAIL_COVER/.test(config)) fail('legacy/prepublication rail cover leaked into release config');
+if (!config.includes("seriesId: 'teen-double-life'") ||
+    !config.includes("seriesId: 'adult-children-family'"))
+  fail('reader configs must include separate teen/adult series IDs');
+if (config.includes("coreSequence: { stepLabel: 'Шаг' }"))
+  fail('forbidden forced seven-step core sequence');
+if (!read('src/components/article-pilots/gill-series/GillSeriesRail.astro').includes('coreStepMeta(config, parentId)'))
+  fail('shared rail no longer consumes optional typed core progress');
+if (!wrapper.includes('const series = TEEN_DOUBLE_LIFE_SERIES.pages[pageId]') ||
+    !wrapper.includes('ADULT_CHILDREN_SERIES.pages[pageId]') ||
+    !wrapper.includes('config={series}') ||
+    !wrapper.includes('data-gbs2-series={series.seriesId}'))
+  fail('article wrapper must select correct series by pageId');
+if (!config.includes("railBackHref: '/podrostok-za-kadrom/'") ||
+    !config.includes("railBackHref: '/podrostok-za-kadrom/#adult-studies'"))
+  fail('independent series landing destinations missing');
+if (!config.includes('teenSeriesMediaFor')) fail('route-specific media authority missing');
+if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png|TEEN_SERIES_RAIL_COVER/.test(config))
+  fail('legacy/prepublication rail cover leaked into reader config');
 for (const [, pageId] of ITEMS) {
-  if (!config.includes(`railCover: teenSeriesMediaFor('${pageId}').rail`)) fail(`${pageId}: route-specific rail cover missing`);
+  if (!config.includes("railCover: teenSeriesMediaFor('" + pageId + "').rail"))
+    fail(pageId + ': route-specific rail cover missing');
 }
-if (!wrapper.includes('data-gbs2-series="teen-double-life"')) fail('teen wrapper series identity missing');
+if (!landingSource.includes('adultCards') || !landingSource.includes('id="adult-studies"'))
+  fail('separate adult thematic landing section missing');
 if (wrapper.includes('PASTOR_SERIES') || wrapper.includes('pastor-series/og-hero')) fail('pastor-series metadata leaked into teen wrapper');
 if (!wrapper.includes('const media = teenSeriesMediaFor(pageId);')) fail('article wrapper media authority missing');
 if (!wrapper.includes('srcset={`${media.rail} 600w, ${media.hero} 1200w`}')) fail('article responsive hero contract missing');
@@ -165,49 +177,56 @@ for (const [name, workflow] of [
   }
 }
 
-const registered = series[SERIES_KEY];
-if (!registered) fail('data/series.json missing teen-double-life');
 const expectedSlugs = ITEMS.map(([, , slug]) => slug);
-// Fail before building when a reader-only reorder drifts from the published
-// series registry or per-route core mark. Global .includes() cannot detect
-// a correct value accidentally attached to the wrong chapter.
-const configItemStart = config.indexOf('  items: [', config.indexOf('export const TEEN_DOUBLE_LIFE_SERIES'));
-const configItemEnd = config.indexOf('\n  pages: {', configItemStart);
-if (configItemStart < 0 || configItemEnd < 0) fail('teen config items/pages boundaries missing');
-const configItemSource = configItemStart < 0 || configItemEnd < 0 ? '' : config.slice(configItemStart, configItemEnd);
-const configItemOrder = [...configItemSource.matchAll(/\bhref:\s*'\/articles\/([^/]+)\/'/g)].map((x) => x[1]);
-if (configItemOrder.length !== expectedSlugs.length || configItemOrder.some((slug, i) => slug !== expectedSlugs[i])) {
-  fail('teen config core order drift: ' + (configItemOrder.join(' -> ') || 'empty'));
-}
-for (const [mark, pageId, slug, minutes, done] of ITEMS) {
-  const itemStart = configItemSource.indexOf("id: '" + pageId + "'");
-  const itemEnd = configItemSource.indexOf('\n    },', itemStart);
-  const item = itemStart < 0 || itemEnd < 0 ? '' : configItemSource.slice(itemStart, itemEnd);
-  if (!item.includes("mark: { kind: 'roman', value: '" + mark + "' }")) fail(`${slug}: expected Roman core mark ${mark}`);
-  if (!item.includes(`readingTime: '${minutes} мин'`)) fail(`${slug}: expected ${minutes} min`);
-  const pageStart = config.indexOf("'" + pageId + "': {", configItemEnd);
-  const pageEnd = config.indexOf('\n    },', pageStart);
-  const page = pageStart < 0 || pageEnd < 0 ? '' : config.slice(pageStart, pageEnd);
-  if (!page.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: progress must start at ${done}`);
-  if (!page.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: page minute count must be ${minutes}`);
-}
-const siteOrderBody = siteData.match(/['"]teen-double-life['"]\s*:\s*\[([\s\S]*?)\]/u)?.[1] || '';
-const siteOrder = [...siteOrderBody.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]);
-if (siteOrder.length !== expectedSlugs.length || siteOrder.some((slug, index) => slug !== expectedSlugs[index])) {
-  fail(`src/data/site.ts teen SERIES_ORDER drift: ${siteOrder.join(' -> ') || 'missing'}`);
-}
-else {
-  if (registered.baseUrl !== '/articles/') fail(`series baseUrl=${registered.baseUrl}`);
-  if (registered.searchPolicy?.landingRoute !== LANDING) fail('series landingRoute policy drift');
-  if ((registered.parts || []).length !== ITEMS.length) fail(`series parts=${registered.parts?.length || 0}, expected 7`);
-  ITEMS.forEach(([mark, , slug, minutes], index) => {
-    const part = registered.parts?.[index];
-    if (!part || String(part.n) !== mark || part.slug !== slug || part.readingTime !== minutes || part.status !== 'published') {
-      fail(`series part ${index + 1} parity mismatch`);
-    }
+for (const group of GROUPS) {
+  const registered = series[group.key];
+  if (!registered) { fail('data/series.json missing ' + group.key); continue; }
+  const cfgIndex = config.indexOf('export const ' + group.configName);
+  const configItemStart = config.indexOf('  items: [', cfgIndex);
+  const configItemEnd = config.indexOf('\n  pages: {', configItemStart);
+  if (cfgIndex < 0 || configItemStart < 0 || configItemEnd < 0)
+    fail(group.key + ': config item/page boundaries missing');
+  const itemSource = configItemStart < 0 || configItemEnd < 0 ? '' : config.slice(configItemStart, configItemEnd);
+  const foundOrder = [...itemSource.matchAll(/\bhref:\s*'\/articles\/([^/]+)\/'/g)].map((x) => x[1]);
+  const expected = group.rows.map(([, , slug]) => slug);
+  if (foundOrder.length !== expected.length || foundOrder.some((slug, i) => slug !== expected[i]))
+    fail(group.key + ': reader item order mismatch: ' + foundOrder.join(' -> '));
+  for (const [mark, pageId, slug, minutes, done] of group.rows) {
+    const start = itemSource.indexOf("id: '" + pageId + "'");
+    const stop = itemSource.indexOf('\n    },', start);
+    const item = start < 0 || stop < 0 ? '' : itemSource.slice(start, stop);
+    const expectedMark = "mark: { kind: '" + group.kind + "', value: '" + mark + "' }";
+    if (!item.includes(expectedMark)) fail(slug + ': reader mark must reflect separate series');
+    if (!item.includes("readingTime: '" + minutes + " мин'")) fail(slug + ': reading minutes drift');
+    const pageStart = config.indexOf("'" + pageId + "': {", configItemEnd);
+    const pageEnd = config.indexOf('\n    },', pageStart);
+    const page = pageStart < 0 || pageEnd < 0 ? '' : config.slice(pageStart, pageEnd);
+    if (!page.includes('readingProgressDoneMin: ' + done)) fail(slug + ': progress offset drift');
+    if (!page.includes('readingProgressPartMin: ' + minutes)) fail(slug + ': reading minutes drift');
+    const total = group.kind === 'roman' ? 'TEEN_TOTAL_MIN' : String(minutes);
+    if (!page.includes('readingProgressTotalMin: ' + total))
+      fail(slug + ': independent progress total missing');
+  }
+  const siteKey = "'" + group.key + "': [";
+  const ix = siteData.indexOf(siteKey);
+  const siteBody = ix >= 0 ? siteData.slice(ix + siteKey.length, siteData.indexOf(']', ix)) : '';
+  const order = [...siteBody.matchAll(/['"]([^'"]+)['"]/g)].map((x) => x[1]);
+  if (order.length !== expected.length || order.some((slug, i) => slug !== expected[i]))
+    fail(group.key + ': src/data/site.ts SERIES_ORDER mismatch');
+  if (registered.baseUrl !== '/articles/') fail(group.key + ': wrong registry baseUrl');
+  if (registered.searchPolicy?.landingRoute !== LANDING) fail(group.key + ': wrong landing');
+  if ((registered.parts || []).length !== group.rows.length)
+    fail(group.key + ': series part count mismatch');
+  group.rows.forEach(([mark, , slug, minutes], i) => {
+    const entry = registered.parts?.[i];
+    const n = group.kind === 'roman' ? mark : String(i + 1);
+    if (!entry || String(entry.n) !== n || entry.slug !== slug ||
+        entry.readingTime !== minutes || entry.status !== 'published')
+      fail(group.key + ': registry/reader mismatch for ' + slug);
   });
 }
-
+if (new Set(expectedSlugs).size !== 7)
+  fail('seven canonical source article routes must remain unique');
 const requiredOwnership = [
   [LANDING, 'src/pages/podrostok-za-kadrom/index.astro'],
   ...ITEMS.map(([, , slug]) => [`/articles/${slug}/`, `src/pages/articles/${slug}/index.astro`]),
@@ -233,13 +252,15 @@ for (const [route, source] of requiredOwnership) {
 
 for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   const sourceRel = `src/content/articles/${slug}.mdx`;
+  const group = GROUPS.find((g) => g.rows.some((row) => row[1] === pageId));
+  if (!group) { fail(slug + ': unexpected source series ownership'); continue; }
   const mdx = read(sourceRel);
   const requiredSourceFields = [
     'contentStatus: "published"',
     'draft: false',
     'noindex: false',
     'sourcesRequired: true',
-    'series: "teen-double-life"',
+    'series: "' + group.key + '"',
     `canonicalOverride: "${SITE}/articles/${slug}/"`,
     `ogImage: "/images/teen-series/${heroFile}"`,
   ];
@@ -286,9 +307,13 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   if (/publishedFrontmatter|\b(?:draft|noindex|publishedAt|updatedAt|canonicalOverride)\s*:/.test(source)) {
     fail(`${slug}: route must not shadow canonical publication frontmatter`);
   }
-  if (!config.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: cumulative progress ${done} missing`);
-  if (!config.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: reading time ${minutes} missing`);
-  if (!config.includes(`mark: { kind: 'roman', value: '${mark}' }`)) fail(`${slug}: ${mark} must retain its core Roman mark`);
+  if (!config.includes('readingProgressDoneMin: ' + done))
+    fail(slug + ': series progress offset drift');
+  if (!config.includes('readingProgressPartMin: ' + minutes))
+    fail(slug + ': reading-time witness drift');
+  if (!config.includes("mark: { kind: '" + group.kind + "', value: '" + mark + "' }"))
+    fail(slug + ': typed mark drift');
+
 }
 
 if (exists('data/route-search-policy.json')) {
@@ -331,12 +356,23 @@ if (fs.existsSync(DIST)) {
           fail(`${route}: published deep-link #${id} is not unique in built HTML`);
         }
       }
-      const stepText = `Шаг ${rowIndex + 1} из ${ITEMS.length}`;
-      if (!html.includes(stepText)) fail(`${route}: owner-approved core step position «${stepText}» missing from built HTML`);
-      if (/Часть \d+ из 3/.test(html)) fail(`${route}: legacy roman-only «Часть N из 3» progress still shipped`);
+      const adult = rowIndex >= 3;
+      const groupName = adult ? ADULT_KEY : SERIES_KEY;
+      if (/Шаг\s+[0-9]+\s+из\s+7/u.test(html))
+        fail(route + ': forced seven-stage reader still published');
+      if (!html.includes('data-gbs2-series="' + groupName + '"'))
+        fail(route + ': rendered article series identity drifted');
+      const total = adult ? row[3] : 114;
+      if (!html.includes('data-gbs2-done-min="' + row[4] + '"') ||
+          !html.includes('data-gbs2-total-min="' + total + '"'))
+        fail(route + ': independent-cycle progress mismatch');
     }
     if (route === LANDING) {
-      if (!html.includes(SERIES_RAIL)) fail(`${route}: responsive series-cover derivative missing`);
+      if (!html.includes(SERIES_RAIL)) fail(route + ': responsive hero derivative missing');
+      if (!html.includes('id="adult-studies"') || !html.includes('adult-studies-title'))
+        fail(route + ': independent adult study group missing');
+      if (/Шаг\s+[0-9]+\s+из\s+7/u.test(html))
+        fail(route + ': forced seven-step landing remains');
       for (const [, , , , , heroFile] of ITEMS) {
         const cardImage = `/images/teen-series/${railFor(heroFile)}`;
         if (!html.includes(cardImage)) fail(`${route}: card derivative missing (${cardImage})`);
@@ -346,7 +382,9 @@ if (fs.existsSync(DIST)) {
       if (!html.includes(expectedRail)) fail(`${route}: responsive card/rail derivative missing (${expectedRail})`);
     }
     if (route !== LANDING) {
-      if (!html.includes('data-gbs2-series="teen-double-life"')) fail(`${route}: reader series identity missing`);
+      const groupName = rowIndex >= 3 ? ADULT_KEY : SERIES_KEY;
+      if (!html.includes('data-gbs2-series="' + groupName + '"'))
+        fail(route + ': rendered series identity missing');
       if (!/<section\b[^>]*class="sources-block"[^>]*data-reader-exclude[^>]*data-pagefind-ignore/iu.test(html)) {
         fail(`${route}: bibliography boundary is not static in built HTML before Pagefind`);
       }
@@ -363,8 +401,8 @@ if (errors.length) {
   process.exit(1);
 }
 console.log('✅ Teen series release contract PASS');
-console.log(`  routes: ${requiredOwnership.length} (landing + 7 articles)`);
-console.log('  order: I -> II -> III -> IV -> V -> VI -> VII');
+console.log('  routes: ' + requiredOwnership.length + ' (shared landing, 3 teen + 4 adult articles)');
+console.log('  groups: teen trilogy 114m and four independent adult topics');
 console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
 console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical frontmatter');
 console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail family');

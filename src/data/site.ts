@@ -81,6 +81,8 @@ export const SERIES_ORDER: Record<string, string[]> = {
     'podrostok-za-kadrom-dvoynaya-zhizn',
     'podrostok-za-kadrom-roditelyam-posle-razoblacheniya',
     'podrostok-za-kadrom-chto-delat-tserkvi',
+  ],
+  'adult-children-family': [
     'sovershennoletie-roditelskaya-vlast-chto-menyaetsya',
     'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya',
     'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie',

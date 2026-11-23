@@ -294,7 +294,7 @@ async function inspectArticle(page, spec, vp) {
   check(metrics.sourceHeading, route, viewport, 'reader-facing sources heading missing');
   check(metrics.correction && metrics.correctionExcluded, route, viewport,
     'correction boundary missing or not excluded from reader/Pagefind projection');
-  check(metrics.seriesIdentity === 'teen-double-life', route, viewport,
+  check(metrics.seriesIdentity === (spec.id.startsWith('adult-') ? 'adult-children-family' : 'teen-double-life'), route, viewport,
     `series identity drifted: ${metrics.seriesIdentity}`);
 
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
@@ -363,6 +363,12 @@ async function inspectLanding(page, vp) {
   page.on('pageerror', (error) => errors.push(error.message));
   const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
   check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+  // Scroll every native lazy card image into view before asserting decode/readiness.
+  for (const img of await page.locator('.teen-series-card__image').all()) {
+    await img.scrollIntoViewIfNeeded();
+    await img.evaluate((element) => element.decode().catch(() => {}));
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
   const metrics = await page.evaluate(() => {
     const cards = [...document.querySelectorAll('.teen-series-card')];
     const hero = document.querySelector('.teen-series-hero img');
@@ -373,6 +379,9 @@ async function inspectLanding(page, vp) {
       innerWidth: window.innerWidth,
       docWidth: document.documentElement.scrollWidth,
       cardCount: cards.length,
+      teenCardCount: document.querySelectorAll('section[aria-labelledby="series-order"] .teen-series-card').length,
+      adultCardCount: document.querySelectorAll('#adult-studies .teen-series-card').length,
+      forbiddenForcedSeven: /Шаг [0-9]+ из 7/.test(document.body.innerText),
       uniqueLinks: new Set(links).size,
       heroWidthAttr: hero?.getAttribute('width'),
       heroHeightAttr: hero?.getAttribute('height'),
@@ -395,6 +404,8 @@ async function inspectLanding(page, vp) {
   check(errors.length === 0, route, viewport, `pageerror: ${errors.join('; ')}`);
   check(metrics.docWidth <= metrics.innerWidth + 2, route, viewport,
     `landing horizontal overflow: ${metrics.docWidth} > ${metrics.innerWidth}`);
+  check(metrics.teenCardCount === 3 && metrics.adultCardCount === 4 && !metrics.forbiddenForcedSeven, route, viewport,
+    'landing must show a 3-part teen trilogy and 4 separately labeled adult studies without a forced seven-step rail');
   check(metrics.cardCount === 7 && metrics.uniqueLinks === 7, route, viewport,
     `landing card projection drifted: cards=${metrics.cardCount}, unique=${metrics.uniqueLinks}`);
   check(metrics.heroWidthAttr === '1200' && metrics.heroHeightAttr === '630', route, viewport,
@@ -450,6 +461,12 @@ async function inspectLandingDpr2(browser, base) {
   try {
     const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
     check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+    // Verify DPR2 responsive candidates after native lazy cards have entered view.
+    for (const img of await page.locator('.teen-series-card__image').all()) {
+      await img.scrollIntoViewIfNeeded();
+      await img.evaluate((element) => element.decode().catch(() => {}));
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
     const metrics = await page.evaluate(() => {
       const hero = document.querySelector('.teen-series-hero img');
       const cards = [...document.querySelectorAll('.teen-series-card__image')];

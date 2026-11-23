@@ -76,23 +76,34 @@ function normalizeRoute(value) {
 if (!existsSync(DIST) || !existsSync(COMPILED)) throw new Error('production-like dist or compiled relations missing');
 
 const compiled = JSON.parse(await readFile(COMPILED, 'utf8'));
-const teenNodes = compiled.nodes
-  .filter((node) => node.seriesId === 'teen-double-life')
-  .sort((a, b) => a.seriesIndex - b.seriesIndex);
-assert.equal(teenNodes.length, 7, 'compiled graph must expose exactly seven teen-series nodes');
-assert.deepEqual(teenNodes.map((node) => normalizeRoute(node.url)), ROUTES.map(([route]) => route),
-  'compiled teen node order must equal I -> II -> III -> IV -> V -> VI -> VII');
-assert.deepEqual(teenNodes.map((node) => node.seriesIndex), [1, 2, 3, 4, 5, 6, 7],
-  'compiled teen seriesIndex must be contiguous 1..7');
-
-const teenIds = new Set(teenNodes.map((node) => node.id));
-const chain = compiled.edges
-  .filter((edge) => edge.kind === 'series-next' && teenIds.has(edge.source) && teenIds.has(edge.target));
-assert.equal(chain.length, 6, 'teen series must compile exactly six series-next edges');
-for (let i = 0; i < 6; i += 1) {
-  assert(chain.some((edge) => edge.source === teenNodes[i].id && edge.target === teenNodes[i + 1].id),
-    `missing teen series-next edge ${i + 1} -> ${i + 2}`);
+const familyNodes = compiled.nodes.filter((node) => node.seriesId === 'teen-double-life' || node.seriesId === 'adult-children-family');
+const groups = [
+  { id: 'teen-double-life', name: 'teen trilogy', routes: ROUTES.slice(0, 3) },
+  { id: 'adult-children-family', name: 'independent adult studies', routes: ROUTES.slice(3) },
+];
+for (const group of groups) {
+  const nodes = compiled.nodes
+    .filter((node) => node.seriesId === group.id)
+    .sort((a, b) => a.seriesIndex - b.seriesIndex);
+  assert.equal(nodes.length, group.routes.length, `${group.name}: node count drifted`);
+  assert.deepEqual(nodes.map((node) => normalizeRoute(node.url)),
+    group.routes.map(([route]) => route), `${group.name}: reader order drifted`);
+  assert.deepEqual(nodes.map((node) => node.seriesIndex),
+    nodes.map((_, i) => i + 1), `${group.name}: seriesIndex must start at 1`);
+  const ids = new Set(nodes.map((node) => node.id));
+  const edges = compiled.edges.filter((edge) =>
+    edge.kind === 'series-next' && ids.has(edge.source) && ids.has(edge.target));
+  assert.equal(edges.length, Math.max(0, nodes.length - 1),
+    `${group.name}: series-next edge count drifted`);
+  for (let i = 0; i < nodes.length - 1; i += 1) {
+    assert(edges.some((edge) => edge.source === nodes[i].id && edge.target === nodes[i + 1].id),
+      `${group.name}: missing series-next ${i + 1} -> ${i + 2}`);
+  }
 }
+assert.equal(compiled.edges.filter((edge) => edge.kind === 'series-next' &&
+  compiled.nodes.find((node) => node.id === edge.source)?.seriesId !==
+  compiled.nodes.find((node) => node.id === edge.target)?.seriesId).length, 0,
+  'series-next must never cross the teenage/adult boundary');
 
 for (const [edgeId, sourceRoute, targetRoute] of REQUIRED_LATERAL_EDGES) {
   const sourceNode = compiled.nodes.find((node) => normalizeRoute(node.url) === sourceRoute);
@@ -135,11 +146,11 @@ for (const [route, expectedRefs] of ROUTES) {
   assert(/href=["']mailto:/.test(correction.html), `${route}: editorial email action missing`);
   assert(/href=["']https:\/\/t\.me\//.test(correction.html), `${route}: editorial Telegram action missing`);
 
-  const node = teenNodes.find((item) => normalizeRoute(item.url) === route);
+  const node = familyNodes.find((item) => normalizeRoute(item.url) === route);
   assert(node, `${route}: compiled node missing`);
   const projection = compiled.projections?.byNode?.[node.id];
   assert(projection, `${route}: compiled projection missing`);
-  const sameSeries = new Set(teenNodes.filter((item) => item.id !== node.id).map((item) => normalizeRoute(item.url)));
+  const sameSeries = new Set(familyNodes.filter((item) => item.seriesId === node.seriesId && item.id !== node.id).map((item) => normalizeRoute(item.url)));
   const panelCount = (html.match(/class=["'][^"']*\bgb-relations-panel\b/g) || []).length;
   if (!projection.article?.length) {
     assert.equal(panelCount, 0, `${route}: stale relation panel exists without compiler projection`);
@@ -237,7 +248,7 @@ try {
 }
 
 console.log('✅ Teen runtime closure PASS');
-console.log('  compiled relations: 7 teen nodes / 6 series-next edges / 3 verified lateral catalog edges');
+console.log('  compiled relations: 3 teen + 4 adult nodes, separate 2/3 series-next edges, 3 lateral edges');
 console.log('  correction boundary: 7/7 shared owner + safeguarding disclaimer');
 console.log('  Scripture UX: 19 bounded .bref[data-ref] triggers; desktop + mobile interaction');
 console.log('  Psalm guard: visible Пс. 49:16–21 / machine Псалтирь 49:16–21');

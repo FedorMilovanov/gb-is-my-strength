@@ -1,7 +1,7 @@
 ---
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
-import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
+import { TEEN_DOUBLE_LIFE_SERIES, ADULT_CHILDREN_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
 import { TEEN_SERIES_MEDIA, teenSeriesMediaFor } from '@/components/article-pilots/_shared/series/teenSeriesMedia';
 import { SITE } from '@/data/site';
 import { assetUrl } from '@/lib/asset-version';
@@ -10,9 +10,10 @@ const canonical = `${SITE.url}/podrostok-za-kadrom/`;
 const ogImagePath = TEEN_SERIES_MEDIA.series.hero;
 const ogImage = `${SITE.url}${ogImagePath}`;
 const title = 'Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя';
-const description = 'Семь материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах и возвращении — с Писанием как главным ориентиром.';
+const description = 'Три материала о двойной жизни подростка и отдельный цикл из четырёх самостоятельных исследований об отношениях со взрослыми детьми — с Писанием как главным ориентиром.';
 const items = TEEN_DOUBLE_LIFE_SERIES.items;
 const cards = items.map((item) => ({ ...item, media: teenSeriesMediaFor(item.id) }));
+const adultCards = ADULT_CHILDREN_SERIES.items.map((item) => ({ ...item, media: teenSeriesMediaFor(item.id) }));
 const totalMinutes = items.reduce((sum, item) => sum + Number.parseInt(item.readingTime, 10), 0);
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -99,7 +100,7 @@ const jsonLd = {
           <nav aria-label="Хлебные крошки" style="margin-bottom:.75rem">
             <a href="/" class="gb-text-link">← Главная</a>
           </nav>
-          <p class="section-label">Серия · 7 материалов · {totalMinutes} мин</p>
+          <p class="section-label">Подростковая трилогия · 3 материала · {totalMinutes} мин</p>
           <h1>Подросток за кадром</h1>
           <p class="article-byline"><span class="article-byline__strong">Двойная жизнь, семья и взросление</span></p>
           <p>{description}</p>
@@ -138,7 +139,30 @@ const jsonLd = {
                 <span class="teen-series-card__content">
                   <span class="teen-series-card__mark" aria-hidden="true">{item.mark.value}</span>
                   <span class="teen-series-card__body">
-                    <span class="teen-series-card__eyebrow">Шаг {index + 1} из {cards.length} · {item.readingTime}</span>
+                    <span class="teen-series-card__eyebrow">Часть {index + 1} из {cards.length} · {item.readingTime}</span>
+                    <strong>{item.title}</strong>
+                    <span>{item.shortTitle}</span>
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section id="adult-studies" aria-labelledby="adult-studies-title">
+          <h2 id="adult-studies-title">Взрослые дети и родители: отдельный цикл</h2>
+          <p>Четыре самостоятельных исследования об отношениях с совершеннолетними детьми. Они не являются шагами IV–VII подростковой истории: выбирайте тему в соответствии со своей ситуацией.</p>
+          <div class="teen-series-grid">
+            {adultCards.map((item) => (
+              <a class="teen-series-card" href={item.href}>
+                <img class="teen-series-card__image" src={item.media.rail}
+                  srcset={item.media.rail + ' 600w, ' + item.media.hero + ' 1200w'}
+                  sizes="(max-width: 47.499rem) 100vw, 410px"
+                  width="600" height="315" alt="" loading="lazy" decoding="async" />
+                <span class="teen-series-card__content">
+                  <span class="teen-series-card__mark" aria-hidden="true">{item.mark.value}</span>
+                  <span class="teen-series-card__body">
+                    <span class="teen-series-card__eyebrow">Отдельное исследование · {item.readingTime}</span>
                     <strong>{item.title}</strong>
                     <span>{item.shortTitle}</span>
                   </span>
@@ -150,8 +174,8 @@ const jsonLd = {
 
         <section aria-labelledby="how-to-use">
           <h2 id="how-to-use">Как устроена серия</h2>
-          <p>Первые три материала разбирают двойную жизнь подростка, действия родителей после разоблачения и ответственность церкви. Главы IV–VII продолжают тему после совершеннолетия: сначала раскрывают, как меняются родительская власть и ответственность взрослого человека, затем применяют эти принципы к совместному дому и деньгам, уходу и восстановлению отношений, наконец — к брачному выбору взрослой дочери.</p>
-          <p>Все семь глав I–VII составляют единое последовательное чтение. Порядок — от причин подростковой двойной жизни к реакции семьи и церкви, затем к богословию взрослости и конкретным семейным решениям. Каждая глава сохраняет собственный вопрос и отличает библейскую норму от пастырского применения.</p>
+          <p>Первые три материала разбирают двойную жизнь подростка, действия родителей после разоблачения и ответственность церкви. В отдельном блоке представлены самостоятельные исследования о взрослом ребёнке: родительская власть после совершеннолетия, совместный дом, уход и возвращение, брачный выбор дочери.</p>
+          <p>Подростковая серия состоит только из частей I–III. Исследования об отношениях со взрослыми детьми можно читать в любом порядке — по своей ситуации, а не как обязательные этапы истории подростка.</p>
         </section>
 
         <section class="author-card">

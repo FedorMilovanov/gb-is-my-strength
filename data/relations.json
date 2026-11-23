@@ -192,7 +192,7 @@
     },
     {
       "id": "teen-companion-d-hermeneutics",
-      "source": "series-teen-double-life-vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
+      "source": "series-adult-children-family-vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
       "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
       "kind": "methodological-context",
       "weight": 88,
@@ -219,8 +219,8 @@
     },
     {
       "id": "teen-companion-a-same-topic-b",
-      "source": "series-teen-double-life-vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
-      "target": "series-teen-double-life-vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
+      "source": "series-adult-children-family-vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
+      "target": "series-adult-children-family-vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
       "kind": "same-topic",
       "weight": 44,
       "rationale": "Главы V и VI рассматривают связанные, но разные ситуации: в пятой — правила совместного дома, деньги и помощь взрослому ребёнку, а в шестой — отношения после ухода из дома, контакт и восстановление доверия.",
@@ -228,8 +228,8 @@
     },
     {
       "id": "teen-companion-b-same-topic-c",
-      "source": "series-teen-double-life-vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
-      "target": "series-teen-double-life-sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
+      "source": "series-adult-children-family-vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
+      "target": "series-adult-children-family-sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
       "kind": "same-topic",
       "weight": 44,
       "rationale": "Глава IV объясняет, как с совершеннолетием изменяются формы родительского руководства при сохраняющемся почитании; глава V применяет это основание к совместному проживанию, деньгам и ответственности.",
@@ -237,8 +237,8 @@
     },
     {
       "id": "teen-companion-c-same-topic-d",
-      "source": "series-teen-double-life-sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
-      "target": "series-teen-double-life-vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
+      "source": "series-adult-children-family-sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
+      "target": "series-adult-children-family-vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
       "kind": "same-topic",
       "weight": 44,
       "rationale": "Глава IV задаёт общую рамку почитания, согласия и пределов родительской власти, а заключительная глава VII отдельно разбирает библейские тексты о браке взрослой дочери, свободном согласии и участии семьи.",
