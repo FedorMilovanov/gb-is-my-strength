@@ -23,5 +23,16 @@ function bindG3Matrix(root) {
   query.addEventListener('input', update); year.addEventListener('change', update);
   reset.addEventListener('click', () => { query.value = ''; year.value = ''; update(); query.focus(); });
   update();
+  function restoreTarget() {
+    let id;
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+    const target = document.getElementById(id);
+    const row = target?.closest('.gm-row');
+    if (!row || !root.contains(row) || !row.hidden) return;
+    query.value = ''; year.value = ''; update();
+    target.focus({preventScroll:true}); target.scrollIntoView({block:'center'});
+  }
+  window.addEventListener('hashchange', restoreTarget);
+  restoreTarget();
 }
 document.querySelectorAll('[data-g3-matrix]').forEach(bindG3Matrix);

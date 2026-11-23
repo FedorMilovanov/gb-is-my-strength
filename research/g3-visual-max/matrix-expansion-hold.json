@@ -1,0 +1,125 @@
+{
+  "state": "PUBLICATION_HOLD",
+  "source": "Research #632 cfc485829330ede86c3a58317fe6c0cdad6fedbb §14 H-T",
+  "locators": {
+    "2018": "https://www.gnli.com/titles/2018-G3-Conference-or-G3-Ministries/2902",
+    "2021": "https://www.gnli.com/titles/2021-G3-National-Conference-or-G3-Ministries/2906"
+  },
+  "entries": [
+    {
+      "year": 2018,
+      "id": "lawson",
+      "name": "Стивен Лоусон"
+    },
+    {
+      "year": 2018,
+      "id": "johnson",
+      "name": "Фил Джонсон"
+    },
+    {
+      "year": 2018,
+      "id": "ascol",
+      "name": "Том Аскол"
+    },
+    {
+      "year": 2018,
+      "id": "baucham",
+      "name": "Водди Бокам"
+    },
+    {
+      "year": 2018,
+      "id": "thomas",
+      "name": "Дерек Томас"
+    },
+    {
+      "year": 2018,
+      "id": "white",
+      "name": "Джеймс Уайт"
+    },
+    {
+      "year": 2018,
+      "id": "tripp",
+      "name": "Пол Трипп"
+    },
+    {
+      "year": 2018,
+      "id": "kruger",
+      "name": "Майкл Крюгер"
+    },
+    {
+      "year": 2018,
+      "id": "challies",
+      "name": "Тим Чаллис"
+    },
+    {
+      "year": 2018,
+      "id": "miller",
+      "name": "Дэвид Миллер"
+    },
+    {
+      "year": 2018,
+      "id": "buice",
+      "name": "Джош Бьюс"
+    },
+    {
+      "year": 2021,
+      "id": "strachan",
+      "name": "Оуэн Стракан"
+    },
+    {
+      "year": 2021,
+      "id": "peace",
+      "name": "Марта Пис"
+    },
+    {
+      "year": 2021,
+      "id": "aniol",
+      "name": "Скотт Аниол"
+    },
+    {
+      "year": 2021,
+      "id": "coates",
+      "name": "Джеймс Коутс"
+    },
+    {
+      "year": 2021,
+      "id": "buck",
+      "name": "Том Бак"
+    },
+    {
+      "year": 2021,
+      "id": "thornton",
+      "name": "Чип Торнтон"
+    },
+    {
+      "year": 2021,
+      "id": "lawson",
+      "name": "Стивен Лоусон"
+    },
+    {
+      "year": 2021,
+      "id": "riccardi",
+      "name": "Майк Риккарди"
+    },
+    {
+      "year": 2021,
+      "id": "washer",
+      "name": "Пол Вошер"
+    },
+    {
+      "year": 2021,
+      "id": "baucham",
+      "name": "Водди Бокам"
+    },
+    {
+      "year": 2021,
+      "id": "white",
+      "name": "Джеймс Уайт"
+    },
+    {
+      "year": 2021,
+      "id": "johnson",
+      "name": "Фил Джонсон"
+    }
+  ]
+}

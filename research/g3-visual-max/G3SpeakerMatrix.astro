@@ -1,15 +1,41 @@
 ---
 // Donor: place alongside matrix-data.json, matrix.css and matrix.js after MAX 0 integration.
 import matrix from './matrix-data.json';
-import { historyCitation, type G3HistorySourceId } from '@/data/journal/g3HistorySources';
+import { G3_HISTORY_SOURCES, historyCitation, type G3HistorySourceId } from '@/data/journal/g3HistorySources';
 import './matrix.css';
-const years = matrix.years;
-const source = (year: number) => historyCitation(`gnl-${year}` as G3HistorySourceId);
+type MatrixData = { years: number[]; rows: { id: string; name: string; years: number[] }[] };
+interface Props {
+  data?: MatrixData;
+  sourceIds?: Readonly<Partial<Record<number, G3HistorySourceId>>>;
+}
+const approvedSourceIds: Readonly<Partial<Record<number, G3HistorySourceId>>> = {
+  2013: 'gnl-2013', 2014: 'gnl-2014', 2015: 'gnl-2015', 2016: 'gnl-2016',
+  2017: 'gnl-2017', 2019: 'gnl-2019', 2020: 'gnl-2020',
+};
+const { data = matrix, sourceIds = approvedSourceIds } = Astro.props;
+const years = data.years;
+const source = (year: number) => {
+  const id = sourceIds[year];
+  if (!id || id !== `gnl-${year}` || !G3_HISTORY_SOURCES.some(entry => entry.id === id)) {
+    throw new Error(`Missing approved G3 catalogue source for ${year}`);
+  }
+  return historyCitation(id);
+};
+if (years.length < 1 || years.length > 9 || new Set(years).size !== years.length ||
+    years.some((year, index) => !Number.isInteger(year) || (index > 0 && year <= years[index-1]))) {
+  throw new Error('Invalid G3 matrix year sequence');
+}
+years.forEach(source);
+if (new Set(data.rows.map(row => row.id)).size !== data.rows.length ||
+    data.rows.some(row => !/^[a-z0-9-]+$/.test(row.id) || !row.name.trim() ||
+      !row.years.length || new Set(row.years).size !== row.years.length || row.years.some(year => !years.includes(year)))) {
+  throw new Error('Invalid G3 matrix row');
+}
 ---
-<section class="g3-matrix" data-g3-matrix aria-label="Проповедники в каталогах G3">
-  <p class="gm-kicker">Архив конференций · 2013–2020</p>
+<section class="g3-matrix" data-g3-matrix style={`--gm-year-count:${years.length}`} aria-label="Проповедники в каталогах G3">
+  <p class="gm-kicker">Архив конференций · {years[0]}–{years[years.length-1]}</p>
   <h2>Проповедники в каталогах G3</h2>
-  <p class="gm-intro">Выборка из семи каталогов конференций. Точка ведёт к источнику соответствующего года; прочерк означает только отсутствие имени в этой подборке.</p>
+  <p class="gm-intro">Выборочные сведения из {years.length} каталогов конференций. Точка ведёт к источнику соответствующего года; прочерк означает только отсутствие имени в этой подборке.</p>
   <div class="gm-filter" hidden>
     <label>Имя проповедника<input type="search" placeholder="Например, Вошер" autocomplete="off" /></label>
     <label>Год конференции<select><option value="">Все годы</option>{years.map(year => <option value={year}>{year}</option>)}</select></label>
@@ -18,7 +44,7 @@ const source = (year: number) => historyCitation(`gnl-${year}` as G3HistorySourc
   <p class="gm-status" role="status" hidden></p>
   <div class="gm-head" aria-hidden="true"><span>Имя в каталоге</span>{years.map(year => <span>{year}</span>)}</div>
   <ul class="gm-list" role="list">
-    {matrix.rows.map(row => <li class="gm-row" data-years={row.years.join(' ')}>
+    {data.rows.map(row => <li class="gm-row" data-years={row.years.join(' ')}>
       <span class="gm-name">{row.name}</span>
       {years.map(year => row.years.includes(year) ? <span class="gm-cell">
         <a id={`cite-g3-matrix-${row.id}-${year}`} data-journal-citation href={source(year)} aria-label={`${row.name}, каталог ${year} года`}>

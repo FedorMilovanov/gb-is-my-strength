@@ -11,7 +11,7 @@
 .g3-matrix .gm-filter button{cursor:pointer;flex:none}
 .g3-matrix :is(a,input,select,button):focus-visible{outline:2px solid var(--je-gold);outline-offset:2px}
 .g3-matrix .gm-status{font-size:.8rem;color:var(--je-muted);margin:.5rem 0;min-height:1.3em}
-.g3-matrix .gm-head,.g3-matrix .gm-row{display:grid;grid-template-columns:minmax(9.5rem,1.8fr) repeat(7,minmax(2.75rem,1fr));align-items:center;gap:0;min-width:0}
+.g3-matrix .gm-head,.g3-matrix .gm-row{display:grid;grid-template-columns:minmax(9.5rem,1.8fr) repeat(var(--gm-year-count),minmax(2.75rem,1fr));align-items:center;gap:0;min-width:0}
 .g3-matrix .gm-head{padding:.55rem 0;border-top:2px solid var(--je-gold);border-bottom:1px solid var(--je-rule);font-size:.75rem;font-variant-numeric:tabular-nums;color:var(--je-muted);text-align:center}
 .g3-matrix .gm-head span:first-child{text-align:left}
 .g3-matrix .gm-list{padding:0;margin:0;list-style:none}
@@ -25,7 +25,7 @@
 .g3-matrix .gm-year{display:none;font-size:.8rem;font-variant-numeric:tabular-nums}
 .g3-matrix .gm-sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .g3-matrix .gm-foot{font-size:.79rem;line-height:1.55;color:var(--je-muted);margin-top:1rem}
-@container (max-width:580px){
+@container (max-width:680px){
 .g3-matrix .gm-head{display:none}
 .g3-matrix .gm-list{border-top:2px solid var(--je-gold)}
 .g3-matrix .gm-row{display:flex;flex-wrap:wrap;gap:.25rem .5rem;padding:.65rem 0}
@@ -37,4 +37,4 @@
 }
 @container (max-width:420px){.g3-matrix .gm-filter label{flex-basis:100%}}
 @media(forced-colors:active){.g3-matrix .gm-dot{forced-color-adjust:none;background:LinkText;border-color:LinkText}.g3-matrix .gm-cell a{border:1px solid LinkText}}
-@media print{.g3-matrix{container-type:normal}.g3-matrix .gm-filter,.g3-matrix .gm-status{display:none!important}.g3-matrix .gm-row[hidden]{display:grid!important}.g3-matrix .gm-row{break-inside:avoid}.g3-matrix .gm-cell a,.g3-matrix .gm-cell{min-height:28px}.g3-matrix .gm-head{break-after:avoid}.g3-matrix .gm-head,.g3-matrix .gm-row{grid-template-columns:minmax(8rem,1.8fr) repeat(7,minmax(2rem,1fr))}.g3-matrix .gm-dot{background:#000!important;color:#000;border:1px solid #000;print-color-adjust:exact}}
+@media print{.g3-matrix{container-type:normal}.g3-matrix .gm-filter,.g3-matrix .gm-status{display:none!important}.g3-matrix .gm-row[hidden]{display:grid!important}.g3-matrix .gm-row{break-inside:avoid}.g3-matrix .gm-cell a,.g3-matrix .gm-cell{min-height:28px}.g3-matrix .gm-head{break-after:avoid}.g3-matrix .gm-head,.g3-matrix .gm-row{grid-template-columns:minmax(8rem,1.8fr) repeat(var(--gm-year-count),minmax(2rem,1fr))}.g3-matrix .gm-dot{background:#000!important;color:#000;border:1px solid #000;print-color-adjust:exact}}
