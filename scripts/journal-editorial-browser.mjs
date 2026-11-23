@@ -94,7 +94,7 @@ const ready = async (page, url, stage = () => {}) => {
   });
   page.on('requestfailed', (request) => {
     if (isFont(request.url())) fontNetwork.push({
-      url: request.url(), failure: request.failure()?.errorText || 'request failed'
+      url: request.url(), failure: request.failure() || 'request failed'
     });
   });
   stage('navigation/load');
