@@ -218,6 +218,12 @@ requireValue(
   'three-article editorial bridge and anti-overclassification guard missing',
 );
 requireValue(
+  publishedPage.includes("20-antisovetov-pastoru/\">«20 антисоветов пастору»</a>{' '}") &&
+  publishedPage.includes("разрушительные решения;{' '}") &&
+  publishedPage.includes("anatomiya-padeniya-pyat-stadiy/\">«Анатомия падения»</a>{' '}"),
+  'intro links must render explicit whitespace on mobile and desktop (no glued words)',
+);
+requireValue(
   /а не\s+репрезентативная выборка церквей/.test(publishedPage) &&
   publishedPage.includes('нельзя рассчитывать'),
   'documentary case selection must not imply prevalence or deterministic stage transitions',
