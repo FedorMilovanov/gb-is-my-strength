@@ -46,7 +46,7 @@ assert.ok(!floating.includes('gill-learning'), 'retired Gill Learning overlay mu
 const seriesChrome = fs.readFileSync('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro', 'utf8');
 const gillPartToc = fs.readFileSync('src/components/article-pilots/gill-series/GillPartTocOverlay.astro', 'utf8');
 const study = fs.readFileSync('src/components/article-pilots/gill-series/GillAnalyticsStudy.astro', 'utf8');
-assert.equal((seriesChrome.match(/<GillAnalyticsStudy\\b/g) || []).length, 1,
+assert.equal(seriesChrome.split('<GillAnalyticsStudy ').length - 1, 1,
   'each SeriesReaderChrome must mount exactly one canonical Analytics study');
 assert.ok(gillPartToc.includes('id="gbrMarginaliaTab"') &&
   gillPartToc.includes('data-gbr-tab="research"') &&
