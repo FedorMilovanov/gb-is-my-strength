@@ -1120,6 +1120,31 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
         research.researchOverflow === 'auto' &&
         research.research?.clientH > 45 && expanded.xOverflow === 0),
       { research, expanded });
+    // W114: the Gill mobile Analytics term rows must be readable without
+    // resizing the approved sheet, changing Play or reducing touch targets.
+    if (width <= 768) {
+      const conceptGroup = page.locator('#gbrMarginalia .gbr-marginalia-group-head')
+        .filter({ hasText: 'Понятия' }).first();
+      if (await conceptGroup.count()) await conceptGroup.click();
+      const termRows = await page.locator('#gbrMarginalia .gbr-marginalia-term > summary')
+        .evaluateAll(nodes => nodes.map(node => ({
+          label: node.textContent.trim(),
+          fontPx: parseFloat(getComputedStyle(node).fontSize),
+          height: node.getBoundingClientRect().height,
+          width: node.getBoundingClientRect().width,
+          scrollWidth: node.scrollWidth
+        })));
+      const withTerms = await read();
+      record(checks, caseId+'-analytics-term-readability',
+        'Analytics term names use >=15px text, >=44px tap targets and do not resize the approved Gill sheet',
+        Boolean(termRows.length > 0 &&
+          termRows.every(row => row.fontPx >= 14.9 && row.height >= 43.9 &&
+            row.scrollWidth <= row.width + 1) &&
+          aligned(first.sheet, withTerms.sheet) &&
+          aligned(first.footer, withTerms.footer) &&
+          withTerms.xOverflow === 0),
+        { termRows, withTerms });
+    }
     await page.locator('#gbrTocTab').click();
     const returned = await read();
     const collapsed = page.locator('#partTocOverlay .gbat-part:not(.open) .gbat-hd').first();
