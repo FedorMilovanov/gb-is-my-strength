@@ -273,6 +273,8 @@ requireValue(
 );
 requireValue(
   seriesConfig.includes("href: '#faithful-witness-sources'") &&
+  seriesConfig.includes('33 библиографические записи и границы их доказательной силы') &&
+  !seriesConfig.includes('33 библиографические ссылки') &&
   seriesConfig.includes("href: '#faithful-positive-conclusion'"),
   'supplementary bibliography and Gaius/Demetrius conclusion must be reachable from the series TOC',
 );
