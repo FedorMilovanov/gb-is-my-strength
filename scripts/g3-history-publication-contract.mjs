@@ -26,7 +26,7 @@ test('Research #628 handoff is pinned, and the 2025–26 crisis seal is independ
   assert.equal(history.researchHandoffUrl.includes(researchSha), true, 'adopted Research merge SHA required');
   assert.deepEqual([...history.approvedClaimIds], approved);
   assert.equal(history.canonical, 'https://gospod-bog.ru' + route);
-  assert.equal(history.publishedAt, '2026-11-22T00:00:00+03:00');
+  assert.equal(history.publishedAt, '2026-11-24T00:00:00+03:00');
   assert.ok(Date.parse(history.modifiedAt) >= Date.parse(history.publishedAt));
   const oldCrisis = read('src/data/journal/g3PublicationHandoff.ts');
   assert.match(oldCrisis, /G3-PUB-001/);
