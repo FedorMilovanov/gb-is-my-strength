@@ -12,10 +12,11 @@ manifest = json.loads((folder / 'manifest.json').read_text())
 def normalized(text):
     return re.sub(r'\s+', '', text).casefold()
 
-# These cover the article's final paragraph and each of its three closing blocks.
-# Full editorial statement is included rather than merely matching its heading.
+# Exact a77 article fixture, not a dynamically discovered or generic sentinel. If
+# article content changes, independently verify its final DOM paragraph before
+# updating this text. Full editorial statement is checked as well.
 needles = {
-    'article-final-paragraph': 'каноническим резонансом',
+    'article-final-paragraph': '1 Ин. 4:18 и 2 Кор. 3:17 здесь служат только осторожным каноническим резонансом в собственном контексте, а не прямыми организационными стихами-доказательствами.',
     'author-heading': 'Редакционный принцип',
     'author-statement': 'Писание выше личности и системы',
     'author-detail': 'Факт, толкование, пастырское применение и степень уверенности различаются явно; вывод не должен быть сильнее текста или доказательств.',
