@@ -1,5 +1,24 @@
 # Teen double-life series — publication contract
 
+## Editorial direction HOLD — independent studies (owner, 2026-11-23)
+
+**Do not merge this draft as a single seven-step reader narrative.** The I–VII order, 264-minute cumulative progress, seven-step `coreSequence`, and related tests **below document the still-unmerged candidate implementation in PR #2368**, not the selected future editorial architecture. This docs-only note neither implements nor authorizes a change to Reader, routes, MDX, registries or publication.
+
+The editorial direction is **one site section with independent, situation-based studies**; there is **no two-volume biography**, no thesis that a troubled teenager necessarily grows into a conflicted adult, and no mandatory cross-series “next step”:
+
+- **Section / editorial umbrella (proposed display):** «Родители и дети: трудные вопросы». This includes difficult but ordinary questions of growing up and generational understanding, not only sin, conflict or failure.
+- **Study A (existing, narrow by design):** «Подросток за кадром», three articles: how double life develops in a Christian household → how parents respond after discovery → the local church's responsibility. The study is *specifically* about concealed serious sin, conscience, truth, grace and safety; it does not claim this is true of every teenager. Parents' faith does not regenerate their children automatically, but hearing Scripture entails moral responsibility; avoid guessing individual salvation or treating a cultural taste as sin.
+- **Study B (separate readership and thesis):** «Взрослые дети и родители: отношения и ответственность», four articles: adulthood and parental authority (foundation); living together and shared resources; departure/contact and possible restoration (specific difficult case); adult daughter, father and marriage (specialist study). These are selectable by life situation, not a four-step obligatory personal history. No assumption of earlier double life.
+- **Future card ONLY, not an article or live route:** «Родители и подростки: когда поколения не понимают друг друга». Teaser: «Родители выросли в другом мире — с другими привычками, музыкой, способами общения и представлениями о досуге. Как услышать подростка, отличить реальные нравственные опасности от непривычных интересов и сохранить уважительный разговор, не выдавая вкусы своего поколения за Божьи заповеди?» State: «В планах». **Do not frame this card around whether a child shares a parent's faith.** No publication date, reading time, link to empty route, sitemap entry, or Reader progress.
+- **Cross-study navigation:** model “другая ситуация” and “подробное разъяснение” as meaningful relations, projected from existing canonical relation owners where possible; do not duplicate manually worded “Читайте также” across MDX, and do not introduce a cross-series next-step link. Each study has its own TOC, ordering and truthful progress.
+- **Reader compatibility:** the shared engine currently forbids `coreSequence` together with `shape: 'book'`. The current `teen-double-life` config and release guards still require seven core steps. Any change needs a separately owned SYSTEM migration after W57/reader shared work is ready; preserve every one of the seven canonical article URLs, 181 historical explicit IDs and related deep links, annotations, bookmarks, TTS, print, mobile accessibility, Pagefind, metadata and search discovery. Position in a study is **not** proof of completion.
+- **Editorial scope:** retain good prose and exegesis; do not rewrite or shorten seven articles merely to fit the umbrella. Check genuinely duplicated arguments and inaccurate labels separately with current MDX owners. A title/teaser decision does not itself change the content of the original study.
+- **Release HOLD:** candidate #2368 stays Draft; do not merge the currently contradictory seven-step product design. Obtain exact-head checks, active-author lane integration and browser proof for the separately authorized successor. Do not transplant green checks from another SHA.
+
+The rest of this file remains an **as-built contract for the current seven-step candidate** until a coherent replacement changes all technical authorities atomically. It must not be treated as permission to preserve the seven-step story in the future product.
+
+---
+
 Status: **PUBLISHED / POST-RELEASE CONTRACT**
 
 This contract records the canonical seven-article teen/adult-child publication shape and remains the post-release regression authority for sequence, metadata, reader behavior and safeguarding boundaries. The routes, discovery entries, media and indexability are already published.
