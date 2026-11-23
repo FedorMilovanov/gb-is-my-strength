@@ -221,11 +221,26 @@ function extractArchive(archivePath, target, destination) {
   if (target.format === 'zip') {
     const escapedArchive = archivePath.replace(/'/g, "''");
     const escapedTarget = destination.replace(/'/g, "''");
-    runChecked('powershell.exe', [
+    // Expand-Archive is unreliable on the win32 runner: its Archive module
+    // calls a 3-argument ExtractToDirectory overload missing on that runtime,
+    // exits 0 after a non-terminating error and leaves the destination EMPTY
+    // (actionlint-extraction-diagnostics, Node Toolchain run 44804021057).
+    // Use the compatible 2-argument ZipFile overload directly, make every
+    // error terminating, and treat ANY error-stream output as failure —
+    // never trust the process exit code alone.
+    const result = spawnSync('powershell.exe', [
       '-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
-      `Expand-Archive -LiteralPath '${escapedArchive}' -DestinationPath '${escapedTarget}' -Force`,
-    ]);
-    return;
+      `$ErrorActionPreference='Stop'; ` +
+      `Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
+      `[System.IO.Compression.ZipFile]::ExtractToDirectory('${escapedArchive}', '${escapedTarget}')`,
+    ], { shell: false, encoding: 'utf8' });
+    if (result.error) fail(`powershell.exe failed to start: ${result.error.message}`);
+    const stderr = (result.stderr || '').trim();
+    if (result.status !== 0 || stderr) {
+      const details = [stderr, (result.stdout || '').trim()].filter(Boolean).join('\n');
+      fail(`powershell.exe zip extraction failed (exit ${result.status ?? 'unknown'})${details ? `: ${details}` : ''}`);
+    }
+    return result;
   }
 
   const args = ['-xzf', archivePath, '-C', destination, target.binary];
