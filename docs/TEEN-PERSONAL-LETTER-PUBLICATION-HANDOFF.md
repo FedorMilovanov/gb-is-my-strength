@@ -2,6 +2,31 @@
 
 Статус: **EDITORIAL DRAFT / НЕ ПУБЛИКОВАТЬ**. Авторский PR: #2377. Системная интеграция: #2368 (3+4). Дата: 2026-11-23.
 
+## W50 — «Личное обращение»: самостоятельная карточка флагмана (24.11.2026)
+
+**Новое решение владельца supersedes W49 только в позиционировании:** не «Введение в серию», не часть 0/IV и не обязательная ступень, а **«Личное обращение»**, самостоятельное пастырское письмо подростку, визуально выделенное непосредственно перед тремя исследованиями. Тематическое пересечение с I осознанно: письмо говорит с подростком, I исследует причины двойной жизни для родителей/наставников/служителей. Не расширять письмо до научного досье и не переписывать трилогию. W49 о будущей самостоятельной созидательной серии остаётся в силе.
+
+**Mode LANE, автор #2377; rollback `734e1ef32b6d4c56a1bca42ade8c848879bf3852`; main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** #2368 actively owns landing `src/pages/podrostok-za-kadrom/index.astro` (observed head `6e9ac2b08440aefdc0116700e8252d262802eb9f`); shared registry still has overlapping lane #2300. Do not overwrite integrator's current changes. Author lane adds exactly two standalone component files, and this handoff. MDX unchanged. No new branches, no route or registry edits, no publication.
+
+**Implemented source:**
+- `src/components/article-pilots/teen-series/teenPersonalLetterCard.ts` (commit `7f79ff2b497dc860687a27d51e1baa2e5bd60795`, blob `52fcefd81c6e8ae0ac824f1846b0a411cde424b3`): canonical slug/href/source, one resolver for visible card and structured data. Exact unique article data; actual draft/noindex flags must both be false and route ownership must match astro/production-dist/exact source to return published. DEV may show an inert preview of existing draft, without a link; production returns null for unavailable article. No hardcoded duplicate title/description. Route existence and production eligibility remain verified by existing route contracts.
+- `src/components/article-pilots/teen-series/TeenPersonalLetterCard.astro` (commit `62344175de1ec3cebe0bb29be2d2b1623711b6c7`, blob `ca0fea4dfeb177dcacb951c2327a74b38a1b7568`): typographic personal-letter card, theme tokens, distinct hierarchy, mobile-safe padding/wrapping, accessible real CTA with focus-visible outline, no extra client runtime or animation. Existing collection hero remains once; do not duplicate its image directly underneath. Decorative quote glyph hidden from assistive technology and small screens. DEV preview explicitly labelled and Pagefind-ignored.
+
+**Integrator contract #2368 or agreed successor:** after coordinated incorporation of both component files AND canonical draft MDX (prefer existing isolated merge-tree for preview, no duplicate branch), use existing content collection and page ownership registry. Suggested exact shape for landing frontmatter:
+```ts
+import { getCollection } from 'astro:content';
+import ownership from '../../../migration/page-ownership.json';
+import TeenPersonalLetterCard from '@/components/article-pilots/teen-series/TeenPersonalLetterCard.astro';
+import { resolveTeenPersonalLetterCard, TEEN_PERSONAL_LETTER_HREF } from '@/components/article-pilots/teen-series/teenPersonalLetterCard';
+const letterEntries = await getCollection('articles', ({ data }) =>
+  data.slug === 'poka-vse-dumayut-chto-u-tebya-vse-normalno');
+const letterOwner = Object.entries(ownership.routes).find(([route]) => route === TEEN_PERSONAL_LETTER_HREF)?.[1];
+const letterCard = resolveTeenPersonalLetterCard(letterEntries.map(({ data }) => data), letterOwner, import.meta.env.DEV);
+```
+After existing hero and before `section[aria-labelledby="series-order"]`, render `{letterCard && <TeenPersonalLetterCard card={letterCard} />}`. Rename heading copy to «Три исследования» (retain existing section ID, anchor and all I–III semantics). In `CollectionPage.hasPart` conditionally add the personal letter only for `letterCard?.kind === 'published'` (same resolver, not independent conditions); published description/how-to-use copy distinguish the unnumbered letter. Do not add it to `TEEN_DOUBLE_LIFE_SERIES.items`, adult config, progress, Roman marks or search ordering. While Draft, production 7-article structured data/8 canonical routes stay unchanged; only eventual atomic publication changes those exact expectations to 8 articles/9 routes including landing, not series count 4. Preserve #2368 existing responsive adult labels, focus, reduced-motion, route IDs and shared Reader invariants.
+
+**Verified locally:** exact resolver source copied to isolated container, Git blob `52fcefd81c6e8ae0ac824f1846b0a411cde424b3` matches remote; strict TypeScript compile and 18/18 executable state scenarios PASS (missing/duplicate entry, wrong route status/source/owner, draft/noindex/missing flags, dev inert preview, published, metadata fallback). Component readback checks are static only. No full Astro build, browser QA or screenshot claims: desktop connector offline. Before activation, integrator must run actual Astro/production build, existing source+dist release contract, exact JSON-LD membership and targeted Chromium/WebKit desktop/mobile light/dark focus/overflow/contrast. Preview with draft in combined isolated tree must show card and no clickable href; production must not show draft/metadata/search/404 link. On actual release, verify card link 200, accessible heading, browser snapshots, route/profile/registry, ArticleLayout robots, S11 bibliography and atomic sitemap/Pagefind/metadata. Do not weaken current guard or publish solely from a green unit test.
+
 ## W49 — решение владельца: флагманское введение и отдельный созидательный цикл (24.11.2026)
 
 **Актуальное редакционное решение владельца, приоритет над более ранними предложениями W46–W48 о расширении текущей серии.** Mode FAST, existing author lane #2377; rollback `9cc28be2991fde67ca6e2331932ff869ddb8eb5d`; main при сверке `22a44d43e347d141924dfa93a3ec7bfad822dbae`. Только этот handoff, MDX письма и чужие системные поверхности не изменять.
