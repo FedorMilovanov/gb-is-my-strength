@@ -336,16 +336,66 @@ async function checkSeries(browser) {
 async function checkQuiz(browser) {
   for (const url of QUIZ_URLS) {
     const page = await openPage(browser, url, { width: 1100, height: 800 });
-    const cfg = await page.evaluate(() => ({
-      placeholder: !!document.getElementById('quizPlaceholder'),
-      launch: !!document.getElementById('quizLaunch'),
-      questions: window.SITE_CONFIG && window.SITE_CONFIG.quiz && Array.isArray(window.SITE_CONFIG.quiz.questions)
-        ? window.SITE_CONFIG.quiz.questions.length
-        : 0,
-    }));
-    if (cfg.questions > 0 && !cfg.placeholder) push('quiz-missing-placeholder', url, cfg);
-    if (cfg.questions > 0 && !cfg.launch) push('quiz-missing-launch', url, cfg);
-    if (cfg.launch) {
+    // W121 migrated only some routes to ONE shared quiz DOM. Do not require
+    // their deleted #quizLaunch, nor silently exempt legacy quiz routes.
+    const cfg = await page.evaluate(() => {
+      const study = document.getElementById('gbAnalyticsStudy');
+      return {
+        placeholder: Boolean(document.getElementById('quizPlaceholder')),
+        legacyLaunch: Boolean(document.getElementById('quizLaunch')),
+        study: Boolean(study && !study.hidden && study.querySelector('summary')),
+        questions: Array.isArray(window.SITE_CONFIG?.quiz?.questions)
+          ? window.SITE_CONFIG.quiz.questions.length : 0,
+      };
+    });
+    if (cfg.questions > 0 && !cfg.placeholder && !cfg.study) push('quiz-missing-placeholder', url, cfg);
+    if (cfg.questions > 0 && !cfg.legacyLaunch && !cfg.study) push('quiz-missing-launch', url, cfg);
+    if (cfg.study) {
+      // The native Analytics and desktop W57 Research share this single
+      // <details> instance. Open the actual rendered summary, answer a
+      // question, inspect explanatory feedback, and verify session retention.
+      const root = page.locator('#gbAnalyticsStudy');
+      await root.locator('summary').click({ timeout: 5000 });
+      const quiz = root.locator('#gbAnalyticsQuiz');
+      const options = quiz.locator('.gb-study-options button');
+      const state = await quiz.evaluate(node => ({
+        question: (node.querySelector('h4')?.textContent || '').trim(),
+        options: node.querySelectorAll('.gb-study-options button').length,
+      }));
+      if (!state.question || state.options < 2) {
+        push('quiz-question-options-not-rendered', url, state);
+      } else {
+        const scan = () => quiz.evaluate(node => {
+          const LITERAL = /<(em|strong|b|i|u|span)\\b/i;
+          const elements = [node.querySelector('h4'),...node.querySelectorAll('.gb-study-options button, .gb-study-feedback')];
+          const literal = elements.filter(el => el && LITERAL.test(el.textContent || ''))
+            .map(el => (el.textContent || '').slice(0,80));
+          const qs = window.SITE_CONFIG?.quiz?.questions || [];
+          const wantsRich = qs.some(q => [q?.question,...(q?.options || [])]
+            .some(v => typeof v === 'string' && LITERAL.test(v)));
+          const paintedRich = elements.some(el => el?.querySelector('em,strong,b,i,u,span'));
+          return { literal,wantsRich,paintedRich };
+        });
+        const before = await scan();
+        if (before.literal.length) push('quiz-literal-markup-rendered',url,before.literal);
+        if (await options.first().isDisabled()) {
+          const confidence = quiz.locator('.gb-study-confidence button').first();
+          if (await confidence.count()) await confidence.click({timeout:5000});
+        }
+        await options.first().click({timeout:5000});
+        const feedback = quiz.locator('.gb-study-feedback');
+        if (!(await feedback.count()) || !(await feedback.innerText()).trim()) {
+          push('quiz-explanation-not-rendered',url,null);
+        }
+        const after = await scan();
+        if (after.literal.length) push('quiz-literal-markup-after-answer',url,after.literal);
+        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost',url,after);
+        // A simple accordion close/reopen must not reset the answered state.
+        await root.locator('summary').click({timeout:5000});
+        await root.locator('summary').click({timeout:5000});
+        if (!(await feedback.count())) push('quiz-lost-answer-after-reopen',url,null);
+      }
+    } else if (cfg.legacyLaunch) {
       await page.locator('#quizLaunch').click({ timeout: 5000 });
       await page.waitForTimeout(400);
       const state = await page.evaluate(() => ({
@@ -353,29 +403,28 @@ async function checkQuiz(browser) {
         options: document.querySelectorAll('.quiz-option').length,
       }));
       if (!state.question || state.options < 2) push('quiz-question-options-not-rendered', url, state);
-      /* GBS-QUIZ-LITERAL-MARKUP enforcement: the escape-first allowlist in
-         src/runtime/article-quiz.js must paint data markup as real elements
-         and must never leak literal tags into visible text — before and after
-         answering, on every quiz route, on every run. */
+      /* GBS-QUIZ-LITERAL-MARKUP: legacy articles keep their rich markup
+         regression guard, before and after the first answer. */
       const scan = () => page.evaluate(() => {
-        const LITERAL = /<(em|strong|b|i|u|span)\b/i;
+        const LITERAL = /<(em|strong|b|i|u|span)\\b/i;
         const nodes = [document.querySelector('#quizQuestion'), ...document.querySelectorAll('.quiz-option'),
           ...document.querySelectorAll('.quiz-feedback, .quiz-explanation, .quiz-explanation-full')];
-        const literal = nodes.filter((n) => n && LITERAL.test(n.textContent || '')).map((n) => (n.textContent || '').slice(0, 80));
-        const payload = window.SITE_CONFIG && window.SITE_CONFIG.quiz ? window.SITE_CONFIG.quiz.questions || [] : [];
-        const wantsRich = payload.some((q) => [q && q.question, ...((q && q.options) || [])].some((f) => typeof f === 'string' && LITERAL.test(f)));
-        const paintedRich = nodes.some((n) => n && n.querySelector('em, strong, b, i, u, span'));
-        return { literal, wantsRich, paintedRich };
+        const literal = nodes.filter(n => n && LITERAL.test(n.textContent || '')).map(n => (n.textContent || '').slice(0, 80));
+        const payload = window.SITE_CONFIG?.quiz?.questions || [];
+        const wantsRich = payload.some(q => [q?.question,...(q?.options || [])]
+          .some(f => typeof f === 'string' && LITERAL.test(f)));
+        const paintedRich = nodes.some(n => n?.querySelector('em,strong,b,i,u,span'));
+        return {literal,wantsRich,paintedRich};
       });
       const before = await scan();
-      if (before.literal.length) push('quiz-literal-markup-rendered', url, before.literal);
+      if (before.literal.length) push('quiz-literal-markup-rendered',url,before.literal);
       const firstOption = page.locator('.quiz-option').first();
       if (await firstOption.count()) {
         await firstOption.click({ timeout: 5000 });
         await page.waitForTimeout(400);
         const after = await scan();
-        if (after.literal.length) push('quiz-literal-markup-after-answer', url, after.literal);
-        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost', url, after);
+        if (after.literal.length) push('quiz-literal-markup-after-answer',url,after.literal);
+        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost',url,after);
       }
     }
     stats.quizzes++;
