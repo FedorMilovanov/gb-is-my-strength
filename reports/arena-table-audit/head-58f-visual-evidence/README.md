@@ -2,7 +2,7 @@
 
 2026-11-22. Independent research for Reader print/table owner, **not** a product fix or merge approval. Read owner W117 instruction [#7089647252](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2352#issuecomment-7089647252) and adjacent updates: keep #2352 Draft/HOLD, protect W107+accepted fixes, verify full final paragraph and first/repeat cold PDF, examine summary-card break visually and check tables 320/header/keyboard/print. Other lanes (TOC, notes race, Play, W57 visual-contract ownership) were not changed or claimed complete.
 
-Separate clean-source checkout of `58fcd0c06944ce067bc27b97b17a431945290782`, `node scripts/astro-cli.mjs build` (112 pages) and legacy copy; :8083. Diff from `030d2e066` affects Gill mobile bar touch action and a11y contract only. Playwright Chromium 153, A4, no pre-emulated print. PyMuPDF 1.27.2 rendered actual PDF pages for visual inspection; not a real printer, a physical phone, or native Chrome Save as PDF.
+Separate clean-source checkout of `58fcd0c06944ce067bc27b97b17a431945290782`, `node scripts/astro-cli.mjs build` (112 pages) and legacy copy; :8083. Diff from `030d2e066` affects Gill mobile bar touch action and a11y contract only. Playwright Chromium 153, A4, no pre-emulated print. PyMuPDF 2.1 (MuPDF 1.28.6) rendered actual PDF pages for visual inspection; not a real printer, a physical phone, or native Chrome Save as PDF.
 
 ## #2349 — complete paragraph and card break
 
