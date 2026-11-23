@@ -135,7 +135,8 @@ requireValue(draft.includes('Автор-редактор: Фёдор Милов�
 requireValue(!draft.includes('Автор: Фёдор Милованов'), 'forbidden author byline leaked');
 requireValue(draft.includes('data-source-authority="148"'), '148-source authority marker missing');
 requireValue(draft.includes('data-curated-sources="54"'), '54-source draft marker missing');
-requireValue(draft.includes('data-reader-links="40"'), '40-link reader marker missing');
+requireValue(draft.includes('data-bibliography-records="40"') && draft.includes('data-active-reader-links="39"'), 'base summary must report 40 preserved bibliography records and 39 active source links');
+requireValue(!draft.includes('data-reader-links="40"'), 'legacy 40-active-links marker must not return');
 requireValue(!draft.includes('<blockquote'), 'new direct block quotations are forbidden');
 requireValue(!draft.includes('<q'), 'new inline direct quotations are forbidden');
 requireValue(!/[—:-]\s*Диотреф(?:ом|а|ы)?\b/u.test(draft), 'a person or case must not be headlined as Diotrephes');
@@ -193,4 +194,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✅ Diotrophes Wave 10 evidence snapshot passed: 21 cases, 54 curated records, ${uniqueReaderUrls.size} reader links, ${russianWords} Russian words, successor=${successorRelease?.authorityId ?? 'none'}`);
+console.log(`✅ Diotrophes Wave 10 evidence snapshot passed: 21 cases, 54 curated records, ${uniqueReaderUrls.size} bibliography records (39 active source links), ${russianWords} Russian words, successor=${successorRelease?.authorityId ?? 'none'}`);
