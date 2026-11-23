@@ -1,0 +1,33 @@
+{
+  "base": "79ad7c941f07a81e4a976217845a347f8e29a3e5",
+  "motion": "no-preference",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "sourceChanges": {
+    "baseline": [],
+    "candidate": [
+      {
+        "file": "js/floating-cluster-controller.js",
+        "baselineBlob": "4f7f6804c2049b986c1ae8016ad73ad114086f19",
+        "actualBlob": "7d820bb4df7522c43a25f9cb02b94e9052b728e9"
+      },
+      {
+        "file": "src/components/article-pilots/gill-series/GillPartTocOverlay.astro",
+        "baselineBlob": "f42b7a8f71fc889f97679d037b9b161046e93ab1",
+        "actualBlob": "a24bbbab4daee933eaa0332eace2ad57d7b9e4c1"
+      },
+      {
+        "file": "src/lib/asset-version.js",
+        "baselineBlob": "f932bf1cdc9df760a1c3ee654f628cd75a47b872",
+        "actualBlob": "08fe7a906911379e27c20521d2315ebc856681f1"
+      },
+      {
+        "file": "sw.js",
+        "baselineBlob": "330aa3296daf10c36008bee79bbd11c23a52cdfc",
+        "actualBlob": "ef0e9d2f6da6e3d91f4b37a1dddaa8607f2e5944"
+      }
+    ]
+  }
+}
