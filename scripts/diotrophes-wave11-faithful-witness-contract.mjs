@@ -198,6 +198,9 @@ requireValue(
 // and make the trilogy navigable without labeling every case by a stage.
 requireValue(
   publishedPage.includes('В 3 Ин. 9 сказано, что Диотреф «не принимает нас»') &&
+  publishedPage.includes('Послание не называет') &&
+  publishedPage.includes('должность Диотрефа') &&
+  publishedPage.includes('поддержку других членов общины') &&
   publishedPage.includes('не является буквальным переводом'),
   '3 John text vs institutional-review analogy must remain explicit',
 );
