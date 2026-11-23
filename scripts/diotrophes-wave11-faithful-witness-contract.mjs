@@ -170,8 +170,10 @@ requireValue(
   'unaccounted-for case pathway without direct Wave 11 reader source',
 );
 requireValue(
-  supplement.includes("pathway.id === 'paige-patterson'") && supplement.includes('href="#sources"'),
-  'Patterson must direct readers to the three original SWBTS documents',
+  supplement.includes("pathway.id === 'paige-patterson'") &&
+  supplement.includes('href="#sources"') &&
+  supplement.includes('https://swbts.edu/news/statement-by-kevin-ueckert-chairman-of-the-board-of-trustees/'),
+  'Patterson must link both the three original bibliography entries and the primary June 1 trustee clarification',
 );
 requireValue(
   !supplement.includes('Для этой истории отдельная прямая ссылка пока не представлена'),
