@@ -99,8 +99,17 @@ const caseSourceIds = new Set([...caseBlock.matchAll(/sources:\s*\[([^\]]+)\]/g)
   .flatMap((match) => [...match[1].matchAll(/'([^']+)'/g)].map((item) => item[1])));
 const mappedSourceIds = [...sourceBlock.matchAll(/,\s*'([A-Z0-9]+(?:-[A-Z0-9]+)+)'\s*\]/g)]
   .map((match) => match[1]);
-requireValue(mappedSourceIds.length === 18, `expected 18 case-local links backed by existing reader URLs, found ${mappedSourceIds.length}`);
+requireValue(mappedSourceIds.length === 15, `expected 15 case-specific links backed by existing reader URLs, found ${mappedSourceIds.length}`);
 requireValue(new Set(mappedSourceIds).size === mappedSourceIds.length, 'duplicate case-local source ID');
+requireValue(
+  ['WIL-02', 'HYB-02', 'BIC-05'].every((id) => !mappedSourceIds.includes(id)),
+  'generic presbytery/about-us/legislation pages must not masquerade as case-local evidence',
+);
+requireValue(
+  ['BIC-02','W2-MOR-02','W2-MOR-03','SBC-01','SBC-02','PAT-03'].every((id) => mappedSourceIds.includes(id)),
+  'case-specific investigation, legal or institutional evidence dropped',
+);
+
 requireValue(mappedSourceIds.every((id) => caseSourceIds.has(id)), 'case-local link does not belong to any core case source pair');
 requireValue(mappedSourceIds.every((id) => !/^W2-(?:KUZ|SHI)-/.test(id)), 'unverified Russian court locator was promoted into a clickable link');
 requireValue(draft.includes('const readerLinksForCard = (card: CaseCard)'), 'case-local source join is not rendered');
