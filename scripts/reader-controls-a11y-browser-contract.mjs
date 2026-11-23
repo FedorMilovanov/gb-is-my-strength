@@ -1071,6 +1071,7 @@ async function auditGillNarrowZoomBar(browser, origin, width, dark = false) {
         (narrow
           ? state.before.overflowX === 'auto' &&
             state.before.touchAction.includes('pan-x') &&
+            state.before.touchAction.includes('pan-y') &&
             state.before.scrollWidth > state.before.width &&
             state.scrollLeft > 0
           : state.before.overflowX === 'visible' &&
