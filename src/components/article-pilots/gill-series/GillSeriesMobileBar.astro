@@ -645,4 +645,19 @@ const page = config.pages[pageId];
    font-variant-numeric:tabular-nums;
  }
 }
+/* Narrow zoom layouts (<270 CSS px): allow keyboard/touch access to
+   Settings and Save instead of painting them beyond the unscrollable viewport.
+   This query is inert at the owner-approved 320px+ Gill sizes and on W57. */
+@media (max-width:269px) {
+  [data-gill-v16] .mobile-top-bar {
+    overflow-x:auto;
+    overflow-y:hidden;
+    touch-action:pan-x;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  [data-gill-v16] .mobile-top-bar::-webkit-scrollbar { display:none; }
+  [data-gill-v16] .mobile-top-bar > * { flex:0 0 auto; }
+}
 </style>
