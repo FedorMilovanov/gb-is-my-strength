@@ -18,6 +18,14 @@ machine-specific; never create another dated Reader clone for visual review.
 3. Build the complete production-like site with **`npm run strangler:build`**.
    `npm run astro:build` alone is **not a runnable Reader preview**: it
    omits copied legacy `css/`, `js/`, images and other shared assets.
+   **For Reader Search/Pagefind checks, complete the same build with**
+   `npm run pagefind:build:dist` **before browser QA**, and confirm
+   `dist/pagefind/pagefind.js` exists (HTTP 200 at
+   `http://127.0.0.1:19181/pagefind/pagefind.js` once preview is running).
+   `strangler:build` alone does not generate that index: the Search palette
+   can open while Pagefind stays unavailable, producing misleading browser
+   timeouts. Regenerate this index after *each* full rebuild; never diagnose
+   Pagefind from an incomplete `dist`.
 4. Close only the verified existing listener at `19181` (inspect PID and
    command line first). Run the canonical server (from the existing repo):
    ```powershell
