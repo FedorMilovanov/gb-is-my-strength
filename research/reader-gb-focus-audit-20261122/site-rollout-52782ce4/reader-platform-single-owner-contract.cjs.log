@@ -1,0 +1,11 @@
+{
+  "routes": 113,
+  "readers": 79,
+  "native": 2,
+  "series": 69,
+  "standalone": 8,
+  "exceptions": 34,
+  "duplicates": 0,
+  "assetVersion": "25a761e7",
+  "issues": []
+}

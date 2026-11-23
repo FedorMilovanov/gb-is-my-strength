@@ -1,0 +1,72 @@
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-01 authority :: ReaderProjection is a versioned global API
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-02 authority :: Projection version is explicit
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-03 authority :: ReaderActionsRuntime imports projection
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-04 authority :: Projection loads before canonical TTS
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-05 authority :: Canonical TTS owner remains present
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-06 authority :: Controls accessibility owner remains present
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-07 authority :: Projection does not own favorites
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-08 authority :: Projection does not own speech engines
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-09 authority :: Projection does not own visual styles
+[READER-PROJECTION-SOURCE] PASS RP-AUTH-10 authority :: Projection is the only new symbol in controls owner
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-01 policy :: Root selector covers explicit reader root
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-02 policy :: Root selector covers Gill reader
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-03 policy :: Root selector covers pagefind article
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-04 policy :: Block inventory includes h1-h4 paragraphs and lists
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-05 policy :: Projection understands data-reader-exclude
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-06 policy :: Projection understands data-reader-summary
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-07 policy :: Projection understands data-reader-section
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-08 policy :: Projection understands note policy
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-09 policy :: Projection understands search policy
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-10 policy :: Projection understands speakable policy
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-11 policy :: Projection understands print policy
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-12 policy :: Projection publishes exact speakable selector order
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-13 policy :: Projection strips interactive inline content
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-14 policy :: Projection strips English source text from Russian speech
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-15 policy :: Projection avoids nested list duplication
+[READER-PROJECTION-SOURCE] PASS RP-POLICY-16 policy :: Projection avoids nested blockquote duplication
+[READER-PROJECTION-SOURCE] PASS RP-API-01 api :: Projection exposes TTS segments
+[READER-PROJECTION-SOURCE] PASS RP-API-02 api :: Projection exposes speakable selectors
+[READER-PROJECTION-SOURCE] PASS RP-API-03 api :: Projection exposes speakable nodes
+[READER-PROJECTION-SOURCE] PASS RP-API-04 api :: Projection exposes search text
+[READER-PROJECTION-SOURCE] PASS RP-API-05 api :: Projection exposes print nodes
+[READER-PROJECTION-SOURCE] PASS RP-API-06 api :: Projection exposes current section
+[READER-PROJECTION-SOURCE] PASS RP-API-07 api :: Projection exposes a ledger
+[READER-PROJECTION-SOURCE] PASS RP-API-08 api :: TTS segments retain element ownership
+[READER-PROJECTION-SOURCE] PASS RP-API-09 api :: TTS segments retain section ID
+[READER-PROJECTION-SOURCE] PASS RP-API-10 api :: TTS segments retain section label
+[READER-PROJECTION-SOURCE] PASS RP-API-11 api :: Projection refresh is evented
+[READER-PROJECTION-SOURCE] PASS RP-API-12 api :: Projection refreshes before Play capture
+[READER-PROJECTION-SOURCE] PASS RP-TTS-01 tts-bridge :: Canonical TTS still excludes data-no-speech
+[READER-PROJECTION-SOURCE] PASS RP-TTS-02 tts-bridge :: Canonical TTS block inventory matches projection
+[READER-PROJECTION-SOURCE] PASS RP-TTS-03 tts-bridge :: Canonical TTS retains nested list guard
+[READER-PROJECTION-SOURCE] PASS RP-TTS-04 tts-bridge :: Canonical TTS retains nested quote guard
+[READER-PROJECTION-SOURCE] PASS RP-TTS-05 tts-bridge :: Canonical TTS remains versioned
+[READER-PROJECTION-SOURCE] PASS RP-TTS-07 tts-bridge :: Canonical TTS consumes projection segments before chunking
+[READER-PROJECTION-SOURCE] PASS RP-TTS-08 tts-bridge :: TTS skips journal imprint lines while print and search keep them
+[READER-PROJECTION-SOURCE] PASS RP-TTS-06 tts-bridge :: Projection marks explicit exclusions as data-no-speech
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-01 speakable :: Hermenevtika schema publishes SpeakableSpecification
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-02 speakable :: Hermenevtika schema includes h1
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-03 speakable :: Hermenevtika schema includes article lead
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-04 speakable :: Hermenevtika schema includes summary card
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-05 speakable :: Hermenevtika schema includes explicit speakable nodes
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-06 speakable :: Hermenevtika body has explicit reader root
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-07 speakable :: Hermenevtika summary is explicit speakable content
+[READER-PROJECTION-SOURCE] PASS RP-SPEAK-08 speakable :: Projection synchronizes JSON-LD selectors
+[READER-PROJECTION-SOURCE] PASS RP-PRINT-01 print-search :: Print owner remains separate
+[READER-PROJECTION-SOURCE] PASS RP-PRINT-02 print-search :: Projection provides print order without geometry
+[READER-PROJECTION-SOURCE] PASS RP-PRINT-03 print-search :: Projection search output is normalized
+[READER-PROJECTION-SOURCE] PASS RP-PRINT-04 print-search :: Pagefind ignore remains a policy exclusion
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-01 lifecycle :: Projection initializes at DOMContentLoaded
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-02 lifecycle :: Projection initializes on Astro navigation
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-03 lifecycle :: Projection initializes on pageshow
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-04 lifecycle :: Projection observes added reader content
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-05 lifecycle :: Projection observer ignores attribute churn
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-06 lifecycle :: Projection refresh is microtask and frame bounded
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-07 lifecycle :: Projection publishes a document readiness marker
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-08 lifecycle :: Projection API policy is frozen
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-09 lifecycle :: Projection filters mutations through semantic additions
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-10 lifecycle :: Projection ignores non-element placeholder nodes
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-11 lifecycle :: Projection watches explicit quiz-rendered lifecycle
+[READER-PROJECTION-SOURCE] PASS RP-LIFE-12 lifecycle :: Projectable additions remain tied to reader semantics
+[READER-PROJECTION-SOURCE-SUMMARY] {"sha":null,"checks":70,"passed":70,"failed":0}
+ReaderProjection source contract: PASS
