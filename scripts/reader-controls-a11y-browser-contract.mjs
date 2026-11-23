@@ -765,32 +765,45 @@ async function auditGillVisibleGaps(browser, origin, width) {
     const response=await page.goto(origin+'/articles/dzhon-gill-chast-2-uchenyi/',
       {waitUntil:'load',timeout:45000});
     const metrics=await page.evaluate(()=>{
-      const box=e=>e?.getBoundingClientRect();
-      const play=document.querySelector('.mobile-top-bar .reader-mobile-play');
-      const ring=box(play?.querySelector('.gb-ember__ring-track'));
-      const settings=document.querySelector('#mobSettingsBtn');
-      const gear=box(settings?.querySelector('svg'));
+      const bar=document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+      const play=bar?.querySelector('.reader-mobile-play');
+      const search=bar?.querySelector('.reader-mobile-top-search');
+      const settings=bar?.querySelector('#mobSettingsBtn');
       const bookmark=document.querySelector('.mobile-top-save');
-      const bookIcon=box(bookmark?.querySelector('svg'));
-      const pb=box(play),sb=box(settings),bb=box(bookmark);
-      if(!ring||!gear||!bookIcon||!pb||!sb||!bb)return null;
-      const first=gear.left-ring.right,second=bookIcon.left-gear.right;
-      const center=(r)=>(r.left+r.right)/2;
-      const clickTarget=(r)=>document.elementFromPoint(center(r),(r.top+r.bottom)/2)?.closest('button');
-      return {first,second,difference:first-second,
-        ringCentered:Math.abs(center(ring)-center(pb))<.5,
-        settingsCentered:Math.abs(center(gear)-center(sb))<.5,
-        playHit:pb.width===44,settingsHit:sb.width===44,bookmarkHit:bb.width===44,
-        settingsTarget:clickTarget(sb)?.id||null,
-        bookmarkTarget:clickTarget(bb)?.classList.contains('mobile-top-save')||false,
+      const ink=e=>e?.getBoundingClientRect();
+      const ring=ink(play?.querySelector('.gb-ember__ring-track'));
+      const glass=ink(search?.querySelector('svg'));
+      const gear=ink(settings?.querySelector('svg'));
+      const book=ink(bookmark?.querySelector('svg'));
+      if(!bar||!ring||!glass||!gear||!book||!bookmark)return null;
+      const center=r=>(r.left+r.right)/2;
+      const pr=ink(play),sr=ink(search),gr=ink(settings),br=ink(bookmark);
+      const pitch1=center(glass)-center(ring);
+      const pitch2=center(gear)-center(glass);
+      const saveTop=bar.contains(bookmark);
+      const pitch3=saveTop?center(book)-center(gear):null;
+      const owner=el=>{
+        const r=ink(el);
+        return !!r && r.width>=43.5 && r.height>=43.5 &&
+          document.elementFromPoint(center(r),(r.top+r.bottom)/2)?.closest('button')===el;
+      };
+      return {pitch1,pitch2,pitch3,saveTop,
+        ringCentered:Math.abs(center(ring)-center(pr))<.5,
+        searchCentered:Math.abs(center(glass)-center(sr))<.5,
+        settingsCentered:Math.abs(center(gear)-center(gr))<.5,
+        playHit:owner(play),searchHit:owner(search),settingsHit:owner(settings),saveHit:owner(bookmark),
+        properOrder:pr.right<=sr.left+1&&sr.right<=gr.left+1&&(!saveTop||gr.right<=br.left+1),
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
     });
     record(checks,'gill-visual-spacing-'+width,
-      'visible Play ring to Settings gap matches Settings to Bookmark within 1px',
-      response?.status()===200&&Boolean(metrics&&metrics.first>0&&metrics.second>0&&
-        Math.abs(metrics.difference)<=1&&metrics.ringCentered&&metrics.settingsCentered&&
-        metrics.playHit&&metrics.settingsHit&&metrics.bookmarkHit&&
-        metrics.settingsTarget==='mobSettingsBtn'&&metrics.bookmarkTarget&&metrics.overflow===0),metrics);
+      'current Play Search Settings Save icon centres have one uniform pitch and real 44px hits',
+      response?.status()===200&&Boolean(metrics&&
+        metrics.pitch1>=43&&metrics.pitch1<=48&&
+        Math.abs(metrics.pitch1-metrics.pitch2)<=1&&
+        (metrics.pitch3===null||Math.abs(metrics.pitch2-metrics.pitch3)<=1)&&
+        metrics.saveTop===(width>=440)&&metrics.properOrder&&
+        metrics.ringCentered&&metrics.searchCentered&&metrics.settingsCentered&&
+        metrics.playHit&&metrics.searchHit&&metrics.settingsHit&&metrics.saveHit&&metrics.overflow===0),metrics);
     return {caseId:'gill-spacing-'+width,checks};
   } finally {await context.close()}
 }
