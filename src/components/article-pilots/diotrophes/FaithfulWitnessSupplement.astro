@@ -121,7 +121,10 @@ const relatedAntiAdvice: Record<string, readonly number[]> = {
             <span>{index > 0 ? ' · ' : ' '}<a href={source.href} rel="noopener noreferrer">{source.label}</a></span>
           ))}
           {pathway.id === 'paige-patterson' && (
-            <span> <a href="#sources">Три заявления SWBTS о Паттерсоне и решениях попечителей находятся в основном списке источников выше</a>.</span>
+            <span>
+              {' '}<a href="#sources">Три документа SWBTS о решениях попечителей находятся в основной библиографии выше</a>.
+              {' '}<a href="https://swbts.edu/news/statement-by-kevin-ueckert-chairman-of-the-board-of-trustees/" rel="noopener noreferrer">Дополнительное заявление председателя попечителей от 1 июня 2018 года</a> непосредственно описывает получение сведений из студенческого дела с разрешения. Оно фиксирует позицию председателя, но не подменяет судебное установление первоначальных обвинений.
+            </span>
           )}
           {!readerSources.some((source) => pathway.sourceIds.includes(source.id)) && pathway.id !== 'paige-patterson' && (
             <span> См. основной список источников и границы подтверждения этого случая.</span>
