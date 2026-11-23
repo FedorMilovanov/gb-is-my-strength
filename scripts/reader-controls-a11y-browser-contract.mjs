@@ -159,6 +159,7 @@ async function gillPlayOptics(page) {
       rateBadge: rect('.reader-mobile-speed-badge'),
       rateChip: rect('.reader-mobile-speed-chip'),
       settingsButton: rect('#mobSettingsBtn'),
+      searchButton: rect('.reader-mobile-top-search'),
       ringTrackWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-track')).strokeWidth,
       ringProgressWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).strokeWidth,
       ringProgressTransition: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).transitionDuration,
@@ -171,10 +172,10 @@ async function gillPlayOptics(page) {
           badgeBackground:actual.backgroundColor,badgeBorder:actual.borderTopWidth};
       })(),
       settingsSvg: rect('#mobSettingsBtn svg'),
-      speedGapToSettings: (() => {
+      speedGapToSearch: (() => {
         const chip=el('.reader-mobile-speed-chip')?.getBoundingClientRect();
-        const icon=el('#mobSettingsBtn svg')?.getBoundingClientRect();
-        return chip && icon ? icon.x-chip.right : -1;
+        const search=el('.reader-mobile-top-search')?.getBoundingClientRect();
+        return chip && search ? search.x-chip.right : -1;
       })(),
       chipPointerHitsPlay: (() => {
         const chip=el('.reader-mobile-speed-chip');
@@ -244,10 +245,14 @@ async function auditSlot(page, routeId, selectors, checks) {
   const opened = await slotSnapshot(page, selectors);
   if (gillBefore) {
     const after = await gillPlayOptics(page);
-    const fixed = after && gillBefore.anchors.every((anchor, i) =>
-      anchor && after.anchors[i] &&
-      Math.abs(anchor.x - after.anchors[i].x) < .5 &&
-      Math.abs(anchor.y - after.anchors[i].y) < .5);
+    const fixed = after && gillBefore.anchors.every((anchor, i) => {
+      const later = after.anchors[i];
+      // Save legitimately lives in the bottom bar below 440px: both
+      // snapshots omit it from the TOP bar, which must not count as drift.
+      if (!anchor || !later) return !anchor && !later;
+      return Math.abs(anchor.x - later.x) < .5 &&
+        Math.abs(anchor.y - later.y) < .5;
+    });
     record(checks, `${prefix}-25`, 'Play, bookmark, Back, Home and Marginalia do not shift when speeds expand',
       fixed, { before: gillBefore.anchors, after: after?.anchors });
     record(checks, `${prefix}-33`, 'painted rate echo never steals Play arc taps; separate speed target remains clickable',
@@ -256,10 +261,9 @@ async function auditSlot(page, routeId, selectors, checks) {
       { playTriangleSafe: gillBefore.playTriangleSafe,
         rateCenter: gillBefore.rateCenterClickable,
         paintedChipDelegatesToPlay: gillBefore.chipPointerHitsPlay });
-    // W99: Keep separate physical 44px targets and DOM/tab order
-    // [speed, Play, Settings]. Play must be adjacent to Settings instead
-    // of stranded one full button to the left. The visible speed chip
-    // alone overlaps the lower-right Play arc, never Settings.
+    // W124/W126: Keep independent physical 44px targets and DOM/tab order
+    // [speed, Play, Search, Settings, Save if room]. The rate echo touches
+    // only Play's painted lower arc; Search has its own complete hitbox.
     record(checks, `${prefix}-31`, 'Gill rate then Play then Settings: distinct 44px controls and decorative rate echo',
       gillBefore.compound?.width >= 87.5 && gillBefore.compound?.width <= 88.5 &&
       gillBefore.rateBadge?.width >= 43.5 && gillBefore.rateBadge?.width <= 44.5 &&
@@ -267,15 +271,18 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore.anchors[3]?.x - gillBefore.rateBadge?.x >= 43.5 &&
       gillBefore.anchors[3]?.x - gillBefore.rateBadge?.x <= 44.5 &&
       gillBefore.anchors[3]?.x >= gillBefore.rateBadge?.right - .5 &&
-      gillBefore.settingsButton?.x >= gillBefore.anchors[3]?.right - .5 &&
-      gillBefore.settingsButton?.x - gillBefore.anchors[3]?.right <= 9 &&
+      gillBefore.searchButton?.x >= gillBefore.anchors[3]?.right - .5 &&
+      gillBefore.searchButton?.x - gillBefore.anchors[3]?.right <= 4 &&
+      gillBefore.settingsButton?.x >= gillBefore.searchButton?.right - .5 &&
+      gillBefore.settingsButton?.x - gillBefore.searchButton?.right <= 4 &&
       gillBefore.rateChip?.x >= gillBefore.anchors[3]?.x - .5 &&
-      gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5 &&
+      gillBefore.rateChip?.right <= gillBefore.searchButton?.x + .5 &&
       gillBefore.rateChip?.bottom <= gillBefore.compound.bottom &&
       gillBefore.chipPointerHitsPlay && gillBefore.playTriangleSafe &&
       gillBefore.rateCenterClickable,
       { compound: gillBefore.compound, play: gillBefore.anchors[3],
-        badge: gillBefore.rateBadge, chip: gillBefore.rateChip, settings: gillBefore.settingsButton,
+        badge: gillBefore.rateBadge, chip: gillBefore.rateChip,
+        search: gillBefore.searchButton, settings: gillBefore.settingsButton,
         chipDelegatesToPlay: gillBefore.chipPointerHitsPlay,
         playTriangleSafe: gillBefore.playTriangleSafe, rateCenterClickable: gillBefore.rateCenterClickable });
     record(checks, `${prefix}-32`, 'historical W77 fine golden progress ring with smooth transition',
@@ -296,9 +303,9 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 15 &&
       gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 18 &&
       gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 6 &&
-      gillBefore.speedGapToSettings >= 12 && gillBefore.speedGapToSettings <= 30 &&
-      gillBefore.rateChip?.right <= gillBefore.settingsButton?.x + .5,
-      {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
+      gillBefore.speedGapToSearch >= 0 && gillBefore.speedGapToSearch <= 12 &&
+      gillBefore.rateChip?.right <= gillBefore.searchButton?.x + .5,
+      {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSearch});
     record(checks, `${prefix}-30`, 'painted 1x chip is visual only; tap on its Play-side arc targets Play',
       gillBefore?.chipPointerHitsPlay === true,{ chipDelegatesToPlay:gillBefore?.chipPointerHitsPlay });
     record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
