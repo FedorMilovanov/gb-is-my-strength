@@ -229,6 +229,12 @@ requireValue(
   'immediate safety gate must not be conditional on a private meeting or completing an evidence file',
 );
 requireValue(
+  decisionSection.includes('соблюдать установленные законом обязанности') &&
+  !decisionSection.includes('Гражданская власть обязательна при преступлении') &&
+  decisionSection.includes('Публичное раскрытие — отдельное решение'),
+  'risk reporting, statutory duties and responsible public disclosure must remain separate',
+);
+requireValue(
   supplement.includes('критика процедуры не доказывает') &&
   supplement.includes('не утверждают, будто каждый документальный случай доказывает'),
   'original acts, institutional responses and thematic links must remain distinct',
