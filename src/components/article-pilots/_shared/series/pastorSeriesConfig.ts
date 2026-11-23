@@ -359,7 +359,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
         { href: '#positive-board-comparator', label: 'Совет, который действует', level: 2, summary: 'Контрпример: когда совет старейшин действительно работает.' },
         { href: '#twenty-faithful-responses', label: '20 верных ответов', level: 2, summary: 'Двадцать практических принципов для трудных церковных ситуаций.' },
         { href: '#faithful-decision-ladder', label: 'Лестница различения', level: 2, summary: 'Безопасность прежде внутренней процедуры; затем проверка фактов и независимая ответственность.' },
-        { href: '#faithful-witness-sources', label: 'Дополнительные документы', level: 2, summary: '33 библиографические ссылки и границы их доказательной силы.' },
+        { href: '#faithful-witness-sources', label: 'Дополнительные документы', level: 2, summary: '33 библиографические записи и границы их доказательной силы; историческая страница The Journey сейчас недоступна (404).' },
         { href: '#faithful-positive-conclusion', label: 'За верность Христу', level: 2, summary: 'Гай, Димитрий и положительный образец церковной верности по 3 Ин. 5–12.' },
       ],
     },
