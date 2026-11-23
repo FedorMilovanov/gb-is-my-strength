@@ -126,6 +126,16 @@ requireValue(draft.includes('не уточняет процедуру изгна
 requireValue(draft.includes('<strong>богословская аналогия</strong>'), 'modern institutional analogy labeled explicitly');
 requireValue(draft.includes('Стихи не описывают современных процедур независимой проверки'), 'quiz exegesis must retain the boundary');
 
+// Court-card provenance is not the same as a read-through of the full judgment.
+// Published claims must stay bounded while official, case-specific locators are HOLD.
+requireValue(draft.includes('их точные публичные локаторы пока не восстановлены'), 'Kuznetsov court-locator HOLD lost');
+requireValue(draft.includes('точный доступный публичный локатор решения не восстановлен'), 'Shin court-locator HOLD lost');
+requireValue(draft.includes('но не заменяют полного мотивированного решения'), 'Moskvitin court-card vs judgment distinction lost');
+requireValue(!draft.includes('Судебное решение фиксирует мошенническое ядро, потерпевших и установленный размер ущерба'), 'Shin unverified verdict/amount returned');
+requireValue(!draft.includes('Судебное решение и апелляция позволяют рассматривать обязательные платежи'), 'Kuznetsov unverified judicial conclusion returned');
+requireValue(draft.includes('Изменения законодательства Миссури не выдаются здесь за доказанное следствие именно этого дела'), 'Bickle legislation causality must remain unasserted');
+requireValue(draft.includes('её прежний адрес ныне недоступен'), 'Journey retrospective URL provenance warning missing');
+
 const quizBlock = extractArrayBlock('quiz');
 const quizQuestions = (quizBlock.match(/^\s*\['/gm) ?? []).length;
 requireValue(quizQuestions === 10, `expected 10 quiz questions, found ${quizQuestions}`);
