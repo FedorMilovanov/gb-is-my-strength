@@ -1,7 +1,7 @@
 import {chromium,webkit} from 'playwright';
 import fs from 'node:fs';
 // Run against the explicit W57 preview server with a built Pagefind index.
-const BASE=process.env.AUDIT_BASE||'http://127.0.0.1:8618',ROUTE='/articles/dzhon-gill-chast-2-uchenyi/';
+const BASE=process.env.AUDIT_BASE||'http://127.0.0.1:8618',W57_BASE=process.env.AUDIT_W57_BASE||BASE,ROUTE='/articles/dzhon-gill-chast-2-uchenyi/';
 const checks=[],failures=[];
 const ck=(n,good,detail='')=>{checks.push({name:n,ok:!!good,detail});console.log((good?'PASS ':'FAIL ')+n+' '+detail);if(!good)failures.push(n+' '+detail);};
 for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
@@ -16,7 +16,7 @@ await c.addInitScript(()=>{
 const p=await c.newPage(),errors=[];
 p.on('pageerror',e=>errors.push(String(e)));
 try{
- const start=BASE+ROUTE+(w>1120?'?reader-pilot=1&paper=space&panel=open':'');
+ const start=(kind==='desktop-W57'?W57_BASE:BASE)+ROUTE+(w>1120?'?reader-pilot=1&paper=space&panel=open':'');
  await p.goto(start,{waitUntil:'domcontentloaded',timeout:30000});
  // W92: the W57 preview hydrates asynchronously. Test its actual ready state
  // before triggering Search, rather than racing the legacy header bootstrap.

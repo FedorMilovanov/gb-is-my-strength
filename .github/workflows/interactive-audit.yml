@@ -337,10 +337,29 @@ jobs:
           echo $! > /tmp/gb-http.pid
           sleep 2
 
+      - name: Start real desktop W57 pilot against the same built dist
+        if: steps.audit-scope.outputs.run == 'true'
+        shell: bash
+        run: |
+          READER_W57_DIST="$GITHUB_WORKSPACE/dist" READER_W57_PORT=19061 python3 research/reader-w57-pilot/preview.py > /tmp/gb-w57.log 2>&1 &
+          echo $! > /tmp/gb-w57.pid
+          ready=false
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:19061/__reader_w57__/preview-bootstrap.js -o /tmp/gb-w57-bootstrap.js; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then cat /tmp/gb-w57.log; exit 1; fi
+          curl --fail --silent 'http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open' -o /tmp/gb-w57-probe.html
+          grep -Fq '/__reader_w57__/preview-bootstrap.js' /tmp/gb-w57-probe.html
+
       - name: Runtime interactive audit with durable evidence
         if: steps.audit-scope.outputs.run == 'true'
         env:
           AUDIT_BASE: http://127.0.0.1:8080
+          AUDIT_W57_BASE: http://127.0.0.1:19061
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           SOURCE_REF: ${{ github.event.pull_request.head.ref || github.ref }}
         shell: bash
@@ -381,6 +400,9 @@ jobs:
         run: |
           if [ -f /tmp/gb-http.pid ]; then
             kill "$(cat /tmp/gb-http.pid)" 2>/dev/null || true
+          fi
+          if [ -f /tmp/gb-w57.pid ]; then
+            kill "$(cat /tmp/gb-w57.pid)" 2>/dev/null || true
           fi
 
       - name: Upload runtime interactive audit evidence
