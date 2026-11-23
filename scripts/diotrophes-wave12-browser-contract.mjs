@@ -19,14 +19,13 @@ const EXPECTED_SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
   'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
-  'https://www.thejourney.org/about/our-story-new',
 ].sort();
+const HISTORICAL_JOURNEY_URL = 'https://www.thejourney.org/about/our-story-new';
 const STALE_READER_LINKS = [
   'https://www.thejourney.org/our-story',
   'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
 ];
 const CANONICAL_BASE_READER_LINKS = [
-  'https://www.thejourney.org/about/our-story-new',
   'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
 ];
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2' };
@@ -504,7 +503,7 @@ async function inspect(browserType, engine, profile) {
       await page.route(/mc\.yandex|gospod-bog\.ru/, (request) => request.abort());
       const response = await page.goto(base + ROUTE, { waitUntil: javaScriptEnabled ? 'networkidle' : 'domcontentloaded' });
       record(engine, `${profile.id}-${mode}`, 'http-200', response?.status() === 200, `status=${response?.status()}`);
-      const state = await page.evaluate(({ staleReaderLinks, canonicalBaseReaderLinks }) => {
+      const state = await page.evaluate(({ staleReaderLinks, canonicalBaseReaderLinks, historicalJourneyUrl }) => {
         const bodyText = document.body.innerText;
         const baseLinks = [...document.querySelectorAll('#sources a[href^="https://"]')].map((node) => node.href);
         const supplementLinks = [...document.querySelectorAll('#faithful-witness-sources a[href^="https://"]')].map((node) => node.href);
@@ -568,6 +567,12 @@ async function inspect(browserType, engine, profile) {
             total: allReaderLinks.length,
           },
           readerLinks: new Set(allReaderLinks).size,
+          historicalJourney: {
+            baseDisabled: Boolean(document.querySelector('#sources [data-locator-status="unavailable-404-2026-11-23"][data-historical-href="' + historicalJourneyUrl + '"]')),
+            supplementDisabled: Boolean(document.querySelector('#faithful-witness-sources [data-locator-status="unavailable-404-2026-11-23"][data-historical-href="' + historicalJourneyUrl + '"]')),
+            baseClickable: baseLinks.includes(historicalJourneyUrl),
+            supplementClickable: supplementLinks.includes(historicalJourneyUrl),
+          },
           duplicateReaderLinks,
           staleReaderLinksPresent: staleReaderLinks.filter((href) => allReaderLinks.includes(href)),
           canonicalBaseReaderLinkCounts: Object.fromEntries(
@@ -581,7 +586,7 @@ async function inspect(browserType, engine, profile) {
           canonical: document.querySelector('link[rel="canonical"]')?.href || '',
           robots: document.querySelector('meta[name="robots"]')?.content || '',
         };
-      }, { staleReaderLinks: STALE_READER_LINKS, canonicalBaseReaderLinks: CANONICAL_BASE_READER_LINKS });
+      }, { staleReaderLinks: STALE_READER_LINKS, canonicalBaseReaderLinks: CANONICAL_BASE_READER_LINKS, historicalJourneyUrl: HISTORICAL_JOURNEY_URL });
       record(engine, `${profile.id}-${mode}`, 'single-main', state.mainCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'single-article', state.articleCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
@@ -592,10 +597,12 @@ async function inspect(browserType, engine, profile) {
         engine,
         `${profile.id}-${mode}`,
         'reader-link-sections',
-        state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33 && state.readerLinkSections.total === 73,
+        state.readerLinkSections.base === 39 &&
+          state.readerLinkSections.supplement === (state.historicalJourney.supplementDisabled ? 32 : 33) &&
+          state.readerLinkSections.total === (state.historicalJourney.supplementDisabled ? 71 : 72),
         JSON.stringify(state.readerLinkSections),
       );
-      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 69, `unique=${state.readerLinks}`);
+      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === (state.historicalJourney.supplementDisabled ? 68 : 69), `unique=${state.readerLinks}`);
       record(
         engine,
         `${profile.id}-${mode}`,
@@ -608,10 +615,14 @@ async function inspect(browserType, engine, profile) {
         `${profile.id}-${mode}`,
         'reader-link-migration-receipt',
         state.staleReaderLinksPresent.length === 0 &&
+          state.historicalJourney.baseDisabled &&
+          !state.historicalJourney.baseClickable &&
+          (!state.historicalJourney.supplementDisabled || !state.historicalJourney.supplementClickable) &&
           CANONICAL_BASE_READER_LINKS.every((href) => state.canonicalBaseReaderLinkCounts[href] === 1),
         JSON.stringify({
           stale: state.staleReaderLinksPresent,
           canonicalBaseCounts: state.canonicalBaseReaderLinkCounts,
+          historicalJourney: state.historicalJourney,
         }),
       );
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
