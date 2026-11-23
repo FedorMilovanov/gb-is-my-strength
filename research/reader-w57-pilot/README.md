@@ -1,5 +1,52 @@
 # Reader — W57 integration candidate (draft only)
 
+## SINGLE LOCAL PREVIEW — W136 operator contract (2026-11-23)
+
+**One source / one existing working copy / one port.** The validated Windows
+working copy on `DESKTOP-O3FDOA4` is `E:\\GB_READER_W107_PREVIEW_20261123`
+and the stable local address is `http://127.0.0.1:19181`. This location is
+machine-specific; never create another dated Reader clone for visual review.
+
+1. Connect Remote Desktop Commander through `viktori.milovanova@gmail.com`;
+   confirm `DESKTOP-O3FDOA4` online. Check `git status --porcelain` in
+   the existing preview repo: **do not switch commits if dirty**. Fetch the
+   latest PR #2352 head, verify its exact SHA, then switch/detach **only the
+   clean preview working tree**. Never move branches of another agent.
+2. Use Node **v22.23.4** process-locally (`C:\\Users\\Fedor\\AppData\\Local\\nvm\\v22.23.4`
+   in `PATH`); `node` v22.23.1 fails the Astro contract. Use `npm.cmd` or
+   explicit `node.exe ...\\npm-cli.js`, not `npm.ps1` with blocked execution policy.
+3. Build the complete production-like site with **`npm run strangler:build`**.
+   `npm run astro:build` alone is **not a runnable Reader preview**: it
+   omits copied legacy `css/`, `js/`, images and other shared assets.
+4. Close only the verified existing listener at `19181` (inspect PID and
+   command line first). Run the canonical server (from the existing repo):
+   ```powershell
+   $env:READER_W57_DIST = "E:\\GB_READER_W107_PREVIEW_20261123\\dist"
+   $env:READER_W57_PORT = "19181"
+   python research/reader-w57-pilot/preview.py
+   ```
+   **Do not use `python -m http.server`**. A generic static server silently
+   shows the **old native desktop**, not the W57 ARGON-first pilot.
+5. Browser-verify the actual compiled page at
+   `/articles/dzhon-gill-chast-1-chelovek/?reader-pilot=1&paper=space&panel=open`:
+   desktop width >=1121px has `body.np-w57-ready` and a visible
+   `#npUResearch` panel. At 390px the same page is native mobile (no W57).
+   Confirm CSS/JS 200, no runtime errors/overflow, screenshot **both** states.
+   `?reader-pilot=0` is deliberately the **old native desktop comparison**.
+   The server must never be represented as already merged production.
+6. Verify modal reading-position contract: open Part TOC at a scrolled paragraph,
+   press **Продолжить**, and require the **same** `scrollY` (tolerance <=2px).
+   A TOC section link, by contrast, must intentionally navigate.
+
+**Disk hygiene:** do not delete any dirty agent worktrees, unique/unpushed
+Git commits, untracked evidence or archives, or active server directories.
+Inventory first; clean only proven rebuildable unused generated assets and
+redundant *clean* copies with no unique content. One preview worktree is enough.
+For the reproduction, exact SHA, and release HOLD, see Reader PR #2352
+comment `#issuecomment-7113946035`.
+
+---
+
 **Status: research/QA preview. Not published and not merged.**
 
 This folder records the **last visually accepted local W57 source chain** and makes it
