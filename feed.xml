@@ -8,7 +8,7 @@
     <link>https://gospod-bog.ru/</link>
     <description><![CDATA[Богословские разборы, переводы и исследования Писания на русском языке.]]></description>
     <language>ru</language>
-    <lastBuildDate>Fri, 20 Nov 2026 21:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 23 Nov 2026 21:01:57 GMT</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -16,6 +16,16 @@
       <link>https://gospod-bog.ru/</link>
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>G3 Ministries: от конференции к служению (2011–2024)</title>
+      <link>https://gospod-bog.ru/journal/dossiers/g3/history/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/journal/dossiers/g3/history/</guid>
+      <pubDate>Mon, 23 Nov 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Журнал</category>
+      <description><![CDATA[Документальная история G3 Ministries: приглашение 2011 года, первые конференции, богословские темы и споры, издательские проекты, региональные встречи до 2024 года.]]></description>
+    </item>
 
     <item>
       <title>Когда человек уходит от веры: как предупреждать, исправлять и возвращать</title>

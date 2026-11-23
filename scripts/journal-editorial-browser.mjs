@@ -4,7 +4,7 @@
  * Requires existing Playwright plus an explicit axe-core file (no dependency changes).
  * JOURNAL_CHROMIUM_EXECUTABLE may select a sandbox-compatible Chromium.
  * Example: node scripts/journal-editorial-browser.mjs --origin=http://localhost:4173
- *   --history-origin=http://localhost:4321 --axe=/path/to/axe.min.js
+ *   --axe=/path/to/axe.min.js; checks public history at the same --origin
  * --browser=firefox|webkit uses that actual Playwright browser, never Chromium emulation.
  * --suite=print runs only the actual-PDF matrix (Chromium + Python/PyMuPDF).
  * --suite=mobile exercises native compact-TOC focus; --mobile-heights=390,844.
@@ -27,10 +27,8 @@ const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
 const suite = args.suite || 'full';
 const visibleScrollbars = args['visible-scrollbars'] === 'true';
-const publicOnly = args['public-only'] === 'true';
-assert.ok(!publicOnly || !args['history-origin'], 'Public-only acceptance must not activate a held-history fixture');
-const transfer = args.transfer ? JSON.parse(fs.readFileSync(args.transfer, 'utf8')) : null;
-assert.ok(!transfer || publicOnly, 'A gitless composite must explicitly use --public-only=true');
+const stopOnFirstError = args['stop-on-first-error'] === 'true';
+assert.ok(!args.transfer && !args['public-only'] && !args['history-origin'], 'Public history uses a canonical route; obsolete transfer and preview flags are not accepted');
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
 assert.ok(['full', 'short', 'mobile', 'print', 'forced-colors'].includes(suite), 'use --suite=full|short|mobile|print|forced-colors');
 assert.ok(suite !== 'forced-colors' || engine === 'chromium', 'forced-colors system-palette witness currently requires actual Chromium');
@@ -53,32 +51,20 @@ assert.ok(suite !== 'mobile' || mobileWidths.length > 0, 'the mobile suite needs
 assert.ok(widths.every((width) => Number.isInteger(width) && width >= 320));
 assert.ok(shortHeights.every((height) => Number.isInteger(height) && height >= 320 && height <= 600));
 assert.ok(suite !== 'short' || widths.some((width) => width >= 1024), 'the short suite needs at least one desktop width');
-const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier', url: origin + '/journal/dossiers/g3/' }];
-if (args['history-origin']) routes.push({ kind: 'history', url: args['history-origin'] + '/_review/g3-history/' });
-const report = { engine, suite, version: null, head: transfer ? null : execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  worktree: transfer ? null : execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
-  publicOnly, composite: transfer ? { base: transfer.base, source: transfer.source, notCanonicalGitCommit: true } : null,
+const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier', url: origin + '/journal/dossiers/g3/' },
+  { kind: 'history', url: origin + '/journal/dossiers/g3/history/' }];
+const report = { engine, suite, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+  worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
   visibleScrollbars,
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
-  ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
-  'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro',
+  ...['g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
-if (transfer) {
-  assert.equal(transfer.version, 2);
-  assert.match(transfer.base, /^[a-f0-9]{40}$/); assert.match(transfer.source, /^[a-f0-9]{40}$/);
-  for (const entry of transfer.files) {
-    const bytes = fs.readFileSync(path.join(root, entry.path));
-    assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'), entry.after.blob, `Runtime source differs from transferred public file: ${entry.path}`);
-  }
-}
-for (const name of witnessFiles) {
-  if (publicOnly && ['src/data/journal/g3HistoryDraftSources.ts', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro'].includes(name)) continue;
-  report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
-}
+for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
 const browser = await ({ chromium, firefox, webkit })[engine].launch({
   headless: true,
   ...(visibleScrollbars ? { ignoreDefaultArgs: ['--hide-scrollbars'] } : {}),
@@ -98,10 +84,64 @@ const audit = async (page) => {
 };
 const contextFor = (width, theme, options = {}) => browser.newContext({ viewport: { width, height: width <= 430 ? 844 : width === 768 ? 1024 : 1080 },
   colorScheme: theme, deviceScaleFactor: 1, serviceWorkers: 'block', ...options });
-const ready = async (page, url) => {
-  const response = await page.goto(url, { waitUntil: 'networkidle' });
+const ready = async (page, url, stage = () => {}) => {
+  // Diagnose WebKit's reported WOFF2 errors with actual HTTP responses and
+  // native browser request failures. Keep the strict font-face rejection.
+  const fontNetwork = [];
+  const isFont = (requestUrl) => /\.woff2(?:[?#]|$)/i.test(requestUrl);
+  page.on('response', (response) => {
+    if (isFont(response.url())) fontNetwork.push({ url: response.url(), status: response.status() });
+  });
+  page.on('requestfailed', (request) => {
+    if (isFont(request.url())) fontNetwork.push({
+      url: request.url(), failure: request.failure() || 'request failed'
+    });
+  });
+  stage('navigation/load');
+  const response = await page.goto(url, { waitUntil: 'load', timeout: 25_000 });
   assert.equal(response.status(), 200, url);
-  await page.evaluate(() => document.fonts.ready);
+  // Verify the actual article preload contract on the shipped HTML; fail
+  // independently of WebKit's CSS FontFaceSet status, not instead of it.
+  if (new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
+    const hints = await page.locator('link[rel="preload"][as="font"]').evaluateAll((links) =>
+      links.map((el) => new URL(el.href).pathname));
+    const history = new URL(url).pathname.startsWith('/journal/dossiers/g3/history/');
+    const source600 = '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2';
+    const lora600 = '/fonts/Lora/lora-cyrillic-600.woff2';
+    assert.equal(hints.filter((hint) => hint === source600).length, 1,
+      'G3 Article must preload exactly one semibold Cyrillic Source Sans face');
+    assert.equal(hints.filter((hint) => hint === lora600).length, history ? 0 : 1,
+      'Only G3 dossier must preload semibold Cyrillic Lora; history must not preload unused face');
+  }
+  stage('navigation/fonts-ready');
+  // A Firefox browsing context with JS disabled may leave an injected
+  // document.fonts.ready promise unsettled. Observe the actual FontFaceSet
+  // from the test driver, even with page scripts disabled; require the three
+  // typefaces rendered by every Journal route, and fail on font-face errors.
+  const deadline = Date.now() + 15_000;
+  let fonts, stable = 0;
+  while (true) {
+    fonts = await page.evaluate(() => ({
+      status: document.fonts.status,
+      faces: [...document.fonts].map((face) => ({
+        family: face.family, weight: face.weight, status: face.status
+      }))
+    }));
+    const failed = fonts.faces.filter((face) => face.status === 'error');
+    assert.deepEqual(failed, [], 'CSS font faces failed to load: ' + JSON.stringify(failed)
+      + '; WOFF2 requests: ' + JSON.stringify(fontNetwork)
+      + '; fontset: ' + JSON.stringify({ status: fonts.status, faces: fonts.faces }));
+    const loadedFamilies = new Set(fonts.faces.filter((face) => face.status === 'loaded')
+      .map((face) => face.family.replace(/^["']|["']$/g, '')));
+    const familiesReady = ['Lora', 'Source Sans 3', 'Playfair Display']
+      .every((family) => loadedFamilies.has(family));
+    stable = fonts.status === 'loaded' && familiesReady ? stable + 1 : 0;
+    if (stable >= 2) break;
+    if (Date.now() >= deadline) throw new Error('font readiness did not settle within 15s: '
+      + JSON.stringify({ status: fonts.status, familiesReady, faces: fonts.faces, fontNetwork }));
+    await page.waitForTimeout(120);
+  }
+  stage('navigation/complete');
   return response;
 };
 const settle = async (page) => {
@@ -146,6 +186,15 @@ const inspect = (page) => page.evaluate(() => {
     lcp: window.__journalLab?.lcp ?? null, cls: window.__journalLab?.cls ?? null };
 });
 const shot = (page, name, options) => page.screenshot({ path: path.join(output, `after/${name}.png`), ...options });
+const assertPublishedHistory = async (page, response) => {
+  assert.equal(response.status(), 200);
+  assert.ok(!/noindex/i.test(response.headers()['x-robots-tag'] || ''), 'Public history may not set noindex header');
+  assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://gospod-bog.ru/journal/dossiers/g3/history/');
+  assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /index,\s*follow/);
+  assert.equal(await page.locator('body[data-journal-id="g3-history"]').count(), 1);
+  assert.equal(await page.locator('.je-review-note, [data-research-publication-status="PUBLICATION_HOLD"]').count(), 0);
+  assert.equal(await page.locator('.bibliography-item').count(), 22, 'Research bibliography must contain all 22 sources');
+};
 const citationFor = (page, kind, second = false) => page.locator(kind === 'dossier'
   ? second ? '#finance .je-data-figure [data-journal-citation]' : '#finance .source-note[data-journal-citation]'
   : second ? '#g3-history [data-journal-citation]' : '#g3-growth [data-journal-citation][href="#history-source-challies"]');
@@ -234,17 +283,12 @@ try {
     monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
     try {
       const response = await ready(page, route.url);
-      if (route.kind === 'history') {
-        assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
-        assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /noindex/);
-        assert.equal(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0, true);
-        assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
-      }
+      if (route.kind === 'history') await assertPublishedHistory(page, response);
       item.layout = await inspect(page);
       await shot(page, `${route.kind}-${width}-${theme}`);
       assert.equal(item.layout.documentOverflow, 0);
       assert.deepEqual(item.layout.overflow, [], 'visible elements must fit; root overflow:clip alone is not a pass');
-      assert.deepEqual(item.layout.duplicateIds, [], 'IDs must be unique, including the held history manuscript');
+      assert.deepEqual(item.layout.duplicateIds, [], 'Public routes must have unique IDs');
       assert.deepEqual(item.layout.brokenAnchors, [], 'every local anchor needs a real target');
       assert.equal(item.layout.h1, 1);
       assert.equal(item.layout.theme, theme);
@@ -313,7 +357,7 @@ try {
       item.axe = await audit(page);
       assert.deepEqual(item.axe.violations, [], 'axe WCAG A/AA violations');
       assert.deepEqual(item.axe.incomplete, [], 'static editorial surfaces must not leave unresolved axe review items');
-      if (route.kind !== 'history' && engine === 'chromium') {
+      if (engine === 'chromium') {
         assert.ok(item.layout.cls !== null && item.layout.cls <= .1, `initial-load local CLS budget exceeded: ${item.layout.cls}`);
       }
       if (route.kind !== 'journal') {
@@ -478,7 +522,7 @@ try {
             getComputedStyle(details, '::details-content').contentVisibility === 'visible';
         }), true, 'print must reveal closed source locators as actual layout boxes');
         if (route.kind === 'history') {
-          assert.equal(await page.locator('.je-review-note').isVisible(), true, 'the manuscript must remain visibly unpublished in print');
+          assert.equal(await page.locator('.je-review-note').count(), 0, 'No unpublished warning belongs in public print');
           result.printYearLabels = await page.locator('.je-history-dateline > span, .je-history-year-mark time').evaluateAll((labels) => labels.map((label) => {
             const range = document.createRange(); range.selectNodeContents(label);
             const rects = [...range.getClientRects()];
@@ -491,8 +535,8 @@ try {
       result.print = true;
       if (engine === 'chromium') await page.pdf({ path: path.join(output, `${route.kind}-print.pdf`), format: 'A4', printBackground: true, margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
       await page.emulateMedia({ media: 'screen' });
-      if (route.kind !== 'history') {
-        // Exercise a cold keyboard bootstrap before any click has loaded search.
+      {
+        // Exercise cold keyboard search bootstrap on each public route.
         await page.keyboard.press('Control+k');
         const palette = page.locator('.cp-backdrop.is-open');
         await palette.waitFor();
@@ -588,7 +632,8 @@ try {
         const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
         const name = `${route.kind}-short-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
-        const rail = page.locator('.je-editorial-rail');
+        const rail = page.locator('.je-editorial-rail__scrollport');
+        const stickyRail = page.locator('.je-editorial-rail');
         const toc = page.locator('[data-journal-contents]');
         const summary = toc.locator('summary');
         const last = toc.locator('li:last-child a');
@@ -603,17 +648,41 @@ try {
           await ready(page, route.url);
           await middle.scrollIntoViewIfNeeded(); await settleWithoutScripts(page);
           item.before = await railState();
+          item.sticky = await stickyRail.evaluate((el) => ({ position: getComputedStyle(el).position,
+            overflow: getComputedStyle(el).overflowY, top: el.getBoundingClientRect().top }));
+          assert.equal(item.sticky.position, 'sticky', 'desktop TOC wrapper must own sticky layout');
+          assert.equal(item.sticky.overflow, 'visible', 'sticky wrapper must not be a second scrollport');
           assert.ok(item.before.rect.top >= item.before.clearance.top - 1 && item.before.rect.bottom <= height - item.before.clearance.bottom + 1,
             `sticky rail exceeds the document's focus-safe viewport: ${JSON.stringify(item.before)}`);
           assert.equal(item.before.horizontalOverflow, 0);
           assert.ok(item.before.scrollHeight > item.before.clientHeight, 'short desktop rail must have a native scroll range');
           await rail.hover({ position: { x: 80, y: 80 } });
-          await page.mouse.wheel(0, 1500); await page.waitForTimeout(160);
+          // A wheel step within the available scroll range must not disturb
+          // the reading position. At the boundary, wheel chains naturally.
+          await page.mouse.wheel(0, 120); await page.waitForTimeout(160);
           item.afterWheel = await railState();
-          assert.ok(item.afterWheel.scrollTop > 0, 'wheel must reveal the end of the rail');
+          assert.ok(item.afterWheel.scrollTop > 0 && item.afterWheel.scrollTop <= item.afterWheel.scrollHeight - item.afterWheel.clientHeight,
+            'wheel must move within the rail scroll range');
           assert.ok(Math.abs(item.afterWheel.y - item.before.y) < 1, 'scrolling the rail must not displace the reading position');
-          const links = await rail.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          // Hidden desktop return links cannot occur in native Tab order.
+          // Exercise EVERY rendered keyboard link (TOC and rail notes), not
+          // hidden SSR/mobile alternatives; keep a witness of excluded nodes.
+          item.railLinks = await rail.locator('a').evaluateAll((links) => links.map((link) => ({
+            href: link.getAttribute('href'),
+            rendered: link.getClientRects().length > 0 && getComputedStyle(link).visibility !== 'hidden'
+          })));
+          const links = item.railLinks.filter((entry) => entry.rendered).map((entry) => entry.href);
+          assert.ok(links.length >= 5, 'short-window rail needs at least five native rendered keyboard links');
+          if (route.kind === 'dossier')
+            assert.ok(item.railLinks.some((entry) => entry.href === '#overview' && !entry.rendered),
+              'SSR mobile-only return link must remain hidden on desktop');
           const focused = async (expected) => {
+            // Native Tab may initiate smooth document scrolling asynchronously.
+            // Test the *settled reading position* (including no-JS), not an
+            // in-flight frame. Keep the original <1px reading-position gate.
+            // Retain the immediate sample to diagnose transient root movement.
+            const immediateDocumentY = await page.evaluate(() => scrollY);
+            await settleWithoutScripts(page);
             const state = await rail.evaluate((el) => {
               const active = document.activeElement, style = getComputedStyle(active);
               return { href: active.getAttribute('href'), inside: el.contains(active), y: scrollY,
@@ -622,6 +691,7 @@ try {
                 outline: (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0),
                 focusVisible: active.matches(':focus-visible') };
             });
+            item.lastKeyboardState = { ...state, immediateDocumentY, settledDocumentY: state.y, readingBaselineY: item.before.y };
             assert.equal(state.inside, true); assert.equal(state.href, expected);
             assert.equal(state.focusVisible, true, 'keyboard focus must have a visible indicator');
             assert.ok(state.outline >= 2, 'the focus-visible state must actually paint an outline');
@@ -633,6 +703,10 @@ try {
             return { href: state.href, y: state.rect.top, bottom: state.rect.bottom, outline: state.outline };
           };
           await summary.focus();
+          await settleWithoutScripts(page);
+          item.afterSummaryFocus = await railState();
+          assert.ok(Math.abs(item.afterSummaryFocus.y - item.before.y) < 1,
+            'native TOC summary focus must not move the reading position before Tab');
           item.keyboardForward = [];
           for (const href of links) { await page.keyboard.press('Tab'); item.keyboardForward.push(await focused(href)); }
           if (width === 1440 && height === 480) {
@@ -662,10 +736,18 @@ try {
           assert.ok(item.nativeTarget.y >= 25 && item.nativeTarget.y < height / 2, 'native section heading must stay visible');
           if (width === 1440 && height === 480 && theme === 'light') {
             await page.setViewportSize({ width: 844, height: 390 }); await settleWithoutScripts(page);
-            item.mobileResize = await rail.evaluate((el) => ({ overflow: getComputedStyle(el).overflowY,
-              maxHeight: getComputedStyle(el).maxHeight, position: getComputedStyle(el).position }));
-            assert.equal(item.mobileResize.overflow, 'visible'); assert.equal(item.mobileResize.maxHeight, 'none');
-            assert.equal(item.mobileResize.position, javaScriptEnabled ? 'sticky' : 'static');
+            item.mobileResize = await rail.evaluate((el) => ({
+              overflow: getComputedStyle(el).overflowY,
+              maxHeight: getComputedStyle(el).maxHeight,
+              innerPosition: getComputedStyle(el).position,
+              outerPosition: getComputedStyle(el.closest('.je-editorial-rail')).position
+            }));
+            assert.equal(item.mobileResize.overflow, 'visible');
+            assert.equal(item.mobileResize.maxHeight, 'none');
+            assert.equal(item.mobileResize.innerPosition, 'static',
+              'mobile scrollport must not become a second sticky element');
+            assert.equal(item.mobileResize.outerPosition, javaScriptEnabled ? 'sticky' : 'static',
+              'the outer rail must retain the original JS/no-JS mobile sticky ownership');
             assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
             if (javaScriptEnabled) await summary.click();
             await last.click(); await settleWithoutScripts(page);
@@ -691,7 +773,18 @@ try {
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
           console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
           await shot(page, `${name}-failure`).catch(() => {});
-        } finally { report.shortViewports.push(item); await context.close(); }
+        } finally {
+          report.shortViewports.push(item);
+          // Keep the first real WebKit native-Tab/root-scroll measurements even
+          // when GitHub cancels a superseded run before the final JSON write.
+          // This is a deliberately PARTIAL forensic file, never a PASS receipt.
+          fs.writeFileSync(path.join(output, 'short-checkpoint.json'), JSON.stringify({
+            ...report, checkpoint: { partial: true, completedShortCases: report.shortViewports.length,
+              expectedShortCases: 2 * widths.filter((value) => value >= 1024).length * shortHeights.length * 2 * 2,
+              evidenceOnly: true }
+          }, null, 2) + '\n');
+          await context.close();
+        }
       }
   // Compact TOC has its own scrollport. Real native Tab must leave room for
   // the painted outline, not merely the link's border box. Sample from the
@@ -701,9 +794,17 @@ try {
       for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
         const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
         const page = await context.newPage();
-        const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
+        const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [], phase: 'initialization' };
         const name = `${route.kind}-mobile-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
+        // Kill a truly stalled engine with a failing, artifact-backed result.
+        // This cannot turn missing checks into PASS or change route behavior.
+        const watchdog = setTimeout(() => {
+          const diagnostic = { head: report.head, engine, name, item, timeoutMs: 75_000 };
+          fs.writeFileSync(path.join(output, 'after', `${name}-watchdog.json`), JSON.stringify(diagnostic, null, 2) + '\n');
+          console.error(`FAIL ${name}: 75s mobile-case watchdog in phase ${item.phase}; diagnostic JSON retained`);
+          process.exit(124);
+        }, 75_000);
         const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
         const selected = [390, 844].includes(width);
         const settleMobile = async () => {
@@ -744,7 +845,13 @@ try {
             const active = document.activeElement, style = getComputedStyle(active), nav = el.querySelector('nav');
             const r = nav.getBoundingClientRect(), header = document.querySelector('.mcp-top');
             const headerRect = header?.getBoundingClientRect(), headerStyle = header && getComputedStyle(header);
-            return { href: active.getAttribute('href'), inside: el.contains(active), rect: active.getBoundingClientRect().toJSON(),
+            const returnLink = el.querySelector('.je-contents-return');
+            return { href: active.getAttribute('href'), tag: active.tagName, id: active.id || '',
+              activeClass: String(active.className || ''), activeHtml: active.outerHTML?.slice(0, 500),
+              detailsOpen: el.open, summaryFocused: active === el.querySelector('summary'),
+              returnVisible: returnLink ? getComputedStyle(returnLink).display !== 'none' : false,
+              returnTabIndex: returnLink?.tabIndex, returnHref: returnLink?.getAttribute('href'),
+              inside: el.contains(active), rect: active.getBoundingClientRect().toJSON(),
               clip: { left: r.left + nav.clientLeft, right: r.left + nav.clientLeft + nav.clientWidth,
                 top: r.top + nav.clientTop, bottom: r.top + nav.clientTop + nav.clientHeight },
               scrollbar: nav.offsetWidth - nav.clientWidth, scrollTop: nav.scrollTop, y: scrollY,
@@ -765,7 +872,10 @@ try {
               headerBottom: headerStyle?.display !== 'none' && headerStyle?.visibility !== 'hidden' && Number(headerStyle?.opacity) > 0
                 ? Math.max(0, headerRect.bottom) : 0 };
           });
-          assert.equal(state.inside, true); assert.equal(state.href, expected);
+          if (state.href !== expected || !state.inside) {
+            item.focusFailure = { expected, state };
+            throw new Error('native TOC keyboard focus mismatch: ' + JSON.stringify(item.focusFailure));
+          }
           assert.equal(state.focusVisible, true);
           assert.ok(state.outlineWidth >= 2 && state.outlineStyle === 'solid', 'the indicator must really paint, even when fully inset');
           const { rect: r, outline: o, clip: c } = state;
@@ -790,12 +900,27 @@ try {
           return state;
         };
         try {
-          const response = await ready(page, route.url);
-          if (route.kind === 'history') {
-            assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
-            assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
-            assert.ok(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0);
-          }
+          item.phase = 'navigation/ready';
+          const response = await ready(page, route.url, (phase) => { item.phase = phase; });
+          if (route.kind === 'history') await assertPublishedHistory(page, response);
+          // The shared dark-theme anchor color must not override Journal's
+          // inverse skip-navigation foreground. Check the *focused* control
+          // in every real mobile engine/theme and JS/no-JS mode.
+          await page.locator('a.skip-link').focus();
+          item.skipLinkContrast = await page.locator('a.skip-link').evaluate((el) => {
+            const style = getComputedStyle(el);
+            const rgb = (value) => value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number);
+            const fg = rgb(style.color), bg = rgb(style.backgroundColor);
+            if (!fg || !bg) throw new Error('skip-link has no opaque RGB colors');
+            const lum = (c) => c.map((value) => {
+              const n = value / 255;
+              return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+            }).reduce((acc, channel, i) => acc + channel * [0.2126, 0.7152, 0.0722][i], 0);
+            const a = lum(fg), b = lum(bg);
+            return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+          });
+          assert.ok(item.skipLinkContrast >= 4.5,
+            `focused skip-link contrast below WCAG AA: ${item.skipLinkContrast.toFixed(2)}:1 (${name})`);
           assert.equal(await page.locator('[data-journal-contents]').count(), 1);
           assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
           await summary.focus();
@@ -806,11 +931,13 @@ try {
           await page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth').scrollIntoViewIfNeeded();
           await settleMobile();
           const links = await nav.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          item.phase = 'native Tab to return link';
           const nativeReturn = route.kind === 'dossier' ? toc.locator('.je-contents-return') : null;
           if (nativeReturn) {
             await page.keyboard.press('Tab');
             item.returnBeforeNav = await focused('#overview', true);
           }
+          item.phase = 'forward native Tab navigation';
           item.keyboardForward = [];
           for (const [index, href] of links.entries()) {
             // WebKit's default Tab skips implicit links; inspect real focus
@@ -820,6 +947,7 @@ try {
             if (selected && (index === 0 || index === links.length - 1))
               await shot(page, name + '-' + (index === 0 ? 'first' : 'last'));
           }
+          item.phase = 'backward native Shift+Tab navigation';
           item.keyboardBackward = [];
           for (const href of links.slice(0, -1).reverse()) {
             await page.keyboard.press('Shift+Tab');
@@ -838,6 +966,7 @@ try {
           await page.keyboard.press('Space'); assert.equal(await toc.evaluate((el) => el.open), javaScriptEnabled);
           if (!javaScriptEnabled) await page.keyboard.press('Enter');
           assert.equal(await toc.evaluate((el) => el.open), true);
+          item.phase = 'axe accessibility audit';
           if (selected && javaScriptEnabled) {
             item.axe = await audit(page);
             assert.deepEqual(item.axe.violations, []);
@@ -847,6 +976,7 @@ try {
           for (const href of links) {
             await page.keyboard.press('Tab');
           }
+          item.phase = 'last native link activation';
           item.lastActivation = await focused(links.at(-1));
           await page.keyboard.press('Enter'); await settleMobile();
           assert.equal(new URL(page.url()).hash, links.at(-1));
@@ -867,18 +997,39 @@ try {
           assert.equal(item.viewport.scrollWidth, item.viewport.usableWidth);
           assert.deepEqual(item.layout.overflow, []);
           assert.deepEqual(item.runtime, []);
+          item.phase = 'complete';
           console.log(`PASS ${name}`);
         } catch (error) {
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
-          console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
-          await shot(page, `${name}-failure`).catch(() => {});
-        } finally { report.mobileFocus.push(item); await context.close(); }
+          console.error(`FAIL ${name}: ${error.message.slice(0, 1600)}`);
+          fs.writeFileSync(path.join(output, 'after', `${name}-diagnostic.json`),
+            JSON.stringify({ head: report.head, engine, name, item }, null, 2) + '\n');
+          await shot(page, `${name}-failure`, { timeout: 8000 }).catch(() => {});
+        } finally {
+          report.mobileFocus.push(item);
+          // Firefox may retain a native disclosure/scroll task after an assertion
+          // failure. A hung teardown must fail closed, not monopolize CI for 55m.
+          let teardownTimeout;
+          try {
+            await Promise.race([
+              context.close(),
+              new Promise((_, reject) => { teardownTimeout = setTimeout(() => reject(new Error('browser context teardown exceeded 10s')), 10_000); }),
+            ]);
+          } catch (closeError) {
+            console.error(`FAIL ${name}: ${closeError.message}; diagnostic JSON retained`);
+            process.exit(1);
+          } finally {
+            clearTimeout(teardownTimeout);
+            clearTimeout(watchdog);
+          }
+          if (stopOnFirstError && item.failure) process.exit(1);
+        }
       }
   // Agent4/#2339 confirmed this on selected Agent8: forced colors exposes all
   // transparent borders, erasing the current-section distinction. Check actual
   // computed system colors in Chromium, not hard-coded RGB or a CSS text regex.
   if (['full', 'forced-colors'].includes(suite) && engine === 'chromium')
-    for (const route of routes.filter((route) => route.kind !== 'history'))
+    for (const route of routes)
       for (const width of [390, 1440]) for (const theme of ['light', 'dark']) {
         const context = await contextFor(width, theme, { forcedColors: 'active' });
         const page = await context.newPage(), item = { kind: route.kind, width, theme, runtime: [] };
@@ -947,11 +1098,7 @@ try {
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
         try {
           const response = await ready(page, route.url);
-          if (route.kind === 'history') {
-            assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
-            assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
-            assert.ok(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0);
-          }
+          if (route.kind === 'history') await assertPublishedHistory(page, response);
           await page.emulateMedia({ media: 'print' });
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');

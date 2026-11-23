@@ -95,3 +95,7 @@ test('Journal and G3 sitemap preview images match their canonical discovery reco
       'sitemap preview title must match discovery title for ' + route);
   }
 });
+
+// Execute the positive published-history contract in the existing metadata CI lane.
+// It replaces the previous absence-only history acceptance without overlapping SEO ownership.
+import './g3-history-publication-contract.mjs';

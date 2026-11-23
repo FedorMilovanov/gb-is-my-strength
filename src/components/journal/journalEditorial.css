@@ -1,5 +1,10 @@
 /* Journal-only editorial layer. Vite owns its content hash. */
 @import '../../styles/editorial-edition.css';
+
+/* Inverse-color skip navigation is outside .journal-edition by design.
+   Site-wide html.dark a is more specific than the base .skip-link rule;
+   restore the canonical canvas foreground without altering global links. */
+body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition :is(.journal-dossier-shell, .journal-landing) { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 40px; }
 .journal-edition .dossier { padding-block: 30px 72px; }
 .journal-edition :is(#lead-dossier, #method-title) { scroll-margin-block-start: 76px; }
@@ -165,7 +170,29 @@
   /* Match the existing document's 72px focus/scroll clearance, not just the
      visual sticky offset: otherwise native Tab still scrolls the article.
      The rail scrolls only when needed; its inset preserves the 7px outline. */
-  .journal-edition .je-editorial-rail { --je-rail-clearance: 72px; top: var(--je-rail-clearance); max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; padding: 8px; margin-inline: -8px; scroll-padding-block: 8px; }
+  /* The rail is the scroll owner in short desktop windows. Do not chain its
+     scroll to the article, nor use its scrolling descendants as document
+     anchors when native Tab brings individual entries into view. */
+  .journal-edition .je-editorial-rail { --je-rail-clearance: 72px; top: var(--je-rail-clearance); }
+  /* The sticky aside is not a scroll container. Native focus can reveal links
+     inside this nested scrollport without scrolling the article. No scroll trap
+     when the panel fits or the user reaches its boundary. */
+  /* Native focus in a short viewport must reveal the *painted* 7px focus
+     outline, including the inline reference links at the very end. Reserve
+     physical scrolling room instead of forcing document/root scroll. */
+  .journal-edition .je-editorial-rail__scrollport { max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-anchor: none; padding: 8px 8px 26px; margin-inline: -8px; scroll-padding-block: 18px; }
+  /* A symmetric scroll-margin regressed native Chromium Tab on both routes:
+     it moved the article even when the focused link was already on-screen.
+     Reserve below the focused link without changing the root's top alignment. */
+  .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-end: 16px; }
+  /* Native Chromium at 1440x390/480: a 16px scroll margin moves root
+     scrollY by 6px on summary.focus() even before the first Tab.
+     Keep focus within the nested scrollport without moving the reader. */
+  .journal-edition .journal-dossier-shell:not(.je-history-article) .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 0; }
+  /* A clear 3px focus outline fits short-window scroll edges better than a
+     detached 3px+4px ring; unlike clipping, this remains fully painted. */
+  .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]):focus-visible { outline-offset: 0; }
+  .journal-edition .je-editorial-rail__scrollport .je-rail-note a { display: inline-block; padding-block: 8px; }
 }
 @media (max-width: 1199px) and (min-width: 1024px) {
   .journal-edition .je-article-header { column-gap: 32px; }
@@ -179,6 +206,7 @@
   .journal-edition .je-article-cover { width: 100%; }
   .journal-edition .journal-feature-grid { grid-template-columns: minmax(0, 1fr); gap: 0; max-width: 740px; }
   .journal-edition .je-editorial-rail { grid-column: 1; grid-row: 1; position: static; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 20; margin: 0 0 8px; border-bottom: 1px solid var(--je-rule); }
+  .journal-edition .je-editorial-rail__scrollport { max-height: none; overflow: visible; padding: 0; margin: 0; }
   /* Without scripts the disclosure stays open: keep it in flow, not over the
      reader's source links. Sticky is safe only after the TOC adapter is bound. */
   .journal-edition .je-editorial-rail:has([data-journal-contents-bound]) { position: sticky; }

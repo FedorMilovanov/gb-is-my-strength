@@ -1,0 +1,22 @@
+---
+import JournalPageHead from '@/components/journal/JournalDocumentHead.astro';
+import G3HistoryArticle from '@/components/journal/G3HistoryArticle.astro';
+import { G3_HISTORY_METADATA } from '@/data/journal/g3HistoryMetadata';
+
+const { title, description, canonical, publishedAt, modifiedAt, readingTimeMinutes } = G3_HISTORY_METADATA;
+const socialImage = 'https://gospod-bog.ru/images/journal/g3-ministries-og-1200x630.webp';
+const socialImageAlt = 'Редакционная иллюстрация: золотой знак раскрытой книги G3 Ministries на тёмно-синем фоне.';
+---
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <JournalPageHead
+      title={title} description={description} canonical={canonical}
+      socialImage={socialImage} socialImageAlt={socialImageAlt} kind="Article"
+      publishedAt={publishedAt} modifiedAt={modifiedAt} readingTime={readingTimeMinutes}
+    />
+  </head>
+  <body data-pagefind-body data-journal-surface="dossier" data-journal-id="g3-history">
+    <G3HistoryArticle />
+  </body>
+</html>

@@ -11,9 +11,9 @@
     "kartyHubInventory": "src/lib/karty-hub-inventory.cjs"
   },
   "stats": {
-    "manifestItems": 104,
-    "indexedRoutes": 103,
-    "scannedSourceFiles": 551,
+    "manifestItems": 105,
+    "indexedRoutes": 104,
+    "scannedSourceFiles": 554,
     "references": 1377,
     "occurrences": 3515,
     "canonicalTextRecords": 149,
