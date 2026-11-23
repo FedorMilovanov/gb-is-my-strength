@@ -162,6 +162,30 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     topbar.classList.contains('speed-open') ? close() : open(false);
   }, { signal: lifecycle.signal });
 
+  /* Gill W112: the tiny painted rate echo sits on Play's lower-right arc.
+     W109 rightly made it pointer-transparent to protect Play, but that also
+     made a tap on the visible 1x/1.25x label start/stop audio instead of
+     reopening rates. Redirect ONLY clicks physically on that painted label.
+     Capture on window is required: the legacy cluster dispatch listens on
+     document capture, before a Play-level capture handler can intervene.
+     The separate full-size badge stays the primary accessible rate button;
+     keyboard activation of Play (detail=0) remains Play. */
+  if (topbar.hasAttribute('data-gill-mobile-bar')) {
+    const play = topbar.querySelector<HTMLElement>('.reader-mobile-play');
+    const painted = rateTrigger.querySelector<HTMLElement>('.reader-mobile-speed-chip');
+    if (play && painted) {
+      window.addEventListener('click', (e: MouseEvent) => {
+        if (!e.detail || !play.contains(e.target as Node)) return;
+        const r = painted.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right ||
+            e.clientY < r.top || e.clientY > r.bottom) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        rateTrigger.click();
+      }, { capture: true, signal: lifecycle.signal });
+    }
+  }
+
   chips.forEach((chip) => {
     chip.addEventListener('click', (e: MouseEvent) => {
       e.stopPropagation();

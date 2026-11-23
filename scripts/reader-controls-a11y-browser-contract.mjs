@@ -542,6 +542,41 @@ async function auditMobile(browser, origin, routeInfo) {
           tight.rateOwner === 'mobSpdBadge'), tight);
     }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
+    if (routeInfo.id === 'gill') {
+      // W112: W109's decorative painted speed echo remained visible over Play
+      // but tapping it after a rate choice started TTS instead of reopening
+      // the rail. Test the real touch coordinate, not just elementFromPoint.
+      const speechBeforeRateTap = await page.evaluate(() => window.__controlsA11ySpeech.speaks);
+      await page.locator('#mobSpdBadge').click();
+      await page.locator('#mobileSpeedrail [data-speed="1.25"]').click();
+      await page.waitForFunction(() => document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded') === 'false');
+      const rateEcho = await page.locator('.mobile-top-bar .reader-mobile-speed-chip').boundingBox();
+      if (rateEcho) await page.touchscreen.tap(rateEcho.x + rateEcho.width / 2, rateEcho.y + rateEcho.height / 2);
+      await page.waitForTimeout(80);
+      const restored = await page.evaluate(() => ({
+        expanded: document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded'),
+        rate: localStorage.getItem('gb:audio:rate'),
+        speech: window.__controlsA11ySpeech.speaks,
+      }));
+      record(checks, 'gill-mobile-16', 'tap on visible selected-rate echo reopens speeds without starting Play',
+        Boolean(rateEcho && restored.expanded === 'true' && restored.rate === '1.25' &&
+          restored.speech === speechBeforeRateTap), { rateEcho, restored, speechBeforeRateTap });
+      if (restored.expanded === 'true') {
+        await page.locator('#mobileSpeedrail [data-speed="1.5"]').click();
+        await page.waitForFunction(() => document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded') === 'false');
+        const echoAgain = await page.locator('.mobile-top-bar .reader-mobile-speed-chip').boundingBox();
+        if (echoAgain) await page.touchscreen.tap(echoAgain.x + echoAgain.width / 2, echoAgain.y + echoAgain.height / 2);
+        const reopened = await page.evaluate(() => ({
+          expanded: document.querySelector('#mobSpdBadge')?.getAttribute('aria-expanded'),
+          rate: localStorage.getItem('gb:audio:rate'),
+          speech: window.__controlsA11ySpeech.speaks,
+        }));
+        record(checks, 'gill-mobile-17', 'speed echo works repeatedly after second selection; no accidental speech',
+          Boolean(echoAgain && reopened.expanded === 'true' && reopened.rate === '1.5' &&
+            reopened.speech === speechBeforeRateTap), { reopened, echoAgain });
+      }
+      await page.keyboard.press('Escape');
+    }
     for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);
 
     if (routeInfo.id === 'gill') {
@@ -1132,6 +1167,71 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
   }
 }
 
+async function auditGillTooltipSelection(browser, origin) {
+  const caseId = 'gill-tooltip-selection-halo';
+  const checks = [];
+  const ctx = await browser.newContext({
+    viewport: { width: 600, height: 844 }, isMobile: true, hasTouch: true,
+    serviceWorkers: 'block', reducedMotion: 'reduce'
+  });
+  const page = await ctx.newPage();
+  try {
+    await page.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/', { waitUntil: 'load' });
+    await page.locator('abbr.gterm[data-term="солтерс-холл"]').first().scrollIntoViewIfNeeded();
+    const result = await page.evaluate(() => {
+      const term = document.querySelector('abbr.gterm[data-term="солтерс-холл"]');
+      const paragraph = term?.closest('p');
+      if (!term || !paragraph) return { missing: true };
+      // A native long press / dragged word can leave a selected paragraph
+      // behind the modal backdrop, yielding horizontal selection bands.
+      const range = document.createRange();
+      range.selectNodeContents(paragraph);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      const prior = selection.toString().length;
+      term.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true, detail:1 }));
+      return {
+        prior,
+        remaining: window.getSelection()?.toString().length || 0,
+        open: Boolean(document.querySelector('.gtip.gb-floating-tip.is-open')),
+        dim: Boolean(document.querySelector('[data-overlay-owner], .gb-overlay-backdrop')),
+      };
+    });
+    record(checks, caseId+'-selected-term',
+      'opening the tapped glossary term clears only its own selected paragraph to avoid dimming stripes',
+      result.prior > 100 && result.remaining === 0 && result.open,
+      result);
+    await page.keyboard.press('Escape');
+    const distinct = await page.evaluate(() => {
+      const term = document.querySelector('abbr.gterm[data-term="солтерс-холл"]');
+      const outside = Array.from(document.querySelectorAll('article p'))
+        .find(p => p !== term.closest('p') && p.textContent.length > 80);
+      if (!outside) return { missing: true };
+      const range = document.createRange();
+      range.selectNodeContents(outside);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      const before = sel.toString();
+      term.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true, detail:1 }));
+      return {
+        preserved: window.getSelection()?.toString() === before,
+        open: Boolean(document.querySelector('.gtip.gb-floating-tip.is-open')),
+      };
+    });
+    record(checks, caseId+'-unrelated-selection',
+      'an unrelated text selection used by Library/W57 is not cleared',
+      distinct.preserved && distinct.open, distinct);
+  } catch (error) {
+    record(checks, caseId+'-exception', 'glossary selection regression case completes',
+      false, String(error.stack || error).slice(0,1000));
+  } finally {
+    await ctx.close();
+  }
+  return { caseId, checks };
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -1145,6 +1245,7 @@ try {
   for (const [width, dark] of [[320,false],[390,false],[390,true],[526,false],[526,true]]) cases.push(await auditGillDualProgress(browser, origin, width, dark));
   for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
   cases.push(await auditGillNestedScrollLock(browser, origin));
+  cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[1024,390,false],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);

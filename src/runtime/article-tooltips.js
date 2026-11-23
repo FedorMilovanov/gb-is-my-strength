@@ -631,6 +631,19 @@ function initializeAnchor(anchor) {
   anchor.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
+    // A mobile tap on a glossary term can leave the surrounding paragraph
+    // selected when the tip's dimming layer opens. Behind the blur it renders
+    // as hard horizontal bands. Drop ONLY incidental text selection that
+    // actually intersects this tapped term; leave unrelated W57 note drafts
+    // and keyboard selections alone.
+    if (event.detail && mobileMode() && anchor.matches('.gterm')) {
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed && selection.rangeCount) {
+        try {
+          if (selection.getRangeAt(0).intersectsNode(anchor)) selection.removeAllRanges();
+        } catch (_) {}
+      }
+    }
     cancelClose();
     if (active?.anchor !== anchor) {
       openTooltip(anchor, 'click');
