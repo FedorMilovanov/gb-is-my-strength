@@ -179,8 +179,8 @@ function runPagefindSearchHandoffGuard(baseUrl) {
   // The production-like server must remain the authority for all other
   // interactive audits, while this single guard uses the W57-injecting
   // research preview on the SAME dist. Do not weaken W57/keyboard assertions.
-  const pilotBase = String(process.env.READER_W57_AUDIT_BASE || '').trim().replace(/\\/$/, '');
-  if (!/^http:\/\/127\\.0\\.0\\.1:\\d+$/.test(pilotBase)) {
+  const pilotBase = String(process.env.READER_W57_AUDIT_BASE || '').trim().replace(/\/$/, '');
+  if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(pilotBase)) {
     console.error('W121 requires READER_W57_AUDIT_BASE=http://127.0.0.1:<W57 preview.py port>; plain dist cannot mount the pilot');
     return Promise.resolve(1);
   }
