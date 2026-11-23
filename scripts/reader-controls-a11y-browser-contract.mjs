@@ -1186,18 +1186,30 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
         .filter({ hasText: 'Понятия' }).first();
       if (await conceptGroup.count()) await conceptGroup.click();
       const termRows = await page.locator('#gbrMarginalia .gbr-marginalia-term > summary')
-        .evaluateAll(nodes => nodes.map(node => ({
-          label: node.textContent.trim(),
-          fontPx: parseFloat(getComputedStyle(node).fontSize),
-          height: node.getBoundingClientRect().height,
-          width: node.getBoundingClientRect().width,
-          scrollWidth: node.scrollWidth
-        })));
+        .evaluateAll(nodes => {
+          // The Analytics title must preserve the real article spelling;
+          // canonical glossary keys intentionally normalize word case.
+          const sourceLabels = Array.from(document.querySelectorAll('article .gterm[data-term]'))
+            .map(term => {
+              const plain = term.cloneNode(true);
+              plain.querySelectorAll('.gtip,.btip,.tooltip,[hidden],[aria-hidden="true"]')
+                .forEach(child => child.remove());
+              return (plain.textContent || '').replace(/\s+/g, ' ').trim();
+            });
+          return nodes.map(node => ({
+            label: node.textContent.trim(),
+            sourceMatch: sourceLabels.includes(node.textContent.trim()),
+            fontPx: parseFloat(getComputedStyle(node).fontSize),
+            height: node.getBoundingClientRect().height,
+            width: node.getBoundingClientRect().width,
+            scrollWidth: node.scrollWidth
+          }));
+        });
       const withTerms = await read();
       record(checks, caseId+'-analytics-term-readability',
         'Analytics term names use >=15px text, >=44px tap targets and do not resize the approved Gill sheet',
         Boolean(termRows.length > 0 &&
-          termRows.every(row => row.fontPx >= 14.9 && row.height >= 43.9 &&
+          termRows.every(row => row.sourceMatch && row.fontPx >= 14.9 && row.height >= 43.9 &&
             row.scrollWidth <= row.width + 1) &&
           aligned(first.sheet, withTerms.sheet) &&
           aligned(first.footer, withTerms.footer) &&
