@@ -40,7 +40,6 @@ const listenActionLabel = currentRaw.mark.kind === 'label' || current.tier === '
   : 'Слушать часть';
 /* Убираем дубль «Часть N.»/«Глава N.» из заголовка строки — колонка нумерала уже говорит это. */
 const shortTitle = (t: string) => t.replace(/^(?:Часть|Глава)\s+[IVXLC]+\.\s*/, '');
-const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.href || '';
 ---
 <div class="toc-overlay" id="partTocOverlay" aria-hidden="true">
   <div class="toc-sheet" role="dialog" aria-modal="true" aria-label={page.partDialogLabel}>
@@ -155,7 +154,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   </div>
 </div>
 
-<script is:inline define:vars={{ currentAnchor }}>
+<script is:inline>
 (function () {
   'use strict';
   var ov = document.getElementById('partTocOverlay');
@@ -214,26 +213,11 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
                 document.querySelector('.gbs-theme-corner .gb-ember');
     if (ember) setTimeout(function () { ember.click(); }, 120);
   });
-  /* Продолжить: закрыть и плавно вернуть читателя к текущему разделу.
-     Живая секция берётся из ReaderState-снапшота, а не из статичного
-     SSR-якоря (тот ведёт на старт части); currentAnchor — фолбэк. */
+  /* Continue closes the TOC without moving the reader to a section start.
+     The shared overlay scroll lock restores the precise pre-open scrollY.
+     Explicit links in the TOC are the only section-navigation action. */
   var cont = ov.querySelector('[data-gbat-continue]');
-  if (cont) cont.addEventListener('click', function () {
-    closeOverlay();
-    var anchor = currentAnchor;
-    try {
-      var rs = window.GBReaderState || window.ReaderState;
-      var saved = rs && rs.getSaved && rs.getSaved();
-      if (saved && saved.sectionId && document.getElementById(saved.sectionId)) anchor = '#' + saved.sectionId;
-    } catch (_) {}
-    if (!anchor) return;
-    // Harden: a sectionId with CSS-special chars would make querySelector
-    // throw — fall back to getElementById for plain #id anchors.
-    var el = null;
-    try { el = document.querySelector(anchor); }
-    catch (_) { el = anchor.charAt(0) === '#' ? document.getElementById(anchor.slice(1)) : null; }
-    if (el) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 140);
-  });
+  if (cont) cont.addEventListener('click', closeOverlay);
 })();
 </script>
 
