@@ -85,6 +85,18 @@ const audit = async (page) => {
 const contextFor = (width, theme, options = {}) => browser.newContext({ viewport: { width, height: width <= 430 ? 844 : width === 768 ? 1024 : 1080 },
   colorScheme: theme, deviceScaleFactor: 1, serviceWorkers: 'block', ...options });
 const ready = async (page, url, stage = () => {}) => {
+  // Diagnose WebKit's reported WOFF2 errors with actual HTTP responses and
+  // native browser request failures. Keep the strict font-face rejection.
+  const fontNetwork = [];
+  const isFont = (requestUrl) => /\.woff2(?:[?#]|$)/i.test(requestUrl);
+  page.on('response', (response) => {
+    if (isFont(response.url())) fontNetwork.push({ url: response.url(), status: response.status() });
+  });
+  page.on('requestfailed', (request) => {
+    if (isFont(request.url())) fontNetwork.push({
+      url: request.url(), failure: request.failure()?.errorText || 'request failed'
+    });
+  });
   stage('navigation/load');
   const response = await page.goto(url, { waitUntil: 'load', timeout: 25_000 });
   assert.equal(response.status(), 200, url);
@@ -103,7 +115,9 @@ const ready = async (page, url, stage = () => {}) => {
       }))
     }));
     const failed = fonts.faces.filter((face) => face.status === 'error');
-    assert.deepEqual(failed, [], 'CSS font faces failed to load: ' + JSON.stringify(failed));
+    assert.deepEqual(failed, [], 'CSS font faces failed to load: ' + JSON.stringify(failed)
+      + '; WOFF2 requests: ' + JSON.stringify(fontNetwork)
+      + '; fontset: ' + JSON.stringify({ status: fonts.status, faces: fonts.faces }));
     const loadedFamilies = new Set(fonts.faces.filter((face) => face.status === 'loaded')
       .map((face) => face.family.replace(/^["']|["']$/g, '')));
     const familiesReady = ['Lora', 'Source Sans 3', 'Playfair Display']
@@ -111,7 +125,7 @@ const ready = async (page, url, stage = () => {}) => {
     stable = fonts.status === 'loaded' && familiesReady ? stable + 1 : 0;
     if (stable >= 2) break;
     if (Date.now() >= deadline) throw new Error('font readiness did not settle within 15s: '
-      + JSON.stringify({ status: fonts.status, familiesReady, faces: fonts.faces }));
+      + JSON.stringify({ status: fonts.status, familiesReady, faces: fonts.faces, fontNetwork }));
     await page.waitForTimeout(120);
   }
   stage('navigation/complete');

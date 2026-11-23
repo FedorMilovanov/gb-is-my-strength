@@ -172,7 +172,12 @@
   /* The sticky aside is not a scroll container. Native focus can reveal links
      inside this nested scrollport without scrolling the article. No scroll trap
      when the panel fits or the user reaches its boundary. */
-  .journal-edition .je-editorial-rail__scrollport { max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-anchor: none; padding: 8px; margin-inline: -8px; scroll-padding-block: 8px; }
+  /* Native focus in a short viewport must reveal the *painted* 7px focus
+     outline, including the inline reference links at the very end. Reserve
+     physical scrolling room instead of forcing document/root scroll. */
+  .journal-edition .je-editorial-rail__scrollport { max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-anchor: none; padding: 8px 8px 26px; margin-inline: -8px; scroll-padding-block: 18px; }
+  .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block: 14px; }
+  .journal-edition .je-editorial-rail__scrollport .je-rail-note a { display: inline-block; padding-block: 8px; }
 }
 @media (max-width: 1199px) and (min-width: 1024px) {
   .journal-edition .je-article-header { column-gap: 32px; }
