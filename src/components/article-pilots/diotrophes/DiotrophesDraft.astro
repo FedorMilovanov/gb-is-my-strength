@@ -19,7 +19,7 @@ type CaseCard = {
   sources: string[];
 };
 
-type SourceLink = [label: string, href: string];
+type SourceLink = [label: string, href: string, recordId?: string];
 type QuizItem = [question: string, options: string[], correct: number, explanation: string];
 
 interface Props {
@@ -179,33 +179,33 @@ const caseCards: CaseCard[] = [
 ];
 
 const sourceLinks: SourceLink[] = [
-  ['Guidepost: SBC independent investigation', 'https://guidepostsolutions.com/insights/media-mentions/guidepost-solutions-report-of-the-independent-investigation-of-the-southern-baptist-convention/'],
-  ['SBC Executive Committee response', 'https://www.sbc.net/a-statement-in-response-to-the-release-of-the-satf-report/'],
+  ['Guidepost: SBC independent investigation', 'https://guidepostsolutions.com/insights/media-mentions/guidepost-solutions-report-of-the-independent-investigation-of-the-southern-baptist-convention/', 'SBC-01'],
+  ['SBC Executive Committee response', 'https://www.sbc.net/a-statement-in-response-to-the-release-of-the-satf-report/', 'SBC-02'],
   ['SBC statement concerning former general counsel', 'https://www.sbc.net/a-statement-regarding-former-general-counsel-d-august-boto/'],
-  ['Willow Creek institutional history', 'https://www.willowcreek.org/about-willow'],
+  ['Willow Creek institutional history', 'https://www.willowcreek.org/about-willow', 'HYB-02'],
   ['Royal Commission Case Study 18', 'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches'],
   ['Royal Commission findings release for Case Study 18', 'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches'],
   ['Guidepost faith-based investigations', 'https://guidepostsolutions.com/industries/faith-based-organizations/'],
-  ['CREC Anselm Presbytery archive', 'https://crechurches.org/presbyteries/anselm'],
-  ['Thirtyone:eight Crowded House review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/crowded-house-review/'],
+  ['CREC Anselm Presbytery archive', 'https://crechurches.org/presbyteries/anselm', 'WIL-02'],
+  ['Thirtyone:eight Crowded House review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/crowded-house-review/', 'TIM-01'],
   ['Thirtyone:eight completion statement', 'https://thirtyoneeight.org/news/statement-on-the-completion-of-our-independent-learning-review-for-the-crowded-house/'],
-  ['Thirtyone:eight Jonathan Fletcher review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/jonathan-fletcher-review/'],
+  ['Thirtyone:eight Jonathan Fletcher review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/jonathan-fletcher-review/', 'FLE-01'],
   ['SWBTS statement on abuse', 'https://swbts.edu/news/statement-on-abuse/'],
   ['SWBTS statement regarding Paige Patterson', 'https://swbts.edu/news/statement-regarding-dr-paige-patterson/'],
-  ['SWBTS Executive Committee statement', 'https://swbts.edu/news/statement-by-the-southwestern-theological-seminary/'],
-  ['Liberty University accepts resignation', 'https://www.liberty.edu/news/2020/08/25/liberty-university-board-accepts-jerry-falwell-jr-s-resignation-as-president/'],
-  ['Liberty launches independent investigation', 'https://www.liberty.edu/news/2020/08/31/liberty-university-board-pledges-full-commitment-to-spiritual-mission-and-launches-independent-investigation/'],
-  ['Church of England: Pilavachi concerns substantiated', 'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation'],
+  ['SWBTS Executive Committee statement', 'https://swbts.edu/news/statement-by-the-southwestern-theological-seminary/', 'PAT-03'],
+  ['Liberty University accepts resignation', 'https://www.liberty.edu/news/2020/08/25/liberty-university-board-accepts-jerry-falwell-jr-s-resignation-as-president/', 'FAL-02'],
+  ['Liberty launches independent investigation', 'https://www.liberty.edu/news/2020/08/31/liberty-university-board-pledges-full-commitment-to-spiritual-mission-and-launches-independent-investigation/', 'FAL-03'],
+  ['Church of England: Pilavachi concerns substantiated', 'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation', 'PIL-04'],
   ['Church of England: Pilavachi safeguarding statement', 'https://www.churchofengland.org/safeguarding/safeguarding-news-releases/mike-pilavachi-statement-national-safeguarding-team'],
-  ['Firefly independent investigation', 'https://www.tikkunglobal.org/_files/ugd/c39fc4_0c894435ff7b456c83bd967bdf2f40fc.pdf'],
-  ['Missouri governor: SB 81 signed', 'https://governor.mo.gov/press-releases/archive/governor-kehoe-signs-sb-81-law'],
-  ['Oklahoma AG: Robert Morris guilty plea', 'https://oklahoma.gov/oag/news/newsroom/2025/october/megachurch-founder-pleads-guilty-to-child-sex-abuse-charges.html'],
-  ['Texas Legislature witness record', 'https://capitol.texas.gov/tlodocs/88R/witlistmtg/html/C3302024100209001.HTM'],
-  ['Kirov District Court case card', 'https://kirovcourt--oms.sudrf.ru/modules.php?case_id=188983504&case_uid=450d424b-86ce-4fc9-8bea-af647a97bfa8&delo_id=1540006&name=sud_delo&name_op=case&new=&srv_num=2'],
-  ['Omsk Regional Court appeal card', 'https://oblsud--oms.sudrf.ru/modules.php?case_id=26456881&case_uid=beacc133-296f-4569-a29a-2223bb29c15d&delo_id=4&name=sud_delo&name_op=case&new=4&srv_num=1'],
+  ['Firefly independent investigation', 'https://www.tikkunglobal.org/_files/ugd/c39fc4_0c894435ff7b456c83bd967bdf2f40fc.pdf', 'BIC-02'],
+  ['Missouri governor: SB 81 signed', 'https://governor.mo.gov/press-releases/archive/governor-kehoe-signs-sb-81-law', 'BIC-05'],
+  ['Oklahoma AG: Robert Morris guilty plea', 'https://oklahoma.gov/oag/news/newsroom/2025/october/megachurch-founder-pleads-guilty-to-child-sex-abuse-charges.html', 'W2-MOR-02'],
+  ['Texas Legislature witness record', 'https://capitol.texas.gov/tlodocs/88R/witlistmtg/html/C3302024100209001.HTM', 'W2-MOR-03'],
+  ['Kirov District Court case card', 'https://kirovcourt--oms.sudrf.ru/modules.php?case_id=188983504&case_uid=450d424b-86ce-4fc9-8bea-af647a97bfa8&delo_id=1540006&name=sud_delo&name_op=case&new=&srv_num=2', 'W2-MOS-01'],
+  ['Omsk Regional Court appeal card', 'https://oblsud--oms.sudrf.ru/modules.php?case_id=26456881&case_uid=beacc133-296f-4569-a29a-2223bb29c15d&delo_id=4&name=sud_delo&name_op=case&new=4&srv_num=1', 'W2-MOS-02'],
   ['The Journey official history', 'https://www.thejourney.org/about/our-story-new'],
-  ['Bethel: important leadership letter', 'https://www.bethel.com/news/an-important-letter-from-bill-kris-and-dann-on-behalf-of-bethel-leadership'],
-  ['Bethel leadership updates timeline', 'https://www.bethel.com/leadership-updates/timeline'],
+  ['Bethel: important leadership letter', 'https://www.bethel.com/news/an-important-letter-from-bill-kris-and-dann-on-behalf-of-bethel-leadership', 'W2-BET-01'],
+  ['Bethel leadership updates timeline', 'https://www.bethel.com/leadership-updates/timeline', 'W2-BET-06'],
   ['Bethel: scope of institutional apology', 'https://www.bethel.com/leadership-updates/answered-questions/if-bethel-was-not-formally-covering-shawn-what-did-bethel-apologize-for'],
   ['SBL Greek New Testament', 'https://github.com/Faithlife/SBLGNT'],
   ['STEPBible Data', 'https://github.com/STEPBible/STEPBible-Data'],
@@ -220,6 +220,10 @@ const sourceLinks: SourceLink[] = [
   ['IICSA: child protection in religious organisations', 'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings'],
   ['Church of England safeguarding policy', 'https://www.churchofengland.org/resources/safeguarding-gateway/promoting-safer-church-0']
 ];
+
+// Reuse case-specific A-class documents already in the frozen 40-link bibliography.
+// Missing court locators remain HOLD; no additional source URLs are introduced.
+const readerLinksForCard = (card: CaseCard) => sourceLinks.filter(([, , recordId]) => Boolean(recordId && card.sources.includes(recordId)));
 
 const quiz: QuizItem[] = [
   ['Что в 3 Ин. 9–10 является корнем поведения Диотрефа?', ['Недостаток образования', 'Любовь к первенству', 'Отсутствие харизмы', 'Слабая администрация'], 1, 'Стихи называют любовь к первенству и конкретные действия: Диотреф не принимает «нас», злословит автора послания, не принимает братьев, препятствует желающим их принять и изгоняет из церкви. Стихи не описывают современных процедур независимой проверки.'],
@@ -329,7 +333,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -343,7 +354,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -357,7 +375,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -371,7 +396,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -385,7 +417,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
