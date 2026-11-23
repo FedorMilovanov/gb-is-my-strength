@@ -309,7 +309,13 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {card.id === 'darrin-patrick' ? (
+              <a href="https://gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf" rel="noopener noreferrer">Первичный документ: письмо совета The Journey, апрель 2016 года (PDF, 3 страницы)</a>
+            ) : (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -400,10 +406,16 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
 
     <section class="reading-list-section" id="sources" data-reader-source-links="40">
       <h2>Источники и границы проверки</h2>
-      <p>Документальное основание статьи шире опубликованной здесь подборки. Ниже приведены 40 прямых ссылок на документы и исследования; отдельный раздел о верных свидетелях содержит ещё 33 ссылки. Судебный акт, заявление, независимый отчёт и свидетельство участника имеют разную доказательственную силу. Если для архивной записи не подтверждён доступный публичный адрес, она не выдаётся за прямую читательскую ссылку и не служит основанием непроверенной дословной цитаты.</p>
+      <p>Документальное основание статьи шире опубликованной здесь подборки. Ниже приведены 40 библиографических записей о документах и исследованиях; один исторический адрес The Journey сейчас недоступен (404) и не выдаётся за работающую ссылку. Отдельный раздел о верных свидетелях содержит ещё 33 записи. Судебный акт, заявление, независимый отчёт и свидетельство участника имеют разную доказательственную силу. Если для архивной записи не подтверждён доступный публичный адрес, она не выдаётся за прямую читательскую ссылку и не служит основанием непроверенной дословной цитаты.</p>
       <ol>
         {sourceLinks.map(([label, href]) => (
-          <li><a href={href} rel="noopener noreferrer">{label}</a></li>
+          <li>
+            {href === 'https://www.thejourney.org/about/our-story-new' ? (
+              <span data-locator-status="unavailable-404-2026-11-23" data-historical-href={href}>{label} — исторический адрес сейчас недоступен; это не открываемый первичный документ.</span>
+            ) : (
+              <a href={href} rel="noopener noreferrer">{label}</a>
+            )}
+          </li>
         ))}
       </ol>
     </section>
