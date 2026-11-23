@@ -1,11 +1,14 @@
 ---
 /** Resource hints only; existing fonts/fonts.css remains the font-definition owner. */
-interface Props { catalogOpening?: boolean; articleEmphasis?: boolean }
+interface Props { catalogOpening?: boolean }
 // Catalog UI and the lead's Latin punctuation must not rewrap after paint.
 // These are already used fonts, not new faces. Public G3 articles also
 // render semibold Cyrillic labels; preloading them avoids a WebKit race
 // where CSS 600 faces entered an error state before their WOFF2 request.
-const { catalogOpening = false, articleEmphasis = false } = Astro.props;
+const { catalogOpening = false } = Astro.props;
+// Read the canonical G3 route from Astro's render context; do not change the
+// shared JournalDocumentHead owned by the metadata lane (PR #2345).
+const articleEmphasis = /^\/journal\/dossiers\/g3(?:\/|$)/.test(Astro.url.pathname);
 ---
 <link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-600.woff2" crossorigin />
 <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
