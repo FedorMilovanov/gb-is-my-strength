@@ -5,7 +5,8 @@
 (() => {
  'use strict';
  const c=window.GBReaderContract;
- if(!c || document.getElementById('npUniversalDemo'))return;
+ const readerState=window.ReaderState;
+ if(!c || !readerState || typeof readerState.subscribe!=='function' || typeof readerState.getSnapshot!=='function' || document.getElementById('npUniversalDemo'))return;
  const model=c.inspect(document), check=c.validate(model);
  if(!check.valid)return;
  // Source root is resolved ONCE by the semantic Reader contract.
@@ -1000,14 +1001,25 @@
   const b=!end || !(end.compareDocumentPosition(el)&Node.DOCUMENT_POSITION_FOLLOWING);
   return Boolean(a&&b);
  }
- function currentGroupIndex(){
-  const top=innerHeight*.3;
-  let found=0;
-  for(let i=0;i<sections.length;i++){
-   const target=document.getElementById(sections[i].id);
-   if(target&&target.getBoundingClientRect().top<=top)found=i;
-  }
-  return found;
+ // ReaderState owns reading geometry and scroll-lock semantics. Map its
+ // canonical section identity into the existing visual groups, not a second
+ // viewport threshold. Supplemental headings inherit the preceding group.
+ function currentGroupIndex(state=readerState.getSnapshot()){
+  if(!state)return Math.max(0,browserStore.active);
+  if(state.phase==='before-content')return 0;
+  if(state.phase==='after-content')return Math.max(0,sections.length-1);
+  const id=state.sectionId;
+  if(!id)return 0;
+  const i=sections.findIndex(g=>g.id===id||g.items?.some(item=>item.id===id));
+  if(i>=0)return i;
+  const heading=document.getElementById(id);
+  if(!heading)return Math.max(0,browserStore.active);
+  let previous=0;
+  sections.forEach((g,j)=>{
+   const start=document.getElementById(g.id);
+   if(start&&(start.compareDocumentPosition(heading)&Node.DOCUMENT_POSITION_FOLLOWING))previous=j;
+  });
+  return previous;
  }
  // Extract ONLY printed prose: Product glossary and Bible popovers, footnote
  // overlays and hidden accessibility metadata are separate UI, not author text.
@@ -1609,7 +1621,7 @@
    });
   }
  }
- function updateScroll(){if(followEnabled)show(currentGroupIndex());}
+ function updateScroll(state){if(followEnabled)show(currentGroupIndex(state));}
  function navigate(id){
   const el=document.getElementById(id);
   if(!el)return;
@@ -1969,9 +1981,12 @@
  addEventListener('resize',()=>{if(!isMobile())closeMobile(false);syncNativeSeriesControlMode();syncNativeLegacyControlMode();syncNarrowNativeSeriesNavigation();positionProductGlobalActions();positionSeriesAudio();applyIntermediateWidth();syncInteractivity();requestAnimationFrame(dockNativeLibrary);},{passive:true});
  applyIntermediateWidth();
  syncInteractivity();
- addEventListener('scroll',()=>{if(!browserStore.frame){browserStore.frame=true;requestAnimationFrame(()=>{browserStore.frame=false;updateScroll();});}},{passive:true});
  installArgonCentralOverview();
  supplemental();show(currentGroupIndex());
+ const unsubscribeReadingState=readerState.subscribe(updateScroll,{immediate:false});
+ // Keep the subscription on BFCache entry; only a permanently leaving
+ // document relinquishes the presenter subscription.
+ window.addEventListener('pagehide',event=>{if(!event.persisted)unsubscribeReadingState();});
  window.__NP_UNIVERSAL_PREVIEW__={
   ready:true,source:'real-article',kind:model.kind,counts:model.counts,
   groups:sections.map(s=>({id:s.id,roman:s.numeral})),

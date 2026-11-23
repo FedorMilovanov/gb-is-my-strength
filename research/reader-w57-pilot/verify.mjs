@@ -22,6 +22,10 @@ const semanticContract=readFileSync(join(root,'assets','reader_universal_contrac
 const argonCss=readFileSync(join(root,'assets','reader_argon_first.css'),'utf8');
 assert.ok(semanticContract.includes("version:'1.1.0',articleRoot,inspect"),
  'contract must export single source-article resolver');
+assert.ok(preview.includes('const readerState=window.ReaderState'), 'pilot must consume canonical ReaderState');
+assert.match(preview,/readerState\.subscribe\(updateScroll/, 'pilot follow state must subscribe to core');
+assert.doesNotMatch(preview,/innerHeight\s*\*\s*\.3\b|browserStore\.frame/, 'no independent W57 scrollspy');
+assert.ok(preview.includes('if(!event.persisted)unsubscribeReadingState()'), 'BFCache keeps the presenter subscription');
 assert.ok(preview.includes('const article=c.articleRoot(document)'),
  'preview must use the same source root as annotations');
 assert.ok(preview.includes("article.setAttribute('data-reader-projection','')"),

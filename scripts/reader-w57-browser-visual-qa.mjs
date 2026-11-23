@@ -50,6 +50,49 @@ async function scene(browser,name,path,width,height){
    REPORT.failures.push({name,reason:pilotExpected?'desktop W57 missing or incomplete':'native Reader boundary violated',item});
  return{context,page,item};
 }
+// Canonical ReaderState drives the W57 visual section in both real engines.
+// Probe the leading edge of actual interior article sections, then reverse
+// direction; at the old 30% viewport threshold these assertions were red.
+async function sectionFollowChecks(browser,name){
+ const s=await scene(browser,name,'/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open',1440,900);
+ const {page,item}=s;
+ try{
+  await page.waitForFunction(()=>window.ReaderState?.getSnapshot()&&window.__NP_UNIVERSAL_PREVIEW__?.ready);
+  const candidates=await page.evaluate(()=>window.__NP_UNIVERSAL_PREVIEW__.groups.slice(1,-1).map(g=>g.id));
+  assert.ok(candidates.length>=2,'expected multiple interior visual groups');
+  const [first,last]=[candidates[0],candidates.at(-1)];
+  const scrollToSection=async id=>{
+   const y=await page.evaluate(id=>{
+    const el=document.getElementById(id);
+    if(!el)throw Error('missing section '+id);
+    const y=el.getBoundingClientRect().top+scrollY-window.ReaderState.getReadingLine()+15;
+    window.scrollTo({top:y,behavior:'instant'});
+    return y;
+   },id);
+   await page.waitForFunction(({id,y})=>{
+    const state=window.ReaderState.getSnapshot();
+    return state?.sectionId===id&&Math.abs(scrollY-y)<3;
+   },{id,y},{timeout:10000});
+  };
+  const active=()=>page.locator('#npUOutline .np-u-major-link[aria-current="location"]').getAttribute('data-np-u-goto');
+  const follows=async id=>{
+   await scrollToSection(id);
+   await page.waitForFunction(id=>document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]')?.dataset.npUGoto===id,id,{timeout:5000});
+   assert.equal(await active(),id);
+  };
+  await follows(first);await follows(last);await follows(first);
+  await page.locator('#npUFollowToggle').click();
+  await scrollToSection(last);
+  assert.equal(await active(),first,'manual research pin must survive canonical scroll');
+  await page.locator('#npUFollowToggle').click();
+  await page.waitForFunction(id=>document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]')?.dataset.npUGoto===id,last);
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+  await page.waitForFunction(()=>window.ReaderState.getSnapshot()?.phase==='before-content');
+  await page.waitForFunction(()=>document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]')?.dataset.npUGoto===window.__NP_UNIVERSAL_PREVIEW__.groups[0].id);
+  assert.deepEqual(item.errors,[]);
+  item.sectionFollow={forward:true,reverse:true,pin:true,resume:true,returnToIntro:true};
+ }finally{await s.context.close()}
+}
 async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000)})}}
 // Mobile and the 1120px boundary use the actual native Reader, never W57 DOM.
 async function nativeChecks(sample) {
@@ -517,6 +560,8 @@ try{
  const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
  await snap(alt.page,'other-article');await alt.context.close();
  safari=await webkit.launch({headless:true});
+ await safe('chromium-section-follow',()=>sectionFollowChecks(chrome,'chromium-section-follow'));
+ await safe('webkit-section-follow',()=>sectionFollowChecks(safari,'webkit-section-follow'));
  const w=await scene(safari,'webkit-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
  await nativeChecks(w);
  await snap(w.page,'webkit-mobile');await w.context.close();
