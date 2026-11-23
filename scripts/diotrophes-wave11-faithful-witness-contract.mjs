@@ -312,10 +312,12 @@ requireValue(
 requireValue(!supplement.includes('Research records:'), 'raw Research ids leaked into public supplementary prose');
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
 requireValue(
+  supplement.includes('data-total-bibliography-records={content.counts.totalReaderLinks}') &&
   supplement.includes('data-bibliography-records={content.counts.newReaderLinks}') &&
   supplement.includes("data-reader-source-links={readerSources.filter((source) => source.id !== 'FW10-DPA-01').length}") &&
   supplement.includes('33 библиографические записи') &&
-  !supplement.includes('data-new-reader-links='),
+  !supplement.includes('data-new-reader-links=') &&
+  !supplement.includes('data-reader-links={content.counts.totalReaderLinks}'),
   'public supplement must distinguish 33 source records from 32 linkable URLs',
 );
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
