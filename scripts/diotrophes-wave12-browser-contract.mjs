@@ -669,16 +669,22 @@ try {
     await page.pdf({ path:pdfPath, format:'A4', printBackground:true, margin:{ top:'12mm', right:'10mm', bottom:'12mm', left:'10mm' } });
     const bytes = statSync(pdfPath).size;
     record('chromium', 'print-a4', 'pdf-size', bytes > 150_000, `bytes=${bytes}`);
-    if (existsSync('/usr/bin/pdfinfo') && existsSync('/usr/bin/pdftotext')) {
-      const info = execFileSync('/usr/bin/pdfinfo', [pdfPath], { encoding:'utf8' });
+    // Resolve Poppler on PATH on both Linux and Windows. Explicit overrides allow
+    // a portable toolchain without changing the machine-wide PATH.
+    // Never skip the page-count or first/last-text assertions when tools are absent.
+    const pdfinfoBinary = process.env.PDFINFO_BIN?.trim() || (process.platform === 'win32' ? 'pdfinfo.exe' : 'pdfinfo');
+    const pdftotextBinary = process.env.PDFTOTEXT_BIN?.trim() || (process.platform === 'win32' ? 'pdftotext.exe' : 'pdftotext');
+    try {
+      const info = execFileSync(pdfinfoBinary, [pdfPath], { encoding:'utf8', windowsHide:true });
       const pages = Number(info.match(/^Pages:\s+(\d+)/m)?.[1] || 0);
       const textPath = join(OUT, 'diotrophes-wave12.txt');
-      execFileSync('/usr/bin/pdftotext', [pdfPath, textPath]);
+      execFileSync(pdftotextBinary, ['-enc', 'UTF-8', pdfPath, textPath], { windowsHide:true });
       const pdfText = readFileSync(textPath, 'utf8');
       record('chromium', 'print-a4', 'page-count', pages >= 8 && pages <= 120, `pages=${pages}`);
       record('chromium', 'print-a4', 'first-and-last-content', pdfText.includes('Диотрефы нашего времени') && pdfText.includes('Практическая лестница различения'), `pages=${pages}`);
-    } else {
-      record('chromium', 'print-a4', 'poppler-present', false, 'pdfinfo/pdftotext missing');
+    } catch (error) {
+      record('chromium', 'print-a4', 'pdf-extraction', false,
+        `pdfinfo=${pdfinfoBinary}, pdftotext=${pdftotextBinary}: ${error.message || error}`);
     }
   } finally {
     await browser.close();
