@@ -1025,6 +1025,65 @@ async function auditGillNestedScrollLock(browser, origin) {
   } finally { await ctx.close(); }
 }
 
+async function auditGillNarrowZoomBar(browser, origin, width, dark = false) {
+  const caseId = 'gill-narrow-zoom-bar-' + width + (dark ? '-dark' : '');
+  const checks = [];
+  const ctx = await browser.newContext({
+    viewport: { width, height: 700 }, isMobile: true, hasTouch: true,
+    serviceWorkers: 'block', reducedMotion: 'reduce'
+  });
+  const page = await ctx.newPage();
+  try {
+    const response = await page.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/',
+      { waitUntil: 'load' });
+    if (dark) await page.evaluate(() => document.documentElement.classList.add('dark'));
+    const state = await page.evaluate(() => {
+      const bar = document.querySelector('[data-gill-v16] .mobile-top-bar');
+      const settings = document.getElementById('mobSettingsBtn');
+      const save = document.querySelector('.mobile-top-save');
+      if (!bar || !settings || !save) return { missing: true };
+      const box = el => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, right: r.right, width: r.width, height: r.height };
+      };
+      const before = {
+        width: bar.clientWidth, scrollWidth: bar.scrollWidth,
+        overflowX: getComputedStyle(bar).overflowX,
+        touchAction: getComputedStyle(bar).touchAction,
+        settings: box(settings), save: box(save)
+      };
+      bar.scrollLeft = bar.scrollWidth;
+      return {
+        before, scrollLeft: bar.scrollLeft,
+        settings: box(settings), save: box(save),
+        documentOverflow: document.documentElement.scrollWidth - innerWidth,
+        viewportWidth: innerWidth
+      };
+    });
+    const inside = b => !!b && b.left >= -1 && b.right <= width + 1 &&
+      b.width >= 43.9 && b.height >= 43.9;
+    const narrow = width <= 269;
+    record(checks, caseId,
+      'at <=269px zoom both trailing controls remain reachable; approved 320px+ bar remains unchanged',
+      Boolean(response?.status() === 200 && !state.missing &&
+        state.documentOverflow <= 1 &&
+        inside(state.settings) && inside(state.save) &&
+        (narrow
+          ? state.before.overflowX === 'auto' &&
+            state.before.touchAction.includes('pan-x') &&
+            state.before.scrollWidth > state.before.width &&
+            state.scrollLeft > 0
+          : state.before.overflowX === 'visible' &&
+            state.before.scrollWidth <= state.before.width + 1 &&
+            state.scrollLeft === 0)),
+      state);
+  } catch (error) {
+    record(checks, caseId+'-exception', 'narrow zoom bar contract completes',
+      false, String(error.stack || error).slice(0, 1000));
+  } finally { await ctx.close(); }
+  return { caseId, checks };
+}
+
 async function auditGillStableMobileChrome(browser, origin, width, height, dark = false) {
   const caseId = 'gill-stable-mobile-chrome-' + width + 'x' + height + (dark ? '-dark' : '');
   const checks = [];
@@ -1271,6 +1330,7 @@ try {
   for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
   cases.push(await auditGillNestedScrollLock(browser, origin));
   cases.push(await auditGillTooltipSelection(browser, origin));
+  for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));
   for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[1024,390,false],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
