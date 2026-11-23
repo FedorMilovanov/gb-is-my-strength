@@ -929,6 +929,24 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // 14. Security/static-site hygiene
 (function securityHygiene() {
   let problems = 0;
+  // A GitHub/web permalink contains the repository name but is not a local
+  // filesystem path. Keep detecting Unix and Windows absolute paths.
+  function hasLocalRepositoryPath(source) {
+    const withoutWebUrls = source.replace(/\bhttps?:\/\/[^\s"'<>)]*/gi, '');
+    return /[\\/]gb-is-my-strength[\\/]/i.test(withoutWebUrls);
+  }
+  const pathFixtures = [
+    ['github-url', 'https://github.com/FedorMilovanov/gb-is-my-strength/pull/2346', false],
+    ['linux-path', '/home/oai/projects/gb-is-my-strength/src/file.js', true],
+    ['windows-path', 'C:\\Users\\Fedor\\projects\\gb-is-my-strength\\src\\file.js', true],
+    ['mixed', 'https://github.com/FedorMilovanov/gb-is-my-strength and /tmp/gb-is-my-strength/src/', true],
+  ];
+  for (const [label, sample, expected] of pathFixtures) {
+    if (hasLocalRepositoryPath(sample) !== expected) {
+      problems++;
+      R.err('Repository path detector self-test failed: ' + label);
+    }
+  }
   for (const p of allFiles.filter(f => /\.(html|css|js|json|xml|txt|md)$/.test(f))) {
     const file = rel(p);
     let text;
@@ -936,7 +954,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     // SANDBOX-ENV-*.md intentionally documents the real sandbox filesystem
     // paths for the next agent (copy-pasteable setup commands). That is not an
     // accidental leak; exempt it the same way this audit file itself is exempt.
-    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/') && !file.startsWith('scripts/') && text.includes('/gb-' + 'is-my-strength/')) { problems++; R.err(`Repository base path leak in ${file}`); }
+    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/') && !file.startsWith('scripts/') && hasLocalRepositoryPath(text)) { problems++; R.err(`Repository base path leak in ${file}`); }
     // Match real href/src/content attributes only; do not flag XML namespaces like xmlns:content="http://..." in RSS.
     if (/(?:^|[\s<])(?:href|src|content)=[\"']http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org|www\.google\.com\/schemas)([^\"']+)[\"']/i.test(text)) R.warn(`Possible http:// mixed content in ${file}`);
     if (file.startsWith('js/') && /\beval\s*\(|new\s+Function\s*\(/.test(text)) { problems++; R.err(`Dangerous JS dynamic execution in ${file}`); }
