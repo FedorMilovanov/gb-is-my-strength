@@ -6,7 +6,7 @@ p=Path(__file__).parent
 with sync_playwright() as pw:
     executable=os.environ.get('CHROMIUM_EXECUTABLE')
     b=pw.chromium.launch(**({'executable_path':executable} if executable else {}),args=['--no-sandbox'])
-    for file,n,rows,pairs in [('matrix-source-return.html',7,15,37),('matrix-expanded-review.html',9,26,60)]:
+    for file,n,rows,pairs in [('matrix-source-return.html.txt',7,15,37),('matrix-expanded-review.html.txt',9,26,60)]:
         src=(p/file).read_text(); count=0
         for width in [320,390,580,600,640,680,700,740,780,850,1440]:
             for dark in [False,True]:

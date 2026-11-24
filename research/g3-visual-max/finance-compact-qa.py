@@ -3,7 +3,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 import json, os, fitz, tempfile
 p=Path(__file__).parent
-html=(p/'finance-compact.html').read_text()
+html=(p/'finance-compact.html.txt').read_text()
 report=[]
 with tempfile.TemporaryDirectory() as tmp, sync_playwright() as pw:
     executable=os.environ.get('CHROMIUM_EXECUTABLE')

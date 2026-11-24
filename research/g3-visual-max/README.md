@@ -28,3 +28,6 @@ MAX 0 comment 7117892298: moved six candidate files to src/components/journal/g3
 
 ### Real build first pass
 Exact 236f45c4: Node 22.23.4 / Astro 7.4.12 actual compiled witness PASS, Chromium 36 and Firefox 36 PASS; WebKit failed on immediate filter visibility after native bibliography return. Do not mark full three-engine acceptance. Patch handles explicit native fragment intent before navigation, deduplicates subsequent popstate/hashchange for an already processed destination, leaves same-hash reactivation functional. Engine-selectable repeat and failure event diagnostics in harness. Test on exact updated SHA. No shared runtime edits.
+
+## V8 route-safety correction
+Internal static witnesses use `.html.txt` (not registered site routes). Both matrix witness blobs preserved exactly; generator/QA names updated, including generated finance witness. This follows existing root HTML authority rather than weakening it. V7 exact compiled component result at bb0a2ea2: Node 22.23.4, Astro 7.4.12, 108/108 browser scenarios (Chromium 151, Firefox 153, WebKit 26.5); final Research fe2af66b data manifest matched 23/23 and 28/28, activation still HOLD. No public routes or shared guards changed. New head requires its own validation.

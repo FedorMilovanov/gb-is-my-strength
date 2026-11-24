@@ -46,8 +46,8 @@ function checkDom(file,expected){
   assert(html.includes(read(src+'matrix.js')));
   return html;
 }
-checkDom('matrix-source-return.html',base);
-assert(checkDom('matrix-expanded-review.html',union).includes('PUBLICATION_HOLD'));
+checkDom('matrix-source-return.html.txt',base);
+assert(checkDom('matrix-expanded-review.html.txt',union).includes('PUBLICATION_HOLD'));
 assert.equal(f.state,'PUBLICATION_HOLD');assert.equal(f.currency,'USD');assert.equal(f.rows.length,7);
 for(const [i,r] of f.rows.entries()){
   assert.equal(r.fy,2019+i);

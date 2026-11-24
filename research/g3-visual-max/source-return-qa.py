@@ -7,7 +7,7 @@ results=[]
 with sync_playwright() as pw:
     executable=os.environ.get('CHROMIUM_EXECUTABLE')
     b=pw.chromium.launch(**({'executable_path':executable} if executable else {}),args=['--no-sandbox'])
-    for file,years,pairs in [('matrix-source-return.html',7,37),('matrix-expanded-review.html',9,60)]:
+    for file,years,pairs in [('matrix-source-return.html.txt',7,37),('matrix-expanded-review.html.txt',9,60)]:
         src=(p/file).read_text()
         for width in [390,740]:
             for js in [False,True]:
