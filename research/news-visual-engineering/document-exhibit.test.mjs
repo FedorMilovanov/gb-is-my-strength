@@ -122,6 +122,7 @@ for(const [label,mutate] of [
  ['empty label',c=>[c,'']],
  ['invalid destination',c=>[{...c,source:{...c.source,href:'javascript:alert(1)'}},'Источник']],
  ['missing locator',c=>[{...c,locator:''},'Источник']],
+ ['missing citation ID',c=>[{...c,citationId:undefined},'Источник']],
  ['invalid citation ID',c=>[{...c,citationId:'bad id'},'Источник']],
  ['invalid context',c=>[c,'Источник',' ']]
 ])test('display rejects '+label,()=>assert.throws(()=>documentCitationAttributes(...mutate(view(fixture()).sections[0].citations[0])),/Journal document exhibit/));

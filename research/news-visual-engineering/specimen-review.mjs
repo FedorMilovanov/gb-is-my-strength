@@ -70,6 +70,7 @@ const compactAcceptance=[];
 const paperAcceptance=[];
 if(historyMode){
  const history=JSON.parse(await readFile(join(root,'src/history-evidence.json'),'utf8'));
+ const expectedGroups=compareMode?history.sources.map(source=>({label:source.topic,sourceIds:[source.id]})):history.groups;
  try{
  for(const name of selected){
   const browser=await engines[name].launch({headless:true,timeout:30000});
@@ -82,7 +83,7 @@ if(historyMode){
     if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
     await waitForCanonicalFonts(page);
     const witness=await page.evaluate(()=>({text:document.querySelector('.jhe-summary').textContent,boundary:document.querySelector('.jhe-boundary p').textContent,over:document.documentElement.scrollWidth>innerWidth,groups:[...document.querySelectorAll('.jhe-group')].map(g=>[...g.querySelectorAll('[data-source-id]')].map(n=>n.dataset.sourceId)),ids:[...document.querySelectorAll('[id]')].map(n=>n.id)}));
-    assert.equal(witness.text,history.readerSafeText);assert.equal(witness.boundary,history.boundary);assert.equal(witness.over,false);assert.deepEqual(witness.groups,history.groups.map(g=>g.sourceIds));assert.equal(new Set(witness.ids).size,witness.ids.length);
+    assert.equal(witness.text,history.readerSafeText);assert.equal(witness.boundary,history.boundary);assert.equal(witness.over,false);assert.deepEqual(witness.groups,expectedGroups.map(g=>g.sourceIds));assert.equal(new Set(witness.ids).size,witness.ids.length);
     const links=page.locator('.jhe-group a');assert.equal(await links.count(),history.sources.length);
     if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
     for(let i=0;i<history.sources.length;i++){
@@ -112,7 +113,7 @@ if(historyMode){
        assert.ok(text.includes(words(source.locator)),'full locator retained: '+source.id);
        assert.ok(pages.some(p=>words(p).includes(words(source.label))&&words(p).includes(words(source.role))),'evidence role stays with label: '+source.id);
       }
-      for(const group of history.groups)assert.ok(text.includes(words(group.label)),'group heading retained');
+      for(const group of expectedGroups)assert.ok(text.includes(words(group.label)),'group heading retained');
       const bbox=spawnSync('pdftotext',['-bbox','-enc','UTF-8',file,'-'],{encoding:'utf8'});
       assert.equal(bbox.status,0,bbox.error?.message??bbox.stderr);
       const sheets=[...bbox.stdout.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)];

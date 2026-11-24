@@ -84,7 +84,7 @@ export function documentExhibitView(input, authority) {
  * No source or claim admission is performed here.
  */
 export function documentCitationAttributes(citation, visibleLabel, context = '') {
-  if (!citation || !anchor('#'+citation.citationId) || !anchor(citation.source?.href)) fail('invalid display citation');
+  if (!citation || !clean(citation.citationId) || !anchor('#'+citation.citationId) || !anchor(citation.source?.href)) fail('invalid display citation');
   const label=text(visibleLabel,'visible citation label');
   const locator=text(citation.locator,'display locator');
   if(context!==''&&!clean(context))fail('invalid citation context');

@@ -7,8 +7,8 @@ import '../../fonts/fonts.css';
 const sourceMap=specimen.sources.map(s=>({id:s.id,href:'#private-src-'+s.id,label:s.label}));
 const authority={claims:[{id:specimen.claimId,references:specimen.sources.map(s=>({sourceId:s.id,locator:s.locator}))}],sources:sourceMap};
 const row=documentExhibitView({id:'history-compare-2022',mode:'editorial-paraphrase',title:'Два материала о Писании',issuer:'Редакция',deck:'Сопоставление тем публикаций',documentDate:null,publicationDate:null,captureDate:null,sections:[{id:'topics',heading:'Два материала',locator:specimen.sources[0].locator,summary:specimen.readerSafeText,significance:'Различные темы',limitation:specimen.boundary,claimId:specimen.claimId,sourceId:specimen.sources[0].id}]},authority).sections[0];
-const entries=specimen.groups.map(group=>({label:group.label,source:specimen.sources.find(s=>s.id===group.sourceIds[0]),citation:row.citations.find(c=>c.source.id===group.sourceIds[0])}));
-if(entries.length!==row.citations.length||new Set(entries.map(e=>e.source?.id)).size!==row.citations.length||entries.some(e=>!e.source||!e.citation)||new Set(specimen.sources.map(s=>s.family)).size!==1)throw Error('Comparison requires distinct records from the stated single family');
+const entries=specimen.sources.map(source=>({label:source.topic,source,citation:row.citations.find(c=>c.source.id===source.id)}));
+if(entries.length!==row.citations.length||new Set(entries.map(e=>e.source?.id)).size!==row.citations.length||entries.some(e=>!e.source||!e.citation||!e.label?.trim())||new Set(entries.map(e=>e.label.trim())).size!==entries.length||new Set(specimen.sources.map(s=>s.family)).size!==1)throw Error('Comparison requires distinct records from the stated single family');
 ---
 <html lang="ru"><head><meta charset="utf-8"/><meta name="robots" content="noindex,nofollow"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>PRIVATE_REVIEW · G3-HIST-PUB-16</title></head><body style="margin:0"><main class="journal-edition"><article data-journal-source-navigation style="max-width:1100px;margin:auto;padding:16px">
 <p class="jhc-kicker">PRIVATE_REVIEW · не для публикации</p>
