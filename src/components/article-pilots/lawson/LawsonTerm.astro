@@ -1,13 +1,20 @@
 ---
 interface Props {
   label: string;
-  definition: string;
+  targetId: string;
 }
-const { label, definition } = Astro.props as Props;
+const { label, targetId } = Astro.props as Props;
+if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
+  throw new Error('Lawson term requires a label and canonical glossary target');
+}
 ---
 <span class="lawson-term">
-  <button class="lawson-term-label" type="button" aria-expanded="false" aria-label={`Определение: ${label}`}><slot>{label}</slot></button>
-  <span class="lawson-term-popover" role="note" hidden><strong>{label}</strong><span>{definition}</span></span>
+  <a class="lawson-term-label" href={`#${targetId}`} aria-label={`Определение: ${label}`}><slot>{label}</slot></a>
+  <span class="lawson-term-popover" role="note" data-reader-exclude data-pagefind-ignore hidden>
+    <strong data-lawson-term-heading></strong>
+    <span data-lawson-term-definition></span>
+    <a class="lawson-term-return" href={`#${targetId}`}>К словарю</a>
+  </span>
 </span>
 
 <style>
@@ -20,6 +27,8 @@ const { label, definition } = Astro.props as Props;
     background: transparent;
     color: inherit;
     font: inherit;
+    text-decoration: none;
+    overflow-wrap: anywhere;
     cursor: help;
   }
   .lawson-term-popover {
@@ -28,6 +37,10 @@ const { label, definition } = Astro.props as Props;
     left: 0;
     bottom: calc(100% + .55rem);
     width: min(20rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
     display: grid;
     gap: .35rem;
     padding: .72rem .8rem;
@@ -38,9 +51,11 @@ const { label, definition } = Astro.props as Props;
     box-shadow: 0 12px 32px rgb(0 0 0 / .14);
     font: 400 .84rem/1.45 var(--font-body, Inter, system-ui, sans-serif);
     text-align: left;
+    overflow-wrap: anywhere;
   }
   .lawson-term-popover[hidden] { display: none; }
-  .lawson-term-label:focus-visible {
+  .lawson-term-return { justify-self: start; color: var(--accent, #7a2e2e); }
+  .lawson-term-label:focus-visible, .lawson-term-return:focus-visible {
     outline: 2px solid var(--accent, #7a2e2e);
     outline-offset: 2px;
     border-radius: .15rem;
@@ -52,9 +67,13 @@ const { label, definition } = Astro.props as Props;
       right: 1rem;
       bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
       width: auto;
+      max-height: max(5rem, calc(100dvh - 6.5rem - env(safe-area-inset-bottom, 0px)));
     }
   }
-  @media print { .lawson-term-popover { display: none !important; } }
+  @media print {
+    .lawson-term-popover { display: none !important; }
+    .lawson-term-label { border: 0; color: inherit; text-decoration: none; }
+  }
 </style>
 
 <script>
@@ -63,56 +82,121 @@ const { label, definition } = Astro.props as Props;
     term.removeAttribute('data-hover-open');
     const note = term.querySelector<HTMLElement>('.lawson-term-popover');
     if (note) note.hidden = true;
-    term.querySelector('button')?.setAttribute('aria-expanded', 'false');
+    term.querySelector('.lawson-term-label')?.setAttribute('aria-expanded', 'false');
+  }
+  function placeTerm(term: HTMLElement) {
+    const note = term.querySelector<HTMLElement>('.lawson-term-popover');
+    if (!note || note.hidden) return;
+    for (const key of ['left', 'top', 'bottom', 'max-height']) note.style.removeProperty(key);
+    if (!matchMedia('(min-width: 1200px)').matches) return;
+    const marker = term.getBoundingClientRect();
+    const left = Math.max(16 - marker.left, Math.min(0, innerWidth - 16 - marker.left - note.offsetWidth));
+    note.style.left = `${left}px`;
+    const gap = .55 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const above = marker.top - 16 - gap;
+    const below = innerHeight - marker.bottom - 16 - gap;
+    const useBelow = note.offsetHeight > above && below > above;
+    if (useBelow) {
+      note.style.bottom = 'auto';
+      note.style.top = 'calc(100% + .55rem)';
+    }
+    note.style.maxHeight = `${Math.max(0, useBelow ? below : above)}px`;
   }
   function openTerm(term: HTMLElement, hover = false) {
+    if (!term.hasAttribute('data-enhanced')) return;
     document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach(closeTerm);
     const note = term.querySelector<HTMLElement>('.lawson-term-popover');
     if (!note) return;
     term.setAttribute('data-open', '');
     if (hover) term.setAttribute('data-hover-open', '');
     note.hidden = false;
-    term.querySelector('button')?.setAttribute('aria-expanded', 'true');
+    term.querySelector('.lawson-term-label')?.setAttribute('aria-expanded', 'true');
+    placeTerm(term);
   }
-  // Hover is a preview on fine pointers; clicking pins it open. Touch never
-  // relies on :hover, whose state can stick after a mobile tap.
-  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
-  document.addEventListener('pointerover', (event) => {
-    if (!canHover.matches || event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
-    const trigger = event.target.closest<HTMLButtonElement>('.lawson-term > button');
-    const term = trigger?.closest<HTMLElement>('.lawson-term');
-    if (term && !term.hasAttribute('data-open') && !term.hasAttribute('data-suppress-hover')) openTerm(term, true);
-  });
-  document.addEventListener('pointerout', (event) => {
-    if (!canHover.matches || event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
-    const term = event.target.closest<HTMLElement>('.lawson-term');
-    if (!term || (event.relatedTarget instanceof Node && term.contains(event.relatedTarget))) return;
-    if (term.hasAttribute('data-hover-open')) closeTerm(term);
-    term.removeAttribute('data-suppress-hover');
-  });
-  document.addEventListener('click', (event) => {
-    if (!(event.target instanceof Element)) return;
-    const trigger = event.target.closest<HTMLButtonElement>('.lawson-term > button');
-    const term = trigger?.closest<HTMLElement>('.lawson-term');
-    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
-      if (open !== term) closeTerm(open);
-    });
-    if (!term) return;
+  function termFor(target: EventTarget | null) {
+    return target instanceof Element ? target.closest<HTMLElement>('.lawson-term[data-enhanced]') : null;
+  }
+  function toggleTerm(term: HTMLElement) {
     if (term.hasAttribute('data-hover-open')) {
-      term.removeAttribute('data-hover-open'); // pin the preview
+      term.removeAttribute('data-hover-open');
     } else if (term.hasAttribute('data-open')) {
       closeTerm(term);
       term.setAttribute('data-suppress-hover', '');
     } else {
       openTerm(term);
     }
+  }
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+  document.addEventListener('pointerover', (event) => {
+    if (!canHover.matches || event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+    // A hover preview must not cover an explicitly opened source card.
+    if (document.querySelector('.lawson-source-ref[data-open]')) return;
+    const trigger = event.target.closest('.lawson-term-label');
+    const term = termFor(trigger);
+    if (term && !term.hasAttribute('data-open') && !term.hasAttribute('data-suppress-hover')) openTerm(term, true);
+  });
+  document.addEventListener('pointerout', (event) => {
+    if (!canHover.matches || event.pointerType !== 'mouse') return;
+    const term = termFor(event.target);
+    if (!term || (event.relatedTarget instanceof Node && term.contains(event.relatedTarget))) return;
+    if (term.hasAttribute('data-hover-open')) closeTerm(term);
+    term.removeAttribute('data-suppress-hover');
+  });
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const term = termFor(event.target);
+    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
+      if (open !== term) closeTerm(open);
+    });
+    if (!term || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (event.target.closest('.lawson-term-return')) { closeTerm(term); return; }
+    if (!event.target.closest('.lawson-term-label')) return;
+    event.preventDefault();
+    toggleTerm(term);
+  });
+  document.addEventListener('focusin', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const target = event.target;
+    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
+      if (!open.contains(target)) closeTerm(open);
+    });
   });
   document.addEventListener('keydown', (event) => {
+    if (event.key === ' ' && event.target instanceof Element && event.target.closest('.lawson-term-label')) {
+      const term = termFor(event.target);
+      if (term && !event.defaultPrevented && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        if (!event.repeat) toggleTerm(term);
+      }
+      return;
+    }
     if (event.key !== 'Escape') return;
     const open = document.querySelector<HTMLElement>('.lawson-term[data-open]');
     if (!open) return;
+    const restore = open.contains(document.activeElement);
     closeTerm(open);
     open.setAttribute('data-suppress-hover', '');
-    open.querySelector('button')?.focus();
+    if (restore) open.querySelector<HTMLElement>('.lawson-term-label')?.focus();
+  });
+  window.addEventListener('resize', () => {
+    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach(placeTerm);
+  }, { passive: true });
+  // All handlers are installed before enhancing the native link. A missing
+  // canonical definition deliberately leaves the original hyperlink intact.
+  document.querySelectorAll<HTMLElement>('.lawson-term').forEach((term) => {
+    const link = term.querySelector<HTMLAnchorElement>('.lawson-term-label');
+    const heading = term.querySelector<HTMLElement>('[data-lawson-term-heading]');
+    const definition = term.querySelector<HTMLElement>('[data-lawson-term-definition]');
+    const id = link?.getAttribute('href')?.slice(1);
+    const card = id ? document.getElementById(id) : null;
+    if (!link || !heading || !definition || !card?.matches('.lawson-glossary-card')) return;
+    const title = card.querySelector('h3')?.textContent?.trim();
+    const text = card.querySelector('p')?.textContent?.trim();
+    if (!title || !text) return;
+    heading.textContent = title;
+    definition.textContent = text;
+    link.setAttribute('role', 'button');
+    link.setAttribute('aria-expanded', 'false');
+    term.setAttribute('data-enhanced', '');
   });
 </script>

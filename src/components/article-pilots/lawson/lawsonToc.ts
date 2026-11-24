@@ -25,6 +25,7 @@ export const LAWSON_TOC: LawsonTocItem[] = [
   { href: '#autobiography', label: "Автобиография — источник, но не собственная проверка", level: 2 },
   { href: '#repentance', label: "Покаяние и реальная подотчётность после 2024 года", level: 2 },
   { href: '#accountability', label: "Подотчётность, которую можно проверить", level: 2 },
+  { href: '#lawsonLetter2026Title', label: "Обновление 13 ноября 2026 года: письмо старейшин о пригодности Лоусона к служению", level: 2 },
   { href: '#book', label: "Что меняет Mercy in the Wilderness", level: 2 },
   { href: '#authorship', label: "Спор об авторстве книги и что он показал", level: 2 },
   { href: '#wilderness', label: "Проблема метафоры «пустыни»", level: 2 },
