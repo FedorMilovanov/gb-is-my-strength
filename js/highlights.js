@@ -372,9 +372,8 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=95532247')
+      presenterPromise = import('/js/reader-library-presenter.js?v=3acedc88')
         .then(async (module) => {
-          presenter = module;
           const researchModule = await import('/js/reader-library-v3.js?v=7b71e298');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
@@ -386,6 +385,7 @@
               requestAnimationFrame(() => requestAnimationFrame(scrollToSavedPosition));
             },
           });
+          presenter = module;
           return module;
         })
         .catch((error) => { presenterPromise = null; throw error; });
@@ -523,7 +523,7 @@
     fab.classList.add('visible');
     fab.addEventListener('click', () => open(fab));
     overlay.querySelector('#gb-hl-close').addEventListener('click', close);
-    overlay.querySelector('#gb-hl-export').addEventListener('click', () => presenter.exportMarkdown(all(), statusMessage));
+    overlay.querySelector('#gb-hl-export').addEventListener('click', async () => { try { (await loadPresenter()).exportMarkdown(all(), statusMessage); } catch { statusMessage('Не удалось подготовить экспорт. Повторите попытку.', true); } });
     overlay.querySelector('#gb-hl-new-note').addEventListener('click', () => showEditor());
     overlay.querySelector('#gb-hl-note-cancel').addEventListener('click', hideEditor);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
@@ -611,77 +611,13 @@
       list, items, titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
     });
   }
-  function navigateQuotedSource(e, link) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
-        e.altKey || e.shiftKey || link.target || link.hasAttribute('download')) return false;
-    const card = link.closest('.gb-hl-item[data-type="quote"]');
-    const item = card && quotes().find(x => x.id === card.dataset.id);
-    // Legacy/cross-page links retain their original openable href; only a
-    // verified positional anchor on the CURRENT article can be handled here.
-    if (item?.annotation?.version !== 1) return false;
-    let destination;
-    try { destination = new URL(link.href, location.href); } catch (_) { return false; }
-    const normalizePath = p => p.replace(/\/+$/, '') || '/';
-    if (destination.origin !== location.origin ||
-        normalizePath(destination.pathname) !== normalizePath(location.pathname)) return false;
-    const article = document.querySelector('article.article-body') || document.querySelector('article');
-    if (!article) return false;
-    const first = GBReaderAnchors.resolve(article, item.annotation.anchor);
-    e.preventDefault();
-    if (!first) {
-      statusMessage('Точное место цитаты не найдено. Исходная ссылка остаётся доступной для копирования.', true);
-      return true;
-    }
-    // A same-page anchor cannot scroll while Library retains the page lock.
-    // Reuse W63's one-owner exit, then center the exact Range (not the first
-    // identical text fragment) and hand keyboard focus to its authored block.
-    close();
-    // The confirmation toast belongs to the previous save action; the exact
-    // reading destination must not be obscured by it after navigation.
-    hideToast();
-    hide();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const range = GBReaderAnchors.resolve(article, item.annotation.anchor);
-      if (!range) return;
-      const rect = range.getBoundingClientRect();
-      const scrollTop = Math.max(0, window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2);
-      window.scrollTo({top: scrollTop, behavior: 'auto'});
-      const target = range.startContainer.parentElement?.closest('p,li,blockquote,.manuscript-quote--bilingual');
-      if (target instanceof HTMLElement) {
-        const hadTabindex = target.hasAttribute('tabindex');
-        if (!hadTabindex) target.setAttribute('tabindex', '-1');
-        target.focus({preventScroll:true});
-        if (!hadTabindex) target.addEventListener('blur', () => target.removeAttribute('tabindex'), {once:true});
-        target.classList.add('is-search-target');
-        window.setTimeout(() => target.classList.remove('is-search-target'), 1600);
-      }
-    }));
-    return true;
-  }
   function listClick(e) {
-    const source = e.target.closest('.gb-hl-item[data-type="quote"] .gb-hl-meta a[href]');
-    if (source && navigateQuotedSource(e, source)) return;
-    const b = e.target.closest('[data-library-action]');
-    if (!b) return;
-    const action = b.dataset.libraryAction;
-    if (action === 'more') { shown += BATCH_SIZE; render(); return; }
-    if (action === 'clear-filters') { searchTerm = ''; search.value = ''; filter = 'all'; research?.resetFilters(); shown = BATCH_SIZE; render(); return; }
-    const card = b.closest('.gb-hl-item');
-    if (!card) return;
-    const item = all().find((x) => x.id === card.dataset.id && x.type === card.dataset.type);
-    if (!item) return;
-    if (action === 'expand') {
-      const key = item.type + ':' + item.id, full = !expanded.has(key);
-      if (full) expanded.add(key); else expanded.delete(key);
-      card.querySelector('.gb-hl-quote').classList.toggle('is-collapsed', !full);
-      b.setAttribute('aria-expanded', String(full));
-      b.textContent = full ? 'Свернуть' : 'Читать полностью';
-    }
-    if (action === 'delete') deleteItem(item);
-    if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
-    if (action === 'edit-note') showEditor(null, item);
-    if (action === 'note-for-quote') showEditor({ quoteId: item.id, quoteSnapshot: item.recordSnapshot, quoteText: item.text, title: item.title, url: item.url });
-    if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
+    if (!presenter) return;
+    presenter.handleLibraryClick(e, {
+      quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,all,expanded,deleteItem,clearUndo,showEditor,
+      more: () => { shown += BATCH_SIZE; render(); },
+      clearFilters: () => { searchTerm = ''; search.value = ''; filter = 'all'; research?.resetFilters(); shown = BATCH_SIZE; render(); },
+    });
   }
   function showEditor(context = null, editing = null) {
     // The opened record itself is the version this editor may overwrite.

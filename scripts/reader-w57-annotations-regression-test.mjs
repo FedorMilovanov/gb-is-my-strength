@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const file=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57_annotations.js'),'utf8');
 const highlights=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+const presenterSource=readFileSync(resolve(root,'js/reader-library-presenter.js'),'utf8');
 const preview=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
 const css=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57.css'),'utf8');
 const excerpt=(start,end)=>{
@@ -503,7 +504,7 @@ for(const [name,opened,current,notes,context,allowed,id] of [
  else {assert.equal(result.draftText,'edited');assert.equal(JSON.stringify(f.notes()),before);assert.deepEqual(f.writes,[]);}
 }
 assert.match(highlights,/context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\)/,'selection path captures exact quote');
-assert.match(highlights,/quoteSnapshot: item\.recordSnapshot/,'library card path captures exact quote');
+assert.match(presenterSource,/quoteSnapshot: item\.recordSnapshot/,'library card path captures exact quote');
 console.log('W39: 7/7 Product-linked draft cases PASS');
 
 
