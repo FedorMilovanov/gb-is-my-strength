@@ -54,7 +54,7 @@ test('Adopted #632 text and catalogue intake has exact source anchors and separa
     assert.ok(historicalText.includes(`cite('${id}')`));
     assert.ok(historicalText.includes(`data-history-expansion-claim="${claim}"`));
   }
-  assert.equal(sources.length,26);
+  assert.equal(sources.length,33);
   assert.doesNotMatch(historicalText,/G3-PUB-017|PENDING_ADOPTION/);
   assert.match(historicalText, /<G3SpeakerMatrix data=\{adoptedMatrixData\(\)\} claimId=\{adoptedMatrixClaim\}/);
   for (const [year, url] of [[2018,'https://www.gnli.com/titles/2018-G3-Conference-or-G3-Ministries/2902'],[2021,'https://www.gnli.com/titles/2021-G3-National-Conference-or-G3-Ministries/2906']]) {
@@ -80,6 +80,24 @@ test('Adopted #632 text and catalogue intake has exact source anchors and separa
   assert.doesNotMatch(article,/PENDING_ADOPTION/);
 });
 
+test('R6 exact bounded Research adoption preserves all seven new source identities and four historical paragraphs', () => {
+  const r6=json('src/data/journal/g3R6Adopted.json');
+  assert.equal(r6.researchMerge,'efecb12fea0fcc481cf4930154dcae53d4e033f6');
+  assert.equal(r6.rights,'ORIGINAL_PARAPHRASE_AND_LINK_ONLY');
+  assert.equal(r6.deferred,'C-B');
+  assert.deepEqual(r6.projections.map(p=>p.id),['G3-HIST-PUB-13','G3-HIST-PUB-14','G3-HIST-PUB-15','G3-HIST-PUB-16','G3-PUB-018']);
+  for(const p of r6.projections.slice(0,4)) {
+    assert.ok(historicalText.includes('<p data-history-expansion-claim="'+p.id+'">'+p.readerSafeText+'</p>'));
+    for(const id of p.sources) {
+      const source=bibliography.get(id);
+      assert.equal(source?.url,r6.sources[id]);
+      assert.equal(source?.researchLocator,p.id);
+      assert.equal(source?.returnHref,p.id==='G3-HIST-PUB-16'?'#g3-year-2022':'#'+p.targetExistingAnchor);
+      assert.ok(historicalText.includes("cite('"+id+"')"));
+    }
+  }
+  assert.ok(read('src/components/journal/G3Dossier.astro').includes('<p data-publication-claims="G3-PUB-018">'+r6.projections[4].readerSafeText+'</p>'));
+});
 test('Reader copy has no draft overlays, forged audio access or hidden route', () => {
   assert.match(page, /<G3HistoryArticle\s*\/>/);
   assert.match(page, /data-pagefind-body/);

@@ -45,6 +45,10 @@ assert.equal(annual.fiscalYearEnd, 'December');
 assert.deepEqual(annual.rows.map(r => [r.fy,r.revenue,r.expenses,r.result,r.netAssets]), annualRows);
 assert.ok(annualRows.every(r => r[1]-r[2]===r[3]));
 assert.ok(expansion.activeComponentClaimIds.includes('G3-PUB-017'));
+const r6=JSON.parse(read('src/data/journal/g3R6Adopted.json'));
+assert.equal(r6.researchMerge,'efecb12fea0fcc481cf4930154dcae53d4e033f6');
+assert.deepEqual(r6.projections.map(p=>p.id),['G3-HIST-PUB-13','G3-HIST-PUB-14','G3-HIST-PUB-15','G3-HIST-PUB-16','G3-PUB-018']);
+const r6Crisis=r6.projections[4];
 const current = read('src/components/journal/G3Dossier.astro');
 const old = previous('src/components/journal/G3Dossier.astro');
 assert.match(current,/<G3ExpenseWaterfall total=\{financeDeltas\[0\].value\} conferences=\{financeDeltas\[1\].value\} advertising=\{financeDeltas\[2\].value\} \/>/);
@@ -82,7 +86,11 @@ for (const id of factualModules) {
     return all(section, (node) => node.tagName === 'p' && !hasClass(node, 'source-note-paragraph')).map((node) => normalize(text(node)));
   };
   const a = paragraphs(before), b = paragraphs(after);
-  assert.deepEqual(b, a, `factual narrative changed in #${id}`);
+  if(id==='buice') {
+    assert.ok(a[0].includes(normalize('В мае 2025 года G3 опубликовала заявление')));
+    assert.deepEqual(b,[normalize(r6Crisis.readerSafeText),...a.slice(1)],'only approved R6 replacement in crisis narrative');
+    assert.equal(all(byId(after,id),node=>attr(node,'data-publication-claims')===r6Crisis.id).length,1);
+  } else assert.deepEqual(b, a, `factual narrative changed in #${id}`);
   paragraphCount += a.length;
   proseHashes[id] = digest(b.join('\n'));
 }
@@ -150,13 +158,14 @@ for (const [id, href] of readerLinks) {
 }
 const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g) || [])].sort();
 const frozenClaimIds = [...new Set(old.match(/G3-PUB-\d{3}/g) || [])].sort();
-assert.deepEqual(claimIds, frozenClaimIds, 'historical route must not alter the frozen crisis claim projection');
+assert.deepEqual(claimIds, [...frozenClaimIds,r6Crisis.id].sort(), 'only adopted R6 crisis ID expands the frozen projection');
 // Research Q020 (2026-11-21) withdrew G3-PUB-015 from reader-visible prose.
 // The immutable 16-ID Research handoff remains preserved; do not reinstate its
 // disproven Jenkins reissue inference merely to satisfy an obsolete test count.
 const readerSafeClaims = Array.from({ length: 16 }, (_, i) => `G3-PUB-${String(i + 1).padStart(3, '0')}`)
   .filter(id => id !== 'G3-PUB-015');
-assert.deepEqual(claimIds, readerSafeClaims, 'Q020-corrected crisis projection: exactly 15 approved reader-visible claim IDs');
+assert.deepEqual(frozenClaimIds,readerSafeClaims,'Q020-corrected frozen crisis projection remains exactly 15 IDs');
+assert.deepEqual(claimIds,[...readerSafeClaims,r6Crisis.id].sort());
 assert.ok(!current.includes('G3-PUB-015'), 'withdrawn G3-PUB-015 cannot return in crisis reader prose');
 assert.ok(!current.includes('G3-HIST-PUB-'), 'historical candidates must not enter the crisis claim projection');
 assert.deepEqual([...history.approvedClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
@@ -341,6 +350,9 @@ if (!process.argv.includes('--source-only')) {
       for (const source of sources) {
         const entry = byId(doc, `src-${source.id}`);
         assert.ok(entry);
+        if (source.id === 'G3-S008') {
+          assert.equal(all(entry,node=>node.tagName==='a'&&attr(node,'href')===r6.sources['buice-board-2025-reproduction']).length,1,'same statement reproduction, separate from archive');
+        }
         if (source.id === 'G3-S015') {
           assert.match(text(entry), /Скотт Аниол, Джон Нортон, Дилан Джойнер и Мэтт Сайкс/);
           assert.doesNotMatch(text(entry), /четвёртый пастор/);
@@ -380,6 +392,17 @@ if (!process.argv.includes('--source-only')) {
         'internal Research links must not appear in public history');
       assert.equal(nodes.filter(node => hasClass(node, 'research-disclosure')).length, 0);
       assert.doesNotMatch(text(doc), /Принятый редакционный пакет Research|Основание источниковой сверки/u);
+      for(const projection of r6.projections.slice(0,4)) {
+        const paragraphs=nodes.filter(node=>node.tagName==='p'&&attr(node,'data-history-expansion-claim')===projection.id);
+        assert.equal(paragraphs.length,1);
+        assert.equal(normalize(text(paragraphs[0])),normalize(projection.readerSafeText));
+        for(const id of projection.sources) {
+          const entry=byId(doc,'history-source-'+id);
+          assert.ok(entry);
+          assert.equal(all(entry,node=>node.tagName==='a'&&attr(node,'href')===r6.sources[id]).length,1);
+          assert.ok(byId(doc,'cite-r6-'+id));
+        }
+      }
       const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
       assert.equal(atlas.length,1);
       const atlasCitations=all(atlas[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined);

@@ -60,7 +60,7 @@ const report = { engine, suite, version: null, head: execFileSync('git', ['rev-p
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
-  ...['g3ExpansionHandoff.ts', 'g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  ...['g3R6Adopted.json', 'g3ExpansionHandoff.ts', 'g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
   ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
   ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
@@ -195,7 +195,8 @@ const assertPublishedHistory = async (page, response) => {
   assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /index,\s*follow/);
   assert.equal(await page.locator('body[data-journal-id="g3-history"]').count(), 1);
   assert.equal(await page.locator('.je-review-note, [data-research-publication-status="PUBLICATION_HOLD"]').count(), 0);
-  assert.equal(await page.locator('.bibliography-item').count(), 26, 'Research bibliography must contain all 26 adopted sources');
+  assert.equal(await page.locator('.bibliography-item').count(), 33, 'Research bibliography must contain all 33 adopted sources');
+  for (const id of ['13','14','15','16']) assert.equal(await page.locator('[data-history-expansion-claim="G3-HIST-PUB-'+id+'"]').count(),1);
   assert.equal(await page.locator('.g3-matrix[data-publication-claims="G3-HIST-PUB-12"]').count(),1);
   assert.equal(await page.locator('.g3-matrix .gm-row').count(),26);
   assert.equal(await page.locator('.g3-matrix [data-journal-citation]').count(),60);
