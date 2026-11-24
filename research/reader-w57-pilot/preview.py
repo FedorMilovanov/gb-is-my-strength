@@ -6,7 +6,7 @@ Not a production integration. W57 is the DEFAULT for eligible desktop preview ro
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs, unquote
-import os, json, mimetypes
+import os, json, mimetypes, hashlib, subprocess
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -14,7 +14,26 @@ DIST = Path(os.environ.get("READER_W57_DIST", REPO / "dist")).resolve()
 PORT = int(os.environ.get("READER_W57_PORT", "19061"))
 PREFIX = "/__reader_w57__/"
 MANIFEST = json.loads((HERE / "MANIFEST.json").read_text(encoding="utf-8"))
-APPROVED = {f["name"] for f in MANIFEST["files"]}
+APPROVED = {f["name"]: f["sha256"] for f in MANIFEST["files"]}
+
+def asset_url(name):
+    return f"{PREFIX}{name}?v={APPROVED[name]}"
+
+def reading_routes():
+    # Consume the existing registry; do not duplicate route type rules in Python.
+    script = """
+const { buildPublicSurfaceRegistry } = require('./scripts/lib/public-surface-registry');
+const { entries, errors } = buildPublicSurfaceRegistry();
+if (errors.length) throw new Error(errors.join('\\n'));
+const protectedPrefixes = ['/nagornaya/', '/journal/', '/updates/', '/news/', '/novosti/'];
+const routes = entries.filter(e => e.owner === 'astro' && e.status === 'production-dist'
+  && e.routeRole === 'reading' && e.settingsCapability === 'reader-ui'
+  && !protectedPrefixes.some(prefix => e.route.startsWith(prefix))).map(e => e.route);
+process.stdout.write(JSON.stringify(routes));
+"""
+    return frozenset(json.loads(subprocess.check_output(
+        ["node", "-e", script], cwd=REPO, text=True, encoding="utf-8")))
+
 CSS = ["reader_universal_preview.css","reader_argon_first.css",
        "reader_editorial_refinement.css","reader_editorial_consolidation.css",
        "reader_editorial_w51.css","reader_w57.css"]
@@ -32,15 +51,17 @@ BOOTSTRAP = """(function(){
     window.location.reload();
   });
   if (!desktop.matches) return;
-  var assets = """ + json.dumps(JS) + """;
-  assets.forEach(function (name) {
+  var assets = """ + json.dumps([asset_url(n) for n in JS]) + """;
+  assets.forEach(function (url) {
     var script = document.createElement('script');
-    script.src = '/__reader_w57__/' + name;
+    script.src = url;
     script.async = false;
     document.body.appendChild(script);
   });
 })();"""
-assert set(CSS + JS) == APPROVED, "W57 source manifest does not match runtime"
+assert set(CSS + JS) == set(APPROVED), "W57 source manifest does not match runtime"
+BOOTSTRAP_REV = hashlib.sha256(BOOTSTRAP.encode("utf-8")).hexdigest()
+READING_ROUTES = reading_routes()
 if not DIST.is_dir(): raise SystemExit(f"Build Astro first; missing {DIST}")
 
 class Handler(SimpleHTTPRequestHandler):
@@ -70,14 +91,9 @@ class Handler(SimpleHTTPRequestHandler):
             if not file.is_file(): return self.send_error(404,"Missing W57 source")
             ctype=mimetypes.guess_type(name)[0] or "application/octet-stream"
             return self.reply(file.read_bytes(),ctype+"; charset=utf-8")
-        # Local preview defaults to W57 on desktop; BOOTSTRAP and CSS media
-        # keep native mobile untouched. ?reader-pilot=0 compares native Reader.\n        # Never change actual production routing or other reader engines.
-        allowed=("/articles/","/baptisty-rossii/","/biografii/",
-                 "/pastor-series/","/biblioteka/","/books/")
-        excluded=("/nagornaya/","/updates/","/news/","/novosti/")
-        if (parse_qs(req.query).get("reader-pilot")!=["0"]
-                and path.startswith(allowed) and not path.startswith(excluded)
-                and path.endswith("/")):
+        # Only registered reading surfaces; preserve independent engines and landing pages.
+        if (parse_qs(req.query).get("reader-pilot") != ["0"]
+                and path in READING_ROUTES):
             file=(DIST/path.lstrip("/")/"index.html").resolve()
             if not file.is_relative_to(DIST) or not file.is_file():
                 return self.send_error(404,"Built Reader page not found")
@@ -86,8 +102,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_error(422,"Unexpected Astro document")
             # Strictly desktop W57 CSS. The native mobile reader remains byte-
             # for-byte unchanged, including if viewport orientation changes.
-            css="".join(f'<link rel="stylesheet" media="(min-width:1121px)" href="{PREFIX}{n}">' for n in CSS)
-            js=f'<script src="{PREFIX}preview-bootstrap.js" defer></script>'
+            css="".join(f'<link rel="stylesheet" media="(min-width:1121px)" href="{asset_url(n)}">' for n in CSS)
+            js=f'<script src="{PREFIX}preview-bootstrap.js?v={BOOTSTRAP_REV}" defer></script>'
             html=html.replace("</head>",css+"</head>").replace("</body>",js+"</body>")
             return self.reply(html.encode("utf-8"),"text/html; charset=utf-8")
         return super().do_GET()

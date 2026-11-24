@@ -2,13 +2,16 @@
 // Browser QA of exact W57 opt-in pilot. No live site writes.
 import assert from 'node:assert/strict';
 import {spawn,execFileSync} from 'node:child_process';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {setTimeout as delay} from 'node:timers/promises';
 import {chromium,webkit} from 'playwright';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const require=createRequire(import.meta.url);
 const OUT=resolve(ROOT,'reports/reader-w57-visual');
 const BASE='http://127.0.0.1:19061';
 const TESTED_SHA=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
@@ -203,11 +206,48 @@ try{
  let started=false;
  for(let i=0;i<80;i++){try{let r=await fetch(BASE+'/articles/');if(r.ok){started=true;break}}catch{}await delay(250)}
  assert.ok(started,'W57 preview.py failed to listen');
- for(const path of ['/nagornaya/seriya/','/updates/','/journal/dossiers/g3/']){
-  const response=await fetch(BASE+path+'?reader-pilot=1');
-  assert.ok(!(await response.text()).includes('/__reader_w57__/reader_w57.js'),
-   'Excluded independent reader must not load pilot: '+path);
+ // The route registry owns reading eligibility. Test actual HTTP responses,
+ // not a string for a script which is only inserted by the bootstrap.
+ const {entries,errors}=require('./lib/public-surface-registry').buildPublicSurfaceRegistry();
+ assert.deepEqual(errors,[]);
+ const protectedRoute=route=>['/nagornaya/','/journal/','/updates/','/news/','/novosti/'].some(prefix=>route.startsWith(prefix));
+ const eligible=entries.filter(e=>e.owner==='astro'&&e.status==='production-dist'&&e.routeRole==='reading'&&e.settingsCapability==='reader-ui'&&!protectedRoute(e.route));
+ const hardPaths=eligible.filter(e=>e.route.startsWith('/hard-texts/')).map(e=>e.route);
+ assert.equal(hardPaths.length,7,'hard-texts reading coverage drift');
+ const manifest=JSON.parse(await readFile(resolve(ROOT,'research/reader-w57-pilot/MANIFEST.json'),'utf8'));
+ const prefix='/__reader_w57__/';
+ let bootstrapUrl;
+ for(const {route} of eligible){
+  const response=await fetch(BASE+route);
+  assert.equal(response.status,200,route);
+  const html=await response.text();
+  for(const file of manifest.files.filter(f=>f.name.endsWith('.css'))){
+   assert.ok(html.includes(prefix+file.name+'?v='+file.sha256),route+' missing revised '+file.name);
+  }
+  const found=html.match(/\/__reader_w57__\/preview-bootstrap\.js\?v=[a-f0-9]{64}/)?.[0];
+  assert.ok(found,route+' missing revisioned bootstrap');
+  if(bootstrapUrl)assert.equal(found,bootstrapUrl);else bootstrapUrl=found;
+  const native=await fetch(BASE+route+'?reader-pilot=0');
+  assert.equal(native.status,200,route+' native comparison');
+  assert.ok(!(await native.text()).includes(prefix),route+' opt-out must be native');
  }
+ for(const path of ['/hard-texts/','/hard-texts/genesis-6/','/articles/','/baptisty-rossii/','/nagornaya/seriya/','/nagornaya/chast-1/','/updates/','/journal/dossiers/g3/']){
+  const response=await fetch(BASE+path+'?reader-pilot=1');
+  assert.equal(response.status,200,path);
+  assert.ok(!(await response.text()).includes(prefix),'Excluded route must not load pilot: '+path);
+ }
+ const bootstrapResponse=await fetch(BASE+bootstrapUrl);
+ assert.equal(bootstrapResponse.status,200);
+ const bootstrap=await bootstrapResponse.text();
+ assert.equal(createHash('sha256').update(bootstrap).digest('hex'),new URL(BASE+bootstrapUrl).searchParams.get('v'));
+ for(const file of manifest.files){
+  const url=prefix+file.name+'?v='+file.sha256;
+  if(file.name.endsWith('.js'))assert.ok(bootstrap.includes(url),'Missing revised '+file.name);
+  const response=await fetch(BASE+url);
+  assert.equal(response.status,200,url);
+  assert.equal(createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex'),file.sha256,url);
+ }
+ REPORT.routeEligibility={eligible:eligible.length,hard:hardPaths.length,manifestAssets:manifest.files.length};
  chrome=await chromium.launch({headless:true});
  const d=await scene(chrome,'gill-desktop','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',1440,900);
  await snap(d.page,'desktop-folded');
@@ -585,6 +625,24 @@ try{
  const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
  await snap(alt.page,'other-article');await alt.context.close();
  safari=await webkit.launch({headless:true});
+ for(const [engine,browser] of [['chromium',chrome],['webkit',safari]]){
+  for(const path of hardPaths){
+   await safe(engine+'-hard-texts-'+path,async()=>{
+    const s=await scene(browser,engine+'-hard-texts-'+path,path,1440,900);
+    try{
+     assert.equal(s.item.state.ready,true);
+     assert.equal(await s.page.locator('#npUResearch').count(),1);
+     assert.ok(s.item.state.width<=s.item.state.viewport+1,'horizontal overflow');
+     const folded=await s.page.evaluate(()=>document.body.classList.contains('np-u-hide-right'));
+     await s.page.locator('#npUEdgeToggle').click();
+     await s.page.waitForFunction(f=>document.body.classList.contains('np-u-hide-right')!==f,folded);
+     await s.page.locator('#npUEdgeToggle').click();
+     await s.page.waitForFunction(f=>document.body.classList.contains('np-u-hide-right')===f,folded);
+     assert.deepEqual(s.item.errors,[]);
+    }finally{await s.context.close()}
+   });
+  }
+ }
  await safe('chromium-section-follow',()=>sectionFollowChecks(chrome,'chromium-section-follow'));
  await safe('webkit-section-follow',()=>sectionFollowChecks(safari,'webkit-section-follow'));
  const w=await scene(safari,'webkit-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
