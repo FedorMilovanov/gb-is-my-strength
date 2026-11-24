@@ -281,6 +281,10 @@
     .hmsettings.is-open .hmsheet-panel {transform:translate3d(0,0,0) scale(1);opacity:1;}
     .hmsettings .hmsheet-handle { display: none; }
   }
+  /* Keep reduced motion authoritative after the desktop transition override. */
+  @media (prefers-reduced-motion: reduce) {
+    .hmsettings .hmsheet-panel, .hmsettings .hmsheet-backdrop { transition: none; }
+  }
 </style>
 
 <script>
@@ -309,29 +313,77 @@
     const closeBtn = document.getElementById('hmSettingsClose');
     const panel = sheet.querySelector('.hmsheet-panel') as HTMLElement | null;
     let closingTimer = 0;
-    const finishClosing = () => {
+    let motionGeneration = 0;
+    const clearClosingTimer = () => {
       window.clearTimeout(closingTimer);
       closingTimer = 0;
-      if (!sheet.classList.contains('is-open')) sheet.classList.remove('is-closing');
     };
-    panel?.addEventListener('transitionend', (event: TransitionEvent) => {
-      if (event.target === panel && event.propertyName === 'transform' && !sheet.classList.contains('is-open')) finishClosing();
-    });
+    const finishClosing = (generation: number) => {
+      if (generation !== motionGeneration || sheet.classList.contains('is-open')) return;
+      clearClosingTimer();
+      sheet.classList.remove('is-closing');
+    };
+    // Freeze the actual interpolated pose, cancel the entry transition, then
+    // commit the closed target from that exact pose. WebKit can otherwise keep
+    // advancing the old compositor entry after the logical close.
+    const freezeExitPose = () => {
+      const surfaces = [panel, backdrop].filter((el): el is HTMLElement => el instanceof HTMLElement);
+      const poses = surfaces.map(el => {
+        const style = getComputedStyle(el);
+        return { el, transform: style.transform, opacity: style.opacity };
+      });
+      for (const { el, transform, opacity } of poses) {
+        el.style.transition = 'none';
+        el.style.transform = transform;
+        el.style.opacity = opacity;
+      }
+      for (const { el } of poses) void el.offsetWidth;
+      return surfaces;
+    };
+    const startExit = (surfaces: HTMLElement[], generation: number) => {
+      // Restore the original CSS transition while the frozen pose is still
+      // applied, then release it. A separate style flush establishes the
+      // before-change style and prevents stale entry/exit generations mixing.
+      for (const el of surfaces) el.style.removeProperty('transition');
+      for (const el of surfaces) void el.offsetWidth;
+      for (const el of surfaces) {
+        el.style.removeProperty('transform');
+        el.style.removeProperty('opacity');
+      }
+      for (const el of surfaces) void getComputedStyle(el).transform;
+      const transitions = surfaces.flatMap(el => el.getAnimations().filter(animation => {
+        const property = (animation as CSSTransition).transitionProperty;
+        return property === 'transform' || property === 'opacity' || property === '-webkit-transform';
+      }));
+      // Await the current transition objects, not a transform event from a
+      // cancelled entry. The generation also protects an immediate reopen.
+      closingTimer = window.setTimeout(() => finishClosing(generation), 1200);
+      if (transitions.length) {
+        void Promise.allSettled(transitions.map(animation => animation.finished))
+          .then(() => finishClosing(generation));
+      } else {
+        requestAnimationFrame(() => {
+          if (generation === motionGeneration) finishClosing(generation);
+        });
+      }
+    };
 
     const OVERLAY_OWNER = 'reader-settings';
     const overlayRuntime = () => (window as any).OverlayRuntime || null;
     const fallbackUtils = () => (window as any).SiteUtils || null;
 
     const close = (reason = 'programmatic', restoreFocus = true) => {
-      window.clearTimeout(closingTimer);
-      const animate = sheet.classList.contains('is-open')
-        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!sheet.classList.contains('is-open')) return;
+      clearClosingTimer();
+      const generation = ++motionGeneration;
+      const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const surfaces = animate ? freezeExitPose() : [];
       sheet.classList.toggle('is-closing', animate);
       sheet.classList.remove('is-open', 'is-entering');
       sheet.setAttribute('aria-hidden', 'true');
       sheet.inert = true;
-      if (animate) closingTimer = window.setTimeout(finishClosing, 440);
-      else finishClosing();
+      if (animate) startExit(surfaces, generation);
+      else finishClosing(generation);
       const runtime = overlayRuntime();
       if (runtime?.close) runtime.close(OVERLAY_OWNER, reason, { restoreFocus });
       else fallbackUtils()?.unlockScroll?.(OVERLAY_OWNER);
@@ -354,9 +406,10 @@
         toc.setAttribute('aria-hidden', 'true');
         fallbackUtils()?.unlockScroll?.('hermenevtika-toc');
       }
-      window.clearTimeout(closingTimer);
-      sheet.classList.remove('is-closing');
+      ++motionGeneration;
+      clearClosingTimer();
       sheet.classList.add('is-entering');
+      sheet.classList.remove('is-closing');
       sheet.inert = false;
       // Paint the same sheet in its closed pose first; opening from display:none
       // and setting is-open in one style update would otherwise skip the tween.
