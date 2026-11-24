@@ -169,7 +169,7 @@ jobs:
   news-document-exhibit:
     name: NEWS document exhibit (${{ matrix.engine }})
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -189,6 +189,8 @@ jobs:
           node --test research/news-visual-engineering/document-exhibit.test.mjs
           node --check research/news-visual-engineering/browser-test.mjs
           node --check research/news-visual-engineering/pdf-test.mjs
+          node --check research/news-visual-engineering/specimen-review.mjs
+          node --check research/news-visual-engineering/ci-evidence-check.mjs
       - name: Install real browser engine
         run: npx playwright install --with-deps ${{ matrix.engine }}
       - name: Provision PDF text analyzer
@@ -224,6 +226,43 @@ jobs:
           if [[ "$ENGINE" == chromium ]]; then
             node research/news-visual-engineering/pdf-test.mjs "$output" 2>&1 | tee "$output/pdf-check.log"
           fi
+      - name: Compile and verify all three real private evidence formats
+        shell: bash
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          export ASTRO_TELEMETRY_DISABLED=1
+          base="reports/news-document-exhibit-${ENGINE}/real"
+          mkdir -p "$base"
+          failed=0
+          for mode in compact history-2018 compare-2022; do
+            output="$base/$mode"
+            mkdir -p "$output"
+            git rev-parse HEAD > "$output/checkout-sha.txt"
+            TMPDIR="$(mktemp -d "${RUNNER_TEMP}/news-real-${mode}-XXXXXX")"
+            export TMPDIR
+            retain() {
+              local root
+              for root in "$TMPDIR"/news-real-specimen-*; do
+                if [[ -d "$root/evidence" ]]; then
+                  cp -a "$root/evidence/." "$output/"
+                fi
+              done
+            }
+            trap retain EXIT
+            args=()
+            if [[ "$mode" != compact ]]; then args+=("--$mode"); fi
+            if node research/news-visual-engineering/specimen-review.mjs "${args[@]}" "$ENGINE" 2>&1 | tee "$output/runner.log"; then
+              retain
+              if ! node research/news-visual-engineering/ci-evidence-check.mjs "$ENGINE" "$output" "$mode"; then failed=1; fi
+            else
+              retain
+              failed=1
+            fi
+            trap - EXIT
+          done
+          exit "$failed"
       - name: Retain NEWS fixture reports, screenshots and physical PDFs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3

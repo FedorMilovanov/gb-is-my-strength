@@ -126,3 +126,11 @@ for(const [label,mutate] of [
  ['invalid citation ID',c=>[{...c,citationId:'bad id'},'Источник']],
  ['invalid context',c=>[c,'Источник',' ']]
 ])test('display rejects '+label,()=>assert.throws(()=>documentCitationAttributes(...mutate(view(fixture()).sections[0].citations[0])),/Journal document exhibit/));
+
+import {documentRecordDate} from '../../src/components/journal/editorial/document-exhibit-model.mjs';
+test('record dates retain differing dates, roles and explicit unknown',()=>{
+ const rows=[{role:'publication',value:'2022-09-15'},{role:'modification',value:'2022-10-18'},{role:'capture',value:null}].map(documentRecordDate);
+ assert.deepEqual(rows.map(r=>[r.role,r.value]),[['publication','2022-09-15'],['modification','2022-10-18'],['capture',null]]);
+ assert.equal(rows[2].display,'Не установлена');assert.notEqual(rows[0].display,rows[1].display);
+});
+for(const value of [{role:'event',value:'2022-09-15'},{role:'publication',value:'2022-02-30'},{role:'publication'},{role:'publication',value:'2022-09'},{role:'toString',value:null}])test('record date rejects '+JSON.stringify(value),()=>assert.throws(()=>documentRecordDate(value),/Journal document exhibit/));

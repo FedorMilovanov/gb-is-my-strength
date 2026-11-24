@@ -8,6 +8,24 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Native fragment navigation can finish after keyboard dispatch.
+async function activateCitation(page,link,expected,scenario){
+  const before=new URL(page.url()).hash, href=await link.getAttribute('href');
+  assert.equal(href,expected,'native anchor target');
+  try{
+    await link.focus();
+    assert.equal(await link.evaluate(el=>document.activeElement===el),true,'native link focus');
+    const start=Date.now();
+    await page.keyboard.press('Enter');
+    const immediate=new URL(page.url()).hash;
+    await page.waitForURL(u=>u.hash===expected,{timeout:5000});
+    assert.equal(new URL(page.url()).hash,expected);
+    if(immediate!==expected)console.log('NATIVE_HASH_DEFERRED '+JSON.stringify({scenario,before,href,immediate,after:new URL(page.url()).hash,elapsed:Date.now()-start}));
+  }catch(error){
+    console.error('NATIVE_HASH_FAILURE '+JSON.stringify({scenario,before,href,expected,after:new URL(page.url()).hash,active:await page.evaluate(()=>({id:document.activeElement?.id,href:document.activeElement?.getAttribute('href')})).catch(()=>null)}));
+    throw error;
+  }
+}
 const engines = {chromium,firefox,webkit};
 const requested = process.argv.slice(2);
 const selected = requested.length ? requested : Object.keys(engines);
@@ -95,11 +113,11 @@ try {
           const links=page.locator('.jdx a');
           for(let i=0;i<3;i++){
             const link=links.nth(i),id=await link.getAttribute('id'),target=await link.getAttribute('href');
-            await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,target);
+            await activateCitation(page,link,target,{fixture:'short',name,width,dark,js,i});
             const back=page.locator(target+' [data-journal-source-return]');
             const expected=js?'#'+id:i===2?'#cite-13-test-document-document-three':'#cite-13-test-document-document-one';
             assert.equal(await back.getAttribute('href'),expected);
-            await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,expected);
+            await activateCitation(page,back,expected,{fixture:'short',name,width,dark,js,i});
           }
           await textScaleCheck(page);
           if(!js&&[320,1100].includes(width)){
@@ -131,12 +149,12 @@ try {
           assert.equal(await page.locator('.jdx a[id$=":ref-3"]').getAttribute('href'),'#source-fixture');
           for(let i=0;i<12;i++){
             const link=links.nth(i),id=await link.getAttribute('id'),target=await link.getAttribute('href');
-            await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,target);
+            await activateCitation(page,link,target,{fixture:'long',name,width,dark,js,i});
             const back=page.locator(target+' [data-journal-source-return]');
             const fallback=target==='#source-fixture'?'#cite-13-long-document-document-part-1':'#cite-13-long-document-document-part-2';
             const expected=js?'#'+id:fallback;
             assert.equal(await back.getAttribute('href'),expected);
-            await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,expected);
+            await activateCitation(page,back,expected,{fixture:'long',name,width,dark,js,i});
           }
           await textScaleCheck(page);
           if(!js){

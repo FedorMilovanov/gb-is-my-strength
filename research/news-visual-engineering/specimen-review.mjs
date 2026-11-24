@@ -9,6 +9,24 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Native fragment navigation can finish after keyboard dispatch.
+async function activateCitation(page,link,expected,scenario){
+  const before=new URL(page.url()).hash, href=await link.getAttribute('href');
+  assert.equal(href,expected,'native anchor target');
+  try{
+    await link.focus();
+    assert.equal(await link.evaluate(el=>document.activeElement===el),true,'native link focus');
+    const start=Date.now();
+    await page.keyboard.press('Enter');
+    const immediate=new URL(page.url()).hash;
+    await page.waitForURL(u=>u.hash===expected,{timeout:5000});
+    assert.equal(new URL(page.url()).hash,expected);
+    if(immediate!==expected)console.log('NATIVE_HASH_DEFERRED '+JSON.stringify({scenario,before,href,immediate,after:new URL(page.url()).hash,elapsed:Date.now()-start}));
+  }catch(error){
+    console.error('NATIVE_HASH_FAILURE '+JSON.stringify({scenario,before,href,expected,after:new URL(page.url()).hash,active:await page.evaluate(()=>({id:document.activeElement?.id,href:document.activeElement?.getAttribute('href')})).catch(()=>null)}));
+    throw error;
+  }
+}
 const engines = {chromium,firefox,webkit};
 const compareMode=process.argv.includes('--compare-2022');
 const historyMode=compareMode||process.argv.includes('--history-2018');
@@ -84,17 +102,18 @@ if(historyMode){
     await waitForCanonicalFonts(page);
     const witness=await page.evaluate(()=>({text:document.querySelector('.jhe-summary').textContent,boundary:document.querySelector('.jhe-boundary p').textContent,over:document.documentElement.scrollWidth>innerWidth,groups:[...document.querySelectorAll('.jhe-group')].map(g=>[...g.querySelectorAll('[data-source-id]')].map(n=>n.dataset.sourceId)),ids:[...document.querySelectorAll('[id]')].map(n=>n.id)}));
     assert.equal(witness.text,history.readerSafeText);assert.equal(witness.boundary,history.boundary);assert.equal(witness.over,false);assert.deepEqual(witness.groups,expectedGroups.map(g=>g.sourceIds));assert.equal(new Set(witness.ids).size,witness.ids.length);
+    if(compareMode){const records=await page.locator('.jhc-record [data-record-date-role]').evaluateAll(nodes=>nodes.map(n=>({role:n.dataset.recordDateRole,value:n.querySelector('time')?.getAttribute('datetime')??null})));assert.deepEqual(records,history.sources.map(src=>src.recordDate));}
     const links=page.locator('.jhe-group a');assert.equal(await links.count(),history.sources.length);
     if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
     for(let i=0;i<history.sources.length;i++){
      const link=links.nth(i),id=await link.getAttribute('id'),href=await link.getAttribute('href');
      assert.equal(await link.innerText(),history.sources[i].label);assert.ok((await link.getAttribute('aria-label')).startsWith(history.sources[i].label+' · '));
-     await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,href);
-     const back=page.locator(href+' [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+id);await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#'+id);
+     await activateCitation(page,link,href,{mode:compareMode?'compare':'history',name,width,dark,js,i});
+     const back=page.locator(href+' [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+id);await activateCitation(page,back,'#'+id,{mode:compareMode?'compare':'history',name,width,dark,js,i});
     }
     const sizes=()=>page.evaluate(()=>[...document.querySelectorAll(' .jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-role')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
     const base=await sizes();await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));assert.ok((await sizes()).every((s,i)=>Math.abs(s/base[i]-2)<.01));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));assert.deepEqual(await sizes(),base);
-    if(!js){await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);await page.screenshot({path:join(evidence,[name,width,dark?'dark':'light','history'].join('-')+'.png'),fullPage:true});}
+    if(!js){await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);const stem=[name,width,dark?'dark':'light','history'].join('-');await page.screenshot({path:join(evidence,stem+'.png'),fullPage:true});await page.screenshot({path:join(evidence,stem+'-viewport.png')});}
     if(name==='chromium'&&width===1440){
      await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
      await page.emulateMedia({media:'print'});
@@ -114,6 +133,7 @@ if(historyMode){
        assert.ok(pages.some(p=>words(p).includes(words(source.label))&&words(p).includes(words(source.role))),'evidence role stays with label: '+source.id);
       }
       for(const group of expectedGroups)assert.ok(text.includes(words(group.label)),'group heading retained');
+      if(compareMode)for(const source of history.sources){const display=source.recordDate.value===null?'Не установлена':new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeZone:'UTC'}).format(new Date(source.recordDate.value+'T00:00:00Z'));assert.ok(pages.some(p=>words(p).includes(words(source.label))&&words(p).includes(words(display))),'record date stays with source');}
       const bbox=spawnSync('pdftotext',['-bbox','-enc','UTF-8',file,'-'],{encoding:'utf8'});
       assert.equal(bbox.status,0,bbox.error?.message??bbox.stderr);
       const sheets=[...bbox.stdout.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)];
@@ -160,9 +180,9 @@ try{
      assert.equal(await page.locator('#src-G3-S008 a[href^="https://"]').count(),2);
      for(const link of witness.links){
       const target=page.locator('[id='+JSON.stringify(link.id)+']');
-      await target.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#src-G3-S008');
+      await activateCitation(page,target,'#src-G3-S008',{mode:'compact-compare',name,width,dark,variant});
       const back=page.locator('#src-G3-S008 [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+link.id);
-      await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#'+link.id);
+      await activateCitation(page,back,'#'+link.id,{mode:'compact-compare',name,width,dark,variant});
      }
      await page.goto(url+'/'+variant+'/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
      const stem=[name,width,dark?'dark':'light',variant].join('-');
@@ -200,10 +220,10 @@ try{
      await verifyCompactLinkNames(page);
      const links=page.locator('.jdc-links a');const primary=await links.first().getAttribute('id');
      for(let i=0;i<2;i++){
-      await links.nth(i).focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#src-G3-S008');
+      await activateCitation(page,links.nth(i),'#src-G3-S008',{mode:'compact-nojs',name,width,dark,i});
       const back=page.locator('#src-G3-S008 [data-journal-source-return]');
       assert.equal(await back.getAttribute('href'),'#'+primary,'noJS primary fallback');
-      await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#'+primary);
+      await activateCitation(page,back,'#'+primary,{mode:'compact-nojs',name,width,dark,i});
      }
      await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
      const enlarged=await snapshot();assert.equal(enlarged.over,false);

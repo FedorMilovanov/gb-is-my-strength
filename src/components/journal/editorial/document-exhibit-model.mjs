@@ -91,3 +91,11 @@ export function documentCitationAttributes(citation, visibleLabel, context = '')
   return {id:citation.citationId,'data-journal-citation':true,href:citation.source.href,
     'aria-label':label+' · '+locator+(context?' · '+context:'')};
 }
+
+/** The record's own admitted date, not the event date. Null means unknown. */
+export function documentRecordDate(record){
+  const labels={publication:'Дата публикации',capture:'Дата архивной копии',modification:'Дата изменения',document:'Дата документа'};
+  if(!record||!Object.hasOwn(labels,record.role))fail('invalid record date role');
+  const value=date(record.value);
+  return {role:record.role,value,label:labels[record.role],display:value===null?'Не установлена':new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeZone:'UTC'}).format(new Date(value+'T00:00:00Z'))};
+}

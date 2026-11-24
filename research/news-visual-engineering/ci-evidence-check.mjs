@@ -2,9 +2,47 @@ import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const [engine, root] = process.argv.slice(2);
+const [engine, root, mode='generic'] = process.argv.slice(2);
 assert.ok(['chromium','firefox','webkit'].includes(engine) && root,'engine and evidence directory required');
-const data=JSON.parse(await readFile(join(root,'results.json'),'utf8'));
+assert.ok(['generic','compact','history-2018','compare-2022'].includes(mode),'unknown evidence mode');
+const json=async name=>JSON.parse(await readFile(join(root,name),'utf8'));
+const png=async name=>{const f=await readFile(join(root,name));assert.equal(f.subarray(0,8).toString('hex'),'89504e470d0a1a0a','PNG signature '+name);};
+const pdf=async name=>{const f=await readFile(join(root,name));assert.equal(f.subarray(0,5).toString(),'%PDF-','PDF signature '+name);};
+function exact(rows,expected,key,verify){
+ assert.equal(rows.length,expected.length);
+ const remaining=new Set(expected.map(key));assert.equal(remaining.size,expected.length);
+ for(const row of rows){assert.ok(remaining.delete(key(row)),'duplicate or unexpected case '+key(row));verify(row);}
+ assert.equal(remaining.size,0);
+}
+const isChromium=engine==='chromium';
+if(mode!=='generic'){
+ const widths=mode==='compact'?[320,390,768,1024,1440,1920]:[320,768,1440];
+ const scenarios=widths.flatMap(width=>[false,true].map(dark=>({name:engine,width,dark})));
+ const key=r=>JSON.stringify([r.name,r.width,r.dark]);
+ if(mode==='compact'){
+  const rows=await json('results.json'), acceptance=await json('compact-acceptance.json');
+  const comparisons=scenarios.flatMap(r=>['before','after','compact'].map(variant=>({...r,variant})));
+  exact(rows,comparisons,r=>key(r)+r.variant,r=>{assert.equal(r.links,r.variant==='before'?1:2);assert.ok(r.opening>0&&r.textStart>0);});
+  exact(acceptance.compactAcceptance,scenarios,key,r=>{assert.equal(r.js,false);assert.equal(r.citations,2);assert.equal(r.textScale,2);});
+  for(const r of comparisons){const stem=[engine,r.width,r.dark?'dark':'light',r.variant].join('-');for(const suffix of ['-full','-viewport'])await png(stem+suffix+'.png');}
+  for(const r of scenarios)await png([engine,r.width,r.dark?'dark':'light','compact-nojs-full'].join('-')+'.png');
+  const papers=isChromium?['A4','Letter'].flatMap(format=>[false,true].map(dark=>({format,dark}))):[];
+  exact(acceptance.paperAcceptance,papers,r=>JSON.stringify([r.format,r.dark]),r=>assert.ok(r.pages>0));
+  for(const r of papers)await pdf(['compact',r.format,r.dark?'dark':'light'].join('-')+'.pdf');
+  console.log(engine+' compact exact evidence: 48 cases / 84 returns / 84 PNG / '+papers.length+' PDFs');
+ }else{
+  const citations=mode==='history-2018'?3:2, rows=await json('history-results.json');
+  exact(rows,scenarios.flatMap(r=>[false,true].map(js=>({...r,js}))),r=>key(r)+r.js,r=>assert.equal(r.citations,citations));
+  for(const r of scenarios){const stem=[engine,r.width,r.dark?'dark':'light','history'].join('-');await png(stem+'.png');await png(stem+'-viewport.png');}
+  if(isChromium){
+   const papers=['A4','Letter'].flatMap(format=>[false,true].flatMap(dark=>[false,true].map(js=>({format,dark,js}))));
+   exact(await json('history-paper.json'),papers,r=>JSON.stringify([r.format,r.dark,r.js]),r=>assert.ok(r.pages>0&&r.words>0));
+   for(const r of papers)await pdf(['history',r.format,r.dark?'dark':'light',r.js?'js':'nojs'].join('-')+'.pdf');
+  }
+  console.log(engine+' '+mode+' exact evidence: 12 cases / '+12*citations+' returns / 12 PNG / '+(isChromium?8:0)+' PDFs');
+ }
+}else{
+const data=await json('results.json');
 assert.deepEqual(data.selected,[engine]);
 let total=0;
 for(const [fixture,widths,citations] of [['short',[320,390,768,1100],3],['long',[320,1100],12]]){
@@ -27,3 +65,4 @@ if(engine==='chromium')for(const prefix of ['', 'long-'])for(const format of ['A
   assert.equal(file.subarray(0,5).toString(),'%PDF-','missing PDF signature');
 }
 console.log(engine+' exact evidence: 24 cases / 144 round trips / 8 screenshots'+(engine==='chromium'?' / 8 physical PDFs':''));
+}
