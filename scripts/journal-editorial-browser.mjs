@@ -310,16 +310,72 @@ async function g44NativeReturns(page, js) {
 }
 
 
-async function g44RouteWitness(page, js, name) {
+async function g44RouteWitness(page, js, name, controlOnly=false) {
   const index=page.locator('#g3-2018-document-index'), toc=page.locator('[data-journal-contents]');
   assert.equal(await index.count(),1);
   const links=index.locator('a[data-journal-citation]');
   const ids=g44Sources.map(([id])=>id);
   assert.deepEqual(await links.evaluateAll(nodes=>nodes.map(n=>n.id)),ids);
-  const result={viewport:page.viewportSize(),js,forward:[],backward:[]};
+  const result={viewport:page.viewportSize(),js,forward:[],backward:[],controlOnly};
+  const diagnostic=engine==='webkit'&&!js&&[320,390].includes(result.viewport.width);
+  const trace=async()=>page.evaluate(()=>{
+    const a=document.activeElement, r=a.getBoundingClientRect(), v=window.visualViewport;
+    return {id:a.id,tag:a.tagName,href:a.getAttribute('href'),focusVisible:a.matches(':focus-visible'),
+      hash:location.hash,scrollY,rect:r.toJSON(),innerHeight,innerWidth,
+      visualViewport:v?{width:v.width,height:v.height,offsetTop:v.offsetTop,offsetLeft:v.offsetLeft,pageTop:v.pageTop,scale:v.scale}:null};
+  });
+  const traceSeries=async()=>{
+    const values=[{elapsedMs:0,state:await trace()}];
+    let elapsed=0;
+    for(const delay of [75,75,150,300,600]){
+      await page.waitForTimeout(delay);elapsed+=delay;
+      values.push({elapsedMs:elapsed,state:await trace()});
+    }
+    return values;
+  };
+  const startNative=async()=>{
+    if(!await toc.evaluate(el=>el.open)) await toc.locator('summary').click();
+    await toc.locator('a[href="#g3-year-2018"]').click();
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,'#g3-year-2018');
+    assert.equal(await page.locator('#g3-year-2018').evaluate(el=>el===document.activeElement),true);
+  };
   // Capture the real, built component before sequential keyboard navigation.
   // A locator screenshot can scroll; never use it to make a focus state pass.
   await index.screenshot({path:path.join(output,'after',name+'-g44-spread.png'),timeout:8000});
+  // Ordinary wheel input is a separate art witness, before the native
+  // keyboard sequence starts. Keep all real sticky chrome in the capture.
+  if(js&&result.viewport.width<=430){
+    const firstRow=()=>index.evaluate(root=>{
+      const row=root.querySelector('li'), rect=row.getBoundingClientRect();
+      const visibleRects=[...row.querySelectorAll('.jcdi-date,.jcdi-label,a[data-journal-citation]')].flatMap(el=>{
+        const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT), rects=[];
+        while(walker.nextNode())if(walker.currentNode.textContent.trim()){
+          const range=document.createRange();range.selectNodeContents(walker.currentNode);
+          for(const r of range.getClientRects()){
+            if(!r.width||!r.height)continue;
+            const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+            rects.push({text:walker.currentNode.textContent,rect:r.toJSON(),visible:r.top>=0&&r.bottom<=innerHeight&&el.contains(hit)});
+          }
+        }
+        return rects;
+      });
+      return {scrollY,rect:rect.toJSON(),height:innerHeight,visibleRects,
+        allTextVisible:visibleRects.length>0&&visibleRects.every(r=>r.visible)};
+    });
+    result.artWitness={before:await firstRow()};
+    await shot(page,name+'-g44-mobile-before-wheel');
+    const now=await firstRow();
+    // A single native wheel gesture aims the first row at mid-viewport.
+    // No scrollIntoView/focus/hidden-header intervention.
+    await page.mouse.move(Math.floor(result.viewport.width/2),Math.floor(result.viewport.height*.8));
+    await page.mouse.wheel(0,Math.round(now.rect.top+now.rect.height/2-now.height/2));
+    await settleWithoutScripts(page);
+    result.artWitness.after=await firstRow();
+    await shot(page,name+'-g44-mobile-after-wheel');
+    result.artWitness.afterShot=await firstRow();
+    console.log('G44_ART_WHEEL '+JSON.stringify({name,before:result.artWitness.before.allTextVisible,after:result.artWitness.after.allTextVisible,afterShot:result.artWitness.afterShot.allTextVisible}));
+  }
   const original=await page.evaluate(()=>{
     const style=document.documentElement.style;
     return {value:style.getPropertyValue('--gb-reader-font-scale'),priority:style.getPropertyPriority('--gb-reader-font-scale')};
@@ -333,11 +389,7 @@ async function g44RouteWitness(page, js, name) {
     result.scale={before,after};
     // Native TOC activation is the sequential starting point, not focus() on
     // every link. The first Tab must arrive at the first real document citation.
-    if(!await toc.evaluate(el=>el.open)) await toc.locator('summary').click();
-    await toc.locator('a[href="#g3-year-2018"]').click();
-    await settleWithoutScripts(page);
-    assert.equal(new URL(page.url()).hash,'#g3-year-2018');
-    assert.equal(await page.locator('#g3-year-2018').evaluate(el=>el===document.activeElement),true);
+    await startNative();
     const focusState=async expected=>{
       let state, previous, stable=0;
       for(let attempt=0;attempt<45;attempt++){
@@ -358,7 +410,12 @@ async function g44RouteWitness(page, js, name) {
             scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom};
         });
         result.lastState=state;
-        if(state.id!==expected)break;
+        if(state.id!==expected){
+          // Keep the original mismatch a failure; retain subsequent native
+          // observations to distinguish a transient from a repeated focus.
+          if(diagnostic)result.mismatchSeries=await traceSeries();
+          break;
+        }
         const now=[state.scrollY,state.rect.top,state.rect.bottom,state.headerBottom];
         stable=previous&&now.every((x,i)=>Math.abs(x-previous[i])<.5)?stable+1:0;
         if(stable>=4&&state.viewportOK)break;
@@ -369,15 +426,53 @@ async function g44RouteWitness(page, js, name) {
       assert.ok(state.fragments.length>0&&state.fragments.every(f=>f.hit)&&state.textClear,'G44 focus fragments or text clipped: '+JSON.stringify(state));
       return state;
     };
-    for(const [i,id] of ids.entries()){
-      await page.keyboard.press('Tab');result.forward.push(await focusState(id));
-      if(i===0||i===ids.length-1)await shot(page,name+'-g44-2x-'+(i===0?'first':'last'));
+    // B: the acceptance sequence is native input only. No screenshot or
+    // locator scrolling between any forward and reverse key presses.
+    result.keyboardTrace={variant:'B-no-intermediate-screenshot',keys:[]};
+    for(const [i,id] of (controlOnly?ids.slice(0,2):ids).entries()){
+      const step=diagnostic&&i<2?{expected:id,before:await trace()}:null;
+      if(step)result.keyboardTrace.keys.push(step);
+      await page.keyboard.press('Tab');
+      if(step)step.afterKey=await trace();
+      const state=await focusState(id);result.forward.push(state);
+      if(step)step.settled=await trace();
     }
-    for(const id of ids.slice(0,-1).reverse()){
-      await page.keyboard.press('Shift+Tab');result.backward.push(await focusState(id));
+    if(!controlOnly){
+      for(const id of ids.slice(0,-1).reverse()){
+        await page.keyboard.press('Shift+Tab');result.backward.push(await focusState(id));
+      }
+      assert.equal(result.forward.length,7);assert.equal(result.backward.length,6);
+    }else assert.equal(result.forward.length,2);
+    // The following screenshot is AFTER the entire uninterrupted witness.
+    await shot(page,name+(controlOnly?'-g44-control-end':'-g44-2x-reverse'));
+    // A: independently restart by the same native fragment; isolate the
+    // screenshot operation from acceptance. Never use this replay to make B pass.
+    await startNative();
+    await page.keyboard.press('Tab');await focusState(ids[0]);
+    if(diagnostic)result.screenshotTrace={variant:'A-intermediate-screenshot',beforeShot:await trace()};
+    await shot(page,name+'-g44-2x-first');
+    if(diagnostic){
+      result.screenshotTrace.afterShot=await trace();
+      result.screenshotTrace.beforeSecondKey=await trace();
+      await page.keyboard.press('Tab');
+      result.screenshotTrace.afterSecondKey=await traceSeries();
+      result.screenshotTrace.secondReachedExpected=result.screenshotTrace.afterSecondKey.at(-1).state.id===ids[1];
+      fs.writeFileSync(path.join(output,'after',name+'-g44-screenshot-ab.json'),JSON.stringify({
+        head:report.head,engine,viewport:result.viewport,controlOnly,
+        expected:ids.slice(0,2),B:result.keyboardTrace,A:result.screenshotTrace
+      },null,2)+'\n');
+      console.log('G44_SCREENSHOT_AB '+JSON.stringify({name,controlOnly,
+        B:result.keyboardTrace.keys.map(k=>({expected:k.expected,before:k.before.id,after:k.afterKey.id,settled:k.settled.id})),
+        A:{before:result.screenshotTrace.beforeShot,after:result.screenshotTrace.afterShot,
+          secondReachedExpected:result.screenshotTrace.secondReachedExpected,final:result.screenshotTrace.afterSecondKey.at(-1).state}}));
     }
-    assert.equal(result.forward.length,7);assert.equal(result.backward.length,6);
-    await shot(page,name+'-g44-2x-reverse');
+    if(!controlOnly){
+      // Independent native replay for the final-link screenshot. No screenshot
+      // before reaching it, and no acceptance claim based on this replay.
+      await startNative();
+      for(const id of ids){await page.keyboard.press('Tab');await focusState(id);}
+      await shot(page,name+'-g44-2x-last');
+    }
   }catch(error){
     result.failure=error.message;
     fs.writeFileSync(path.join(output,'after',name+'-g44-failure.json'),JSON.stringify({head:report.head,engine,...result},null,2)+'\n');
@@ -389,8 +484,10 @@ async function g44RouteWitness(page, js, name) {
       if(value)style.setProperty('--gb-reader-font-scale',value,priority);else style.removeProperty('--gb-reader-font-scale');
     },original);
   }
-  result.returns=await g44NativeReturns(page,js);
-  assert.equal(result.returns.length,7);
+  if(!controlOnly){
+    result.returns=await g44NativeReturns(page,js);
+    assert.equal(result.returns.length,7);
+  }
   return result;
 }
 
@@ -1194,6 +1291,11 @@ try {
             item.phase = 'G44 real route witness';
             item.g44 = await g44RouteWitness(page,javaScriptEnabled,name);
             assert.deepEqual(item.runtime, []);
+          }
+          if (route.kind==='history'&&engine==='webkit'&&!javaScriptEnabled&&width===390&&height===390){
+            item.phase='G44 short-viewport screenshot A/B control';
+            item.g44Control=await g44RouteWitness(page,false,name,true);
+            assert.deepEqual(item.runtime,[]);
           }
           item.phase = 'complete';
           console.log(`PASS ${name}`);
