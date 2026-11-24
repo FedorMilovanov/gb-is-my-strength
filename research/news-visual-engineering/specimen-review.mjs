@@ -114,7 +114,42 @@ if(historyMode){
      const back=page.locator(href+' [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+id);await activateCitation(page,back,'#'+id,{mode:compareMode?'compare':'history',name,width,dark,js,i});
     }
     const sizes=()=>page.evaluate(()=>[...document.querySelectorAll(' .jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-role')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
-    const base=await sizes();await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));assert.ok((await sizes()).every((s,i)=>Math.abs(s/base[i]-2)<.01));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));assert.deepEqual(await sizes(),base);
+    const base=await sizes();
+    await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+    try{
+      const scaled=await sizes();assert.equal(scaled.length,base.length);assert.ok(scaled.length>0&&scaled.every((s,i)=>Math.abs(s/base[i]-2)<.01));
+      const layout=await page.evaluate(()=>{
+        const usableWidth=document.documentElement.clientWidth,scrollWidth=document.documentElement.scrollWidth;
+        const offenders=[];
+        for(const el of document.querySelectorAll('article *')){
+          const r=el.getBoundingClientRect(),css=getComputedStyle(el);
+          if(r.width<=0||r.height<=0)continue;
+          if(r.left<-.5||r.right>usableWidth+.5||(css.display!=='inline'&&el.clientWidth>0&&el.scrollWidth>el.clientWidth+1)){
+            offenders.push({tag:el.tagName,id:el.id,className:String(el.className||''),rect:r.toJSON(),clientWidth:el.clientWidth,scrollWidth:el.scrollWidth,font:css.font,overflowWrap:css.overflowWrap,wordBreak:css.wordBreak,text:el.textContent.trim().slice(0,180)});
+          }
+        }
+        const words=[];
+        if(scrollWidth>usableWidth){
+          const walker=document.createTreeWalker(document.querySelector('article'),NodeFilter.SHOW_TEXT);
+          while(walker.nextNode()){
+            const node=walker.currentNode;
+            for(const match of node.textContent.matchAll(/\S+/gu)){
+              const range=document.createRange();range.setStart(node,match.index);range.setEnd(node,match.index+match[0].length);
+              for(const r of range.getClientRects())if(r.right>usableWidth+.5||r.left<-.5)words.push({word:match[0],parent:node.parentElement.tagName,className:String(node.parentElement.className||''),rect:r.toJSON()});
+            }
+          }
+        }
+        return {usableWidth,scrollWidth,offenders,words};
+      });
+      if(layout.scrollWidth>layout.usableWidth){
+        const stem=[name,width,dark?'dark':'light',js?'js':'nojs',compareMode?'compare':'history','scale2-overflow'].join('-');
+        await writeFile(join(evidence,stem+'.json'),JSON.stringify(layout,null,2));
+        console.error('SCALE2_OVERFLOW '+JSON.stringify({scenario:stem,...layout}));
+        await page.screenshot({path:join(evidence,stem+'.png'),fullPage:true,timeout:8000}).catch(error=>console.error('SCALE2_SCREENSHOT_FAILURE '+error.message));
+      }
+      assert.equal(layout.scrollWidth,layout.usableWidth,'2x Reader scale horizontal overflow');
+    }finally{await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));}
+    assert.deepEqual(await sizes(),base);
     if(!js){await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);const stem=[name,width,dark?'dark':'light','history'].join('-');await page.screenshot({path:join(evidence,stem+'.png'),fullPage:true});await page.screenshot({path:join(evidence,stem+'-viewport.png')});}
     if(name==='chromium'&&width===1440){
      await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);

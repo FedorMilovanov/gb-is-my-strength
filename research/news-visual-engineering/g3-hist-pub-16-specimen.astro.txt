@@ -22,7 +22,7 @@ if(entries.length!==row.citations.length||new Set(entries.map(e=>e.source?.id)).
 .jhc{container-type:inline-size;border-block:1px solid var(--je-rule);border-block-start:2px solid var(--je-gold);padding-block:1rem;color:var(--je-ink)}
 .jhc-kicker{font:600 .78rem/1.5 var(--je-ui);color:var(--je-muted);margin:0 0 .6rem}
 .jhc h2{font:600 clamp(1.6rem,4cqi,2.5rem)/1.2 var(--je-serif);margin:0 0 .8rem;text-wrap:balance;hyphens:none}
-.jhc-summary,.jhc-boundary p{font:400 calc(1rem * var(--gb-reader-font-scale,1))/1.7 var(--je-body);margin:0}
+.jhc-summary,.jhc-boundary p{font:400 calc(1rem * var(--gb-reader-font-scale,1))/1.7 var(--je-body);margin:0;overflow-wrap:anywhere}
 .jhc header{margin-block-end:1.2rem}
 .jhc-compare{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem}
 .jhc-record{min-width:0;overflow-wrap:anywhere;border-block-start:1px solid var(--je-rule);padding-block:1rem}
