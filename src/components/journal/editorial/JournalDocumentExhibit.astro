@@ -85,6 +85,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-citations { display: flex; flex-direction: column; align-items: flex-start; }
   .jdx-citation-locator { color: var(--je-muted); font-weight: 400; }
   .jdx-passage a { max-width: 100%; display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
+  .jdx-passage a:focus-visible { outline: 2px solid var(--je-ink); outline-offset: 3px; border-radius: 2px; }
   .jdx-commentary { margin-inline: clamp(1rem, 4cqi, 2rem); padding: .2rem 1.1rem .2rem 1rem; border-inline-start: 1px solid var(--je-rule); }
   .jdx-commentary dl { margin: 0; }
   .jdx-commentary div + div { border-block-start: 1px solid var(--je-rule); padding-block-start: .8rem; margin-block-start: .8rem; }
@@ -98,6 +99,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   @media (forced-colors: active) {
     .jdx, .jdx-commentary { border-color: CanvasText; }
     .jdx-passage a { color: LinkText; }
+    .jdx-passage a:focus-visible { outline-color: Highlight; }
   }
   @media print {
     .jdx { container-type: normal; color: #111; border-color: #555; }
@@ -112,6 +114,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     .jdx-citations { display: block; break-inside: avoid; }
     .jdx-citation-locator { color: #111; }
     .jdx-passage a { display: block; min-height: 0; break-before: avoid; }
+    .jdx-passage a:focus-visible { outline: none; }
     .jdx-commentary { margin-block-start: .5rem; }
     /* Keep meaning and evidence limits together when the pair fits a sheet. */
     .jdx-commentary dl, .jdx-commentary div { break-inside: avoid; }

@@ -170,12 +170,16 @@ for(const [label,xml,pages,format] of [
  ['invalid format',sheet(word()),1,'toString']
 ])test('paper bounds rejects '+label,()=>assert.throws(()=>validateWordBounds(xml,pages,format)));
 
-const validFocus={active:true,keyboard:true,targetInside:true,boundsInside:true,indicatorVisible:true,unobscured:true,visible:true,scale:2,viewport:{width:320,height:640}};
+const validFocus={active:true,keyboard:true,targetInside:true,boundsInside:true,indicatorVisible:true,outlineWidth:2,outlineStyle:'solid',outline:5,outlineColorVisible:true,unobscured:true,visible:true,scale:2,viewport:{width:320,height:640}};
 test('focus witness accepts fully painted and unobscured 2x target',()=>assert.equal(assertFocusWitness(validFocus),validFocus));
 for(const [label,change] of [
  ['not native focus',s=>s.active=false],
  ['not keyboard focus',s=>s.keyboard=false],
  ['missing painted indicator',s=>s.indicatorVisible=false],
+ ['outline thinner than G3 standard',s=>s.outlineWidth=1],
+ ['non-solid focus outline',s=>s.outlineStyle='auto'],
+ ['outline offset leaves less than two painted pixels',s=>s.outline=1],
+ ['transparent outline color',s=>s.outlineColorVisible=false],
  ['clipped focus bounds',s=>s.boundsInside=false],
  ['overlay obstruction',s=>s.unobscured=false],
  ['partially visible target',s=>s.visible=false]
