@@ -1,0 +1,75 @@
+---
+/** Presentation only. The caller owns the prose, dates, citations and native return targets.
+ * Each named slot supplies list items with a time, explicit date role, heading and source anchor.
+ * The caller retains the original source IDs and citation lookup calls. */
+interface Props {
+  id: string;
+  title: string;
+  conferenceTitle: string;
+  discussionTitle: string;
+  retrospectiveTitle: string;
+}
+const { id, title, conferenceTitle, discussionTitle, retrospectiveTitle } = Astro.props;
+if (![id, title, conferenceTitle, discussionTitle, retrospectiveTitle].every(value => typeof value === 'string' && value.trim())) {
+  throw new Error('Compact document index requires an ID and visible group headings');
+}
+if (!/^[a-z][a-z0-9-]*$/u.test(id)) throw new Error('Invalid compact document index ID');
+for (const name of ['conference', 'discussion', 'retrospective']) {
+  if (!Astro.slots.has(name)) throw new Error(`Missing compact document index slot: ${name}`);
+}
+---
+<section class="jcdi" id={id} aria-labelledby={`${id}-title`}>
+  <h3 id={`${id}-title`} class="jcdi-title">{title}</h3>
+  <div class="jcdi-lanes">
+    <section class="jcdi-group" aria-labelledby={`${id}-conference`}>
+      <h4 id={`${id}-conference`}>{conferenceTitle}</h4>
+      <ol class="jcdi-records" role="list"><slot name="conference" /></ol>
+    </section>
+    <section class="jcdi-group" aria-labelledby={`${id}-discussion`}>
+      <h4 id={`${id}-discussion`}>{discussionTitle}</h4>
+      <ol class="jcdi-records" role="list"><slot name="discussion" /></ol>
+    </section>
+  </div>
+  <section class="jcdi-group jcdi-retrospective" aria-labelledby={`${id}-retrospective`}>
+    <h4 id={`${id}-retrospective`}>{retrospectiveTitle}</h4>
+    <ol class="jcdi-records" role="list"><slot name="retrospective" /></ol>
+  </section>
+</section>
+<style>
+  .jcdi { margin-block: 2rem; min-width: 0; border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); color: var(--je-ink); }
+  .jcdi-title { margin: 0; padding-block: 1rem .75rem; font: 600 calc(1.35rem * var(--gb-reader-font-scale, 1))/1.25 var(--je-serif); overflow-wrap: anywhere; }
+  .jcdi-lanes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .jcdi-group { min-width: 0; }
+  .jcdi-group h4 { margin: 0; padding-block: .55rem; color: var(--je-ink); font: 600 calc(1rem * var(--gb-reader-font-scale, 1))/1.4 var(--je-ui); overflow-wrap: anywhere; }
+  .jcdi-records { margin: 0; padding: 0; list-style: none; }
+  .jcdi-records > :global(li) { min-width: 0; padding-block: .8rem; border-block-start: 1px solid var(--je-rule); overflow-wrap: anywhere; }
+  .jcdi-records :global(.jcdi-date) { margin: 0 0 .3rem; color: var(--je-muted); font: 400 calc(.85rem * var(--gb-reader-font-scale, 1))/1.5 var(--je-ui); }
+  .jcdi-records :global(time) { color: var(--je-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .jcdi-records :global(.jcdi-label) { margin: 0 0 .3rem; color: var(--je-ink); font: 600 calc(1rem * var(--gb-reader-font-scale, 1))/1.45 var(--je-serif); }
+  .jcdi-records :global(a[data-journal-citation]) { color: var(--je-gold); font: 400 calc(.875rem * var(--gb-reader-font-scale, 1))/1.5 var(--je-ui); text-decoration: underline; text-underline-offset: .15em; overflow-wrap: anywhere; }
+  .jcdi-retrospective { margin-block-start: 1.25rem; padding-block-start: .5rem; border-block-start: 1px solid var(--je-gold); }
+  @media screen {
+    .jcdi { container-type: inline-size; }
+    .jcdi-records :global(a[data-journal-citation]) { display: inline-flex; align-items: center; min-height: 44px; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 6px; border-radius: 2px; scroll-margin-block-end: 24px; }
+    /* Retain the live article's canonical start margin and header clearance. */
+    .jcdi-records :global(a[data-journal-citation]:focus-visible) { outline: 2px solid var(--je-ink); outline-offset: -2px; }
+    @container (min-width: 44rem) {
+      .jcdi-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+      .jcdi-lanes > .jcdi-group + .jcdi-group { border-inline-start: 1px solid var(--je-rule); padding-inline-start: 1.5rem; }
+    }
+  }
+  @media screen and (forced-colors: active) {
+    .jcdi-records :global(a[data-journal-citation]) { color: LinkText; }
+    .jcdi-records :global(a[data-journal-citation]:focus-visible) { outline-color: Highlight; }
+  }
+  @media print {
+    .jcdi { color: #111; border-color: #555; }
+    .jcdi-lanes { display: block; }
+    .jcdi-title, .jcdi-group h4 { break-after: avoid; }
+    .jcdi-group + .jcdi-group { margin-block-start: .75rem; }
+    .jcdi-records > :global(li) { break-inside: avoid; border-color: #aaa; }
+    .jcdi-records :global(.jcdi-date), .jcdi-records :global(.jcdi-label), .jcdi-records :global(time), .jcdi-records :global(a[data-journal-citation]) { color: #111; }
+    .jcdi-records :global(a[data-journal-citation]) { outline: none; }
+    .jcdi-retrospective { border-color: #555; }
+  }
+</style>
