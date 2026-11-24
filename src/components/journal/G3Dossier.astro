@@ -81,6 +81,17 @@ const sourcePortalLabels: Record<string, string> = {
   'G3-S002': 'IRS: архив электронных деклараций Form 990',
   'G3-S028': 'IRS: архив электронных деклараций Form 990',
 };
+// Reader navigation projection only; these links do not change evidence eligibility.
+// S015 and S042 are renderings of one statement, not independent witnesses.
+// The original blog and archived statement were acquired in Research; their
+// current transport was unavailable in the 24 November link recheck.
+const readerSourceLinks: Record<string, { href: string; label: string }> = {
+  'G3-S002': { href: 'https://projects.propublica.org/nonprofits/organizations/842403597', label: 'Декларации этой организации · ProPublica (данные IRS)' },
+  'G3-S008': { href: 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/', label: 'Архив заявления от 12 мая 2025 года (доступ может быть ограничен)' },
+  'G3-S012': { href: 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html', label: 'Авторская статья Фила Джонсона (доступ может быть ограничен)' },
+  'G3-S015': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Сообщение Christian Post с фрагментами заявления от 25 августа' },
+  'G3-S042': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Christian Post · публикация от 26 августа 2026 года' },
+};
 // Reader display only: pinned source objects, provenance and evidence stay intact.
 // Keep document identifiers; omit internal acquisition/storage workflow prose.
 const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
@@ -449,15 +460,19 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       <ol class="bibliography-list">
         {G3_SOURCE_BIBLIOGRAPHY.map((entry) => {
           const reader = sourceReaderView(entry);
+          const readerLink = readerSourceLinks[entry.id];
           return (
             <li id={`src-${entry.id}`} class="bibliography-item" tabindex="-1" data-source-id={entry.id} data-evidence-class={entry.tier} data-source-eligibility={entry.eligibility}>
               <p class="biblio-meta">{reader.period && <>{reader.period} · </>}{sourceRoles[entry.id] || 'Библиографическая запись'}</p>
               <h3>{reader.title}</h3>
               <details class="biblio-details">
-                <summary>Локатор и доступ к документу</summary>
+                <summary aria-label={`Локатор и доступ: ${reader.title}`}>Локатор и доступ к документу</summary>
                 <p>{reader.locator}</p>
                 <p class="biblio-links">
-                  {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">{sourcePortalLabels[entry.id]}</a> : <span>Ссылка на полный оригинал в этой версии не предоставлена.</span>}
+                  {entry.publicUrl && <a href={entry.publicUrl} rel="noopener">{sourcePortalLabels[entry.id] || reader.title}</a>}
+                  {entry.publicUrl && readerLink && <> · </>}
+                  {readerLink && <a href={readerLink.href} rel="noopener">{readerLink.label}</a>}
+                  {!entry.publicUrl && !readerLink && <span>Ссылка на полный оригинал в этой версии не предоставлена.</span>}
                 </p>
               </details>
               <JournalSourceReturn href="#documents" label="К методике проверки" />

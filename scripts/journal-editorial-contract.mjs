@@ -68,6 +68,18 @@ for (const name of ['g3ProductMetadata', 'g3PublicationHandoff', 'g3SourceBiblio
   assert.equal(read(file), previous(file), `${file} is an unchanged authority owner in this lane`);
 }
 assert.equal(sources.length, 21);
+// Reader link routes are not a new claim or alteration of the sealed ledger.
+const readerLinks = new Map([
+  ['G3-S002', 'https://projects.propublica.org/nonprofits/organizations/842403597'],
+  ['G3-S008', 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/'],
+  ['G3-S012', 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html'],
+  ['G3-S015', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+  ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+]);
+for (const [id, href] of readerLinks) {
+  assert.ok(sources.some(source => source.id === id), `Unknown source: ${id}`);
+  assert.ok(current.includes(`'${id}': { href: '${href}'`), `Reader link missing: ${id}`);
+}
 const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g) || [])].sort();
 const frozenClaimIds = [...new Set(old.match(/G3-PUB-\d{3}/g) || [])].sort();
 assert.deepEqual(claimIds, frozenClaimIds, 'historical route must not alter the frozen crisis claim projection');
@@ -224,6 +236,14 @@ if (!process.argv.includes('--source-only')) {
       for (const source of sources) {
         const entry = byId(doc, `src-${source.id}`);
         assert.ok(entry);
+        const summaries = all(entry, node => node.tagName === 'summary');
+        assert.equal(summaries.length, 1);
+        assert.ok(attr(summaries[0], 'aria-label')?.includes('Локатор и доступ: '), 'contextual disclosure name');
+        if (readerLinks.has(source.id)) {
+          const links = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));
+          assert.equal(links.length, 1, `reader link ${source.id}`);
+          assert.ok(text(links[0]).trim(), 'external link must have a meaningful name');
+        }
         const returns = all(entry, (node) => node.tagName === 'a' && attr(node, 'data-journal-source-return') !== undefined);
         assert.equal(returns.length, 1, `one honest SSR return at ${source.id}`);
         assert.equal(attr(returns[0], 'href'), '#documents');
@@ -254,6 +274,9 @@ if (!process.argv.includes('--source-only')) {
       for (const source of historySources) {
         const entry = byId(doc, `history-source-${source.id}`);
         assert.ok(entry, `Missing history citation bibliography ${source.id}`);
+        const disclosure = all(entry, node => node.tagName === 'summary');
+        assert.equal(disclosure.length, 1);
+        assert.equal(attr(disclosure[0], 'aria-label'), `О документе: ${source.title}`);
         assert.equal(all(entry, node => node.tagName === 'a' && attr(node, 'href') === source.url).length, 1, 'original source link preserved');
         assert.equal(all(entry, node => node.tagName === 'details' && hasClass(node, 'biblio-details')).length, 1, 'one native source disclosure');
         assert.ok(normalize(text(entry)).includes(normalize(source.boundary)), 'source context preserved in disclosure');

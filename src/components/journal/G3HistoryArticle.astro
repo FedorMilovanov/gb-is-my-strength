@@ -78,7 +78,7 @@ const contents = [
             <p class="biblio-meta">{source.period} · {source.role}</p>
             <h3><a href={source.url} rel="noopener">{source.title}</a></h3>
             <details class="biblio-details">
-              <summary>О документе</summary>
+              <summary aria-label={`О документе: ${source.title}`}>О документе</summary>
               <p>{source.boundary}</p>
             </details>
             <JournalSourceReturn href={source.returnHref} />
