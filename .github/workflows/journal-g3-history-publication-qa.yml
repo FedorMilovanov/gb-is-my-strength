@@ -192,6 +192,7 @@ jobs:
           node --check research/news-visual-engineering/specimen-review.mjs
           node --check research/news-visual-engineering/ci-evidence-check.mjs
           node --check research/news-visual-engineering/pdf-word-bounds.mjs
+          node --check research/news-visual-engineering/keyboard-scale-witness.mjs
       - name: Install real browser engine
         id: news_browser
         run: npx playwright install --with-deps ${{ matrix.engine }}

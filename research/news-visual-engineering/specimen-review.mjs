@@ -2,6 +2,7 @@ import { build } from 'astro';
 import { chromium, firefox, webkit } from 'playwright';
 import assert from 'node:assert/strict';
 import {waitForCanonicalFonts} from './wait-for-canonical-fonts.mjs';
+import {captureKeyboardScale,interactionTarget} from './keyboard-scale-witness.mjs';
 import {physicalWordCount} from './pdf-word-bounds.mjs';
 import { createServer } from 'node:http';
 import { spawnSync } from 'node:child_process';
@@ -141,7 +142,8 @@ if(historyMode){
       console.log('HISTORY_PAPER_PASS '+JSON.stringify(paperAcceptance.at(-1)));
      }
     }
-    results.push({name,width,dark,js,citations:history.sources.length});await writeFile(join(evidence,'history-results.json'),JSON.stringify(results,null,2));console.log('HISTORY_PASS '+JSON.stringify(results.at(-1)));
+    const interaction=interactionTarget(width,dark,js,1440)?await captureKeyboardScale(page,{url,dark,js,evidence,stem:['qa-'+(compareMode?'compare-2022':'history-2018'),name,width,dark?'dark':'light',js?'js':'nojs'].join('-'),scaleSelector:'.jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-role',citations:history.sources.length,external:history.sources.length,returns:history.sources.length}):null;
+    results.push({name,width,dark,js,citations:history.sources.length,interaction});await writeFile(join(evidence,'history-results.json'),JSON.stringify(results,null,2));console.log('HISTORY_PASS '+JSON.stringify(results.at(-1)));
    }finally{await page.close();}
   }
   }finally{await browser.close();}
@@ -175,7 +177,8 @@ try{
      await page.goto(url+'/'+variant+'/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
      const stem=[name,width,dark?'dark':'light',variant].join('-');
      await page.screenshot({path:join(evidence,stem+'-full.png'),fullPage:true});await page.screenshot({path:join(evidence,stem+'-viewport.png')});
-     results.push({name,width,dark,variant,opening:witness.opening,textStart:witness.textStart,links:witness.links.length});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
+     const interaction=variant==='compact'&&interactionTarget(width,dark,true,1440)?await captureKeyboardScale(page,{url:url+'/compact/',dark,js:true,evidence,stem:['qa-compact',name,width,dark?'dark':'light','js'].join('-'),scaleSelector:'.jdc-summary,.jdc-note dd',citations:2,external:2,returns:1}):null;
+     results.push({name,width,dark,variant,opening:witness.opening,textStart:witness.textStart,links:witness.links.length,interaction});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
     }finally{await page.close();}
    }
    // The comparison matrix is JS-enabled; separately certify compact noJS
@@ -247,7 +250,8 @@ try{
        paperAcceptance.push({format,dark,pages:pages.length,words:count,file});console.log('PAPER_PASS '+format+' '+dark+' '+pages.length+' words='+count);
       }
      }
-     compactAcceptance.push({name,width,dark,js:false,citations:2,textScale:2});
+     const interaction=interactionTarget(width,dark,false,1440)?await captureKeyboardScale(page,{url:url+'/compact/',dark,js:false,evidence,stem:['qa-compact',name,width,dark?'dark':'light','nojs'].join('-'),scaleSelector:'.jdc-summary,.jdc-note dd',citations:2,external:2,returns:1}):null;
+     compactAcceptance.push({name,width,dark,js:false,citations:2,textScale:2,interaction});
      await writeFile(join(evidence,'compact-acceptance.json'),JSON.stringify({compactAcceptance,paperAcceptance},null,2));
      console.log('COMPACT_PASS '+stem);
     }finally{await page.close();}

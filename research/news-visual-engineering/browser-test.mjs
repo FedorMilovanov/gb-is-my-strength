@@ -2,6 +2,7 @@ import { build } from 'astro';
 import { chromium, firefox, webkit } from 'playwright';
 import assert from 'node:assert/strict';
 import {waitForCanonicalFonts} from './wait-for-canonical-fonts.mjs';
+import {captureKeyboardScale,interactionTarget} from './keyboard-scale-witness.mjs';
 import { createServer } from 'node:http';
 import { cp, readFile, writeFile, mkdir, mkdtemp, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -126,7 +127,8 @@ try {
             await page.screenshot({path:join(evidence,name+'-'+width+'-'+(dark?'dark':'light')+'.png'),fullPage:true});
             if(name==='chromium'&&width===1100)for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
           }
-          results.push({engine:name,width,dark,js,citations:3,textScale:2});await persist();
+          const interaction=interactionTarget(width,dark,js,1100)?await captureKeyboardScale(page,{url,dark,js,evidence,stem:['qa-short',name,width,dark?'dark':'light',js?'js':'nojs'].join('-'),scaleSelector:'.jdx-deck,.jdx-passage p:not(.jdx-locator),.jdx-commentary dd',citations:3,external:0,returns:2}):null;
+          results.push({engine:name,width,dark,js,citations:3,textScale:2,interaction});await persist();
           console.log('CASE_PASS '+JSON.stringify({fixture:'short',engine:name,width,dark,js}));
         } finally {await context.close();}
       }
@@ -171,7 +173,8 @@ try {
               for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,'long-'+format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
             }
           }
-          longResults.push({engine:name,width,dark,js,citations:12});await persist();
+          const interaction=interactionTarget(width,dark,js,1100)?await captureKeyboardScale(page,{url:url+'/long/',dark,js,evidence,stem:['qa-long',name,width,dark?'dark':'light',js?'js':'nojs'].join('-'),scaleSelector:'.jdx-deck,.jdx-passage p:not(.jdx-locator),.jdx-commentary dd',citations:12,external:0,returns:2}):null;
+          longResults.push({engine:name,width,dark,js,citations:12,interaction});await persist();
           console.log('CASE_PASS '+JSON.stringify({fixture:'long',engine:name,width,dark,js}));
         }finally{await context.close();}
       }
