@@ -166,6 +166,13 @@ const source = lawsonSource(id);
     trigger.setAttribute('aria-expanded', 'true');
     placeSourceCard(marker);
   });
+  document.addEventListener('focusin', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const target = event.target;
+    document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach((ref) => {
+      if (!ref.contains(target)) closeSource(ref);
+    });
+  });
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     const open = document.querySelector<HTMLElement>('.lawson-source-ref[data-open]');
