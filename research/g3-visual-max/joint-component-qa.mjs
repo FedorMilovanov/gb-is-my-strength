@@ -13,6 +13,24 @@ const pkg=JSON.parse(readFileSync(at('package.json'),'utf8'));
 assert.equal(JSON.parse(readFileSync(at('node_modules/astro/package.json'),'utf8')).version,pkg.devDependencies.astro);
 mkdirSync(at('src/pages/journal/dossiers/g3/history'),{recursive:true});
 writeFileSync(at('astro.config.mjs'),"import {defineConfig} from 'astro/config';import {fileURLToPath} from 'node:url';export default defineConfig({output:'static',vite:{resolve:{alias:{'@':fileURLToPath(new URL('./src/',import.meta.url))}}}});");
+const adopted=process.env.G3_VISUAL_ADOPTED==='1';
+if(adopted){
+  // Witness only: canonical Product IDs may still be pending coordinator integration.
+  const registry=at('src/data/journal/g3HistorySources.ts');
+  let text=readFileSync(registry,'utf8');
+  const review=JSON.parse(readFileSync(at('research/g3-visual-max/matrix-expansion-hold.json'),'utf8'));
+  const extra=[2018,2021].filter(y=>!text.includes("id: 'gnl-"+y+"'")).map(y=>({
+    id:'gnl-'+y,title:'GNL — каталог G3 '+y,period:String(y),role:'Каталог записей',
+    url:review.locators[String(y)],boundary:'Выборка каталога, не полный список участников и не проверка устной речи.',
+    returnHref:'#g3-year-'+y,researchLocator:'G3-HIST-PUB-12 · test-only registry projection'
+  }));
+  if(extra.length){
+    const entries=extra.map(x=>'  '+JSON.stringify(x)+',').join('\n');
+    const updated=text.replace(/\n\] as const;/,'\n'+entries+'\n] as const;');
+    assert.notEqual(updated,text,'cannot extend disposable source witness');
+    writeFileSync(registry,updated);
+  }
+}
 const common = [
 "import SourceReturn from '@/components/journal/JournalSourceReturn.astro';",
 "import '@/components/journal/journalEditorial.css';",
@@ -26,9 +44,10 @@ const history=[
 "import Panorama from '@/components/journal/g3-graphics/G3HistoricalPanorama.astro';",
 "import {G3_HISTORY_SOURCES as sources} from '@/data/journal/g3HistorySources';",
 "const returns=[...new Set(sources.map(s=>s.returnHref))];",
+...(adopted?["import {adoptedMatrixData, adoptedMatrixClaim} from '@/components/journal/g3-visual/adopted-visual-inputs';","import type {G3HistorySourceId} from '@/data/journal/g3HistorySources';","const ids={2013:'gnl-2013',2014:'gnl-2014',2015:'gnl-2015',2016:'gnl-2016',2017:'gnl-2017',2018:'gnl-2018',2019:'gnl-2019',2020:'gnl-2020',2021:'gnl-2021'} satisfies Record<number,G3HistorySourceId>;"]:[]),
 '---',shellStart,
 '{returns.map(h=><p id={h.slice(1)}>Раздел источника</p>)}',
-'<Panorama/><Matrix/>',
+adopted?'<Panorama/><Matrix data={adoptedMatrixData()} sourceIds={ids} claimId={adoptedMatrixClaim}/>':'<Panorama/><Matrix/>',
 '<ol class="bibliography">{sources.map(s=><li id={"history-source-"+s.id} class="bibliography-item" tabindex="-1"><p class="biblio-meta">{s.period} · {s.role}</p><h3><a href={s.url}>{s.title}</a></h3><details class="biblio-details"><summary aria-label={"О документе: "+s.title}>О документе</summary><p>{s.boundary}</p></details><SourceReturn href={s.returnHref}/></li>)}</ol>',
 shellEnd].join('\n');
 const crisis=[
@@ -38,8 +57,9 @@ const crisis=[
 "import Ecosystem from '@/components/journal/g3-graphics/G3EcosystemSpread.astro';",
 "import {G3_SOURCE_BIBLIOGRAPHY as sources} from '@/data/journal/g3SourceBibliography';",
 "import proposal from '../../../../../research/g3-visual-max/finance-proposal.json';",
+...(adopted?["import {adoptedAnnualFinance} from '@/components/journal/g3-visual/adopted-visual-inputs';"]:[]),
 '---',shellStart,
-'<p id="documents">Методика проверки</p><p id="finance">Финансы</p><Annual reviewOnly={true} proposal={proposal}/><Waterfall total={1061800} conferences={817283} advertising={246511}/><Ecosystem/>',
+'<p id="documents">Методика проверки</p><p id="finance">Финансы</p>'+(adopted?'<Annual projection={adoptedAnnualFinance()}/>':'<Annual reviewOnly={true} proposal={proposal}/>')+'<Waterfall total={1061800} conferences={817283} advertising={246511}/><Ecosystem/>',
 '<ol class="bibliography">{sources.map(s=><li id={"src-"+s.id} class="bibliography-item" tabindex="-1"><p class="biblio-meta">{s.period}</p><h3>{s.title}</h3><details class="biblio-details"><summary>Локатор и доступ к документу</summary><p>{s.locator}</p>{s.publicUrl && <a href={s.publicUrl}>Источник</a>}</details><SourceReturn href="#documents"/></li>)}</ol>',
 shellEnd].join('\n');
 writeFileSync(at('src/pages/journal/dossiers/g3/history/index.astro'),history);
@@ -79,6 +99,16 @@ try{
       await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
       const idCheck=await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);return {unique:new Set(ids).size===ids.length,missing:[...document.querySelectorAll('a[data-journal-citation]')].filter(a=>!document.getElementById(a.hash.slice(1))).map(a=>a.id),overflow:document.documentElement.scrollWidth-innerWidth}});
       if(!idCheck.unique||idCheck.missing.length||idCheck.overflow>0)note(where,'id/overflow',idCheck);
+      if(adopted&&route===routes[0]){
+       const c=await page.locator('.g3-matrix').getAttribute('data-publication-claims');
+       const names=await page.locator('.gm-row').count(),pairs=await page.locator('.gm-row a').count();
+       if(c!=='G3-HIST-PUB-12'||names!==26||pairs!==60)note(where,'adopted-matrix',{c,names,pairs});
+      }
+      if(adopted&&route===routes[1]){
+       const c=await page.locator('.g3-annual-finance').getAttribute('data-publication-claims');
+       const cells=await page.locator('.g3-annual-finance td').count(),banners=await page.locator('.gaf-hold').count();
+       if(c!=='G3-PUB-017'||cells!==28||banners)note(where,'adopted-finance',{c,cells,banners});
+      }
       geometry++;
       if(route===routes[0] && width===740 && !dark && js){
        const map=await page.locator('.g3g-atlas-map svg').evaluate(svg=>{
@@ -87,7 +117,10 @@ try{
          return {box:{x:v.x,y:v.y,w:v.width,h:v.height},entries};
        });
        const v=map.box;const clipped=map.entries.filter(x=>x.minX<v.x-.5||x.maxX>v.x+v.w+.5||x.minY<v.y-.5||x.maxY>v.y+v.h+.5);
-       if(clipped.length)note(where,'map-label-outside-viewbox',clipped);
+       const visible=clipped.filter(x=>x.maxX>v.x&&x.minX<v.x+v.w&&x.maxY>v.y&&x.minY<v.y+v.h);
+       const outside=clipped.filter(x=>!visible.includes(x));
+       if(outside.length)console.log('MAP_FULLY_OUTSIDE_CROP',JSON.stringify(outside.map(x=>x.text)));
+       if(visible.length)note(where,'map-label-partial-clipping',visible);
       }
       if(width===390||width===740){
        if(route===routes[0])await page.locator('.g3g-chron-details summary').click();
@@ -136,6 +169,6 @@ for(const issue of issues){
  (byKind[key]??={count:0,first:issue}).count++;
 }
 writeFileSync(at('joint-qa-result.json'),JSON.stringify({typecheck:typecheck.status,reports,issues},null,2));
-console.log('JOINT_RESULT',JSON.stringify({typecheck:typecheck.status,reports,issueCount:issues.length}));
+console.log('JOINT_RESULT',JSON.stringify({adopted,typecheck:typecheck.status,reports,issueCount:issues.length}));
 for(const [key,value] of Object.entries(byKind))console.log('ISSUE',key,value.count,JSON.stringify(value.first).slice(0,900));
 if(issues.length||typecheck.status!==0)process.exitCode=1;
