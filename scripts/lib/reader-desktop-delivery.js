@@ -30,28 +30,44 @@ function createDesktopDelivery(contract) {
   var comparison = new URLSearchParams(window.location.search).getAll('reader-pilot');
   if (comparison.length === 1 && comparison[0] === '0') { nativeStyles(); return; }
   var desktop = window.matchMedia('${MEDIA}');
-  // Physical print changes viewport/media queries without a screen resize.
-  // Compare against the original screen admission only when print has ended.
+  // A width-only media change is not evidence of a screen resize: physical
+  // print can change that query before beforeprint or restore it after
+  // afterprint. Require a screen resize witness and matching live viewport.
   var printMedia = window.matchMedia('print');
+  var screenMedia = window.matchMedia('screen');
   var screenDesktop = desktop.matches;
   var printActive = printMedia.matches;
+  var resizeWitness = false;
   var reconcileFrame = 0;
+  function inPrint() {
+    return printActive || printMedia.matches || !screenMedia.matches ||
+      document.documentElement.hasAttribute('data-gb-print-prepared');
+  }
+  function forgetResize() {
+    resizeWitness = false;
+    if (reconcileFrame) cancelAnimationFrame(reconcileFrame);
+    reconcileFrame = 0;
+  }
   function reconcileScreen() {
+    if (!resizeWitness) return;
     if (reconcileFrame) cancelAnimationFrame(reconcileFrame);
     reconcileFrame = requestAnimationFrame(function(){
       reconcileFrame = 0;
-      if (printActive || printMedia.matches ||
-          document.documentElement.hasAttribute('data-gb-print-prepared')) return;
-      if (desktop.matches !== screenDesktop) window.location.reload();
+      if (inPrint()) { forgetResize(); return; }
+      var viewportDesktop = window.innerWidth >= 1121;
+      // A transient media/viewport mismatch is not a screen crossing.
+      if (desktop.matches !== viewportDesktop) return;
+      resizeWitness = false;
+      if (viewportDesktop !== screenDesktop) window.location.reload();
     });
   }
-  window.addEventListener('beforeprint',function(){ printActive = true; });
-  window.addEventListener('afterprint',function(){
-    printActive = false;
+  window.addEventListener('beforeprint',function(){ printActive = true; forgetResize(); });
+  window.addEventListener('afterprint',function(){ printActive = false; forgetResize(); });
+  printMedia.addEventListener('change',function(event){ if (event.matches) forgetResize(); });
+  window.addEventListener('resize',function(){
+    if (inPrint()) { forgetResize(); return; }
+    resizeWitness = true;
     reconcileScreen();
-  });
-  printMedia.addEventListener('change',function(event){
-    if (!event.matches) reconcileScreen();
   });
   desktop.addEventListener('change',reconcileScreen);
   if (!desktop.matches) return;
