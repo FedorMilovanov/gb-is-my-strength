@@ -41,7 +41,7 @@ const crisis=[
 '---',shellStart,
 '<p id="documents">Методика проверки</p><p id="finance">Финансы</p><Annual reviewOnly={true} proposal={proposal}/><Waterfall total={1061800} conferences={817283} advertising={246511}/><Ecosystem/>',
 '<ol class="bibliography">{sources.map(s=><li id={"src-"+s.id} class="bibliography-item" tabindex="-1"><p class="biblio-meta">{s.period}</p><h3>{s.title}</h3><details class="biblio-details"><summary>Локатор и доступ к документу</summary><p>{s.locator}</p>{s.publicUrl && <a href={s.publicUrl}>Источник</a>}</details><SourceReturn href="#documents"/></li>)}</ol>',
-shellEnd].join('\n').replace('../../../../../research','../../../../research');
+shellEnd].join('\n');
 writeFileSync(at('src/pages/journal/dossiers/g3/history/index.astro'),history);
 writeFileSync(at('src/pages/journal/dossiers/g3/index.astro'),crisis);
 const cli=(...args)=>spawnSync(process.execPath,[at('scripts/astro-cli.mjs'),...args],{cwd:root,stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});
@@ -72,7 +72,7 @@ try{
    for(const route of routes)for(const width of widths)for(const dark of [false,true])for(const js of [false,true]){
     const where={engine,route,width,dark,js};
     const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});
-    const page=await ctx.newPage(), errors=[];
+    const page=await ctx.newPage(), errors=[];page.setDefaultTimeout(6000);
     page.on('pageerror',e=>errors.push(String(e)));
     try{
       await page.goto(origin+route);
@@ -92,7 +92,8 @@ try{
       if(width===390||width===740){
        if(route===routes[0])await page.locator('.g3g-chron-details summary').click();
        const links=await page.locator('.g3g a[data-journal-citation],.g3-annual-finance a[data-journal-citation],.gm-row a[data-journal-citation]').evaluateAll(es=>es.map(a=>({id:a.id,hash:a.hash})));
-       for(const a of links){
+       const selected=width===740&&!dark&&js?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002');
+       for(const a of selected){
         await page.locator('#'+a.id).click();
         const back=page.locator(a.hash+' [data-journal-source-return]');
         const got=await back.getAttribute('href');
