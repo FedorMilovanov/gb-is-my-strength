@@ -8,7 +8,6 @@ on:
       - 'src/components/journal/**'
       - 'src/data/journal/g3History*.ts'
       - 'scripts/journal-editorial-browser.mjs'
-      - 'scripts/lib/journal-atlas-contrast-review.mjs'
       - 'research/news-visual-engineering/**'
       - 'scripts/lib/journal-print-pdf.py'
       - 'scripts/g3-history-publication-contract.mjs'
@@ -22,7 +21,6 @@ on:
       - 'src/components/journal/**'
       - 'src/data/journal/g3History*.ts'
       - 'scripts/journal-editorial-browser.mjs'
-      - 'scripts/lib/journal-atlas-contrast-review.mjs'
       - 'research/news-visual-engineering/**'
       - 'scripts/lib/journal-print-pdf.py'
   workflow_dispatch:
