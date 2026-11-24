@@ -18,8 +18,10 @@ export function validateReaderPdfManifest({ manifest, registry, approvals, revis
   assert(Array.isArray(registry.entries) && Array.isArray(registry.errors));
   assert.equal(registry.errors.length, 0, 'invalid public surface registry');
   assert(Array.isArray(approvals), 'explicit PDF rights approvals required');
+  assert(lstatSync(distRoot).isDirectory() && !lstatSync(distRoot).isSymbolicLink(), 'invalid PDF dist root');
   assert(Array.isArray(manifest.entries), 'PDF entries must be an array');
   const routes = new Map(registry.entries.map(entry => [entry.route, entry]));
+  assert.equal(routes.size, registry.entries.length, 'duplicate registry routes');
   const rights = new Map();
   for (const grant of approvals) {
     assert(ROUTE.test(grant.route) && !rights.has(grant.route), 'invalid or duplicate approval route');

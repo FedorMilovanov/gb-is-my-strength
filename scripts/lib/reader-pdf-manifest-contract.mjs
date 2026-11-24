@@ -30,6 +30,7 @@ try {
     ['wrong scope', { approvals: [{ ...approvals[0], scope: 'html' }] }, /Expected values/],
     ['missing evidence', { approvals: [{ ...approvals[0], evidence: '' }] }, /rights evidence/],
     ['stale revision', { revision: 'b'.repeat(40) }, /stale/],
+    ['duplicate registry route', { registry: { errors: [], entries: [...registry.entries, ...registry.entries] } }, /duplicate registry/],
     ['invalid registry', { registry: { ...registry, errors: ['fixture'] } }, /invalid public/],
     ['hold route', { registry: { errors: [], entries: [{ ...registry.entries[0], status: 'hold' }] } }, /not an eligible/],
     ['external URL', { manifest: withEntry({ url: 'https://example.com/file.pdf' }) }, /invalid content-addressed/],
@@ -45,5 +46,5 @@ try {
   assert.throws(() => check({}), /unlisted PDF artifact/);
   rmSync(join(dir, 'reader-pdf'), { recursive: true });
   assert.deepEqual(check({ manifest: { ...manifest, entries: [] }, approvals: [] }), { routes: 0, artifacts: 0 });
-  console.log('Reader PDF publication boundary: 2 positive + 12 negative cases PASS');
+  console.log('Reader PDF publication boundary: 2 positive + 13 negative cases PASS');
 } finally { rmSync(dir, { recursive: true, force: true }); }
