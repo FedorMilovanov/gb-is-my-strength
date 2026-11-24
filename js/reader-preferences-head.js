@@ -191,11 +191,36 @@
     '.epilogue'
   ].join(',');
   var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|flip-card|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;
-  var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"]';
+  var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"],[data-print-policy="exclude"],#npUniversalDemo';
   var TAIL_SELECTOR = '[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue';
   var STYLE_ID = 'gb-print-pagination-contract';
   var closingGroups = [];
+  var printDisclosures = new Map();
+  var EDITORIAL_DISCLOSURES = 'details.shelf-about,details[data-print-disclosure="editorial"]';
   var report = null;
+
+  // Only admitted authorial disclosures may be expanded. Preserve the
+  // original attribute, including its exact value, across repeated prepare
+  // calls and restore after native cancellation / media exit.
+  function expandEditorialDisclosures(root) {
+    if (!root) return;
+    var nodes = root.querySelectorAll(EDITORIAL_DISCLOSURES);
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (node.closest(CHROME_SELECTOR) || node.closest('[data-print-disclosure="ui"]')) continue;
+      // Named details are mutually exclusive; never mutate the group owner.
+      if (node.hasAttribute('name')) continue;
+      if (!printDisclosures.has(node)) printDisclosures.set(node, node.getAttribute('open'));
+      if (!node.open) node.open = true;
+    }
+  }
+  function restoreEditorialDisclosures() {
+    printDisclosures.forEach(function (value, node) {
+      if (value === null) node.removeAttribute('open');
+      else node.setAttribute('open', value);
+    });
+    printDisclosures.clear();
+  }
 
   function installStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -536,7 +561,7 @@
       }
     }
 
-    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
+    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,details.shelf-about > summary,details[data-print-disclosure="editorial"] > summary,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
     for (var k = 0; k < keepers.length; k++) {
       var keeper = keepers[k];
       if (!isVisible(keeper) || closestAtomic(keeper)) continue;
@@ -580,7 +605,7 @@
     return stats;
   }
 
-  function prepare() {
+  function prepare(event) {
     installStyle();
     clearGenerated();
     var root = resolveRoot();
@@ -588,6 +613,9 @@
       report = { version: VERSION, prepared: false, reason: 'reader root not found' };
       return report;
     }
+    // A native beforeprint callback can precede the print media query.
+    // Do not expand during the engine's ordinary screen preflight.
+    if (isPrintMedia() || event && event.type === 'beforeprint') expandEditorialDisclosures(root);
     var pageHeight = measureMm(269);
     var stats = classifyCandidates(root, pageHeight);
     report = {
@@ -603,6 +631,7 @@
 
   function reset() {
     clearGenerated();
+    restoreEditorialDisclosures();
     document.documentElement.removeAttribute('data-gb-print-pagination');
   }
 

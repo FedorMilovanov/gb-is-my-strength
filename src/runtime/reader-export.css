@@ -30,3 +30,32 @@
  html body.np-u-preview.np-u-native-product-actions > #gbFloatingControls.np-u-native-legacy-float,
  html body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner.np-u-product-native-floating{display:none!important}
 }
+
+/* Editorial disclosures are authored content, not reader chrome.
+   Do not alter open attributes, persist new UI state, duplicate the source,
+   or indiscriminately expose arbitrary details. Gill's source shelf is the
+   first verified native disclosure family. New families opt in semantically. */
+@media print{
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]){
+  overflow:visible;max-height:none;break-inside:auto;
+ }
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"])::details-content{
+  content-visibility:visible;
+  display:block;
+  block-size:auto;
+ }
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary{
+  display:block;list-style:none;cursor:auto;min-height:0;
+  break-inside:avoid-page;break-after:avoid-page;
+  page-break-inside:avoid;page-break-after:avoid;
+ }
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary::marker{content:""}
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary::-webkit-details-marker{display:none}
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary > :is(span,strong,small) + :is(span,strong,small){margin-inline-start:.4em}
+ html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary + *{
+  break-before:avoid-page;page-break-before:avoid;
+ }
+ html body article :is(h5,h6){break-inside:avoid-page;page-break-inside:avoid}
+ html body article table thead{display:table-header-group;break-inside:avoid-page;break-after:avoid-page}
+ html body article table tbody > tr:first-child{break-before:avoid-page}
+}
