@@ -15,7 +15,7 @@
     "indexedRoutes": 104,
     "scannedSourceFiles": 554,
     "references": 1377,
-    "occurrences": 3515,
+    "occurrences": 3516,
     "canonicalTextRecords": 149,
     "referencesWithoutCanonicalText": 1228,
     "chapterRanges": 45,
@@ -67368,6 +67368,18 @@
           ],
           "sourceOwner": "src/components/article-pilots/antisovetov/AntisovetovBody.astro",
           "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/anatomiya-padeniya-pyat-stadiy/",
+          "title": "Анатомия падения: пять стадий институционального разложения",
+          "context": "ична. Руководитель, который располагает полномочиями назначать, ограничивать доступ к служению и проводить дисциплину, обязан применять эти полномочия без господства над людьми (1 Пет. 5:2–3). Сам по себе вопрос, жалоба или обращение за независимой защитой не становится мятежом из-за того, что затронуло репутацию руководителя. Вместе с тем серьёзное обвин…",
+          "anchor": "dvustoronnee",
+          "raw": "1 Пет. 5:2–3",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx",
+          "sourceKind": "mdx-source"
         },
         {
           "url": "/articles/anatomiya-padeniya-pyat-stadiy/",
