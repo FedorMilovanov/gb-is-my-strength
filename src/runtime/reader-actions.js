@@ -211,8 +211,22 @@
     event.stopPropagation();
   }
 
-  // One export surface. Download is deliberately unavailable until an
-  // approved, versioned artifact is supplied by the publication pipeline.
+  // Only build-validated metadata can activate a direct PDF download.
+  function readPdfArtifact() {
+    const selector = 'meta[name="gb-reader-pdf"]';
+    const meta = document.querySelector(selector);
+    if (!meta || document.querySelectorAll(selector).length !== 1) return null;
+    const url = meta.getAttribute('content') || '';
+    const match = /^\/reader-pdf\/[a-f0-9]{64}\/([a-z0-9][a-z0-9-]*\.pdf)$/.exec(url);
+    const route = meta.getAttribute('data-route') || '';
+    const revision = meta.getAttribute('data-revision') || '';
+    const bytes = meta.getAttribute('data-bytes') || '';
+    if (!match || !/^\/(?:[a-z0-9-]+\/)+$/.test(route) || route !== window.location.pathname ||
+        !/^[a-f0-9]{40}$/.test(revision) || !/^[1-9][0-9]*$/.test(bytes) ||
+        !Number.isSafeInteger(Number(bytes)) || Number(bytes) <= 4) return null;
+    return { url, filename: match[1], route, revision, bytes: Number(bytes) };
+  }
+  const initialPdfArtifact = readPdfArtifact();
   let exportMenu = null;
   let exportOpener = null;
   const exportIcons = {
@@ -220,7 +234,7 @@
     print: '<path d="M6 9V3h12v6M6 17H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v7H6zM17 12h2"/>',
   };
   const exportCommands = Object.freeze([
-    Object.freeze({ id: 'download', label: 'Скачать PDF', description: 'Файл пока не опубликован', available: false }),
+    Object.freeze({ id: 'download', label: 'Скачать PDF', description: initialPdfArtifact ? 'Скачать готовый документ' : 'Файл пока не опубликован', available: Boolean(initialPdfArtifact) }),
     Object.freeze({ id: 'print', label: 'Распечатать', description: 'Открыть настройки печати', available: true }),
   ]);
   function closeExport(restoreFocus = false) {
@@ -235,8 +249,20 @@
   }
   function invokeExport(id, source = 'export-menu') {
     if (id === 'print') return print(source);
-    // No navigation or pretend download when the artifact is unavailable.
-    return { status: 'unavailable', reason: 'pdf-not-published' };
+    if (id !== 'download') return { status: 'unavailable', reason: 'unknown-command' };
+    const artifact = readPdfArtifact();
+    if (!initialPdfArtifact || !artifact || JSON.stringify(artifact) !== JSON.stringify(initialPdfArtifact)) {
+      return { status: 'unavailable', reason: 'pdf-not-published' };
+    }
+    const link = document.createElement('a');
+    link.href = artifact.url;
+    link.download = artifact.filename;
+    link.hidden = true;
+    document.body.appendChild(link);
+    try {
+      link.click();
+      return { status: 'requested', filename: artifact.filename };
+    } finally { link.remove(); }
   }
   function makeExportOption(command, onInvoke) {
     const button = document.createElement('button');
