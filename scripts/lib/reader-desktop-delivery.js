@@ -30,7 +30,30 @@ function createDesktopDelivery(contract) {
   var comparison = new URLSearchParams(window.location.search).getAll('reader-pilot');
   if (comparison.length === 1 && comparison[0] === '0') { nativeStyles(); return; }
   var desktop = window.matchMedia('${MEDIA}');
-  desktop.addEventListener('change', function(){ window.location.reload(); });
+  // Physical print changes viewport/media queries without a screen resize.
+  // Compare against the original screen admission only when print has ended.
+  var printMedia = window.matchMedia('print');
+  var screenDesktop = desktop.matches;
+  var printActive = printMedia.matches;
+  var reconcileFrame = 0;
+  function reconcileScreen() {
+    if (reconcileFrame) cancelAnimationFrame(reconcileFrame);
+    reconcileFrame = requestAnimationFrame(function(){
+      reconcileFrame = 0;
+      if (printActive || printMedia.matches ||
+          document.documentElement.hasAttribute('data-gb-print-prepared')) return;
+      if (desktop.matches !== screenDesktop) window.location.reload();
+    });
+  }
+  window.addEventListener('beforeprint',function(){ printActive = true; });
+  window.addEventListener('afterprint',function(){
+    printActive = false;
+    reconcileScreen();
+  });
+  printMedia.addEventListener('change',function(event){
+    if (!event.matches) reconcileScreen();
+  });
+  desktop.addEventListener('change',reconcileScreen);
   if (!desktop.matches) return;
   // The original links are inert until every required CSS resource is ready.
   // A failed script may already have reparented controls: only a fresh Classic
