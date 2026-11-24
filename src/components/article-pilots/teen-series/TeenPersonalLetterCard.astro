@@ -25,16 +25,23 @@ assertTeenPersonalLetterMedia(card, (url) => {
 >
   {card.media && (
     <figure class="teen-letter__artwork">
-      <img
-        src={card.media.src}
-        srcset={card.media.srcset}
-        sizes="(max-width: 48rem) calc(100vw - 2rem), 820px"
-        width="1600"
-        height="900"
-        alt={card.media.alt}
-        loading="lazy"
-        decoding="async"
-      />
+      <picture>
+        <source
+          type="image/avif"
+          srcset={card.media.avifSrcset}
+          sizes="(max-width: 48rem) calc(100vw - 2rem), 820px"
+        />
+        <img
+          src={card.media.src}
+          srcset={card.media.srcset}
+          sizes="(max-width: 48rem) calc(100vw - 2rem), 820px"
+          width="1600"
+          height="900"
+          alt={card.media.alt}
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
     </figure>
   )}
   <div class="teen-letter__content">
@@ -68,6 +75,7 @@ assertTeenPersonalLetterMedia(card, (url) => {
     background: var(--color-surface-quote, var(--color-surface));
   }
   .teen-letter__artwork { margin: 0; padding: 0; }
+  .teen-letter__artwork picture { display: block; }
   .teen-letter__artwork img {
     display: block;
     width: 100%;
