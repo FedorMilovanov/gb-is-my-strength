@@ -42,7 +42,7 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
     const state=await links.nth(index).evaluate(el=>{
       const rect=el.getBoundingClientRect(),css=getComputedStyle(el);
       const outlineWidth=parseFloat(css.outlineWidth)||0,outlineOffset=parseFloat(css.outlineOffset)||0;
-      const outlineColorVisible=css.outlineColor!=='transparent'&&!/^rgba?\([^)]*,\s*0(?:\.0+)?\s*\)$/u.test(css.outlineColor);
+      const outlineColorVisible=css.outlineColor!=='transparent'&&!/^rgba\([^)]*,\s*0(?:\.0+)?\s*\)$/u.test(css.outlineColor);
       const outlineVisible=css.outlineStyle!=='none'&&outlineWidth>0&&outlineColorVisible;
       const shadowVisible=css.boxShadow!=='none'&&!/rgba\([^)]*,\s*0(?:\.0+)?\s*\)/u.test(css.boxShadow);
       const indicatorVisible=outlineVisible||shadowVisible;
@@ -59,7 +59,7 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
         if(!top||top===document.body||top===document.documentElement||top===el||el.contains(top)||top.contains(el))return false;
         const style=getComputedStyle(top),z=style.zIndex==='auto'?null:Number(style.zIndex);
         return style.visibility!=='hidden'&&Number(style.opacity)>0&&style.pointerEvents!=='none'&&
-          (style.position==='fixed'||style.position==='sticky'||(style.position==='absolute'&&z!==null&&z>=0));
+          (style.position==='fixed'||style.position==='sticky'||(['absolute','relative'].includes(style.position)&&z!==null&&z>=0));
       };
       const unobscured=centerVisible&&!samples.some(([x,y])=>overlayAt(x,y));
       return {
