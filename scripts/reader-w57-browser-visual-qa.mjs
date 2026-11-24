@@ -22,16 +22,39 @@ async function snap(page,name){
  const buf=await page.screenshot({path:resolve(OUT,name+'.jpg'),type:'jpeg',quality:48,animations:'disabled'});
  console.log('W57_IMAGE_BEGIN::'+name+'::'+buf.toString('base64')+'::W57_IMAGE_END');
 }
+// Authored identity; a generated search ordinal is not a stable fixture.
+const SALTERS_PARAGRAPH='article.article-body > h3#sec-trinity + p.reveal';
+async function saltersParagraph(page){
+ const block=page.locator(SALTERS_PARAGRAPH);
+ await block.waitFor({state:'visible',timeout:15000});
+ assert.equal(await block.count(),1,'unique authored Salters paragraph');
+ const text=await block.innerText();
+ assert.match(text,/Солтерс-Холле/);
+ assert.match(text,/обсуждали/);
+ return block;
+}
 async function scene(browser,name,path,width,height){
  const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,
   hasTouch:width<600,isMobile:width<600,locale:'ru-RU',reducedMotion:'reduce'});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(String(e).slice(0,350)));
  const response=await page.goto(BASE+path,{waitUntil:'domcontentloaded',timeout:45000});
- await page.waitForTimeout(700);
+ const pilotExpected=width>=1121;
+ let readinessError=null;
+ try{
+  await page.waitForFunction(({desktop})=>{
+   const visible=selector=>!!document.querySelector(selector)?.getClientRects().length;
+   if(desktop)return (document.body.classList.contains('np-w57-ready')&&
+    window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true)||
+    new URL(location.href).searchParams.get('reader-pilot')==='0';
+   return document.readyState==='complete'&&visible('#mobPartTocBtn')&&visible('#mobSettingsBtn')&&
+    visible('.reader-mobile-play')&&visible('#mobSpdBadge');
+  },{desktop:pilotExpected},{timeout:15000});
+ }catch(error){readinessError=String(error).slice(0,500);}
  const state=await page.evaluate(()=>({
   ready:document.body.classList.contains('np-w57-ready'),
   annotated:!!window.__NP_W57_ANNOTATIONS__?.ready,
+  modelReady:window.__NP_UNIVERSAL_PREVIEW__?.ready===true,
   width:document.documentElement.scrollWidth,viewport:innerWidth,
   folded:document.body.classList.contains('np-u-hide-right'),
   noteCards:document.querySelectorAll('#npW57NotesDetails').length,
@@ -43,10 +66,9 @@ async function scene(browser,name,path,width,height){
   nativePlay:!!document.querySelector('.reader-mobile-play')?.getClientRects().length,
   nativeSpeed:!!document.querySelector('#mobSpdBadge')?.getClientRects().length
  }));
- const item={name,path,width,height,response:response?.status(),state,errors};REPORT.scenes.push(item);
- const pilotExpected=width>=1121;
- if(response?.status()!==200||
-    (pilotExpected&&(!state.ready||!state.annotated||state.noteCards!==1||state.w57RuntimeScripts<2))||
+ const item={name,path,width,height,response:response?.status(),actualUrl:page.url(),readinessError,state,errors};REPORT.scenes.push(item);
+ if(readinessError||response?.status()!==200||
+    (pilotExpected&&(!state.ready||!state.annotated||!state.modelReady||state.noteCards!==1||state.w57RuntimeScripts<2))||
     (!pilotExpected&&(state.ready||state.annotated||state.noteCards!==0||
        state.w57RuntimeScripts!==0||!state.nativeToc||!state.nativeSettings||
        !state.nativePlay||!state.nativeSpeed)))
@@ -339,21 +361,22 @@ try{
  }
  const d=await scene(chrome,'gill-desktop','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',1440,900);
  await snap(d.page,'desktop-folded');
- const readingGeometry=()=>({
+ const readingGeometry=selector=>({
   viewport:innerWidth,
   boxes:Object.fromEntries([
    ['main',document.querySelector('main.np-u-reader-main')],
    ['article',document.querySelector('article.article-body')],
    ['hero',[...document.querySelectorAll('article.article-body img')].find(x=>x.getBoundingClientRect().width>300)],
-   ['prose',document.getElementById('gill-search-p-013')],
+   ['prose',document.querySelector(selector)],
   ].map(([key,el])=>{
    const r=el?.getBoundingClientRect();
    return[key,r?{left:+r.left.toFixed(1),right:+r.right.toFixed(1),
     width:+r.width.toFixed(1),center:+(r.left+r.width/2).toFixed(1)}:null];
   }))
  });
- d.item.geometryFolded=await d.page.evaluate(readingGeometry);
  await safe('desktop-research',async()=>{
+  await saltersParagraph(d.page);
+  d.item.geometryFolded=await d.page.evaluate(readingGeometry,SALTERS_PARAGRAPH);
   await d.page.locator('#npUEdgeToggle').click();
   await d.page.locator('#npW57NotesDetails summary').click();
   d.item.panel=await d.page.evaluate(()=>({
@@ -362,7 +385,7 @@ try{
    bounds:document.querySelector('#npUResearch').getBoundingClientRect().toJSON()
   }));
   assert.ok(d.item.panel.open&&d.item.panel.noteOpen);
-  d.item.geometryOpen=await d.page.evaluate(readingGeometry);
+  d.item.geometryOpen=await d.page.evaluate(readingGeometry,SALTERS_PARAGRAPH);
   const folded=d.item.geometryFolded.boxes.hero,opened=d.item.geometryOpen.boxes.hero;
   d.item.heroCenterShift=folded&&opened?+(opened.center-folded.center).toFixed(1):null;
   if(d.item.heroCenterShift!==null&&Math.abs(d.item.heroCenterShift)>24)
@@ -581,11 +604,12 @@ try{
   // The tested source contains a visible gterm and a large hidden gtip.
   // Range.toString() includes the hidden tooltip, so the saved quote MUST
   // instead use the author-visible textual projection.
-  const fixture=await d.page.evaluate(()=>{
-   const block=document.getElementById('gill-search-p-013');
-   if(!block)return{error:'Gill source paragraph gill-search-p-013 missing'};
-   const terms=[...block.querySelectorAll('.gterm')];
-   const term=terms.find(x=>x.querySelector('.gtip'));
+  const paragraph=await saltersParagraph(d.page);
+  await paragraph.locator('.gterm[data-term="диссентер"] .gtip').waitFor({state:'attached',timeout:15000});
+  const fixture=await d.page.evaluate(selector=>{
+   const block=document.querySelector(selector);
+   if(!block)return{error:'Authored Salters source paragraph missing'};
+   const term=block.querySelector('.gterm[data-term="диссентер"]');
    if(!term)return{error:'Gill glossary gterm/gtip absent'};
    block.scrollIntoView({block:'center',behavior:'instant'});
    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT),nodes=[];let n;
@@ -611,7 +635,7 @@ try{
    document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
    return{expected,raw:range.toString(),bounds:range.getBoundingClientRect().toJSON(),
     glossary:term.querySelector('.gtip')?.textContent?.slice(0,65)||''};
-  });
+  },SALTERS_PARAGRAPH);
   d.item.glossaryFixture={...fixture,raw:fixture.raw?.slice(0,250)};
   assert.ok(!fixture.error,fixture.error);
   assert.ok(fixture.raw.length>fixture.expected.length+20,
@@ -622,6 +646,8 @@ try{
    'contextual actions should appear on genuine visible glossary-adjacent selection');
   const before=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
   await d.page.locator('#npW57SelectionToolbar [data-w57-action="marker"]').click();
+  await d.page.waitForFunction(ids=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .some(x=>!ids.includes(x.id)&&x.annotation?.version===1),before.map(x=>x.id),{timeout:10000});
   const after=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
   const record=after.find(x=>!before.some(y=>y.id===x.id)&&x.annotation?.version===1);
   assert.ok(record,'glossary-adjacent selection must save an independent annotation');
@@ -649,7 +675,7 @@ try{
  });
  await safe('desktop-glossary-first-pointer-click',async()=>{
   const p=d.page;
-  const paragraph=p.locator('#gill-search-p-013');
+  const paragraph=await saltersParagraph(p);
   await paragraph.scrollIntoViewIfNeeded();
   await p.mouse.move(5,5);
   const points=await paragraph.evaluate(el=>{
@@ -668,16 +694,39 @@ try{
   await p.mouse.move(...points[1],{steps:26});await p.mouse.up();
   const marker=p.locator('#npW57SelectionToolbar [data-w57-action=marker]');
   await marker.waitFor();
-  const point=await marker.evaluate(el=>{
+  const point=await marker.evaluate((el,selector)=>{
    const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
-   return {x,y,hit:el.contains(document.elementFromPoint(x,y)),text:getSelection().toString()};
-  });
+   const selection=getSelection(),block=document.querySelector(selector);
+   if(!selection?.rangeCount||!block)throw Error('Missing real pointer selection');
+   const range=selection.getRangeAt(0);
+   if(!block.contains(range.startContainer)||!block.contains(range.endContainer))
+    throw Error('Pointer selection escaped authored paragraph');
+   const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
+   let text='',leaf;
+   while((leaf=walker.nextNode())){
+    if(leaf.parentElement.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]')||
+      !range.intersectsNode(leaf))continue;
+    const from=leaf===range.startContainer?range.startOffset:0;
+    const to=leaf===range.endContainer?range.endOffset:leaf.nodeValue.length;
+    text+=leaf.nodeValue.slice(from,to);
+   }
+   return {x,y,hit:el.contains(document.elementFromPoint(x,y)),text,raw:selection.toString()};
+  },SALTERS_PARAGRAPH);
+  assert.match(point.text,/Солтерс-Холле/);
   assert.match(point.text,/Диссентеры/);
+  assert.match(point.text,/обсуждали/);
   assert.equal(point.hit,true,'tooltip must not cover the marker action after real drag');
+  const before=await p.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').map(q=>q.id));
   await p.mouse.click(point.x,point.y);
-  const saved=await p.evaluate(text=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
-   .some(q=>q.text===text&&q.annotation?.kind==='marker'),point.text);
-  assert.equal(saved,true,'first direct click must save the actual selection');
+  await p.waitForFunction(({ids,text})=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .some(q=>!ids.includes(q.id)&&q.text===text&&q.annotation?.kind==='marker'&&
+    q.annotation.anchor?.exact===text&&q.annotation.anchor?.projection==='reader-visible-v1'),
+   {ids:before,text:point.text},{timeout:10000});
+  const saved=await p.evaluate(({ids,text})=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .filter(q=>!ids.includes(q.id)&&q.text===text&&q.annotation?.kind==='marker'),
+   {ids:before,text:point.text});
+  assert.equal(saved.length,1,'first direct click must save the actual visible selection exactly once');
+  d.item.firstPointer={raw:point.raw,visible:point.text,id:saved[0].id};
  });
  await safe('desktop-dark',async()=>{
   await d.page.evaluate(()=>window.GBReaderPreferences?.setTheme?.('dark',{source:'w57-qa'}));
@@ -737,7 +786,7 @@ try{
     await panel.locator('[data-np-u-type-theme=sepia]').click();
     assert.equal(await p.evaluate(()=>window.GBReaderPreferences.get().theme),'sepia');
     await panel.locator('[data-np-u-type-font=cormorant]').click();
-    assert.match(await p.locator('#gill-search-p-013').evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
+    assert.match(await (await saltersParagraph(p)).evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
     await snap(p,name+'-settings');
     await p.keyboard.press('Escape');
     assert.equal(await panel.isHidden(),true);
