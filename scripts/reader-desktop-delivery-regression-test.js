@@ -35,28 +35,47 @@ try {
   assert.throws(()=>delivery.materializeAssets(rejected,source),/asset drift/);
   assert.equal(existsSync(rejected),false,'all bytes must be checked before any copy');
   const expected = contract.scripts.map(a=>`${PREFIX}${a.name}?v=${a.sha256}`);
-  function run({width=1121,search='',hasState=true,ready='loading'}={}) {
-    const links=plan.links.map(l=>({...l})), scripts=[], listeners={}, errors=[];
+  function run({width=1121,search='',hasState=true,ready='loading',missingCss=-1,missingJs=-1,stallJs=-1,notReady=false}={}) {
+    const links=plan.links.map((l,i)=>({...l,sheet:i===missingCss?null:{},events:{},addEventListener(type,fn){this.events[type]=fn;}}));
+    const scripts=[],listeners={},errors=[],timers=new Map(),redirects=[];
     const media={matches:width>=1121,addEventListener(type,fn){listeners[type]=fn;}};
-    let reloads=0;
-    const window={location:{search,reload(){reloads++;}},matchMedia(q){assert.equal(q,MEDIA);return media;}};
-    const document={readyState:ready,querySelectorAll(){return links;},addEventListener(type,fn){listeners[type]=fn;},createElement(tag){assert.equal(tag,'script');return{};},body:{appendChild(script){scripts.push(script);}}};
-    const ctx=vm.createContext({window,document,URLSearchParams,console:{error(s){errors.push(s);}}});
+    let reloads=0,nextTimer=0;
+    const window={location:{search,href:'https://example.test/articles/fixture/'+search+'#paragraph',reload(){reloads++;},replace(href){redirects.push(href);}},
+      matchMedia(q){assert.equal(q,MEDIA);return media;},addEventListener(type,fn){listeners[type]=fn;},removeEventListener(type){delete listeners[type];}};
+    const document={readyState:ready,querySelectorAll(){return links;},addEventListener(type,fn){listeners[type]=fn;},createElement(tag){assert.equal(tag,'script');return{};},
+      body:{classList:{contains(){return !notReady&&scripts.length===6;}},appendChild(script){
+        const index=scripts.length;scripts.push(script);
+        if(index===missingJs)script.onerror();
+        else if(index!==stallJs){if(index===5&&!notReady){window.__NP_UNIVERSAL_PREVIEW__={ready:true};window.__NP_W57_ANNOTATIONS__={ready:true};}script.onload();}
+      }}};
+    const ctx=vm.createContext({window,document,URL,URLSearchParams,console:{error(s){errors.push(s);}},
+      setTimeout(fn,ms){const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout(id){timers.delete(id);}});
     const state=()=>{if(hasState)window.ReaderState={subscribe(){},getSnapshot(){}};};
     if(ready!=='loading')state();
     vm.runInContext(plan.bootstrap.code,ctx);
     const before=scripts.length;
     state(); listeners.DOMContentLoaded?.();
-    vm.runInContext(plan.bootstrap.code,ctx); // duplicate execution must be a no-op
-    return {links,scripts,before,listeners,media,errors,reloads:()=>reloads};
+    vm.runInContext(plan.bootstrap.code,ctx);
+    return {links,scripts,before,listeners,media,errors,redirects,timers,reloads:()=>reloads,
+      timeout(){const timer=[...timers.values()].find(t=>t.ms===12000);assert.ok(timer);timer.fn();}};
   }
-  let d=run(); assert.ok(d.links.every(l=>l.media===MEDIA)); assert.equal(d.before,0);assert.deepEqual(d.scripts.map(s=>s.src),expected);assert.ok(d.scripts.every(s=>s.async===false));
+  let d=run(); assert.ok(d.links.every(l=>l.media===MEDIA)); assert.equal(d.before,0);assert.deepEqual(d.scripts.map(s=>s.src),expected);assert.ok(d.scripts.every(s=>s.async===false));assert.equal(d.timers.size,0);
   d.media.matches=false;d.listeners.change();assert.equal(d.reloads(),1);
   let m=run({width:1120});assert.equal(m.scripts.length,0);assert.ok(m.links.every(l=>l.media==='not all'));m.media.matches=true;m.listeners.change();assert.equal(m.reloads(),1);
   let n=run({search:'?reader-pilot=0'});assert.equal(n.scripts.length,0);assert.ok(n.links.every(l=>l.media==='not all'));assert.equal(n.listeners.change,undefined);
-  let f=run({hasState:false});assert.equal(f.scripts.length,0);assert.ok(f.links.every(l=>l.media==='not all'));assert.equal(f.errors.length,1);
+  function fallbackState(result) {
+    assert.equal(result.redirects.length,1);assert.ok(result.links.every(l=>l.media==='not all'));assert.equal(result.errors.length,1);
+    const url=new URL(result.redirects[0]);assert.equal(url.searchParams.get('reader-pilot'),'0');assert.equal(url.hash,'#paragraph');
+    assert.equal(run({search:url.search}).redirects.length,0,'Classic fallback cannot loop');
+  }
+  let f=run({hasState:false});assert.equal(f.scripts.length,0);fallbackState(f);
   assert.deepEqual(run({ready:'complete'}).scripts.map(s=>s.src),expected);
   const repeated=run({search:'?reader-pilot=0&reader-pilot=1'});assert.deepEqual(repeated.scripts.map(s=>s.src),expected);
+  let css=run({missingCss:2,search:'?paper=space&panel=open&reader-pilot=1'});assert.equal(css.scripts.length,0);css.links[2].events.error();fallbackState(css);assert.equal(new URL(css.redirects[0]).searchParams.get('paper'),'space');assert.equal(new URL(css.redirects[0]).searchParams.get('panel'),'open');
+  let js=run({missingJs:4});assert.equal(js.scripts.length,5);fallbackState(js);
+  let stall=run({stallJs:3});assert.equal(stall.scripts.length,4);stall.timeout();fallbackState(stall);
+  let unready=run({notReady:true});unready.timeout();fallbackState(unready);
+  let cssStall=run({missingCss:1});cssStall.timeout();fallbackState(cssStall);
   // Verify the actual build projector against fixture HTML, not HTTP rewriting.
   const { projectDesktopDist } = require('./lib/reader-desktop-dist');
   const output=join(root,'projected');
@@ -74,5 +93,5 @@ try {
   assert.ok(html.endsWith('<body>original</body></html>'));
   assert.equal(readFileSync(join(catalog,'index.html'),'utf8'),native);
   assert.throws(()=>projectDesktopDist({distDir:output,sourceDir:source,contract}),/duplicate desktop head/);
-  console.log('PASS: admission, manifest URL order and 12 exact bytes, fail-before-copy, bootstrap hash, 1120/1121, opt-out, native readiness, duplicate bootstrap, viewport crossing');
+  console.log('PASS: admission, manifest URL order and 12 exact bytes, fail-before-copy, bootstrap hash, 1120/1121, opt-out, native readiness, duplicate bootstrap, viewport crossing, CSS/JS errors, timeout, readiness and loop-free Classic rollback');
 } finally { rmSync(root,{recursive:true,force:true}); }

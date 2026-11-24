@@ -32,26 +32,76 @@ function createDesktopDelivery(contract) {
   var desktop = window.matchMedia('${MEDIA}');
   desktop.addEventListener('change', function(){ window.location.reload(); });
   if (!desktop.matches) return;
-  // Links are inert in the original HTML (including no-JS and Classic).
-  // The external head-tail bootstrap activates them before body parsing.
-  links.forEach(function(link){ link.media = '${MEDIA}'; });
-  function mount() {
-    if (!desktop.matches) return;
-    var state = window.ReaderState;
-    if (!state || typeof state.subscribe !== 'function' || typeof state.getSnapshot !== 'function') {
-      nativeStyles();
-      console.error('Reader desktop: canonical ReaderState unavailable');
+  // The original links are inert until every required CSS resource is ready.
+  // A failed script may already have reparented controls: only a fresh Classic
+  // document is a safe rollback, not an attempt to undo another runtime's DOM.
+  var stopped = false, started = false, cssReady = false, domReady = document.readyState !== 'loading';
+  var deadline = setTimeout(function(){ fallback('mount timeout'); }, 12000);
+  var poll;
+  function fallback(reason) {
+    if (stopped) return;
+    stopped = true;
+    clearTimeout(deadline);
+    clearTimeout(poll);
+    nativeStyles();
+    console.error('Reader desktop: '+reason+'; restoring Classic');
+    var next = new URL(window.location.href);
+    next.searchParams.set('reader-pilot','0');
+    window.location.replace(next.href);
+  }
+  function assetError(event) {
+    if (event.filename && new URL(event.filename,window.location.href).pathname.startsWith('${PREFIX}')) {
+      fallback('runtime error: '+event.filename);
+    }
+  }
+  window.addEventListener('error',assetError);
+  function ready() {
+    if (stopped) return;
+    if (document.body.classList.contains('np-w57-ready') &&
+        window.__NP_UNIVERSAL_PREVIEW__?.ready && window.__NP_W57_ANNOTATIONS__?.ready) {
+      stopped = true;
+      clearTimeout(deadline);
+      window.removeEventListener('error',assetError);
       return;
     }
-    ${JSON.stringify(contract.scripts.map(assetUrl))}.forEach(function(url){
-      var script = document.createElement('script');
-      script.src = url;
-      script.async = false;
-      document.body.appendChild(script);
-    });
+    poll = setTimeout(ready,50);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, {once:true});
-  else mount();
+  var scripts = ${JSON.stringify(contract.scripts.map(assetUrl))};
+  function load(index) {
+    if (stopped) return;
+    if (index === scripts.length) { ready(); return; }
+    var script = document.createElement('script');
+    script.src = scripts[index];
+    script.async = false;
+    script.onload = function(){ load(index+1); };
+    script.onerror = function(){ fallback('required script failed: '+scripts[index]); };
+    document.body.appendChild(script);
+  }
+  function mount() {
+    if (stopped || started || !desktop.matches || !cssReady || !domReady) return;
+    started = true;
+    var state = window.ReaderState;
+    if (!state || typeof state.subscribe !== 'function' || typeof state.getSnapshot !== 'function') {
+      fallback('canonical ReaderState unavailable');
+      return;
+    }
+    load(0);
+  }
+  function stylesReady() {
+    if (stopped || cssReady) return;
+    if (Array.from(links).every(function(link){ return !!link.sheet; })) {
+      cssReady = true;
+      links.forEach(function(link){ link.media = '${MEDIA}'; });
+      mount();
+    }
+  }
+  if (links.length !== ${contract.styles.length}) { fallback('required styles missing'); return; }
+  links.forEach(function(link){
+    link.addEventListener('load',stylesReady,{once:true});
+    link.addEventListener('error',function(){ fallback('required stylesheet failed: '+link.href); },{once:true});
+  });
+  if (!domReady) document.addEventListener('DOMContentLoaded',function(){ domReady = true; mount(); },{once:true});
+  stylesReady();
 })();`;
   const bootstrap = { code, sha256: sha256(code) };
   bootstrap.href = `${PREFIX}bootstrap.js?v=${bootstrap.sha256}`;
