@@ -191,7 +191,7 @@
     '.epilogue'
   ].join(',');
   var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|flip-card|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;
-  var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"]';
+  var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"],[data-print-policy="exclude"],#npUniversalDemo';
   var TAIL_SELECTOR = '[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue';
   var STYLE_ID = 'gb-print-pagination-contract';
   var closingGroups = [];
@@ -536,7 +536,7 @@
       }
     }
 
-    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
+    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,details.shelf-about > summary,details[data-print-disclosure="editorial"] > summary,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
     for (var k = 0; k < keepers.length; k++) {
       var keeper = keepers[k];
       if (!isVisible(keeper) || closestAtomic(keeper)) continue;
