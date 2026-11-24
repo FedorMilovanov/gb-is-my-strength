@@ -103,7 +103,7 @@ const jsonLd = {
           <p class="section-label">Богословское исследование · {items.length} частей · {totalMinutes} мин</p>
           <h1>Отступники</h1>
           <p class="article-byline"><span class="article-byline__strong">Отступничество, падение и возвращение в Библии и истории Церкви</span></p>
-          <p class="apostasy-hub-lead">{description}</p>
+          <p class="apostasy-hub-lead">Что Библия называет отпадением от веры? Как отличить тяжёлое падение от окончательного отступничества — и как помочь тому, кто хочет вернуться?</p>
           <nav class="apostasy-hub-actions" aria-label="Навигация по серии">
             <a class="apostasy-hub-start" href={items[0].href}>Начать с первой части <span aria-hidden="true">→</span></a>
             <a class="apostasy-hub-index" href="#series-order">Все части <span aria-hidden="true">↓</span></a>
@@ -114,7 +114,7 @@ const jsonLd = {
           <img
             src={APOSTASY_SERIES_MEDIA.series.hero}
             srcset={`${APOSTASY_SERIES_MEDIA.series.rail} 600w, ${APOSTASY_SERIES_MEDIA.series.hero} 1200w`}
-            sizes="(max-width: 52rem) 100vw, 520px"
+            sizes="(max-width: 44rem) 100vw, (max-width: 52rem) 40vw, 520px"
             width="1200"
             height="630"
             alt={APOSTASY_SERIES_MEDIA.series.alt}
@@ -135,7 +135,7 @@ const jsonLd = {
             {cards.map((item, index) => (
               <li class="apostasy-series-step">
               <a class="apostasy-series-card" href={item.href}>
-                <img
+                {index > 0 && <img
                   class="apostasy-series-card__image"
                   src={item.media.rail}
                   srcset={`${item.media.rail} 600w, ${item.media.hero} 1200w`}
@@ -145,12 +145,13 @@ const jsonLd = {
                   alt=""
                   loading="lazy"
                   decoding="async"
-                />
+                />}
                 <span class="apostasy-series-card__content">
                   <span class="apostasy-series-card__mark" aria-hidden="true">{item.mark.value}</span>
                   <span class="apostasy-series-card__body">
                     <span class="apostasy-series-card__eyebrow">{index === 0 ? "Начало серии · " : ""}{item.readingTime}</span>
                     <strong>{item.title}</strong>
+                    {index === 0 && <span class="apostasy-series-card__intro">Временная вера, падение, ожесточение и отречение — не одна категория.</span>}
                     <span class="apostasy-series-card__link">Читать исследование <span aria-hidden="true">→</span></span>
                   </span>
                 </span>
@@ -180,7 +181,7 @@ const jsonLd = {
     <style>
       .apostasy-series-hub-page .article-main { width:100%; max-width:74rem; margin-inline:auto; padding-inline:clamp(1rem,3vw,2.5rem); box-sizing:border-box; }
       .apostasy-hub { min-width:0; }
-      .apostasy-hub-opening { display:grid; gap:clamp(1.25rem,3vw,2.75rem); align-items:center; padding-block:clamp(1.25rem,4vw,3rem); border-bottom:1px solid color-mix(in srgb,currentColor 18%,transparent); }
+      .apostasy-hub-opening { display:grid; gap:clamp(1rem,3vw,2.75rem); align-items:center; padding-block:clamp(.5rem,3vw,2rem) clamp(1.25rem,3vw,2rem); border-bottom:1px solid color-mix(in srgb,currentColor 18%,transparent); }
       .apostasy-hub-opening .article-header { margin:0; padding:0; border:0; min-width:0; }
       .apostasy-hub-opening h1 { font-size:clamp(2.5rem,5vw,4.6rem); line-height:1.08; margin-block:.5rem .9rem; overflow-wrap:anywhere; }
       .apostasy-hub-opening .article-byline { font-size:clamp(1.05rem,1.8vw,1.35rem); line-height:1.45; }
@@ -193,11 +194,17 @@ const jsonLd = {
       .apostasy-series-hero img { display:block; width:100%; height:auto; aspect-ratio:1200/630; object-fit:cover; border-radius:.7rem; }
       .apostasy-series-hero figcaption { font-size:.82rem; line-height:1.5; opacity:.8; margin-top:.6rem; }
       .apostasy-hub-section-heading { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:.3rem 2rem; margin-top:2rem; }
-      .apostasy-hub-kicker { font-size:.8rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin:0 0 .4rem; }
+      .apostasy-hub-kicker { font-family:"Source Sans 3",system-ui,sans-serif; color:var(--color-accent); font-size:.8rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin:0 0 .4rem; }
       .apostasy-hub-section-heading h2 { margin:0; }
-      .apostasy-hub-section-heading>p { max-width:45ch; margin:0; line-height:1.5; }
+      .apostasy-hub-section-heading>p { max-width:45ch; margin:0; line-height:1.5; text-align:start; }
+      .apostasy-hub section[aria-labelledby="series-order"] { margin-block:0; }
       .apostasy-series-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; margin:1.25rem 0 2.5rem; padding:0; list-style:none; }
       .apostasy-series-step { min-width:0; margin:0; }
+      .apostasy-series-step:first-child .apostasy-series-card { grid-template-columns:minmax(0,1fr); border-inline-start:3px solid var(--color-accent); background:var(--color-surface-muted); }
+      .apostasy-series-step:first-child .apostasy-series-card__mark { display:grid; width:clamp(2.5rem,5vw,3.75rem); height:clamp(2.5rem,5vw,3.75rem); font-size:1.15rem; color:var(--color-accent); border-radius:.35rem; }
+      .apostasy-series-step:first-child .apostasy-series-card__content { align-content:center; grid-template-columns:auto minmax(0,1fr); gap:clamp(.75rem,2vw,1.25rem); padding:clamp(1rem,2.5vw,1.75rem); }
+      .apostasy-series-step:first-child .apostasy-series-card strong { font-size:clamp(1.12rem,2vw,1.65rem); }
+      .apostasy-series-card__intro { line-height:1.55; font-size:.95rem; color:var(--color-text-secondary); }
       .apostasy-series-card { height:100%; display:grid; grid-template-columns:minmax(90px,34%) minmax(0,1fr); overflow:hidden; border:1px solid color-mix(in srgb,currentColor 20%,transparent); border-radius:.7rem; text-decoration:none; color:inherit; background:var(--color-surface,Canvas); }
       .apostasy-series-card:hover,.apostasy-series-card:focus-visible { border-color:currentColor; }
       .apostasy-series-card__image { display:block; width:100%; height:100%; min-height:100%; object-fit:cover; background:var(--color-surface-muted,Canvas); }
@@ -209,13 +216,17 @@ const jsonLd = {
       .apostasy-series-card__link { font-family:"Source Sans 3",system-ui,sans-serif; font-size:.9rem; font-weight:650; line-height:1.35; }
       .apostasy-hub-context { max-width:72ch; margin:0 auto 2rem; }
       .apostasy-hub-actions a:focus-visible,.apostasy-series-card:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+      @media (min-width:44rem) and (max-width:51.999rem) {
+        .apostasy-hub-opening { grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr); align-items:center; gap:1.5rem; }
+        .apostasy-hub-opening h1 { font-size:clamp(2.25rem,4vw,3rem); }
+        .apostasy-hub-opening .article-byline { font-size:1.05rem; }
+        .apostasy-hub-lead { font-size:.95rem; }
+      }
       @media (min-width:52rem) {
         .apostasy-hub-opening { grid-template-columns:minmax(0,1fr) minmax(0,.92fr); }
         .apostasy-series-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
         .apostasy-series-step:first-child { grid-column:1/-1; }
-        .apostasy-series-step:first-child .apostasy-series-card { grid-template-columns:minmax(0,35%) minmax(0,1fr); }
-        .apostasy-series-step:first-child .apostasy-series-card__content { align-content:center; padding:1.75rem; }
-        .apostasy-series-step:first-child .apostasy-series-card strong { font-size:clamp(1.2rem,2vw,1.65rem); }
+
       }
       @media (max-width:35rem) {
         .apostasy-series-card { grid-template-columns:minmax(72px,28%) minmax(0,1fr); align-items:start; padding:.65rem; gap:.7rem; }
@@ -223,6 +234,12 @@ const jsonLd = {
         .apostasy-series-card__content { grid-template-columns:minmax(0,1fr); gap:.4rem; padding:0; }
         .apostasy-series-card__mark { display:none; }
         .apostasy-hub-opening .article-header { text-align:start; }
+        .apostasy-hub-opening .section-label { letter-spacing:.09em; }
+        .apostasy-hub-opening .article-byline { line-height:1.4; }
+        .apostasy-hub-lead { line-height:1.55; }
+        .apostasy-series-step:first-child .apostasy-series-card { padding:0; }
+        .apostasy-series-step:first-child .apostasy-series-card__content { padding:1rem .8rem; }
+        .apostasy-hub-section-heading { margin-top:1.5rem; }
       }
       @media (hover:hover) and (prefers-reduced-motion:no-preference) {
         .apostasy-series-card { transition:border-color .18s ease,box-shadow .18s ease; }
