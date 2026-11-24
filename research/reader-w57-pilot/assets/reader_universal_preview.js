@@ -861,6 +861,28 @@
  // W37: reparent the ORIGINAL Product series I-IV nav and progress when
  // narrow desktop ARGON sidebar is folded. Restore both on resize.
  // The Product node, links, event handlers and ring remain unique.
+ const narrowActionOrigins=new Map();
+ function syncNarrowSeriesActions(rail,outline,narrow){
+  const footer=rail.querySelector('.gbs-rail-foot');
+  let slot=outline.querySelector(':scope > .np-u-narrow-series-actions');
+  if(!footer)return;
+  if(narrow){
+   const actions=Array.from(footer.querySelectorAll(':scope > [data-action="print"],:scope > [data-action="share"]'));
+   if(!slot&&actions.length===2){
+    slot=document.createElement('div');
+    slot.className='np-u-narrow-series-actions';
+    slot.setAttribute('role','group');slot.setAttribute('aria-label','Действия с чтением');
+    outline.querySelector('.np-u-left-foot').before(slot);
+    for(const action of actions){
+     const marker=document.createComment('original series action position');
+     action.before(marker);narrowActionOrigins.set(action,marker);slot.append(action);
+    }
+   }
+  }else if(slot){
+   for(const [action,marker] of narrowActionOrigins){marker.replaceWith(action);}
+   narrowActionOrigins.clear();slot.remove();
+  }
+ }
  function syncNarrowNativeSeriesNavigation(){
   const rail=document.querySelector('.gbs2-world > .gbs-rail[data-reader-integrated-rail="series"]');
   const outline=root.querySelector('#npUOutline');
@@ -871,8 +893,9 @@
   const slot=outline.querySelector(':scope > .np-u-series-progress-slot');
   const progress=rail.querySelector(':scope > .gbs2-rprogress')||
                  slot?.querySelector(':scope > .gbs2-rprogress');
-  if(!spine||!nav||!progress)return;
   const narrow=matchMedia('(min-width:1121px) and (max-width:1359px)').matches;
+  syncNarrowSeriesActions(rail,outline,narrow);
+  if(!spine||!nav||!progress)return;
   if(narrow){
    let host=slot;
    if(!host){

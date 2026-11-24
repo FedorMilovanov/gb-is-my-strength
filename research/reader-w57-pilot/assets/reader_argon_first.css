@@ -247,6 +247,27 @@ body.np-u-preview.np-u-argon-shell > .page-wrap{
  font-size:10px;background:var(--np-u-paper);
  border-color:var(--np-u-rule);
 }
+/* Original native Share/Print controls remain available in the narrow ARGON rail. */
+#npUniversalDemo.np-u-argon .np-u-narrow-series-actions{
+ display:flex;flex:none;align-items:center;justify-content:center;gap:8px;
+ padding:5px 2px;border-top:1px solid var(--np-u-rule);background:var(--np-u-paper);
+}
+#npUniversalDemo.np-u-argon .np-u-narrow-series-actions > button{
+ box-sizing:border-box;display:grid;place-items:center;flex:none;
+ width:44px;height:44px;min-width:44px;min-height:44px;
+ border:1px solid transparent;border-radius:6px;padding:0;
+ color:var(--np-u-ink);background:transparent;cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-narrow-series-actions > button:hover{
+ color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+#npUniversalDemo.np-u-argon .np-u-narrow-series-actions > button:focus-visible{
+ outline:2px solid var(--np-u-red);outline-offset:-2px;
+}
+#npUniversalDemo.np-u-argon .np-u-narrow-series-actions svg{width:20px;height:20px}
+body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-narrow-series-actions{
+ flex-direction:column;gap:2px;
+}
 #npUniversalDemo.np-u-argon .np-u-foot-mark{
  font-family:'JetBrains Mono',Consolas,monospace;
  color:var(--np-u-muted);
