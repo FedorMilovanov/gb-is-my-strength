@@ -17,7 +17,7 @@ console.log('EVIDENCE_DIR='+root);
 await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
 for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/styles/editorial-edition.css','fonts']) await copy(path);
 await copy('research/news-visual-engineering/exhibit-fixture.astro.txt','src/pages/index.astro');
-await copy('research/news-visual-engineering/exhibit-long-fixture.astro.txt','src/pages/long/index.astro');
+await copy('research/news-visual-engineering/exhibit-long-fixture.astro.txt','src/pages/long.astro');
 await writeFile(join(root,'package.json'),'{"type":"module","private":true}');
 await build({root,cacheDir:join(root,'.astro-cache'),vite:{cacheDir:join(root,'.vite-cache')},telemetry:false});
 const dist=resolve(root,'dist');
