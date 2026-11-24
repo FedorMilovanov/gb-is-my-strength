@@ -10,7 +10,8 @@ import { join, resolve, dirname, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const engines = {chromium,firefox,webkit};
-const requested = process.argv.slice(2);
+const historyMode=process.argv.includes('--history-2018');
+const requested = process.argv.slice(2).filter(arg=>arg!=='--history-2018');
 const selected = requested.length ? requested : Object.keys(engines);
 assert.ok(selected.every(name=>Object.hasOwn(engines,name)) && new Set(selected).size===selected.length,'Pass unique engine names: chromium firefox webkit');
 const repo = fileURLToPath(new URL('../../', import.meta.url));
@@ -22,6 +23,10 @@ const copy = async (from, to=from) => {
 console.log('EVIDENCE_DIR='+root);
 await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
 for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/components/journal/journalEditorial.css','src/styles/editorial-edition.css','fonts']) await copy(path);
+if(historyMode){
+ await copy('research/news-visual-engineering/g3-hist-pub-13-specimen.json','src/history-evidence.json');
+ await copy('research/news-visual-engineering/g3-hist-pub-13-specimen.astro.txt','src/pages/index.astro');
+}
 await copy('research/news-visual-engineering/g3-pub-018-specimen.json','src/specimen.json');
 await copy('research/news-visual-engineering/g3-pub-018-specimen.astro.txt','src/pages/specimen.astro');
 await mkdir(join(root,'src/components'),{recursive:true});
@@ -60,6 +65,40 @@ const verifyCompactLinkNames=async page=>{
 };
 const compactAcceptance=[];
 const paperAcceptance=[];
+if(historyMode){
+ const history=JSON.parse(await readFile(join(root,'src/history-evidence.json'),'utf8'));
+ try{
+ for(const name of selected){
+  const browser=await engines[name].launch({headless:true,timeout:30000});
+  try{
+  for(const width of [320,768,1440])for(const dark of [false,true])for(const js of [false,true]){
+   const page=await browser.newPage({viewport:{width,height:950},javaScriptEnabled:js});
+   try{
+    page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
+    assert.equal((await page.goto(url)).status(),200);
+    if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
+    await waitForCanonicalFonts(page);
+    const witness=await page.evaluate(()=>({text:document.querySelector('.jhe-summary').textContent,boundary:document.querySelector('.jhe-boundary p').textContent,over:document.documentElement.scrollWidth>innerWidth,groups:[...document.querySelectorAll('.jhe-group')].map(g=>[...g.querySelectorAll('[data-source-id]')].map(n=>n.dataset.sourceId)),ids:[...document.querySelectorAll('[id]')].map(n=>n.id)}));
+    assert.equal(witness.text,history.readerSafeText);assert.equal(witness.boundary,history.boundary);assert.equal(witness.over,false);assert.deepEqual(witness.groups,history.groups.map(g=>g.sourceIds));assert.equal(new Set(witness.ids).size,witness.ids.length);
+    const links=page.locator('.jhe-group a');assert.equal(await links.count(),3);
+    if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
+    for(let i=0;i<3;i++){
+     const link=links.nth(i),id=await link.getAttribute('id'),href=await link.getAttribute('href');
+     assert.equal(await link.innerText(),history.sources[i].label);assert.ok((await link.getAttribute('aria-label')).startsWith(history.sources[i].label+' · '));
+     await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,href);
+     const back=page.locator(href+' [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+id);await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#'+id);
+    }
+    const sizes=()=>page.evaluate(()=>[...document.querySelectorAll('.jhe-summary,.jhe-boundary p,.jhe-group li p')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
+    const base=await sizes();await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));assert.ok((await sizes()).every((s,i)=>Math.abs(s/base[i]-2)<.01));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));assert.deepEqual(await sizes(),base);
+    if(!js){await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);await page.screenshot({path:join(evidence,[name,width,dark?'dark':'light','history'].join('-')+'.png'),fullPage:true});}
+    results.push({name,width,dark,js,citations:3});await writeFile(join(evidence,'history-results.json'),JSON.stringify(results,null,2));console.log('HISTORY_PASS '+JSON.stringify(results.at(-1)));
+   }finally{await page.close();}
+  }
+  }finally{await browser.close();}
+ }
+ }finally{server.close();}
+ assert.equal(results.length,12*selected.length);console.log('HISTORY_CASES='+results.length);
+}else{
 try{
  for(const name of selected){
   const browser=await engines[name].launch({headless:true,timeout:30000});
@@ -175,3 +214,4 @@ for(const name of selected)for(const width of [320,390,768,1024,1440,1920])for(c
 assert.equal(compactAcceptance.length,12*selected.length);
 assert.equal(paperAcceptance.length,selected.includes('chromium')?4:0);
 console.log('SPECIMEN_CASES='+results.length+' COMPACT_NOJS='+compactAcceptance.length+' PAPER='+paperAcceptance.length);
+}

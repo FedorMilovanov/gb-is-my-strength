@@ -1,0 +1,40 @@
+---
+import SourceReturn from '../components/journal/JournalSourceReturn.astro';
+import {documentExhibitView} from '../components/journal/editorial/document-exhibit-model.mjs';
+import specimen from '../history-evidence.json';
+import '../components/journal/journalEditorial.css';
+import '../../fonts/fonts.css';
+const sourceMap=specimen.sources.map(s=>({id:s.id,href:'#private-src-'+s.id,label:s.label}));
+const authority={claims:[{id:specimen.claimId,references:specimen.sources.map(s=>({sourceId:s.id,locator:s.locator}))}],sources:sourceMap};
+const row=documentExhibitView({id:'history-evidence-2018',mode:'editorial-paraphrase',title:'Два взгляда на конференцию',issuer:'Редакция',deck:'Группировка свидетельств',documentDate:null,publicationDate:null,captureDate:null,sections:[{id:'witnesses',heading:'Свидетельства участников',locator:specimen.sources[0].locator,summary:specimen.readerSafeText,significance:'Различные предметы свидетельства',limitation:specimen.boundary,claimId:specimen.claimId,sourceId:specimen.sources[0].id}]},authority).sections[0];
+const entries=specimen.groups.map(group=>({label:group.label,rows:group.sourceIds.map(id=>{const source=specimen.sources.find(s=>s.id===id);const citation=row.citations.find(c=>c.source.id===id);if(!source||!citation)throw Error('missing evidence');return {source,citation};})}));
+if(new Set(entries.flatMap(g=>g.rows.map(r=>r.source.id))).size!==row.citations.length)throw Error('incomplete grouping');
+---
+<html lang="ru"><head><meta charset="utf-8"/><meta name="robots" content="noindex,nofollow"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>PRIVATE_REVIEW · G3-HIST-PUB-13</title></head><body style="margin:0"><main class="journal-edition"><article data-journal-source-navigation style="max-width:1100px;margin:auto;padding:16px">
+<p class="jhe-private">PRIVATE_REVIEW · не для публикации</p>
+<section class="jhe" aria-labelledby="jhe-title"><header><p class="jhe-kicker">2018 · Свидетельства участников</p><h2 id="jhe-title">Два взгляда на конференцию</h2></header>
+<div class="jhe-grid"><div class="jhe-main"><p class="jhe-summary" data-history-expansion-claim={specimen.claimId}>{row.summary}</p><aside class="jhe-boundary"><h3>Предел доказательства</h3><p>{row.limitation}</p></aside></div>
+<aside class="jhe-rail" aria-label="Группы свидетельств"><p class="jhe-kicker">3 документа · 2 семьи свидетельств</p>
+{entries.map(group=><section class="jhe-group"><h3>{group.label}</h3><ul role="list">{group.rows.map(({source,citation})=><li data-source-id={source.id}><a id={citation.citationId} data-journal-citation href={citation.source.href} aria-label={source.label+' · '+source.locator}>{source.label}</a><p>{source.role}</p></li>)}</ul></section>)}
+</aside></div></section>
+<section class="jhe-bib" aria-label="Источники">{specimen.sources.map(source=><section id={'private-src-'+source.id} class="bibliography-item"><h3>{source.label}</h3><p lang="en">{source.locator}</p><a href={source.url} rel="noopener noreferrer">Открыть источник</a> <SourceReturn href={'#'+row.citations.find(c=>c.source.id===source.id).citationId}/></section>)}</section>
+</article></main></body></html>
+<style>
+.jhe-private,.jhe-kicker{font:600 .78rem/1.4 var(--je-ui);color:var(--je-muted);margin:0 0 .5rem}
+.jhe{container-type:inline-size;border-block:1px solid var(--je-rule);border-block-start:2px solid var(--je-gold);padding-block:1rem;color:var(--je-ink)}
+.jhe header{border-block-end:1px solid var(--je-rule);padding-block-end:.8rem;margin-block-end:1rem}
+.jhe h2{font:600 clamp(1.5rem,3vw,2.4rem)/1.2 var(--je-serif);margin:0;hyphens:none;text-wrap:balance}
+.jhe-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem}
+.jhe-main,.jhe-rail{min-width:0;overflow-wrap:anywhere}
+.jhe-summary,.jhe-boundary p{font:400 calc(1rem * var(--gb-reader-font-scale,1))/1.7 var(--je-body);margin:0}
+.jhe-boundary{border-inline-start:2px solid var(--je-rule);padding-inline-start:.8rem;margin-block-start:1rem}
+.jhe h3{font:600 1rem/1.4 var(--je-ui);margin:0 0 .3rem}
+.jhe-rail{border-block-start:1px solid var(--je-rule);padding-block-start:.8rem}
+.jhe-group{margin-block:1rem}.jhe-group ul{list-style:none;padding:0;margin:0}
+.jhe-group li{border-block-start:1px solid var(--je-rule);padding-block:.35rem .65rem}
+.jhe-group a{display:inline-flex;align-items:center;min-height:44px;color:var(--je-gold);font:600 .9rem/1.4 var(--je-ui);text-decoration:underline}
+.jhe-group li p{font:400 calc(.9rem * var(--gb-reader-font-scale,1))/1.6 var(--je-body);margin:0;color:var(--je-ink)}
+.jhe-bib{margin-block-start:1.5rem}
+@container(min-width:44rem){.jhe-grid{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:1.5rem}.jhe-rail{border-block-start:0;border-inline-start:1px solid var(--je-rule);padding:0 0 0 1rem}}
+@media print{.jhe{container-type:normal;color:#111;border-color:#555}.jhe-grid{display:block}.jhe-group li,.jhe-boundary{break-inside:avoid}.jhe-group a{min-height:0;display:block}.jhe h3{break-after:avoid}.jhe :is(p,a,h3){color:#111}}
+</style>
