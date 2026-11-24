@@ -1,0 +1,48 @@
+{
+  "kind": "BOUNDED_INTAKE_NOT_BRANCH_DISPOSITION",
+  "donorPR": 2383,
+  "donorHead": "5645cddb81ea6ac2118708654ee1d31b0c50d747",
+  "recipientPR": 2380,
+  "recipientHead": "a212a72245a42b6ed3b8c2bc5d3dec0ecedd4d11",
+  "ownerAuthorizationComments": [
+    7119195982,
+    7119334215,
+    7119365521
+  ],
+  "transferred": [
+    {
+      "path": "src/components/journal/g3-visual/G3SpeakerMatrix.astro",
+      "blob": "b63fb03edb2c26945d831d70abc6ff99fc0a3d6c"
+    },
+    {
+      "path": "src/components/journal/g3-visual/G3AnnualFinance.astro",
+      "blob": "ff98ae45edd5bba5cbfe2f4362a23421ccbb512b"
+    },
+    {
+      "path": "src/components/journal/g3-visual/adopted-visual-data.json",
+      "blob": "67b7750f198e442d755a9ff0a7084bdab48215fc"
+    },
+    {
+      "path": "src/components/journal/g3-visual/adopted-visual-inputs.ts",
+      "blob": "22c1c9baaa48b5400da0a231d46652c0a8468b01"
+    },
+    {
+      "path": "src/components/journal/g3-visual/matrix-data.json",
+      "blob": "7ebf41b6af43575349513b2446752917f0094a78"
+    },
+    {
+      "path": "src/components/journal/g3-visual/matrix.css",
+      "blob": "ba851442431b643176e94009c86f1a70145580f3"
+    },
+    {
+      "path": "src/components/journal/g3-visual/matrix.js",
+      "blob": "14c1ce8e2f305cd443cd974a80c25fd2cc3d44be"
+    },
+    {
+      "path": "src/components/journal/g3-visual/finance.css",
+      "blob": "a9e621b17dca34b1930cd36a99b76b2aadee1cba"
+    }
+  ],
+  "remaining": "Unique research, evidence, test and media-permissions files remain in donor. No full merge, supersession, guard exemption, deletion or retirement authorized.",
+  "acceptance": "Exact two-route build PASS; prior Chromium focus run verified 8 geometry, 132 source returns, 8 filter checks, 8 history PDF captures. Four finance return failures attributable to test print-media leakage; corrected test rerun not yet accepted. Full release checks pending."
+}
