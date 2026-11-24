@@ -64,18 +64,24 @@ jobs:
       - name: Audit canonical pages, palette and pagination
         run: python3 scripts/print-paper-pdf-audit.py reports/print-paper/canonical/reader-print-a4.pdf --out reports/print-paper/canonical
       - name: Prove atomic and keep-with-next components across route families
+        id: print_matrix
         env:
           GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-paper/matrix
         run: node scripts/print-pagination-contract.mjs
       - name: Prove both physical reversible-card states
+        id: reversible_card
         env:
           GB_PRINT_REVERSIBLE_CARD_ARTIFACT_DIR: reports/print-paper/reversible-card
         run: node scripts/print-reversible-card-contract.mjs
-      - name: Raster-audit every route PDF and build contact sheets
-        run: |
-          python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix --out reports/print-paper/matrix-raster
-          python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix/paper-formats --out reports/print-paper/paper-formats-raster
-          python3 scripts/print-pagination-raster-audit.py reports/print-paper/reversible-card --out reports/print-paper/reversible-card-raster
+      - name: Raster-audit route PDFs and build contact sheets
+        if: ${{ !cancelled() && (steps.print_matrix.outcome == 'success' || steps.print_matrix.outcome == 'failure') }}
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix --out reports/print-paper/matrix-raster
+      - name: Raster-audit the complete physical paper-format matrix
+        if: ${{ !cancelled() && (steps.print_matrix.outcome == 'success' || steps.print_matrix.outcome == 'failure') }}
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix/paper-formats --out reports/print-paper/paper-formats-raster --require-paper-formats
+      - name: Raster-audit reversible-card PDFs
+        if: ${{ !cancelled() && (steps.reversible_card.outcome == 'success' || steps.reversible_card.outcome == 'failure') }}
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/reversible-card --out reports/print-paper/reversible-card-raster
       - if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

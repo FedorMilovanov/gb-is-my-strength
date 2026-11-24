@@ -815,6 +815,41 @@ try {
       }
     }
   }
+  // Protected Nagornaya: clean physical PDFs for the existing raster/semantic gate.
+  report.nagornayaFormats = [];
+  for (const format of ['A4', 'Letter']) {
+    for (const javaScriptEnabled of [true, false]) {
+      for (const width of [390, 1240]) {
+        const name = `nagornaya-${format.toLowerCase()}-${javaScriptEnabled ? 'js' : 'nojs'}-${width}`;
+        const context = await browser.newContext({
+          viewport: { width, height: 900 }, javaScriptEnabled, serviceWorkers: 'block'
+        });
+        try {
+          const page = await context.newPage();
+          await page.route('**/*', r => r.request().url().startsWith(base + '/') ? r.continue() : r.abort());
+          const response = await page.goto(base + '/nagornaya/chast-1/', { waitUntil: 'load' });
+          if (response?.status() !== 200) throw new Error('Nagornaya route not served');
+          const source = await page.evaluate(async () => {
+            await document.fonts?.ready;
+            const matrix = document.querySelector('#nagornaya-matthew-luke-observation-matrix');
+            const group = document.querySelector('[data-ng-print-heading-group]');
+            return { cells: matrix?.querySelectorAll('tbody td').length, marked: !!group?.querySelector('h2[id]') };
+          });
+          if (source.cells !== 16 || !source.marked) throw new Error('Nagornaya source contract drift');
+          const pdf = join(formatDir, name + '.pdf');
+          await page.pdf({ path: pdf, format, printBackground: true, preferCSSPageSize: true });
+          const paper = paperFormatWitness(pdf, format);
+          report.nagornayaFormats.push({name, source, paper, pdf: 'paper-formats/' + name + '.pdf'});
+          if (paper.failures.length) report.failures.push(name + ': physical format witness failed');
+        } catch (error) {
+          report.failures.push(name + ': ' + String(error));
+        } finally {
+          await context.close();
+        }
+      }
+    }
+  }
+  if (report.nagornayaFormats.length !== 8) report.failures.push('Nagornaya physical matrix incomplete');
 
   // W42 privacy: real Product Library, fresh contexts, synthetic private
   // data only. Physical PDFs must match a clean same-route baseline.

@@ -103,6 +103,88 @@ def find_amber_header_bars(image: Image.Image) -> list[dict]:
     return confirmed
 
 
+
+import re, subprocess, unicodedata, xml.etree.ElementTree as ET
+
+def tok(t): return re.findall(r'[^\W_]+',unicodedata.normalize('NFKC',t).casefold().replace('\u00ad',''))
+def read(p):
+ d=ET.fromstring(subprocess.check_output(['pdftotext','-bbox-layout',str(p),'-'])); out=[]
+ for page in d.findall('.//{*}page'):
+  words=[]
+  for word in page.findall('.//{*}word'):
+   for t in tok(word.text or ''): words.append({'t':t,'x':float(word.attrib['xMin']),'y':float(word.attrib['yMin']),'r':float(word.attrib['xMax']),'b':float(word.attrib['yMax'])})
+  out.append({'w':float(page.attrib['width']),'h':float(page.attrib['height']),'words':words})
+ return out
+def matches(ws,q):
+ t=tok(q);return [ws[i:i+len(t)] for i in range(len(ws)-len(t)+1) if [w['t'] for w in ws[i:i+len(t)]]==t] if t else []
+def witness(pages, rows, heads):
+ anchors=[]
+ for i,p in enumerate(pages):
+  ws=p['words']; hits=[matches(ws,h) for h in heads]
+  # Header candidates require all 4 labels on one horizontal band, ordered left to right.
+  for a in hits[0]:
+   y=a[0]['y']; other=[[v for v in h if abs(v[0]['y']-y)<3] for h in hits[1:]]
+   if all(len(v)==1 for v in other):
+    h=[a]+[v[0] for v in other]; xs=[v[0]['x'] for v in h]
+    if all(b-a>30 for a,b in zip(xs,xs[1:])): anchors.append((i,xs,max(w['b'] for v in h for w in v)))
+ if len(anchors)!=1:return {'status':'REVIEW','reason':'ambiguous or missing table header','headers':len(anchors)}
+ i,xs,y=anchors[0];p=pages[i]; ws=p['words']; cols=[[w for w in ws if w['y']>y and w['x']>=x-1 and (j==3 or w['x']<xs[j+1]-1)] for j,x in enumerate(xs)]
+ # First-column row boundaries are independently sourced, not inferred from the clipped right column.
+ rstarts=[]
+ for r in rows:
+  m=matches(cols[0],r[0]);
+  if len(m)!=1:return {'status':'REVIEW','reason':'row anchor ambiguous/missing','row':len(rstarts)+1}
+  rstarts.append(m[0][0]['y'])
+ if rstarts!=sorted(rstarts) or len(set(rstarts))!=len(rows):return {'status':'FAIL','reason':'row ordering'}
+ # Locate the last row's last word in first column; use a conservative trailing row band.
+ # No body text outside the table allowed to satisfy a cell: it must start at the matching row top.
+ missing=[]
+ for ri,r in enumerate(rows):
+  y0=rstarts[ri]; y1=rstarts[ri+1] if ri+1<len(rows) else max(w['b'] for w in matches(cols[0],r[0])[0])+30
+  for ci,expected in enumerate(r):
+   ws2=[w for w in cols[ci] if y0-2<=w['y']<y1-2]
+   m=[v for v in matches(ws2,expected) if abs(v[0]['y']-y0)<3]
+   if len(m)!=1:missing.append([ri+1,ci+1])
+ return {'status':'PASS' if not missing else 'FAIL','page':i+1,'present':sum(map(len, rows))-len(missing),'missing':missing}
+def phrase_pages(pages,q): return [i+1 for i,p in enumerate(pages) if matches(p['words'],q)]
+
+NG_ROWS = [
+  [
+    "Матфей помещает речь на горе; Лука — на ровном месте.",
+    "Одно событие на ровной площадке горного склона.",
+    "Два близких эпизода или повторение сходного учения.",
+    "Наблюдение: высокая; реконструкция: средняя."
+  ],
+  [
+    "Матфей передаёт значительно больший объём материала, чем Лука.",
+    "Различный отбор и сокращение одной проповеди.",
+    "Повторное обучение либо литературная композиция из близких речений.",
+    "Объём: высокая; механизм: средняя/низкая."
+  ],
+  [
+    "После речевого блока оба повествования переходят к исцелению слуги сотника.",
+    "Общий последующий контекст поддерживает связь рассказов.",
+    "Евангелисты могли располагать материал тематически.",
+    "Последовательность: высокая; вывод о едином событии: средняя."
+  ],
+  [
+    "Матфей и Лука различаются формулировками, адресацией и набором тем.",
+    "Разные ракурсы, перевод и богодухновенный отбор.",
+    "Разные события, устная традиция или редакционная композиция.",
+    "Различия: высокая; объяснение зависит от модели."
+  ]
+]
+NG_HEADS = ["Наблюдение","Возможное объяснение","Конкурирующее объяснение","Уверенность"]
+
+def nagornaya_paper_witness(pdf):
+    pages = read(pdf)
+    table = witness(pages, NG_ROWS, NG_HEADS)
+    heading = phrase_pages(pages, 'III. Мф 5:17–20 — Богословский стержень')
+    subtitle = phrase_pages(pages, 'Здесь проповедь получает свой центр тяжести')
+    body = phrase_pages(pages, 'Стихи 17–20 пятой главы Матфея')
+    group_ok = len(heading) == 1 and heading == subtitle == body
+    return {'table': table, 'heading': heading, 'subtitle': subtitle, 'body': body, 'groupOk': group_ok}
+
 def audit_pdf(pdf: Path, out: Path) -> dict:
     route_out = out / pdf.stem
     rendered = route_out / "rendered"
@@ -169,26 +251,72 @@ def audit_pdf(pdf: Path, out: Path) -> dict:
             fill="black",
         )
     sheet.save(route_out / "contact-sheet.png")
+    nagornaya = None
+    if re.fullmatch(r'nagornaya-(a4|letter)-(js|nojs)-(390|1240)', pdf.stem):
+        nagornaya = nagornaya_paper_witness(pdf)
+        if nagornaya['table']['status'] != 'PASS' or not nagornaya['groupOk']:
+            failures.append('Nagornaya physical table/heading witness: ' + json.dumps(nagornaya, ensure_ascii=False))
     return {
         "pdf": pdf.name,
         "pages": len(pages),
         "diagnostics": diagnostics,
+        "nagornaya": nagornaya,
         "failures": failures,
     }
+
+
+def paper_format_inventory(pdfs):
+    """Exact required CI artifacts; do not infer coverage from a directory existing."""
+    expected = {
+        f"herm-{paper}-{mode}.pdf"
+        for paper in ("a4", "letter") for mode in ("js", "nojs")
+    } | {
+        f"nagornaya-{paper}-{mode}-{width}.pdf"
+        for paper in ("a4", "letter") for mode in ("js", "nojs")
+        for width in (390, 1240)
+    }
+    names = [p.name for p in pdfs]
+    missing = sorted(expected - set(names))
+    duplicates = sorted(name for name, count in Counter(names).items() if count > 1)
+    unexpected = sorted(set(names) - expected)
+    invalid = []
+    for p in pdfs:
+        try:
+            with p.open("rb") as stream:
+                if stream.read(5) != b"%PDF-":
+                    invalid.append(p.name)
+        except OSError:
+            invalid.append(p.name)
+    failures = []
+    for label, items in (("missing", missing), ("duplicate", duplicates),
+                         ("unexpected", unexpected), ("invalid PDF header", invalid)):
+        if items:
+            failures.append(f"paper-formats {label}: {', '.join(items)}")
+    return {"expected": sorted(expected), "observed": sorted(names),
+            "failures": failures}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path, help="PDF file or directory containing PDFs")
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--require-paper-formats", action="store_true")
     args = parser.parse_args()
     pdfs = [args.input] if args.input.is_file() else sorted(args.input.glob("*.pdf"))
-    if not pdfs:
+    inventory = paper_format_inventory(pdfs) if args.require_paper_formats else None
+    if not pdfs and inventory is None:
         raise SystemExit(f"No PDFs found in {args.input}")
     args.out.mkdir(parents=True, exist_ok=True)
-    results = [audit_pdf(pdf, args.out) for pdf in pdfs]
+    results = []
+    for pdf in pdfs:
+        try:
+            results.append(audit_pdf(pdf, args.out))
+        except Exception as error:
+            results.append({"pdf": pdf.name, "pages": 0, "failures": [f"audit failed: {type(error).__name__}: {error}"]})
     failures = [f"{item['pdf']}: {failure}" for item in results for failure in item["failures"]]
-    report = {"pdfs": results, "failures": failures}
+    if inventory is not None:
+        failures.extend(inventory["failures"])
+    report = {"pdfs": results, "inventory": inventory, "failures": failures}
     (args.out / "raster-report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), "utf-8"
     )
