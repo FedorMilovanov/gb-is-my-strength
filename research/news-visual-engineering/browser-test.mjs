@@ -34,6 +34,18 @@ const server=createServer(async(req,res)=>{
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const url='http://127.0.0.1:'+server.address().port;
 const evidence=join(root,'evidence');await mkdir(evidence);
+const textScaleCheck=async page=>{
+  const sizes=()=>page.evaluate(()=>[...document.querySelectorAll('.jdx-deck,.jdx-passage p:not(.jdx-locator),.jdx-commentary dd')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
+  const base=await sizes();assert.ok(base.length>0 && base.every(v=>v>0));
+  try{
+    await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+    const enlarged=await sizes();
+    assert.equal(enlarged.length,base.length);
+    for(let i=0;i<base.length;i++)assert.ok(Math.abs(enlarged[i]/base[i]-2)<.01,'Reader font scale failed at text index '+i);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'200% Reader text scale overflow');
+  }finally{await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));}
+  assert.deepEqual(await sizes(),base,'Reader font size did not reset');
+};
 const results=[];
 const longResults=[];
 const borderCheck=async page=>{
@@ -80,9 +92,7 @@ try {
             assert.equal(await back.getAttribute('href'),expected);
             await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,expected);
           }
-          await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
-          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'200% body text scale overflow');
-          await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
+          await textScaleCheck(page);
           if(!js&&[320,1100].includes(width)){
             await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
             await page.evaluate(()=>document.fonts.ready);
@@ -112,9 +122,7 @@ try {
             assert.equal(await back.getAttribute('href'),expected);
             await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,expected);
           }
-          await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
-          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-          await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
+          await textScaleCheck(page);
           if(!js){
             await page.goto(url+'/long/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
             await page.evaluate(()=>document.fonts.ready);
