@@ -89,34 +89,108 @@ function boundedTags(values) {
 function objectMap(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
-function mergeUnique(existing, incoming, key, max) {
-  const values = distinct(existing.concat(incoming), key);
-  if (values.length > max) throw new Error('Превышен лимит записей (' + max + '). Удаление данных не производится.');
-  return values;
+const exact = (a,b) => JSON.stringify(a) === JSON.stringify(b);
+const hasId = id => (typeof id === 'string' && id.length > 0 && id.length <= 110) ||
+  (typeof id === 'number' && Number.isSafeInteger(id) && id !== 0);
+const sameId = (a,b) => a != null && b != null && String(a) === String(b);
+function recordKey(row, quote) {
+  if (row && row.id != null && String(row.id)) return 'id:' + String(row.id);
+  return quote && row && typeof row.text === 'string'
+    ? 'legacy:' + JSON.stringify([row.url,row.text,row.before,row.after]) : null;
+}
+// Keep every preexisting row, including legacy duplicates; refuse ambiguous
+// or divergent identities rather than silently selecting one version.
+function mergeRecords(existing, incoming, quote, max) {
+  const result = existing.slice(), added = [];
+  for (const row of incoming) {
+    const key = recordKey(row,quote);
+    if (!key) throw new Error('У записи нет безопасного идентификатора.');
+    const matches = result.filter(x => recordKey(x,quote) === key);
+    if (matches.length > 1 || (matches.length === 1 && !exact(matches[0],row)))
+      throw new Error('Конфликт идентификаторов цитат или заметок. Импорт отменён без изменения данных.');
+    if (!matches.length) { result.push(row); added.push(row); }
+  }
+  if (result.length > max && result.length > existing.length)
+    throw new Error('Превышен лимит записей (' + max + '). Удаление данных не производится.');
+  return { result, added };
+}
+function favoriteKey(row) {
+  const value=typeof row==='string'?row:row?.path||row?.routePath||row?.url;
+  const path=cleanPath(value);
+  if(!path)return '';
+  // Match the canonical Favorite Store path aliases without invoking its
+  // migration side effects. Existing raw records remain untouched.
+  try {
+    return decodeURIComponent(path).replace(/index\.html$/i,'').replace(/\/{2,}/g,'/').replace(/\/+$/,'')||'/';
+  } catch { return ''; }
+}
+function mergeFavorites(existing,incoming) {
+  const result=existing.slice();
+  for (const row of incoming) {
+    const key=favoriteKey(row);
+    if (!key) throw new Error('Некорректная сохранённая статья.');
+    if (!result.some(x=>favoriteKey(x)===key)) result.push(row);
+  }
+  if(result.length>MAX.favorites && result.length>existing.length)
+    throw new Error('Превышен лимит сохранённых статей. Импорт отменён.');
+  return result;
+}
+function checkImportedLinks(quotes,notes,addedQuotes,addedNotes) {
+  const conflict=()=>{throw new Error('Конфликт связей заметок и цитат. Импорт отменён без изменения данных.');};
+  for(const note of addedNotes) {
+    const forward=quotes.filter(q=>sameId(q?.annotation?.noteId,note.id));
+    if(forward.length>1 || (forward.length===1 && note.quoteId!=null && !sameId(forward[0].id,note.quoteId))) conflict();
+    if(note.quoteId!=null) {
+      const targets=quotes.filter(q=>sameId(q?.id,note.quoteId));
+      if(targets.length>1 || notes.some(n=>n!==note&&sameId(n?.quoteId,note.quoteId))) conflict();
+      if(targets[0]?.annotation?.noteId!=null && !sameId(targets[0].annotation.noteId,note.id)) conflict();
+    }
+  }
+  for(const quote of addedQuotes) {
+    const reverse=notes.filter(n=>sameId(n?.quoteId,quote.id));
+    const explicit=quote.annotation?.noteId;
+    if(reverse.length>1) conflict();
+    if(explicit!=null) {
+      const targets=notes.filter(n=>sameId(n?.id,explicit));
+      if(targets.length>1 || (reverse.length && !sameId(reverse[0].id,explicit)) ||
+        quotes.some(q=>q!==quote&&sameId(q?.annotation?.noteId,explicit))) conflict();
+      if(targets[0]?.quoteId!=null&&!sameId(targets[0].quoteId,quote.id)) conflict();
+    }
+  }
 }
 function validateBackup(payload) {
   if (!payload || payload.format !== FORMAT || payload.version !== 3 || !payload.data) {
     throw new Error('Неподдерживаемый формат копии.');
   }
   const p = payload.data;
+  const isMap = x => x !== null && typeof x === 'object' && !Array.isArray(x);
+  if(!isMap(p)) throw new Error('Некорректная структура копии.');
+  for(const key of ['tags','reading','revisit'])
+    if(Object.hasOwn(p,key)&&!isMap(p[key])) throw new Error('Некорректный раздел: '+key);
+  if(p.revisit && Object.hasOwn(p.revisit,'suppressed')&&!isMap(p.revisit.suppressed))
+    throw new Error('Некорректные исключения из повторения.');
   for (const key of ['quotes', 'notes', 'favorites']) {
     if (!Array.isArray(p[key]) || p[key].length > MAX[key]) throw new Error('Некорректный список: ' + key);
   }
+  // Validate without truncating stored metadata, inventing timestamps or
+  // coercing legacy numeric IDs.
   const quote = p.quotes.map((x) => {
-    if (!x || typeof x.id !== 'string' || typeof x.text !== 'string' || !x.text.trim() || x.text.length > 25000 || (x.url && !cleanPath(x.url)))
+    if (!x || !hasId(x.id) || typeof x.text !== 'string' || !x.text.trim() || x.text.length > 25000 ||
+        (x.url && (typeof x.url !== 'string' || !cleanPath(x.url))) ||
+        (x.annotation?.noteId != null && !hasId(x.annotation.noteId)))
       throw new Error('Некорректная цитата.');
-    return { ...x, id: cap(x.id, 110), text: x.text, articleTitle: cap(x.articleTitle, 260),
-      url: cap(x.url, 2200), before: cap(x.before, 400), after: cap(x.after, 400), savedAt: Number(x.savedAt) || Date.now() };
+    return { ...x };
   });
   const notes = p.notes.map((x) => {
-    if (!x || typeof x.id !== 'string' || typeof x.text !== 'string' || x.text.length > 16000 || (x.url && !cleanPath(x.url)))
+    if (!x || !hasId(x.id) || typeof x.text !== 'string' || x.text.length > 16000 ||
+        (x.url && (typeof x.url !== 'string' || !cleanPath(x.url))) ||
+        (x.quoteId != null && !hasId(x.quoteId)))
       throw new Error('Некорректная заметка.');
-    return { ...x, id: cap(x.id, 110), text: x.text, articleTitle: cap(x.articleTitle, 260),
-      quoteText: cap(x.quoteText, 1800), url: cap(x.url, 2200), savedAt: Number(x.savedAt) || Date.now() };
+    return { ...x };
   });
   const fav = p.favorites.map((x) => {
-    if (!x || !cleanPath(x.path || x.url)) throw new Error('Некорректная сохранённая статья.');
-    return { ...x, path: cleanPath(x.path || x.url), title: cap(x.title, 240),
+    if (!x || typeof x!=='object' || !favoriteKey(x)) throw new Error('Некорректная сохранённая статья.');
+    return { ...x, path: favoriteKey(x), title: cap(x.title, 240),
       description: cap(x.description, 500), addedAt: Number(x.addedAt) || Date.now() };
   });
   const tags = objectMap(p.tags);
@@ -157,51 +231,74 @@ function serializeCurrent() {
   };
 }
 function safeMerge(old, next) {
+  const quotes=mergeRecords(old.quotes,next.quotes,true,MAX.quotes);
+  const notes=mergeRecords(old.notes,next.notes,false,MAX.notes);
+  checkImportedLinks(quotes.result,notes.result,quotes.added,notes.added);
   const merged = {
-    quotes: mergeUnique(old.quotes, next.quotes, (q) => q.id || JSON.stringify([q.url, q.text, q.before, q.after]), MAX.quotes),
-    notes: mergeUnique(old.notes, next.notes, (n) => n.id, MAX.notes),
-    favorites: mergeUnique(old.favorites, next.favorites, (f) => cleanPath(f.path || f.url), MAX.favorites),
-    tags: { ...next.tags, ...old.tags }, reading: { ...next.reading, ...old.reading },
-    revisit: { ...next.revisit, ...old.revisit, suppressed: { ...next.revisit.suppressed, ...objectMap(old.revisit.suppressed) } },
+    quotes: quotes.result, notes: notes.result,
+    favorites: mergeFavorites(old.favorites,next.favorites),
+    tags: { ...old.tags }, reading: { ...old.reading },
+    revisit: { ...old.revisit },
   };
-  for (const key of Object.keys(merged.tags)) {
-    const prior = old.tags[key] || [], incoming = next.tags[key] || [];
-    if (!Array.isArray(prior) || !Array.isArray(incoming))
+  for(const [key,value] of Object.entries(next.reading))
+    if(!Object.hasOwn(old.reading,key)) merged.reading[key]=value;
+  for (const [key,incoming] of Object.entries(next.tags)) {
+    if (!Array.isArray(incoming)) throw new Error('Некорректный список меток. Импорт отменён.');
+    const prior=Object.hasOwn(old.tags,key)?old.tags[key]:[];
+    if (!Array.isArray(prior) || prior.some(x=>typeof x!=='string'))
       throw new Error('Некорректный список меток. Импорт отменён.');
-    merged.tags[key] = boundedTags(prior.concat(incoming));
+    const added=prior.slice(), known=new Set(safeTags(prior).map(x=>x.toLocaleLowerCase('ru-RU')));
+    for(const label of safeTags(incoming)) {
+      const id=label.toLocaleLowerCase('ru-RU');
+      if(!known.has(id)){known.add(id);added.push(label);}
+    }
+    if(known.size>MAX.tagsPerItem) throw new Error('Больше 20 уникальных меток у одной записи. Импорт отменён без изменения данных.');
+    if(added.length || Object.hasOwn(old.tags,key)) merged.tags[key]=added;
   }
-  if (Object.keys(merged.tags).length > MAX.tags || Object.keys(merged.reading).length > MAX.reading)
+  const incomingSuppressed=objectMap(next.revisit?.suppressed);
+  if(Object.keys(incomingSuppressed).length) {
+    if(Object.hasOwn(old.revisit,'suppressed') && (!old.revisit.suppressed || typeof old.revisit.suppressed!=='object' || Array.isArray(old.revisit.suppressed)))
+      throw new Error('Некорректные сохранённые исключения из повторения.');
+    const prior=objectMap(old.revisit?.suppressed);
+    merged.revisit.suppressed={...prior};
+    for(const key of Object.keys(incomingSuppressed))
+      if(!Object.hasOwn(prior,key)) Object.defineProperty(merged.revisit.suppressed,key,{value:incomingSuppressed[key],enumerable:true,writable:true,configurable:true});
+    if(Object.keys(merged.revisit.suppressed).length>200 &&
+      Object.keys(merged.revisit.suppressed).length>Object.keys(prior).length)
+      throw new Error('Слишком много исключений из повторения.');
+  }
+  if(!Object.hasOwn(old.revisit,'hiddenDate')&&next.revisit?.hiddenDate)
+    merged.revisit.hiddenDate=next.revisit.hiddenDate;
+  if ((Object.keys(merged.tags).length > MAX.tags && Object.keys(merged.tags).length>Object.keys(old.tags).length) ||
+      (Object.keys(merged.reading).length > MAX.reading && Object.keys(merged.reading).length>Object.keys(old.reading).length))
     throw new Error('Слишком много меток или статусов чтения.');
   return merged;
 }
-function atomicImport(merged) {
-  const keys = Object.keys(KEYS);
-  const before = Object.fromEntries(keys.map((key) => [KEYS[key], localStorage.getItem(KEYS[key])]));
-  const serialized = Object.fromEntries(keys.map((key) => [KEYS[key], JSON.stringify(merged[key])]));
-  const changed = [];
-  try {
-    for (const key of keys) {
-      const storageKey = KEYS[key];
-      if (serialized[storageKey] === before[storageKey]) continue;
-      localStorage.setItem(storageKey, serialized[storageKey]);
-      changed.push(storageKey);
-    }
-  } catch {
-    // Revert only keys successfully written; the failed key and every later key remain untouched.
-    // Reverse order returns storage usage toward its original state before each following restore.
-    let rollbackFailed = false;
-    for (const storageKey of changed.reverse()) {
-      try {
-        if (before[storageKey] === null) localStorage.removeItem(storageKey);
-        else localStorage.setItem(storageKey, before[storageKey]);
-      } catch { rollbackFailed = true; }
-    }
-    throw new Error(rollbackFailed
-      ? 'Ошибка импорта и отката. Сохраните резервную копию текущих данных и проверьте хранилище.'
-      : 'Импорт отменён. Исходные сохранения не изменены.');
+async function atomicImport(next, shouldContinue = () => true) {
+  const owner=window.GBHighlights;
+  if(typeof owner?.mutateLibrary!=='function') throw new Error('Безопасный импорт недоступен. Обновите страницу.');
+  const names=Object.keys(KEYS), keys=Object.values(KEYS);
+  let explanation='';
+  const result=await owner.mutateLibrary(keys,stores=>{
+    if(!shouldContinue()) return {reason:'cancelled'};
+    const old=Object.fromEntries(names.map(name=>[name,stores[KEYS[name]]]));
+    let merged;
+    try { merged=safeMerge(old,next); }
+    catch(error) { explanation=error.message;return {reason:'import-conflict'}; }
+    const changes=Object.fromEntries(names.filter(name=>!exact(old[name],merged[name]))
+      .map(name=>[KEYS[name],merged[name]]));
+    return {changes,result:{merged,favoritesChanged:Object.hasOwn(changes,KEYS.favorites)}};
+  });
+  if(!result.ok) throw new Error(explanation || (result.reason==='partial-write'
+    ? 'Ошибка импорта и отката. Сохраните резервную копию текущих данных и проверьте хранилище.'
+    : 'Импорт не завершён. Проверьте хранилище и повторите попытку.'));
+  if(result.favoritesChanged) {
+    try {
+      window.GBFavoriteStore?.syncButtons?.();
+      window.dispatchEvent(new CustomEvent('gb:favorites-changed', {detail:{source:'library-import',items:result.merged.favorites}}));
+    } catch { /* notifications cannot turn a committed import into failure */ }
   }
-  window.GBFavoriteStore?.syncButtons?.();
-  window.dispatchEvent(new CustomEvent('gb:favorites-changed', { detail: { source: 'library-import', items: merged.favorites } }));
+  return result.merged;
 }
 
 export function createLibraryResearch({ overlay, getItems, notify, refresh, isOpen, renderItem, exitForResume }) {
@@ -209,7 +306,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   let reading = objectMap(parse(KEYS.reading, {}));
   let revisit = objectMap(parse(KEYS.revisit, {}));
   let selectedItem = null, pendingImport = null;
-  let importGeneration = 0;
+  let importGeneration = 0, importInFlight = false;
   function invalidateImport() {
     importGeneration++;
     pendingImport = null;
@@ -535,7 +632,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     }
     return fragment;
   }
-  function onClick(e) {
+  async function onClick(e) {
     const b = e.target.closest('[data-research-action]');
     if (!b || !overlay.contains(b)) return;
     const action = b.dataset.researchAction, value = b.dataset.value || '';
@@ -555,14 +652,19 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     if (action === 'import-json') { file.click(); return; }
     if (action === 'cancel-import') { invalidateImport(); return; }
     if (action === 'confirm-import') {
-      if (!pendingImport) return;
+      if (!pendingImport || importInFlight) return;
+      const generation=importGeneration, next=pendingImport;
+      importInFlight=true; confirm.disabled=true;
       try {
-        const merged = safeMerge(serializeCurrent(), pendingImport);
-        atomicImport(merged);
-        tags = merged.tags; reading = merged.reading; revisit = merged.revisit;
-        pendingImport = null; confirmation.hidden = true; refresh();
-        notify('Импорт завершён без замены существующих записей.');
-      } catch (error) { notify(error.message, true); }
+        const merged=await atomicImport(next,()=>generation===importGeneration && pendingImport===next);
+        tags=merged.tags; reading=merged.reading; revisit=merged.revisit;
+        if(generation===importGeneration) {
+          pendingImport=null; confirmation.hidden=true;
+          notify('Импорт завершён без замены существующих записей.');
+        }
+        refresh();
+      } catch(error) { if(generation===importGeneration) notify(error.message,true); }
+      finally { importInFlight=false;confirm.disabled=false; }
       return;
     }
     if (action === 'topic') { topic = value; refresh(); return; }
@@ -629,7 +731,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       pendingImport = validateBackup(json);
       prompt.textContent = 'В копии ' + pendingImport.quotes.length + ' цитат, '
         + pendingImport.notes.length + ' заметок, ' + pendingImport.favorites.length
-        + ' статей. Существующие записи сохранятся; дубликаты будут пропущены.';
+        + ' статей. Существующие записи сохранятся; одинаковые записи не добавятся повторно, при конфликте импорт будет отменён.';
       confirmation.hidden = false;
       requestAnimationFrame(() => {
         if (generation !== importGeneration || confirmation.hidden) return;
@@ -659,4 +761,4 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
 }
 
 // Pure fail-closed backup contract functions (Node regression tests).
-export { safeTags, boundedTags, safeMerge, validateBackup };
+export { safeTags, boundedTags, safeMerge, validateBackup, atomicImport };

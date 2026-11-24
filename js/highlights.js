@@ -247,18 +247,32 @@
       if (timer !== undefined) clearTimeout(timer);
     }
   }
+  function libraryStoreSpec(key) {
+    if (key === QUOTES_KEY) return { array: true, limit: LIMIT_QUOTES };
+    if (key === NOTES_KEY) return { array: true, limit: LIMIT_NOTES };
+    if (key === 'gb-favorites') return { array: true, limit: 50, envelope: true };
+    if (key === 'gb-library-tags-v1') return { array: false, limit: 800 };
+    if (key === 'gb-library-reading-v1') return { array: false, limit: 1000 };
+    if (key === 'gb-library-revisit-v1') return { array: false, limit: Infinity };
+    return null;
+  }
+  function validLibraryShape(value, spec) {
+    return spec.array ? Array.isArray(value) : value !== null && typeof value === 'object' && !Array.isArray(value);
+  }
   function strictLibraryRead(key) {
-    const raw = localStorage.getItem(key);
-    const items = raw === null ? [] : JSON.parse(raw);
-    if (!Array.isArray(items)) throw new Error('Invalid library store');
-    return { raw, items };
+    const spec = libraryStoreSpec(key), raw = localStorage.getItem(key);
+    const value = raw === null ? (spec.array ? [] : {}) : JSON.parse(raw);
+    const envelope = spec.envelope && value && !Array.isArray(value) && Array.isArray(value.items) ? value : null;
+    const items = envelope ? envelope.items : value;
+    if (!validLibraryShape(items,spec)) throw new Error('Invalid library store');
+    return { raw, items, spec, encode: next => JSON.stringify(envelope ? { ...envelope, items: next } : next) };
   }
   // Synchronous preparation under one lock. Cross-key writes are not a
   // database transaction: compensate only our own unchanged bytes on failure,
   // and report partial failure rather than claiming data is unchanged.
   function mutateLibrary(keys, prepare) {
     if (!Array.isArray(keys) || !keys.length || new Set(keys).size !== keys.length ||
-        keys.some(key => key !== NOTES_KEY && key !== QUOTES_KEY)) {
+        keys.some(key => !libraryStoreSpec(key))) {
       return Promise.resolve(libraryFailure('invalid-keys'));
     }
     return withLibraryLock(() => {
@@ -273,11 +287,12 @@
         for (const key of keys) {
           if (!Object.hasOwn(outcome.changes, key)) continue;
           const items = outcome.changes[key];
-          const limit = key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
-          if (!Array.isArray(items)) return libraryFailure('invalid-mutation');
-          if (items.length > limit && items.length > state[key].items.length)
+          const { spec, encode } = state[key];
+          if (!validLibraryShape(items,spec)) return libraryFailure('invalid-mutation');
+          const count = value => spec.array ? value.length : Object.keys(value).length;
+          if (count(items) > spec.limit && count(items) > count(state[key].items))
             return libraryFailure('capacity', state[key].items);
-          const raw = JSON.stringify(items);
+          const raw = encode(items);
           if (raw !== state[key].raw) staged.push({ key, raw, before: state[key].raw });
         }
       } catch {
@@ -306,6 +321,7 @@
             if (localStorage.getItem(change.key) !== change.raw) { partial = true; continue; }
             if (change.before === null) localStorage.removeItem(change.key);
             else localStorage.setItem(change.key, change.before);
+            if (localStorage.getItem(change.key) !== change.before) partial = true;
           } catch { partial = true; }
         }
         if (partial) for (const change of completed) notify(change.key);
@@ -482,7 +498,7 @@
       presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=e0728eb0');
+          const researchModule = await import('/js/reader-library-v3.js?v=bc8c8474');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
