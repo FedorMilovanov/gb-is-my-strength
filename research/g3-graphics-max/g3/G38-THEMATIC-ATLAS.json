@@ -1,0 +1,173 @@
+{
+  "status": "RESEARCH_HOLD",
+  "canonicalRead": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "sourceFiles": [
+    "src/components/journal/G3HistoryFeature.astro",
+    "src/data/journal/g3HistorySources.ts",
+    "src/components/journal/g3-visual/adopted-visual-inputs.ts"
+  ],
+  "purpose": "A paired thematic reading guide, not a duplicate of the adopted 60-pair speaker matrix or geographic atlas. Dotted connector means editorial comparison, not causation, influence, a route, or shared endorsement.",
+  "pairs": [
+    {
+      "id": "scripture",
+      "title": "Писание и его достоверность",
+      "left": {
+        "year": 2015,
+        "name": "Джеймс Уайт",
+        "text": "Безошибочность и согласование библейских текстов",
+        "sourceIds": [
+          "gnl-2015"
+        ],
+        "kind": "catalogue_title"
+      },
+      "right": {
+        "year": 2022,
+        "name": "Джеймс Уайт",
+        "text": "Изучение рукописей и происхождение Библии",
+        "sourceIds": [
+          "white-manuscripts-2022",
+          "white-bible-2022"
+        ],
+        "kind": "speaker_metadata"
+      },
+      "boundary": "G3-HIST-PUB-16; compare titles only, not delivered arguments or exact recording time."
+    },
+    {
+      "id": "church",
+      "title": "Церковь и ученичество",
+      "left": {
+        "year": 2014,
+        "name": "Водди Бокам",
+        "text": "Ученичество и подготовка учеников",
+        "sourceIds": [
+          "gnl-2014"
+        ],
+        "kind": "catalogue_title"
+      },
+      "right": {
+        "year": 2018,
+        "name": "Тим Чаллис",
+        "text": "Многообразие общины и урок гостеприимства",
+        "sourceIds": [
+          "challies-2018-lessons"
+        ],
+        "kind": "author_article"
+      },
+      "boundary": "G3-HIST-PUB-13; two editorial aspects of church life, not a joint session."
+    },
+    {
+      "id": "salvation",
+      "title": "Троица и Христос",
+      "left": {
+        "year": 2016,
+        "name": "Стивен Лоусон",
+        "text": "Троица в спасении",
+        "sourceIds": [
+          "gnl-2016"
+        ],
+        "kind": "catalogue_title"
+      },
+      "right": {
+        "year": 2021,
+        "name": "Джон МакАртур",
+        "text": "Страдающий Раб Господа · Ис. 52–53",
+        "sourceIds": [
+          "crotts-2021"
+        ],
+        "kind": "participant_report"
+      },
+      "boundary": "G3-HIST-PUB-14; historical-only Lawson catalogue association, no promotion; MacArthur content attributed to Crotts, not transcript."
+    },
+    {
+      "id": "mission",
+      "title": "Молитва и миссия",
+      "left": {
+        "year": 2013,
+        "name": "Пол Вошер",
+        "text": "Значение молитвы для служения и миссии",
+        "sourceIds": [
+          "gnl-2013"
+        ],
+        "kind": "catalogue_title"
+      },
+      "right": {
+        "year": 2019,
+        "name": "Джон Пайпер",
+        "text": "Жертвенная радость ради миссии · Флп. 2:17–18",
+        "sourceIds": [
+          "piper-2019"
+        ],
+        "kind": "author_text"
+      },
+      "boundary": "G3-HIST-PUB-10; comparison is thematic, no joint programme."
+    },
+    {
+      "id": "reformation",
+      "title": "Реформация и церковная практика",
+      "left": {
+        "year": 2017,
+        "name": "Водди Бокам",
+        "text": "Реформация в поклонении",
+        "sourceIds": [
+          "gnl-2017"
+        ],
+        "kind": "catalogue_title"
+      },
+      "right": {
+        "year": 2024,
+        "name": "Региональная встреча",
+        "text": "Конференция о Реформации в Countryside Bible Church",
+        "sourceIds": [
+          "reformation-2024",
+          "316-2024"
+        ],
+        "kind": "announcement_plus_participant_report"
+      },
+      "boundary": "G3-HIST-PUB-11; report supports publisher participation, not all session contents."
+    }
+  ],
+  "qa": {
+    "artifact": "G3_G38_atlas.html",
+    "sha256": "b3e6cb6900f7a7c9ec19cc9d6a9c87a852ab9322008d030b73fa138f465c0191",
+    "engine": "sandbox Chromium, JS disabled",
+    "viewportCases": 6,
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "overflow": 0,
+    "entries": 5,
+    "anchors": 12,
+    "print": [
+      {
+        "format": "A4",
+        "pages": 2,
+        "words": [
+          174,
+          137
+        ]
+      },
+      {
+        "format": "Letter",
+        "pages": 2,
+        "words": [
+          174,
+          137
+        ]
+      }
+    ],
+    "visual": "desktop light top, mobile dark top and both A4 sheets directly inspected; page 2 has generous whitespace; full site/other engines not tested; HTML and preview images delivered in chat, JSON stores data and evidence, not exact HTML source."
+  },
+  "resource": {
+    "RDC": 0,
+    "ownerWorkstation": false,
+    "CUDA": false,
+    "windowsWebKit": false
+  },
+  "gate": "No product edit, no merge of donor, no new publication claim, no new media/rights. Use canonical source IDs if later accepted. Editorial/art independent review and exact site QA outstanding."
+}
