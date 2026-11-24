@@ -163,7 +163,13 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${route} ${viewport.width}: route did not load`);
 
-    const triggerSelector = route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
+    // /articles/ owns a separate native catalog masthead, not Journal chrome.
+    // Use the mounted opener, with legacy fallback for unchanged routes.
+    const catalogNative = route === '/articles/' &&
+      await page.locator('.ae-masthead button[data-action="open-search"]').count() === 1;
+    const triggerSelector = catalogNative
+      ? '.ae-masthead button[data-action="open-search"]'
+      : route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
     const trigger = page.locator(triggerSelector);
     await trigger.waitFor({ state: route === '/hard-texts/' ? 'attached' : 'visible' });
     const cold = await page.evaluate((selector) => ({
@@ -430,7 +436,10 @@ async function runFailureRetryCase(browser, browserName, baseUrl) {
   try {
     const response = await page.goto(`${baseUrl}/articles/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} retry route did not load`);
-    const trigger = page.locator('#gbSearchBtn');
+    // A deliberately aborted first load must be retried by the native
+    // articles opener; the retired #gbSearchBtn must not be resurrected.
+    const trigger = page.locator('.ae-masthead button[data-action="open-search"]');
+    assert.equal(await trigger.count(), 1, `${browserName}: native catalog opener missing for retry`);
     await trigger.click();
     await page.waitForFunction(() => window.GBSearchBootstrap?.getState().phase === 'failed', null, { timeout: 8000 }).catch(async (error) => {
       const diagnostic = await page.evaluate(() => ({ bootstrap: window.GBSearchBootstrap?.getState(), bootRequested: window.__gbSearchBootRequested, ready: window.GBSearch?.__ready === true }));

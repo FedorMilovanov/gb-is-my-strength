@@ -37,6 +37,7 @@ on:
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-multitab-lock-browser-test.js"
+      - "scripts/tts-recovery-ownership-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - "scripts/workflow-linkage-regression-test.js"
@@ -82,6 +83,7 @@ on:
       - "scripts/tts-stress-dictionary-contract.js"
       - "scripts/tts-reader-runtime-browser-test.js"
       - "scripts/tts-reader-multitab-lock-browser-test.js"
+      - "scripts/tts-recovery-ownership-browser-test.js"
       - "scripts/tts-route-crawl-browser-test.js"
       - "scripts/tts-mobile-notice-geometry-browser-test.js"
       - "scripts/workflow-linkage-regression-test.js"
@@ -212,6 +214,7 @@ jobs:
             reports/release-pipeline-source.log
             reports/deployment-witness-ledger-unit.log
             reports/deployment-witness-ledger-source.log
+            reports/tts-recovery-ownership.log
           if-no-files-found: warn
           retention-days: 14
 
@@ -241,6 +244,7 @@ jobs:
           set -o pipefail
           node scripts/tts-reader-runtime-browser-test.js 2>&1 | tee reports/tts-reader-runtime.log
           node scripts/tts-reader-multitab-lock-browser-test.js 2>&1 | tee reports/tts-reader-multitab-lock.log
+          node scripts/tts-recovery-ownership-browser-test.js 2>&1 | tee reports/tts-recovery-ownership.log
 
       - name: Build production-like routes
         run: |

@@ -1,0 +1,24 @@
+---
+/** Resource hints only; existing fonts/fonts.css remains the font-definition owner. */
+interface Props { catalogOpening?: boolean }
+// Catalog UI and the lead's Latin punctuation must not rewrap after paint.
+// These are already used fonts, not new faces. Public G3 articles also
+// render semibold Cyrillic labels; preloading them avoids a WebKit race
+// where CSS 600 faces entered an error state before their WOFF2 request.
+const { catalogOpening = false } = Astro.props;
+// Read the canonical G3 route from Astro's render context; do not change the
+// shared JournalDocumentHead owned by the metadata lane (PR #2345).
+const articleEmphasis = /^\/journal\/dossiers\/g3(?:\/|$)/.test(Astro.url.pathname);
+// The historical article uses semibold Source Sans labels, not semibold Lora.
+// Do not eagerly download an unused WOFF2: Firefox rightfully warns.
+const dossierLoraEmphasis = /^\/journal\/dossiers\/g3\/?$/.test(Astro.url.pathname);
+---
+<link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-600.woff2" crossorigin />
+<link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
+<!-- Metadata mixes Cyrillic words with Latin-range dates/digits; preload both. -->
+<link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-400.woff2" crossorigin />
+<link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-latin-400.woff2" crossorigin />
+{catalogOpening && <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2" crossorigin />}
+{articleEmphasis && <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2" crossorigin />}
+{dossierLoraEmphasis && <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-600.woff2" crossorigin />}
+{catalogOpening && <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-latin-400.woff2" crossorigin />}

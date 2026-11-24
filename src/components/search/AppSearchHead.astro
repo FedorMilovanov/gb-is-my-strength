@@ -1,7 +1,8 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /** Shared command-palette styling and SiteUtils for strict-native app/tool routes.
  * ReaderPreferencesHead is the sole lazy Search bootstrap and loads js/search.js on demand.
  */
 ---
-<link rel="stylesheet" href="/css/command-palette.css?v=3b88813f" />
-<script is:inline src="/js/site-utils.js?v=aa7bcd98" defer></script>
+<link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
+<script is:inline src={assetUrl('js/site-utils.js')} defer></script>

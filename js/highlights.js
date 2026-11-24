@@ -209,8 +209,8 @@
   }
   function gbAddHighlight(items,item) {
     const unique=items,key=gbHighlightKey(item);
-    return key&&!unique.some(x=>gbHighlightKey(x)===key)
-      ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
+    return key&&unique.length<LIMIT_QUOTES&&!unique.some(x=>gbHighlightKey(x)===key)
+      ?[item,...unique]:unique;
   }
   const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
   const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
@@ -223,20 +223,104 @@
     } catch {}
     return [];
   }
-  function write(key, items) {
-    try { localStorage.setItem(key, JSON.stringify(items)); }
-    catch { return false; }
-    // storage only reaches other documents; same-tab readers need a commit signal.
-    window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
-    return true;
+  function libraryFailure(reason, current = []) {
+    return {ok:false,conflict:reason==='conflict',reason,current};
+  }
+  async function storageCall(method,...args) {
+    try {
+      if(window.GBLibraryStorage?.version!==1)
+        await import('/js/reader-library-storage.js?v=bb6b34c9');
+      const owner=window.GBLibraryStorage;
+      if(owner?.version!==1||typeof owner[method]!=='function')return libraryFailure('lock-unavailable');
+      return await owner[method](...args);
+    } catch { return libraryFailure('lock-unavailable'); }
+  }
+  function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
+  function snapshotRaw() {return storageCall('snapshotRaw');}
+  function restoreRaw(raw,shouldContinue) {return storageCall('restoreRaw',raw,shouldContinue);}
+  function commit(key, guard, mutate) {
+    return mutateLibrary([key], stores => {
+      const current = stores[key], outcome = mutate(current, guard);
+      if (!outcome || outcome.conflict) return { reason: 'conflict', current };
+      if (outcome.reason) return { reason: outcome.reason, current };
+      return { changes: { [key]: outcome.items }, result: { items: outcome.items } };
+    });
+  }
+  // Restore only the deleted version and relationships that are still valid.
+  // A conflict never rewinds a newer quote or note; detached copy is explicit.
+  function restoreDeleted(receipt, copyId = null) {
+    if (!receipt || !receipt.entry || ![NOTES_KEY, QUOTES_KEY].includes(receipt.key))
+      return Promise.resolve(libraryFailure('invalid-receipt'));
+    const {key, entry, index, clearedLinks = []} = receipt;
+    return mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const items = stores[key], quotes = stores[QUOTES_KEY], notes = stores[NOTES_KEY];
+      const sameId = (a,b) => a != null && b != null && String(a) === String(b);
+      const id = copyId ?? entry.id;
+      if (items.some(x => x && sameId(x.id,id))) return { reason: 'id-collision' };
+      if (copyId !== null && (key === NOTES_KEY
+        ? quotes.some(q => sameId(q?.annotation?.noteId,id))
+        : notes.some(n => sameId(n?.quoteId,id)))) return { reason: 'id-collision' };
+      if (items.length >= (key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES)) return { reason: 'capacity' };
+      let restored = copyId === null ? entry : { ...entry, id: copyId, savedAt: Date.now() };
+      const changes = {};
+      if (key === NOTES_KEY) {
+        if (copyId !== null) {
+          delete restored.quoteId;
+        } else {
+          if (entry.quoteId != null && notes.some(n => n && sameId(n.quoteId,entry.quoteId)))
+            return { reason: 'link-conflict' };
+          if (entry.quoteId != null && Object.hasOwn(receipt,'relatedQuote')) {
+            const related = quotes.filter(q => q && sameId(q.id,entry.quoteId));
+            if (related.length > 1 || (related.length ? JSON.stringify(related[0]) : null) !== receipt.relatedQuote)
+              return { reason: 'link-conflict' };
+          }
+          for (const link of clearedLinks) {
+            const found = quotes.filter(q => q && sameId(q.id,link.id));
+            if (found.length !== 1 || JSON.stringify(found[0]) !== link.postDelete ||
+                notes.some(n => n && sameId(n.quoteId,link.id))) return { reason: 'link-conflict' };
+          }
+          if (clearedLinks.length) changes[QUOTES_KEY] = quotes.map(q => {
+            const link = clearedLinks.find(l => q && sameId(q.id,l.id));
+            return link ? { ...q, annotation: { ...q.annotation, noteId: link.noteId } } : q;
+          });
+        }
+      } else {
+        const rangeKey = gbHighlightKey(entry);
+        if (rangeKey && quotes.some(q => gbHighlightKey(q) === rangeKey))
+          return { reason: 'range-conflict' };
+        if (copyId !== null && restored.annotation)
+          restored = { ...restored, annotation: { ...restored.annotation, noteId: null } };
+        const explicit = restored.annotation?.noteId;
+        const reverse = notes.filter(n => n && sameId(n.quoteId,restored.id));
+        if (reverse.length > 1) return { reason: 'link-conflict' };
+        if (explicit != null) {
+          const linked = notes.filter(n => n && sameId(n.id,explicit));
+          if (linked.length !== 1 || (linked[0].quoteId != null && !sameId(linked[0].quoteId,restored.id)) ||
+              reverse.some(n => n !== linked[0])) return { reason: 'link-conflict' };
+        }
+      }
+      const next = items.slice();
+      next.splice(Math.min(index,next.length),0,restored);
+      changes[key] = next;
+      return { changes, result: { restored } };
+    });
+  }
+  // Invalid historical rows remain recoverable in the exact backup, but
+  // cannot be rendered or offered for identity-based edits in the library.
+  function visibleRecord(row) {
+    return row && typeof row==='object' && !Array.isArray(row) &&
+      typeof row.text==='string' &&
+      ((typeof row.id==='string' && row.id.length>0) || Number.isSafeInteger(row.id));
   }
   function quotes() {
-    return read(QUOTES_KEY);
+    return read(QUOTES_KEY).filter(visibleRecord);
   }
-  function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
+  function notes() { return read(NOTES_KEY).filter(visibleRecord); }
   function favorites() {
     const store = window.GBFavoriteStore;
-    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) : read(FAVORITES_KEY);
+    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) :
+      read(FAVORITES_KEY).filter(x=>x && typeof x==='object' && !Array.isArray(x) &&
+        typeof (x.path||x.url)==='string' && Boolean(x.path||x.url) && Boolean(localUrl(x.path||x.url)));
   }
   function localUrl(value) {
     try {
@@ -248,7 +332,7 @@
   function all() {
     const q = quotes().map((x) => ({
       id: String(x.id),
-      type: 'quote',
+      type: 'quote', recordSnapshot: JSON.stringify(x),
       /* kind/color доносим до списка: иначе помета выглядит как цитата
          и цвет в библиотеке не виден (P2). */
       kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
@@ -256,7 +340,7 @@
       text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
       title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0,
     }));
-    const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const n = notes().map((x) => ({ id: String(x.id), type: 'note', recordSnapshot: JSON.stringify(x), text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
   }
@@ -327,10 +411,10 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
+      presenterPromise = import('/js/reader-library-presenter.js?v=95532247')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=e0728eb0');
+          const researchModule = await import('/js/reader-library-v3.js?v=7b71e298');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -398,16 +482,22 @@
     toast.timer = setTimeout(hideToast, 6000);
   }
   function undoQuotes(written, previous, message) {
-    return () => {
-      const current = read(QUOTES_KEY);
-      const index = current.findIndex(item => item.id === written.id);
-      if (index < 0 || JSON.stringify(current[index]) !== JSON.stringify(written)) {
-        toast('Запись уже изменилась. Отмена недоступна.', null);
+    return async () => {
+      const result = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+        const current = stores[QUOTES_KEY];
+        const matches = current.filter(item => item && String(item.id) === String(written.id));
+        if (matches.length !== 1 || JSON.stringify(matches[0]) !== JSON.stringify(written))
+          return { reason: 'conflict' };
+        if (!previous && (written.annotation?.noteId != null || stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(written.id))))
+          return { reason: 'link-conflict' };
+        return { changes: { [QUOTES_KEY]: previous
+          ? current.map(x => x === matches[0] ? previous : x)
+          : current.filter(x => x !== matches[0]) } };
+      });
+      if (!result.ok) {
+        toast('Запись уже изменилась или недоступна. Отмена не выполнена.', { label: 'Повторить', run: undoQuotes(written, previous, message) });
         return;
       }
-      if (previous) current[index] = previous;
-      else current.splice(index, 1);
-      if (!write(QUOTES_KEY, current)) { toast('Не удалось отменить запись.', null); return; }
       paintMarks(); sync(); toast(message, null);
     };
   }
@@ -633,6 +723,7 @@
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
   }
   function showEditor(context = null, editing = null) {
+    // The opened record itself is the version this editor may overwrite.
     draft = { context, editing };
     editor.hidden = false;
     panel.classList.add('is-editing');
@@ -649,35 +740,60 @@
     panel.classList.remove('is-editing');
     if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
   }
-  function saveNote(e) {
+  async function saveNote(e) {
     e.preventDefault();
     const text = textArea.value.trim();
     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
-    const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
-    if (editing) {
-      const current = old.find((x) => String(x.id) === editing.id);
-      if (!current || current.text !== editing.text) {
-        statusMessage(current
-          ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
-          : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
-        return;
+    const context = draft && draft.context, editing = draft && draft.editing;
+    const created = {
+      id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
+      articleTitle: context && context.title || currentTitle(),
+      url: context && context.url || location.origin + location.pathname,
+      savedAt: Date.now(),
+    };
+    const keys = !editing ? [NOTES_KEY, QUOTES_KEY] : [NOTES_KEY];
+    const result = await mutateLibrary(keys, stores => {
+      const current = stores[NOTES_KEY];
+      if (!editing) {
+        if (current.length >= LIMIT_NOTES) return { reason: 'capacity' };
+        if (current.some(x => x && String(x.id) === String(created.id)) ||
+            stores[QUOTES_KEY].some(q => q?.annotation?.noteId != null &&
+              String(q.annotation.noteId) === String(created.id))) return { reason: 'id-collision' };
+        if (context?.quoteId) {
+          const linked = stores[QUOTES_KEY].filter(x => x && String(x.id) === String(context.quoteId));
+          if (linked.length !== 1 || linked[0].annotation?.noteId != null ||
+              current.some(x => x?.quoteId != null && String(x.quoteId) === String(context.quoteId)))
+            return { reason: 'link-conflict' };
+        }
+        return { changes: { [NOTES_KEY]: [created, ...current] } };
       }
-    }
-    if (!editing && old.length >= LIMIT_NOTES) {
-      statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
+      const matches = current.filter(x => x && String(x.id) === String(editing.id));
+      const live = matches[0];
+      if (matches.length !== 1 || JSON.stringify(live) !== editing.recordSnapshot)
+        return { reason: 'conflict', current };
+      return { changes: { [NOTES_KEY]: current.map(x => x === live ? { ...x, text } : x) } };
+    });
+    if (result.conflict && editing) {
+      const live = result.current.find(x => x && String(x.id) === String(editing.id));
+      statusMessage(live
+        ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
+        : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
       return;
     }
-    const next = editing
-      ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
-      : [{
-          id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
-          articleTitle: context && context.title || currentTitle(),
-          url: context && context.url || location.origin + location.pathname,
-          savedAt: Date.now(),
-        }].concat(old);
-    if (!write(NOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить заметку. Проверьте доступное место в браузере.', true); return;
+    if (!result.ok) {
+      const message = result.reason === 'capacity'
+        ? 'Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.'
+        : result.reason === 'link-conflict'
+          ? 'Цитата или её связь изменилась. Откройте её заново; черновик остаётся в редакторе.'
+          : 'Не удалось безопасно сохранить заметку. Черновик остаётся в редакторе; повторите попытку.';
+      statusMessage(message, true); return;
     }
+    // The commit itself is awaited (serialized), but the reader-visible result
+    // must land in the same turn as the click: callers and contracts check the
+    // rendered list right after clicking Save.
+    applySavedNote(editing);
+  }
+  function applySavedNote(editing) {
     hideEditor(false);
     tab = 'note'; filter = 'all'; shown = BATCH_SIZE;
     render(); sync();
@@ -688,81 +804,95 @@
     pendingUndo = null;
     if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }
   }
-  function deleteItem(item) {
+  async function deleteItem(item) {
     const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
-    const old = item.type === 'note' ? notes() : quotes();
-    const matches = old.filter((x) => String(x.id) === item.id);
-    // Old/corrupt backups can already contain collisions. Never remove
-    // every version of an ID merely because one visible card was clicked.
-    if (matches.length > 1) {
-      statusMessage('Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.', true);
+    const keys = key === NOTES_KEY ? [QUOTES_KEY, NOTES_KEY] : [QUOTES_KEY];
+    const deleted = await mutateLibrary(keys, stores => {
+      const current = stores[key];
+      const matches = current.filter(x => x && String(x.id) === String(item.id));
+      if (matches.length > 1) return { reason: 'duplicate' };
+      if (matches.length !== 1 || JSON.stringify(matches[0]) !== item.recordSnapshot)
+        return { reason: 'conflict' };
+      const entry = matches[0], index = current.indexOf(entry);
+      const changes = { [key]: current.filter(x => x !== entry) };
+      const clearedLinks = [];
+      if (key === NOTES_KEY) {
+        const linked = stores[QUOTES_KEY].filter(q => q?.annotation?.noteId != null &&
+          String(q.annotation.noteId) === String(entry.id));
+        if (linked.some(q => stores[QUOTES_KEY].filter(x => x && String(x.id) === String(q.id)).length !== 1))
+          return { reason: 'duplicate' };
+        if (linked.length) changes[QUOTES_KEY] = stores[QUOTES_KEY].map(q => {
+          if (!linked.includes(q)) return q;
+          const next = { ...q, annotation: { ...q.annotation, noteId: null } };
+          clearedLinks.push({ id: q.id, noteId: q.annotation.noteId, postDelete: JSON.stringify(next) });
+          return next;
+        });
+      }
+      const receipt = { key, entry, index, clearedLinks };
+      if (key === NOTES_KEY && entry.quoteId != null) {
+        const related = (changes[QUOTES_KEY] || stores[QUOTES_KEY]).filter(q => q && String(q.id) === String(entry.quoteId));
+        if (related.length > 1) return { reason: 'duplicate' };
+        receipt.relatedQuote = related.length ? JSON.stringify(related[0]) : null;
+      }
+      return { changes, result: { receipt } };
+    });
+    if (!deleted.ok) {
+      statusMessage(deleted.reason === 'duplicate'
+        ? 'Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.'
+        : deleted.reason === 'partial-write'
+          ? 'Ошибка удаления и восстановления связи. Экспортируйте текущие данные и проверьте библиотеку.'
+          : 'Не удалось безопасно удалить запись. Обновите библиотеку и повторите.', true);
       return;
     }
-    const index = old.findIndex((x) => String(x.id) === item.id);
-    if (index < 0) return;
-    if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
-      statusMessage('Не удалось удалить запись.', true); return;
-    }
     clearUndo();
-    pendingUndo = { key, entry: old[index], index };
+    pendingUndo = deleted.receipt;
     render(); sync();
-    const undoButton = button('undo', 'Отменить удаление', 'Отменить');
-    status.replaceChildren(element('span', '', 'Запись удалена'), undoButton);
-    status.classList.add('is-visible');
-    undoButton.addEventListener('click', () => {
-      if (!pendingUndo) return;
-      const u = pendingUndo, items = read(u.key);
-      const limit = u.key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
-      const taken = items.some((x) => String(x.id) === String(u.entry.id));
-      if (taken) {
-        // Another tab may import/recreate this ID while Undo is available.
-        // Preserve both versions: never splice a duplicate ID or overwrite.
+    const u = pendingUndo;
+    let restoring = false;
+    function showUndo(message, allowCopy = false) {
+      if (pendingUndo !== u) return;
+      const undoButton = button('undo', 'Отменить удаление', 'Отменить');
+      const controls = [element('span', '', message), undoButton];
+      undoButton.addEventListener('click', () => restore(false));
+      if (allowCopy) {
         const copyButton = button('undo-copy', 'Сохранить удалённую версию с отдельным ID', 'Сохранить копию');
-        status.replaceChildren(
-          element('span', '', 'Запись с таким ID уже есть. Для сохранения обеих версий выберите копию.'),
-          copyButton
-        );
-        status.classList.add('is-visible');
-        clearTimeout(u.timer);
-        u.timer = setTimeout(clearUndo, 30000);
-        copyButton.addEventListener('click', () => {
-          if (pendingUndo !== u) return;
-          const latest = read(u.key);
-          if (latest.length >= limit) {
-            statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
-            return;
-          }
-          let newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
-          while (latest.some((x) => String(x.id) === newId)) {
-            newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
-          }
-          const preserved = { ...u.entry, id: newId, savedAt: Date.now() };
-          latest.splice(Math.min(u.index, latest.length), 0, preserved);
-          if (!write(u.key, latest)) {
-            statusMessage('Не удалось сохранить копию. Данные другой вкладки не изменены.', true);
-            return;
-          }
-          clearUndo(); render(); sync();
-          statusMessage('Обе версии сохранены с разными ID. Проверьте связи заметок и цитат.');
-        });
+        copyButton.addEventListener('click', () => restore(true));
+        controls.push(copyButton);
+      }
+      status.replaceChildren(...controls);
+      status.classList.add('is-visible');
+      status.classList.remove('is-error');
+    }
+    async function restore(copy) {
+      if (pendingUndo !== u || restoring) return;
+      restoring = true;
+      clearTimeout(u.timer);
+      const result = await restoreDeleted(u, copy ? uid(u.key === NOTES_KEY ? 'note' : 'quote') : null);
+      restoring = false;
+      if (pendingUndo !== u) { if (result.ok) { render(); sync(); } return; }
+      if (result.ok) {
+        clearUndo(); render(); sync();
+        statusMessage(copy ? 'Версия сохранена отдельной копией без прежней связи.' : 'Запись восстановлена.');
         return;
       }
-      if (items.length >= limit) {
-        statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
-        return;
-      }
-      items.splice(Math.min(u.index, items.length), 0, u.entry);
-      if (!write(u.key, items)) {
-        statusMessage('Не удалось восстановить запись.', true); return;
-      }
-      clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
-    });
+      const collision = ['id-collision','link-conflict'].includes(result.reason);
+      const message = result.reason === 'capacity'
+        ? 'Лимит библиотеки достигнут. Освободите место или сохраните экспорт.'
+        : result.reason === 'partial-write'
+          ? 'Ошибка восстановления. Сохраните экспорт и проверьте библиотеку.'
+          : collision
+            ? 'Запись или её связь уже изменилась. Можно сохранить отдельную копию без прежней связи.'
+            : 'Восстановление не удалось. Повторите попытку.';
+      showUndo(message, collision);
+      u.timer = setTimeout(clearUndo, 30000);
+    }
+    showUndo('Запись удалена');
     pendingUndo.timer = setTimeout(clearUndo, 6000);
   }
-  function saveSelectedQuote() {
+  async function saveSelectedQuote() {
     const selected = selection();
     if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
-    const old = quotes(), record = {
+    const record = {
       id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
       url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
     };
@@ -773,18 +903,27 @@
       record.annotation = { version: 1, kind: 'quote',
         anchor: selected.positionalAnchor, noteId: null };
     }
-    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
-      statusMessage('Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
+    const result = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const old = stores[QUOTES_KEY], key = gbHighlightKey(record);
+      if (!key) return { reason: 'conflict' };
+      const matches = old.filter(x => gbHighlightKey(x) === key);
+      if (matches.length > 1) return { reason: 'duplicate' };
+      if (matches.length === 1) return { changes: {}, result: { already: true } };
+      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
+      if (old.some(x => x && String(x.id) === String(record.id)) ||
+          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
+        return { reason: 'id-collision' };
+      const next = gbAddHighlight(old, record);
+      if (next === old) return { reason: 'conflict' };
+      return { changes: { [QUOTES_KEY]: next } };
+    });
+    if (!result.ok) {
+      statusMessage(result.reason === 'capacity'
+        ? 'Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
+        : 'Не удалось безопасно сохранить цитату. Повторите попытку.', true);
       return false;
     }
-    const next = gbAddHighlight(old, record);
-    if (next.length === old.length && next.every((x, i) => x === old[i])) {
-      statusMessage('Такая цитата уже сохранена.'); return true;
-    }
-    if (!write(QUOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить цитату. Хранилище недоступно или заполнено.', true);
-      return false;
-    }
+    if (result.already) { statusMessage('Такая цитата уже сохранена.'); return true; }
     sync(); statusMessage('Цитата сохранена вместе с источником.');
     toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
@@ -914,10 +1053,9 @@
     return { supported: true, painted, placed };
   }
 
-  function saveMarker(color) {
+  async function saveMarker(color) {
     const selected = selection();
     if (selected.text.length < 3) { statusMessage('Сначала выделите текст.', true); return false; }
-    const old = quotes();
     const nextColor = MARK_COLORS.includes(color) ? color : 'amber';
     const record = {
       id: uid('mark'), kind: 'marker', color: nextColor,
@@ -933,80 +1071,81 @@
        текст перекрашивается, а одинаковый цвет честно сообщается как уже
        применённый — без ложного успеха. */
     const key = gbHighlightKey(record);
-    const fragment = gbFragmentKey(record);
-    const context = gbContextKey(record);
-    const article = document.querySelector('article.article-body') || document.querySelector('article');
-    const exact = article && record.annotation
-      ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
-    let legacyIndex = null;
-    let existingIndex = -1;
-    if (exact && article) {
-      // A saved quote and its colored mark are ONE positional record. Reuse
-      // its ID/anchor/noteId instead of losing the mark to duplicate-key
-      // rejection. If legacy data already contains both, prefer the colored
-      // record to avoid creating a second painter on the same DOM Range.
-      const candidates = [];
-      old.forEach((x, i) => {
-        if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
-        const found = x.annotation?.version === 1
-          ? GBReaderAnchors.resolve(article,x.annotation.anchor)
-          : locate(legacyIndex ||= textIndex(article),x);
-        if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
-      });
-      existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
-        ?? candidates[0] ?? -1;
-    } else if (!record.annotation) {
-      existingIndex = fragment ? old.findIndex((x) =>
-        gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
-    }
+    const mutation = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const old = stores[QUOTES_KEY];
+      const fragment = gbFragmentKey(record);
+      const context = gbContextKey(record);
+      const article = document.querySelector('article.article-body') || document.querySelector('article');
+      const exact = article && record.annotation
+        ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
+      let legacyIndex = null;
+      let existingIndex = -1;
+      if (exact && article) {
+        // A saved quote and its colored mark are ONE positional record. Reuse
+        // its ID/anchor/noteId instead of losing the mark to duplicate-key
+        // rejection. If legacy data already contains both, prefer the colored
+        // record to avoid creating a second painter on the same DOM Range.
+        const candidates = [];
+        old.forEach((x, i) => {
+          if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
+          const found = x.annotation?.version === 1
+            ? GBReaderAnchors.resolve(article,x.annotation.anchor)
+            : locate(legacyIndex ||= textIndex(article),x);
+          if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
+        });
+        existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
+          ?? candidates[0] ?? -1;
+      } else if (!record.annotation) {
+        existingIndex = fragment ? old.findIndex((x) =>
+          gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+      }
 
-    if (existingIndex >= 0) {
-      const existing = old[existingIndex] || {};
-      if (String(existing.color || existing.annotation?.color || '') === nextColor) {
-        statusMessage('Этот текст уже выделен этим цветом.');
-        toast('Этот текст уже выделен этим цветом', null);
-        return true;
+      if (existingIndex >= 0) {
+        const existing = old[existingIndex];
+        if (old.filter(x => x && String(x.id) === String(existing.id)).length !== 1)
+          return { reason: 'duplicate' };
+        if (String(existing.color || existing.annotation?.color || '') === nextColor)
+          return { changes: {}, result: { already: true } };
+        const updated = { ...existing, kind:'marker', color:nextColor,
+          ...(existing.annotation?.version===1
+            ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
+            : record.annotation ? {annotation:record.annotation} : {}) };
+        return { changes: { [QUOTES_KEY]: old.map((x,i)=>i===existingIndex?updated:x) },
+          result: { previous: existing, written: updated } };
       }
-      const next = old.slice();
-      next[existingIndex] = {
-        ...existing,kind:'marker',color:nextColor,
-        ...(existing.annotation?.version===1
-          ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
-          : record.annotation ? {annotation:record.annotation} : {}),
-      };
-      if (!write(QUOTES_KEY, next)) {
-        statusMessage('Не удалось изменить цвет пометы. Хранилище недоступно.', true);
-        return false;
-      }
+      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
+      if (old.some(x => x && String(x.id) === String(record.id)) ||
+          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
+        return { reason: 'id-collision' };
+      const next = gbAddHighlight(old, record);
+      if (next === old) return { reason: 'conflict' };
+      return { changes: { [QUOTES_KEY]: next }, result: { written: record } };
+    });
+    if (!mutation.ok) {
+      statusMessage(mutation.reason === 'capacity'
+        ? 'Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
+        : 'Не удалось безопасно сохранить помету. Повторите попытку.', true);
+      return false;
+    }
+    if (mutation.already) {
+      statusMessage('Этот текст уже выделен этим цветом.');
+      toast('Этот текст уже выделен этим цветом', null);
+      return true;
+    }
+    if (mutation.previous) {
       const painted = paintMarks();
       sync();
-      const wasMarker = existing.kind === 'marker';
-      const storedKey = gbHighlightKey(next[existingIndex]);
+      const wasMarker = mutation.previous.kind === 'marker';
+      const storedKey = gbHighlightKey(mutation.written);
       const anchored = painted.supported && painted.placed && painted.placed.has(storedKey);
       const base = wasMarker ? 'Цвет пометы изменён' : 'Цитата выделена цветом';
       const message = !painted.supported
         ? (wasMarker ? 'Цвет пометы сохранён, подсветка недоступна' : 'Цвет сохранён, подсветка недоступна')
-        : anchored
-          ? base
+        : anchored ? base
           : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
       statusMessage(message + '.');
-      toast(message, { label: 'Вернуть', run: undoQuotes(next[existingIndex], existing, 'Цвет возвращён') });
+      toast(message, { label: 'Вернуть', run: undoQuotes(mutation.written, mutation.previous, 'Цвет возвращён') });
       return true;
-    }
-    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
-      statusMessage('Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
-      return false;
-    }
-    const next = gbAddHighlight(old, record);
-    // A positional collision that cannot be resolved must never be reported
-    // as successful storage/painting, or silently rewrite the old record.
-    if (next === old) {
-      statusMessage('Помета не создана: сохранённая запись имеет тот же якорь, но её позиция не подтверждена.', true);
-      return false;
-    }
-    if (!write(QUOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить помету. Хранилище недоступно или заполнено.', true);
-      return false;
     }
     const result = paintMarks();
     sync();
@@ -1024,7 +1163,7 @@
     return true;
   }
 
-  /* write() публикует событие на window, поэтому слушаем именно window:
+  /* mutateLibrary() публикует событие на window, поэтому слушаем именно window:
      удаление пометы через библиотеку обязано снять подсветку в тексте. */
   window.addEventListener('gb:library-committed', (e) => {
     if (!e || !e.detail || e.detail.key === QUOTES_KEY) setTimeout(paintMarks, 0);
@@ -1080,10 +1219,10 @@
     note.setAttribute('aria-label', 'Добавить заметку к выделенному тексту');
     note.textContent = 'Заметка';
     bar.append(colors, quote, note);
-    colors.addEventListener('click', (e) => {
+    colors.addEventListener('click', async (e) => {
       const swatch = e.target.closest('[data-hl-color]');
       if (!swatch) return;
-      if (saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
+      if (await saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
     });
     document.body.appendChild(bar);
     /* Pointerdown snapshots the selection without cancelling the native gesture.
@@ -1094,8 +1233,8 @@
       b.addEventListener('pointerdown', rememberSelection);
       b.addEventListener('mousedown', (event) => event.preventDefault(), { passive: false });
     }
-    quote.addEventListener('click', () => {
-      if (saveSelectedQuote()) {
+    quote.addEventListener('click', async () => {
+      if (await saveSelectedQuote()) {
         quote.textContent = 'Сохранено';
         clearTimeout(selBarHideTimer);
         selBarHideTimer = setTimeout(() => { quote.textContent = 'Цитата'; dismissSelectionBar(); }, 700);
@@ -1190,8 +1329,8 @@
     }
     if (popup.querySelector('#ss-save')) return;
     popup.append(element('span', 'ss-sep'));
-    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, () => {
-      if (saveSelectedQuote()) {
+    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, async () => {
+      if (await saveSelectedQuote()) {
         const label = popup.querySelector('#ss-save span');
         if (label) label.textContent = 'Сохранено';
         popup.classList.add('gb-hl-selection-saved');
@@ -1218,7 +1357,7 @@
   });
 
   const api = Object.freeze({
-    libraryVersion: 2, open, close, getAll: quotes,
+    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted, snapshotRaw, restoreRaw,
     getNotes: notes, getLibrary: all,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,

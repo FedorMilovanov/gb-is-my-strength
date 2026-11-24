@@ -8,7 +8,7 @@
     <link>https://gospod-bog.ru/</link>
     <description><![CDATA[Богословские разборы, переводы и исследования Писания на русском языке.]]></description>
     <language>ru</language>
-    <lastBuildDate>Fri, 13 Nov 2026 09:30:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 23 Nov 2026 21:01:57 GMT</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -16,6 +16,16 @@
       <link>https://gospod-bog.ru/</link>
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>G3 Ministries: от конференции к служению (2011–2024)</title>
+      <link>https://gospod-bog.ru/journal/dossiers/g3/history/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/journal/dossiers/g3/history/</guid>
+      <pubDate>Mon, 23 Nov 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Журнал</category>
+      <description><![CDATA[Документальная история G3 Ministries: приглашение 2011 года, первые конференции, богословские темы и споры, издательские проекты, региональные встречи до 2024 года.]]></description>
+    </item>
 
     <item>
       <title>Когда человек уходит от веры: как предупреждать, исправлять и возвращать</title>
@@ -158,13 +168,13 @@
     </item>
 
     <item>
-      <title>G3: два кризиса и завершение работы</title>
+      <title>G3 Ministries: два кризиса и завершение работы</title>
       <link>https://gospod-bog.ru/journal/dossiers/g3/</link>
       <guid isPermaLink="true">https://gospod-bog.ru/journal/dossiers/g3/</guid>
       <pubDate>Tue, 08 Sep 2026 21:00:00 GMT</pubDate>
       <dc:creator>Фёдор Милованов</dc:creator>
       <category>Журнал</category>
-      <description><![CDATA[История G3 Ministries: как развивалась организация, что произошло во время кризисов 2025–2026 годов, о чём говорят документы и что осталось неизвестным.]]></description>
+      <description><![CDATA[Документальная история кризисов G3 Ministries в 2025–2026 годах: отставка Джоша Бьюса, новый конфликт, финансовые документы, сворачивание служения и открытые вопросы.]]></description>
     </item>
 
     <item>

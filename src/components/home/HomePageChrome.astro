@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 import SiteSectionsMenuRuntime from '@/components/article-pilots/_shared/SiteSectionsMenuRuntime.astro';
 
 /**
@@ -273,10 +274,10 @@ window.SITE_CONFIG = {
     syncFocus();
   })();
 </script>
-<script is:inline src="js/site-utils.js?v=aa7bcd98" defer></script>
-<script is:inline src="js/scroll-perf.js?v=454d6f7b" defer></script>
-<script is:inline src="js/site.js?v=9fa8818a" defer></script>
-<script is:inline src="js/enhancements.js?v=15476429" defer></script>
+<script is:inline src={assetUrl('js/site-utils.js')} defer></script>
+<script is:inline src={assetUrl('js/scroll-perf.js')} defer></script>
+<script is:inline src={assetUrl('js/site.js')} defer></script>
+<script is:inline src={assetUrl('js/enhancements.js')} defer></script>
 
 <script type="text/javascript" is:inline>
   (function(m,e,t,r,i,k,a){
@@ -289,7 +290,7 @@ window.SITE_CONFIG = {
   ym(108353327,'init',{ssr:false,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
 </script>
 <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
-<script is:inline src="./js/sw-register.js?v=921dd6a2" defer></script>
+<script is:inline src={assetUrl('js/sw-register.js')} defer></script>
 <script is:inline>
   document.addEventListener('click', (event) => {
     const target = event.target?.closest?.('[data-close-nav]');

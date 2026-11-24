@@ -2,13 +2,19 @@
 /**
  * ArticlesPageChrome.astro — full native document chrome for /articles/.
  *
- * Owns <html>, legacy-equivalent <head>, body attributes, skip link, progress
- * rail and top navigation as Astro markup. This replaces the former
- * loader-backed body-segment chrome while keeping SEO,
- * canonical, OpenGraph, JSON-LD, font/CSS links and runtime configuration
- * visually equivalent to the legacy catalog.
+ * Owns <html>, the existing route-owned SEO <head> and body attributes.
+ * Owns the single catalog skip/navigation/mobile chrome as well. Reader-facing
+ * CollectionPage/canonical/social/JSON-LD data stay byte-owned here; shared
+ * asset revisions and SITE_CONFIG are retained. №8 owns the new presentation,
+ * not the retired loader recipe or its home.css interaction adapters.
  */
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import JournalFontPreloads from '@/components/journal/JournalFontPreloads.astro';
+import ArticlesMasthead from './ArticlesMasthead.astro';
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
+import './articlesEditorial.css';
+const mobileChrome = mobileChromeFor('/articles/');
 ---
 <html lang="ru">
 <head>
@@ -174,7 +180,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
   <link rel="preload" as="style" href="../fonts/fonts.css?v=864cc57a">
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+  <JournalFontPreloads catalogOpening />
 <link rel="stylesheet" href="../fonts/fonts.css?v=864cc57a">
 
   <!-- Yandex.Metrika counter -->
@@ -188,13 +194,11 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
     window.dataLayer = window.dataLayer || [];
     ym(108353327, 'init', {ssr:false, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
   </script>
-  <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute; left:-9999px;" alt=""></div></noscript>
 
   <!-- Anti-FOUC -->
 
   <!-- Styles -->
   <link rel="stylesheet" href="../css/site.css?v=c2364e81">
-  <link rel="stylesheet" href="../css/home.css?v=4a2fa9a3">
 
   <script is:inline>
 window.SITE_CONFIG = {
@@ -229,48 +233,18 @@ window.SITE_CONFIG = {
 </script>
   <link rel="stylesheet" href="../css/command-palette.css?v=3b88813f">
     <link rel="stylesheet" href="../css/mobile-hotfix.css?v=9cfd6aee">
+  <!-- Route-local no-script navigation: keep Astro from hoisting this CSS. -->
+  <noscript><style is:inline>html { scroll-behavior: auto; }</style></noscript>
 </head>
 <body class="articles-index-page">
+  <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute; left:-9999px;" alt=""></div></noscript>
 
-<a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
-<div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
-
-<!-- NAVBAR -->
-<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
-  <div class="h-navbar__inner">
-
-    <a href="../" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
-      <span class="h-nav-logo-main">Господь Бог</span>
-      <span class="h-nav-logo-dash">&nbsp;—&nbsp;</span>
-      <span class="h-nav-logo-accent">Сила Моя</span>
-    </a>
-
-    <ul class="h-nav-links" role="list">
-      <li><a href="../#publikacii">Публикации</a></li>
-      <li><a href="../#razbor">Разбор заблуждений</a></li>
-      <li><a href="../biografii/">Биографии</a></li>
-      <li><a href="./" aria-current="page">Все статьи</a></li>
-      <li><a href="../about/">О проекте</a></li>
-    </ul>
-
-    <div class="mobile-controls" data-gb-search-host="chrome">
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
-      <button class="h-mobile-menu-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false">
-        <svg class="h-burger-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <line class="burger-top"    x1="3" y1="6"  x2="21" y2="6"/>
-          <line class="burger-mid"    x1="3" y1="12" x2="21" y2="12"/>
-          <line class="burger-bottom" x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
+  <a href="#main-content" class="skip-link">Перейти к содержимому</a>
+  {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' &&
+    <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="/" searchLabel="Поиск по сайту…" />}
+  <div class="articles-edition">
+    <ArticlesMasthead />
+    <slot />
   </div>
-</nav>
-
-  <slot />
 </body>
 </html>

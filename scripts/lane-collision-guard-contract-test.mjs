@@ -2,6 +2,8 @@
 import assert from 'node:assert/strict';
 import {
   analyzeCollisions,
+  addedRegistryRouteKeys,
+  disjointRegistryRouteAdditions,
   isDerivedProjectionPath,
   normalizeRepoPath,
   predecessorSupersededByCurrent,
@@ -114,9 +116,30 @@ const current = { number: 1057, repo, baseRef: 'main' };
   assert.deepEqual(result.ignored, [{ number: 1050, reason: 'different-head-repository' }]);
 }
 
+
+{
+  const base = { version: 2, updated: '2026-11-11', description: 'Canonical ownership', routes: {
+    '/articles/existing/': { owner: 'astro', source: 'src/pages/articles/existing/index.astro', status: 'production-dist' },
+  } };
+  const g3 = structuredClone(base); g3.updated = '2026-11-22';
+  g3.routes['/journal/dossiers/g3/history/'] = { owner: 'astro', source: 'src/pages/journal/dossiers/g3/history/index.astro', status: 'production-dist' };
+  const independent = structuredClone(base);
+  independent.routes['/articles/rabstvo-svobody/'] = { owner: 'astro', source: 'src/pages/articles/rabstvo-svobody/index.astro', status: 'production-dist' };
+  assert.deepEqual([...addedRegistryRouteKeys(base,g3)], ['/journal/dossiers/g3/history/']);
+  assert.equal(disjointRegistryRouteAdditions(base,g3,base,independent), true, 'different article route keys do not collide');
+  const same = structuredClone(base); same.routes['/journal/dossiers/g3/history/'] = g3.routes['/journal/dossiers/g3/history/'];
+  assert.equal(disjointRegistryRouteAdditions(base,g3,base,same), false, 'same history route must collide');
+  const mutated = structuredClone(base); mutated.routes['/articles/existing/'].owner = 'legacy';
+  assert.equal(disjointRegistryRouteAdditions(base,g3,base,mutated), false, 'mutation of an existing owner must fail closed');
+  const deleted = structuredClone(base); delete deleted.routes['/articles/existing/'];
+  assert.equal(addedRegistryRouteKeys(base,deleted), null, 'deleting route cannot claim shared projection exemption');
+  const schemaDrift = structuredClone(g3); schemaDrift.version = 3;
+  assert.equal(addedRegistryRouteKeys(base,schemaDrift), null, 'registry schema drift is a blocking change');
+}
+
 assert.equal(normalizeRepoPath('./src/lib/asset-version.js'), 'src/lib/asset-version.js');
 assert.equal(isDerivedProjectionPath('data/legacy-reference-ledger/references-3.json'), true);
 assert.throws(() => normalizeRepoPath('../escape'), /Unsafe repository path/);
 assert.throws(() => normalizeRepoPath('/absolute'), /Unsafe repository path/);
 
-console.log('Lane collision guard contract: PASS (6 collision scenarios + path boundary checks)');
+console.log('Lane collision guard contract: PASS (6 collision scenarios + 6 distinct-route ownership proofs + path boundary checks)');

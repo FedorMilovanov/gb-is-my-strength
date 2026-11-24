@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v227-mobile-sepia-glass-20261124';
+const CACHE_VERSION = 'gb-v236-reader-exact-backup-candidate-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -32,17 +32,18 @@ const PRECACHE_ASSETS = [
   '/nagornaya/tw.min.css?v=bee34e73',
   '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
   '/js/site.js?v=9fa8818a',
-  '/js/site-utils.js?v=aa7bcd98',
+  '/js/site-utils.js?v=06d1f307',
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=9d624fc0',
-  '/js/reader-library-presenter.js?v=841cc1c0',
-  '/js/reader-library-v3.js?v=e0728eb0',
+  '/js/highlights.js?v=17f5d590',
+  '/js/reader-library-storage.js?v=bb6b34c9',
+  '/js/reader-library-presenter.js?v=95532247',
+  '/js/reader-library-v3.js?v=7b71e298',
   '/js/reader-library-dock.js?v=706a54b0',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
-  '/js/floating-cluster-controller.js?v=25a761e7',
+  '/js/floating-cluster-controller.js?v=9df8ace5',
   '/js/reader-preferences-head.js?v=bd4355e3',
   '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=af589b59',

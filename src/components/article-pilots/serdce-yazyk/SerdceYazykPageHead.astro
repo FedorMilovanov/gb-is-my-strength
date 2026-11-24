@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /** Native PageHead for /articles/serdce-i-yazyk/ (hard-texts series). */
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
@@ -149,16 +150,16 @@ window.SITE_CONFIG = {
 </script>
 <link rel="preload" href="../../fonts/Inter/inter-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../../fonts/Lora/lora-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../fonts/fonts.css?v=864cc57a">
-<link rel="stylesheet" href="../../css/site.css?v=c2364e81">
+<link rel="stylesheet" href={assetUrl('fonts/fonts.css')}>
+<link rel="stylesheet" href={assetUrl('css/site.css')}>
 <!-- Yandex.Metrika -->
 <script is:inline type="text/javascript">
  (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js?id=108353327","ym");
  ym(108353327,"init",{ssr:false,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true,referrer:document.referrer,url:location.href});
 </script>
 <noscript><div><img alt="" loading="lazy" decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;"></div></noscript>
-<link rel="stylesheet" href="../../css/command-palette.css?v=3b88813f">
-<link rel="stylesheet" href="../../css/floating-cluster.css?v=a76d931e">
-<link rel="stylesheet" href="../../css/mobile-hotfix.css?v=9cfd6aee">
+<link rel="stylesheet" href={assetUrl('css/command-palette.css')}>
+<link rel="stylesheet" href={assetUrl('css/floating-cluster.css')}>
+<link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')}>
 <meta name="geo.region" content="RU-SPE">
 <meta name="geo.placename" content="Санкт-Петербург">

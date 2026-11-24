@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /**
  * NagornayaIndexPageFooter — native body tail after </main> for /nagornaya//.
  * Extracted as Astro markup from approved legacy HTML; no raw imports.
@@ -10,12 +11,12 @@
   <a href="/app/" class="hover:text-amber-600 transition-colors">Приложение</a>
 </nav>
 
-<!-- .tt tooltips handled by js/nagornaya-mobile-toc.js?v=a0b23b1c -->
+<!-- .tt tooltips handled by js/nagornaya-mobile-toc.js -->
 
 
-<!-- mobile menu handled by js/nagornaya-mobile-toc.js?v=a0b23b1c module B -->
+<!-- mobile menu handled by js/nagornaya-mobile-toc.js module B -->
 
-<script src="../js/nagornaya-mobile-toc.js?v=a0b23b1c" defer is:inline></script>
+<script src={assetUrl('js/nagornaya-mobile-toc.js')} defer is:inline></script>
 <script is:inline>
 window.SITE_CONFIG = {
   version: 1778943682,
@@ -24,11 +25,11 @@ window.SITE_CONFIG = {
   features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
 };
 </script>
-<script defer src="/js/site-utils.js?v=aa7bcd98" is:inline></script>
-    <script defer src="/js/scroll-perf.js?v=454d6f7b" is:inline></script>
-    <script src="../js/site.js?v=9fa8818a" defer is:inline></script>
-<script src="../js/sw-register.js?v=921dd6a2" defer is:inline></script>
+<script defer src={assetUrl('js/site-utils.js')} is:inline></script>
+    <script defer src={assetUrl('js/scroll-perf.js')} is:inline></script>
+    <script src={assetUrl('js/site.js')} defer is:inline></script>
+<script src={assetUrl('js/sw-register.js')} defer is:inline></script>
 
-<script src="../js/bookmark-engine.js?v=e7d193e0" defer is:inline></script>
+<script src={assetUrl('js/bookmark-engine.js')} defer is:inline></script>
 
 <!-- font-size handled by nagornaya-mobile-toc.js module D -->

@@ -18,6 +18,10 @@ const files = {
   notFound: read('404.html'),
   rodosloviye: read('src/components/rodosloviye/RodosloviyeBody.astro'),
   auditPro: read('scripts/audit-pro.js'),
+  journalShell: read('src/components/journal/JournalEditorialShell.astro'),
+  journalMasthead: read('src/components/journal/JournalMasthead.astro'),
+  articlesChrome: read('src/components/articles/ArticlesPageChrome.astro'),
+  articlesMasthead: read('src/components/articles/ArticlesMasthead.astro'),
   browser: read('scripts/app-search-surface-browser-contract.mjs'),
   avraamPage: read('src/pages/karty/avraam/index.astro'),
   ishodPage: read('src/pages/karty/ishod/index.astro'),
@@ -29,6 +33,7 @@ const files = {
   baptismBody: read('src/components/konfessii/russkij-baptizm/Baptizm3DBody.astro'),
   mapHead: read('src/components/map/MapPageHead.astro'),
   atlasBody: read('src/components/map/AtlasBody.astro'),
+  assetVersions: read('src/lib/asset-version.js'),
   workflow: read('.github/workflows/search-modal-contract.yml'),
 };
 
@@ -37,13 +42,20 @@ const check = (condition, message) => { assert.ok(condition, message); passed +=
 const count = (text, marker) => text.split(marker).length - 1;
 const assetHash = (text) => crypto.createHash('md5').update(text).digest('hex').slice(0, 8);
 
+// Head asset authority (SYS-HEAD-ASSET-PROLIFERATION): markup references go
+// through assetUrl(); revision freshness is proven against the registry,
+// which cache-bust.js keeps equal to the file md5 (fail-closed corpus).
+const registry = Object.fromEntries(
+  [...files.assetVersions.matchAll(/'([^']+)': '([a-f0-9]{8})'/g)].map((m) => [m[1], m[2]]),
+);
 const commandPaletteHash = assetHash(files.commandPalette);
-check(files.head.includes(`/css/command-palette.css?v=${commandPaletteHash}`), 'current command-palette revision missing');
+check(files.head.includes("assetUrl('css/command-palette.css')"), 'AppSearchHead must load command-palette via the assetUrl authority');
+check(registry['css/command-palette.css'] === commandPaletteHash, 'current command-palette revision missing from the asset registry');
 check(files.readerHead.includes("assetUrl('js/search.js')") && files.readerHead.includes('data-search-src={searchRuntimeSrc}'), 'current search revision missing from the sole lazy bootstrap');
 check(!files.head.includes('/js/search.js'), 'AppSearchHead must not enqueue a second Search bootstrap path');
 const siteUtilsHash = assetHash(files.siteUtils);
-check(files.head.includes(`/js/site-utils.js?v=${siteUtilsHash}`), 'current SiteUtils revision missing');
-check(files.head.includes('/js/site-utils.js'), 'SiteUtils runtime missing from strict-native Search surface');
+check(files.head.includes("assetUrl('js/site-utils.js')"), 'AppSearchHead must load SiteUtils via the assetUrl authority');
+check(registry['js/site-utils.js'] === siteUtilsHash, 'current SiteUtils revision missing from the asset registry');
 check(files.head.includes('defer'), 'search bootstrap must remain deferred');
 check(files.surface.includes('id="gbSearchBtn"'), 'canonical trigger id missing');
 check(files.surface.includes('aria-haspopup="dialog"'), 'dialog semantics missing');
@@ -108,7 +120,7 @@ check(!files.home.includes('const onShortcut'), 'Home route-local shortcut parse
 check(!files.home.includes("window.addEventListener('gb:openSearch'"), 'Home route-local gb:openSearch orchestration survived');
 check(!files.homeProgressive.includes('stopImmediatePropagation'), 'Home progressive shortcut capture gate survived');
 check(!files.notFound.includes('function key(e)') && files.notFound.includes('gb:openSearch'), '404 raw keyboard owner survived');
-check(files.rodosloviye.includes('/js/site-utils.js') && files.rodosloviye.indexOf('/js/site-utils.js') < files.rodosloviye.indexOf('/js/site.js'), 'Rodosloviye shared runtime order missing');
+check(files.rodosloviye.includes("assetUrl('js/site-utils.js')") && files.rodosloviye.indexOf("assetUrl('js/site-utils.js')") < files.rodosloviye.indexOf("assetUrl('js/site.js')"), 'Rodosloviye shared runtime order missing');
 
 const walkSource = (dir, predicate, out = []) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -134,8 +146,33 @@ const ownerCandidates = [
 ];
 const rawOwners = ownerCandidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8')))
   .map((file) => path.relative(process.cwd(), file).replace(/\\/g, '/')).sort();
-check(JSON.stringify(rawOwners) === JSON.stringify(['js/site-utils.js']),
-  `sole raw Search keyboard owner drifted: ${rawOwners.join(', ')}`);
+// A route has one keyboard shortcut owner. Legacy/app routes mount SiteUtils;
+ // NEWS and the article library are separate strict-native pages with mutually
+ // exclusive mastheads and only delegate the chord to GBSearchBootstrap.
+ const expectedRawOwners = [
+   'js/site-utils.js',
+   'src/components/articles/ArticlesMasthead.astro',
+   'src/components/journal/JournalMasthead.astro',
+ ];
+ check(JSON.stringify(rawOwners) === JSON.stringify(expectedRawOwners),
+   `unregistered raw Search shortcut owner: ${rawOwners.join(', ')}`);
+ for (const [name, source] of [
+   ['NEWS', files.journalMasthead],
+   ['Articles', files.articlesMasthead],
+ ]) {
+   check(hasRawSearchShortcut(source) && count(source, "document.addEventListener('keydown'") === 1,
+     `${name} must have exactly one native shortcut listener`);
+   check(source.includes('GBSearchBootstrap') && source.includes('data-action="open-search"'),
+     `${name} must delegate to the existing search bootstrap`);
+ }
+ check(files.journalShell.includes('<JournalMasthead') &&
+       !files.journalShell.includes('<ArticlesMasthead') &&
+       files.articlesChrome.includes('<ArticlesMasthead') &&
+       !files.articlesChrome.includes('<JournalMasthead'),
+   'NEWS and Articles must have mutually exclusive shortcut-owning mastheads');
+ check(!files.journalShell.includes('/js/site-utils.js') &&
+       !files.articlesChrome.includes('/js/site-utils.js'),
+   'Native NEWS/Articles must not mount a second SiteUtils keyboard owner');
 check(files.auditPro.includes('raw Ctrl/Meta+K owner'), 'audit-pro G112 semantic owner guard missing');
 
 check(files.home.includes('data-search-shortcut-label="Поиск по всему сайту"'), 'Home shared label metadata missing');

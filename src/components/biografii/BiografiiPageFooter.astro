@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /**
  * BiografiiPageFooter.astro — footer + scripts for /biografii/.
  */
@@ -47,13 +48,13 @@
   </span>
 </button>
 
-<script defer src="../js/site-utils.js?v=aa7bcd98" is:inline></script>
-<script defer src="../js/scroll-perf.js?v=454d6f7b" is:inline></script>
-<script src="../js/site.js?v=9fa8818a" defer is:inline></script>
-<!-- home infrastructure handled by js/site.js?v=9fa8818a module 35 -->
+<script defer src={assetUrl('js/site-utils.js')} is:inline></script>
+<script defer src={assetUrl('js/scroll-perf.js')} is:inline></script>
+<script src={assetUrl('js/site.js')} defer is:inline></script>
+<!-- home infrastructure handled by js/site.js module 35 -->
 
-<script src="../js/highlights.js?v=9d624fc0" defer is:inline></script>
-<script src="../js/enhancements.js?v=15476429" defer is:inline></script>
-<script src="../js/sw-register.js?v=921dd6a2" defer is:inline></script>
+<script src={assetUrl('js/highlights.js')} defer is:inline></script>
+<script src={assetUrl('js/enhancements.js')} defer is:inline></script>
+<script src={assetUrl('js/sw-register.js')} defer is:inline></script>
 
 <!-- IntersectionObserver reveal handled by CSS scroll-driven animations + site.js -->

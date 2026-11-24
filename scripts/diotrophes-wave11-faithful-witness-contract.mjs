@@ -6,11 +6,14 @@ const casesPath = 'data/diotrophes-wave11-faithful-witness-cases.json';
 const responsesPath = 'data/diotrophes-wave11-faithful-witness-responses.json';
 const sourcesPath = 'data/diotrophes-wave11-faithful-witness-sources.json';
 const supplementPath = 'src/components/article-pilots/diotrophes/FaithfulWitnessSupplement.astro';
+const publishedPagePath = 'src/components/article-pilots/diotrophes/DiotrophesPublishedPage.astro';
 const wrapperPath = 'src/components/article-pilots/diotrophes/DiotrophesWave11Draft.astro';
 const baseDraftPath = 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro';
 const publicRoutePath = 'src/pages/articles/diotrefy-nashego-vremeni/index.astro';
 const releasePath = 'data/diotrophes-wave12-release-manifest.json';
 const reportPath = 'research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01.md';
+const seriesCardsPath = 'src/components/pastor-series/PastorSeriesCardsSection.astro';
+const seriesConfigPath = 'src/components/article-pilots/_shared/series/pastorSeriesConfig.ts';
 
 const data = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const caseData = JSON.parse(readFileSync(casesPath, 'utf8'));
@@ -18,6 +21,7 @@ const responseData = JSON.parse(readFileSync(responsesPath, 'utf8'));
 const sourceDataRaw = readFileSync(sourcesPath, 'utf8');
 const sourceData = JSON.parse(sourceDataRaw);
 const supplement = readFileSync(supplementPath, 'utf8');
+const publishedPage = readFileSync(publishedPagePath, 'utf8');
 const wrapper = readFileSync(wrapperPath, 'utf8');
 const report = readFileSync(reportPath, 'utf8');
 const errors = [];
@@ -66,6 +70,13 @@ const sources = sourceData.readerSources ?? [];
 requireValue(pathways.length === 15, `expected 15 pathways, found ${pathways.length}`);
 requireValue(responses.length === 20, `expected 20 responses, found ${responses.length}`);
 requireValue(sources.length === 33, `expected 33 reader sources, found ${sources.length}`);
+const historicalJourneySources = sources.filter((item) => item.href === 'https://www.thejourney.org/about/our-story-new');
+requireValue(
+  historicalJourneySources.length === 1 && historicalJourneySources[0]?.id === 'FW10-DPA-01',
+  'exactly one frozen Journey 404 source record must remain identifiable',
+);
+const nonDisabledReaderLinks = sources.length - historicalJourneySources.length;
+requireValue(nonDisabledReaderLinks === 32, `expected 32 non-disabled reader URLs, found ${nonDisabledReaderLinks}`);
 
 const caseIds = pathways.map((item) => item.id);
 requireValue(new Set(caseIds).size === 15, 'case pathway ids must be unique');
@@ -141,18 +152,196 @@ for (const marker of [
   'Двадцать верных ответов',
   'Практическая лестница различения',
   'Документы и свидетельства: дополнительная подборка',
-  'Контрпример: когда совет действительно действует',
+  'id="positive-board-comparator"',
 ]) requireValue(supplement.includes(marker), `supplement marker missing: ${marker}`);
 requireValue(supplement.includes("data-evidence-records={pathway.sourceIds.join(',')}"), 'internal source provenance should remain machine-readable');
 requireValue(supplement.includes('readerSources.filter((source) => pathway.sourceIds.includes(source.id))'), 'reader source ids must resolve against curated public sources');
 requireValue(supplement.includes('<a href={source.href}'), 'the reader must be able to open a cited public document');
 requireValue(supplement.includes('<a href={`#faithful-${pathway.id}`}'), 'evidence examples must link to actual case headings');
+
+// Reader-facing corrections must not rewrite the preserved Wave 11 evidence snapshot.
+// One known historical case references documents already listed in the main dossier,
+// while the other fourteen pathways have directly curated Wave 11 URLs.
+const seriesConfig = readFileSync(seriesConfigPath, 'utf8');
+const seriesCards = readFileSync(seriesCardsPath, 'utf8');
+requireValue(
+  !seriesCards.includes('181 источник') && seriesCards.includes('Источники и сверка'),
+  'dossier catalog confuses full Research authority count with reader-openable links',
+);
+
+const missingNewLinkCases = pathways
+  .filter((pathway) => !pathway.sourceIds.some((id) => sourceIds.includes(id)))
+  .map((pathway) => pathway.id);
+requireValue(
+  missingNewLinkCases.length === 1 && missingNewLinkCases[0] === 'paige-patterson',
+  'unaccounted-for case pathway without direct Wave 11 reader source',
+);
+requireValue(
+  supplement.includes("pathway.id === 'paige-patterson'") &&
+  supplement.includes('href="#sources"') &&
+  supplement.includes('https://swbts.edu/news/statement-by-kevin-ueckert-chairman-of-the-board-of-trustees/'),
+  'Patterson must link both the three original bibliography entries and the primary June 1 trustee clarification',
+);
+requireValue(
+  !supplement.includes('Для этой истории отдельная прямая ссылка пока не представлена'),
+  'misleading missing-source statement returned',
+);
+requireValue(
+  supplement.includes('совет старейшин публично поддерживает служение Махейни и осуждает обвинения Брента Детуайлера'),
+  'Mahaney chronology again blurs the object of the council statement',
+);
+requireValue(
+  supplement.includes('проверка сведений из студенческого дела, доступ к которым был предоставлен с разрешения'),
+  'Patterson chronology lost the record-permission clarification',
+);
+requireValue(
+  supplement.includes('их номера не образуют') && !supplement.includes('Предыдущая часть показала'),
+  'thematic numbering or same-page transition regressed',
+);
+
+// Safety is an immediate gate, not the second step after collecting evidence,
+// and editorial cross-links are not claims that a case proves an anti-advice item.
+// Public introduction must distinguish Scripture from a contemporary analogy
+// and make the trilogy navigable without labeling every case by a stage.
+requireValue(
+  publishedPage.includes('В 3 Ин. 9 сказано, что Диотреф «не принимает нас»') &&
+  publishedPage.includes('Послание не называет') &&
+  publishedPage.includes('должность Диотрефа') &&
+  publishedPage.includes('поддержку других членов общины') &&
+  publishedPage.includes('не является буквальным переводом'),
+  '3 John text vs institutional-review analogy must remain explicit',
+);
+requireValue(
+  publishedPage.includes('/articles/20-antisovetov-pastoru/') &&
+  publishedPage.includes('/articles/anatomiya-padeniya-pyat-stadiy/') &&
+  publishedPage.includes('Нельзя автоматически приписывать'),
+  'three-article editorial bridge and anti-overclassification guard missing',
+);
+requireValue(
+  publishedPage.includes("20-antisovetov-pastoru/\">«20 антисоветов пастору»</a>{' '}") &&
+  publishedPage.includes("разрушительные решения;{' '}") &&
+  publishedPage.includes("anatomiya-padeniya-pyat-stadiy/\">«Анатомия падения»</a>{' '}"),
+  'intro links must render explicit whitespace on mobile and desktop (no glued words)',
+);
+requireValue(
+  /а не\s+репрезентативная выборка церквей/.test(publishedPage) &&
+  publishedPage.includes('нельзя рассчитывать'),
+  'documentary case selection must not imply prevalence or deterministic stage transitions',
+);
+
+const decisionSection = supplement.split('id="faithful-decision-ladder"')[1] ?? '';
+const immediateRisk = decisionSection.indexOf('<strong>Есть ли непосредственный риск?</strong>');
+const caseDetails = decisionSection.indexOf('<strong>Что именно произошло?</strong>');
+requireValue(
+  immediateRisk >= 0 && caseDetails > immediateRisk,
+  'immediate safety must precede case evidence collection in the reader-facing decision list',
+);
+requireValue(
+  decisionSection.includes('не обязательная последовательность') &&
+  decisionSection.includes('не откладываются'),
+  'immediate safety gate must not be conditional on a private meeting or completing an evidence file',
+);
+requireValue(
+  decisionSection.includes('соблюдать установленные законом обязанности') &&
+  !decisionSection.includes('Гражданская власть обязательна при преступлении') &&
+  decisionSection.includes('Публичное раскрытие — отдельное решение'),
+  'risk reporting, statutory duties and responsible public disclosure must remain separate',
+);
+requireValue(
+  supplement.includes('критика процедуры не доказывает') &&
+  supplement.includes('не утверждают, будто каждый документальный случай доказывает'),
+  'original acts, institutional responses and thematic links must remain distinct',
+);
+requireValue(
+  supplement.includes('id="faithful-positive-conclusion"') &&
+  supplement.includes('3 Ин. 11') &&
+  supplement.includes('о Димитрии'),
+  'Dossier must end with an evidence-bounded Christian positive conclusion',
+);
+requireValue(
+  supplement.includes('gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf') &&
+  /не\s+подтверждает,\s+что эти встречи позднее состоялись\./.test(supplement) &&
+  !supplement.includes('позднее проводили встречи, где') &&
+  supplement.includes('совет способен остановить лидера'),
+  'The Journey comparator must cite the original 2016 elder letter and distinguish plans from completed meetings',
+);
+// The frozen Wave 11 steps compress two different source dates. Keep the
+// original 2016 letter separate from the institution's later 2017–18 history,
+// and retain both primary document locators in the rendered reader.
+requireValue(
+  supplement.includes("'единогласное отстранение': 'единогласное решение старейшин всех площадок") &&
+  supplement.includes("'встречи для слушания членов': 'встречи с группами общины в начале 2017 года") &&
+  supplement.includes("'восстановление миссии': 'новая формулировка видения и миссии к 2018 году") &&
+  supplement.includes("readerStep(pathway.id, step)") &&
+  supplement.includes("pathway.id === 'darrin-patrick'") &&
+  supplement.includes('www.wthrockmorton.com/wp-content/uploads/2016/04/RemovalfromOfficeLetter.pdf') &&
+  supplement.includes('Письмо подтверждает решение об отстранении и анонс') &&
+  supplement.includes('официальная история The Journey') &&
+  supplement.includes('встречах с группами общины в начале 2017 года') &&
+  supplement.includes("source.id === 'FW10-DPA-01'") &&
+  supplement.includes('data-locator-status="unavailable-404-2026-11-23"') &&
+  !supplement.includes('<a href="https://www.thejourney.org/about/our-story-new"') &&
+  supplement.includes('исторической страницы The Journey адрес сейчас недоступен'),
+  'Journey paths must preserve 2016 vs 2017–18 provenance without offering the confirmed-404 historical URL as a working link',
+);
+requireValue(
+  seriesConfig.includes("href: '#faithful-witness-sources'") &&
+  seriesConfig.includes('33 библиографические записи и границы их доказательной силы') &&
+  !seriesConfig.includes('33 библиографические ссылки') &&
+  seriesConfig.includes("href: '#faithful-positive-conclusion'"),
+  'supplementary bibliography and Gaius/Demetrius conclusion must be reachable from the series TOC',
+);
+
+const relatedPairs = [...supplement.matchAll(/'FW-(\d{2})':\s*\[([\d,\s]+)\]/g)];
+const relatedIds = new Set(relatedPairs.map((pair) => `FW-${pair[1]}`));
+requireValue(
+  relatedPairs.length === 20 && responses.every((item) => relatedIds.has(item.id)),
+  'thematic links must cover each of the 20 independent faithful responses',
+);
+for (const pair of relatedPairs) {
+  const points = pair[2].split(',').map((point) => Number(point.trim()));
+  requireValue(
+    points.length > 0 && points.every((point) => Number.isInteger(point) && point >= 1 && point <= 20),
+    `thematic anti-advice anchor out of range: FW-${pair[1]}`,
+  );
+}
+requireValue(
+  supplement.includes('/articles/20-antisovetov-pastoru/#point-${point}'),
+  'thematic cross-links must target the 20 existing first-article anchors',
+);
 requireValue(!supplement.includes('Research records:'), 'raw Research ids leaked into public supplementary prose');
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
+requireValue(
+  supplement.includes('data-total-bibliography-records={content.counts.totalReaderLinks}') &&
+  supplement.includes('data-bibliography-records={content.counts.newReaderLinks}') &&
+  supplement.includes("data-reader-source-links={readerSources.filter((source) => source.id !== 'FW10-DPA-01').length}") &&
+  supplement.includes('33 библиографические записи') &&
+  !supplement.includes('data-new-reader-links=') &&
+  !supplement.includes('data-reader-links={content.counts.totalReaderLinks}'),
+  'public supplement must distinguish 33 source records from 32 linkable URLs',
+);
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
 requireValue(wrapper.includes("import DiotrophesDraft from './DiotrophesDraft.astro'"), 'wrapper lost Wave 10 draft');
 requireValue(wrapper.includes("import FaithfulWitnessSupplement from './FaithfulWitnessSupplement.astro'"), 'wrapper lost supplement');
-requireValue(wrapper.includes('<DiotrophesDraft publicationMode={publicationMode} />'), 'base draft must render once with publication state');
+const baseDraftInstances = wrapper.match(/<DiotrophesDraft publicationMode=\{publicationMode\}(?:\s*\/>|>\s*<slot\s*\/>\s*<\/DiotrophesDraft>)/g) ?? [];
+requireValue(baseDraftInstances.length === 1, 'base draft must render once with publication state (direct or single-slot wrapper)');
+if (publishedPage.includes('<DiotrophesWave11Draft publicationMode={true}>')) {
+  const source = readFileSync(baseDraftPath, 'utf8');
+  const headingIndex = source.indexOf('<h1>Диотрефы нашего времени</h1>');
+  const summaryIndex = source.indexOf('<aside class="summary-card"');
+  const noticeSlotIndex = source.indexOf('{publicationMode && <slot />}');
+  const followingSectionIndex = source.indexOf('<h2 id="interpretive-guardrails">');
+  requireValue(
+    publishedPage.includes('aria-labelledby="wave12-publication-heading"') &&
+      wrapper.includes('<slot />') && noticeSlotIndex >= 0,
+    'published methodological notice must propagate through the single article slot',
+  );
+  requireValue(
+    headingIndex >= 0 && headingIndex < summaryIndex && summaryIndex < noticeSlotIndex &&
+      noticeSlotIndex < followingSectionIndex,
+    'published article must render H1 and concise summary before the methodological notice',
+  );
+}
 requireValue((wrapper.match(/<FaithfulWitnessSupplement\s*\/>/g) ?? []).length === 1, 'supplement must render exactly once');
 
 const russianWords = [caseData, responseData, sourceData].map(JSON.stringify).join(' ').match(/[А-Яа-яЁё]{2,}/g)?.length ?? 0;
@@ -166,4 +355,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`✅ Diotrophes Wave 11 evidence snapshot passed: 15 pathways, 20 responses, 33 links, 181-source authority, ${russianWords} Russian data words, successor=${successorRelease?.authorityId ?? 'none'}`);
+console.log(`✅ Diotrophes Wave 11 evidence snapshot passed: 15 pathways, 20 responses, 33 bibliography records, ${nonDisabledReaderLinks} non-disabled source links, 181-source authority, ${russianWords} Russian data words, successor=${successorRelease?.authorityId ?? 'none'}`);

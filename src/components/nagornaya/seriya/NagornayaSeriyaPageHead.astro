@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /**
  * NagornayaSeriyaPageHead — native <head> for /nagornaya/seriya//.
  * Extracted from the approved legacy document for 100% native Astro output.
@@ -50,9 +51,9 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
   <link rel="icon" type="image/png" sizes="120x120" href="/favicon-120.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="manifest" href="https://gospod-bog.ru/manifest.json">
-  <link rel="preload" as="style" href="../../fonts/fonts.css?v=864cc57a">
+  <link rel="preload" as="style" href={assetUrl('fonts/fonts.css')}>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
-<link rel="stylesheet" href="../../fonts/fonts.css?v=864cc57a">
+<link rel="stylesheet" href={assetUrl('fonts/fonts.css')}>
 
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript" is:inline>
@@ -68,8 +69,8 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 
   <!-- Anti-FOUC -->
 
-  <link rel="stylesheet" href="../../css/site.css?v=c2364e81">
-  <link rel="stylesheet" href="../../css/home.css?v=4a2fa9a3">
+  <link rel="stylesheet" href={assetUrl('css/site.css')}>
+  <link rel="stylesheet" href={assetUrl('css/home.css')}>
 
   <script is:inline>
 window.SITE_CONFIG = {
@@ -178,7 +179,7 @@ window.SITE_CONFIG = {
       ]
 }</script>
   <link rel="preload" as="image" href="../../images/og-nagornaya-propoved.webp" type="image/webp" fetchpriority="high">
-  <link rel="stylesheet" href="../../css/nagornaya-mobile-toc.css?v=623e0845">
-  <link rel="stylesheet" href="../../css/command-palette.css?v=3b88813f">
-    <link rel="stylesheet" href="../../css/mobile-hotfix.css?v=9cfd6aee">
+  <link rel="stylesheet" href={assetUrl('css/nagornaya-mobile-toc.css')}>
+  <link rel="stylesheet" href={assetUrl('css/command-palette.css')}>
+    <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')}>
   <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">

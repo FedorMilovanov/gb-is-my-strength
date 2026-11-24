@@ -17,6 +17,7 @@ for(const name of ['articles','hardTexts']){
   assert.equal(missing.length,0,'Reader Library missing from published '+name+' routes: '+missing.map(x=>x.path).join(', '));
 }
 const crypto = require('crypto');
+const storagePath = path.join(root, 'js/reader-library-storage.js');
 const presenterPath = path.join(root, 'js/reader-library-presenter.js');
 const researchPath = path.join(root, 'js/reader-library-v3.js');
 const dockPath = path.join(root, 'js/reader-library-dock.js');
@@ -25,6 +26,12 @@ const swPath = path.join(root, 'sw.js');
 assert(fs.existsSync(presenterPath), 'lazy presenter must be published in dist');
 assert(fs.existsSync(highlightsPath), 'highlight storage bootstrap must be published');
 assert(fs.existsSync(swPath), 'service worker must be published');
+assert(fs.existsSync(storagePath), 'shared storage authority must be published in dist');
+const storageVersion = crypto.createHash('md5').update(fs.readFileSync(storagePath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-storage.js?v=' + storageVersion),
+  'lazy owner must reference exact published storage authority bytes');
+assert(fs.readFileSync(swPath, 'utf8').includes('reader-library-storage.js?v=' + storageVersion),
+  'offline service worker must precache exact storage authority revision');
 const version = crypto.createHash('md5').update(fs.readFileSync(presenterPath)).digest('hex').slice(0,8);
 assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-presenter.js?v=' + version),
   'lazy importer must reference exact published presenter bytes');

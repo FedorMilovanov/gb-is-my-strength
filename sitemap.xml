@@ -743,18 +743,18 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
-      <image:loc>https://gospod-bog.ru/icons/icon-512.png</image:loc>
+      <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
       <image:title>Журнал — документы, новости и расследования</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/journal/dossiers/g3/</loc>
-    <lastmod>2026-09-08T21:00:00.000Z</lastmod>
+    <lastmod>2026-11-20T21:00:00.000Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image>
-      <image:loc>https://gospod-bog.ru/icons/icon-512.png</image:loc>
-      <image:title>G3: рост, кризис и завершение операций</image:title>
+      <image:loc>https://gospod-bog.ru/images/journal/g3-ministries-og-1200x630.webp</image:loc>
+      <image:title>G3 Ministries: два кризиса и завершение работы</image:title>
     </image:image>
   </url>
 
@@ -851,6 +851,18 @@
     <image:image>
       <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
       <image:title>Обновления исследований — Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/journal/dossiers/g3/history/</loc>
+    <lastmod>2026-11-23T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/journal/g3-ministries-og-1200x630.webp</image:loc>
+      <image:title>G3 Ministries: от конференции к служению (2011–2024)</image:title>
     </image:image>
   </url>
 </urlset>

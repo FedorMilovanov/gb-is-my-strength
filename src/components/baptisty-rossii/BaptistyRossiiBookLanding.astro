@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
 import ReaderIntegratedRailToggle from '@/components/article-pilots/_shared/ReaderIntegratedRailToggle.astro';
@@ -192,7 +193,7 @@ const landingToc = [
         <p class="article-byline reveal">
           <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
           <span class="article-byline__sep">·</span>
-          <time datetime="2026-06-13">13 июня 2026</time>
+          <time datetime="2026-06-13" data-editorial-slot="published">13 июня 2026</time>
         </p>
       </header>
 
@@ -309,11 +310,11 @@ const landingToc = [
   </section>
 </div>
 
-<script is:inline defer src="../js/site-utils.js?v=aa7bcd98"></script>
-<script is:inline defer src="../js/scroll-perf.js?v=454d6f7b"></script>
-<script is:inline defer src="../js/site.js?v=9fa8818a"></script>
-<script is:inline defer src="../js/glossary.js?v=c7f8b6e9"></script>
-<script is:inline defer src="../js/sw-register.js?v=921dd6a2"></script>
+<script is:inline defer src={assetUrl('js/site-utils.js')}></script>
+<script is:inline defer src={assetUrl('js/scroll-perf.js')}></script>
+<script is:inline defer src={assetUrl('js/site.js')}></script>
+<script is:inline defer src={assetUrl('js/glossary.js')}></script>
+<script is:inline defer src={assetUrl('js/sw-register.js')}></script>
 
-<script is:inline defer src="../js/highlights.js?v=9d624fc0"></script>
-<script is:inline defer src="../js/enhancements.js?v=15476429"></script>
+<script is:inline defer src={assetUrl('js/highlights.js')}></script>
+<script is:inline defer src={assetUrl('js/enhancements.js')}></script>

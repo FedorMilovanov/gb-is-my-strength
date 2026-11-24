@@ -15,54 +15,88 @@ const excerpt=(start,end)=>{
  assert.ok(from>=0&&to>from,'W57 function owner: '+start);
  return file.slice(from,to);
 };
-const noteSource=excerpt('    function linkedNote(record){','    function locate(id){');
+// Include the serialized commit owner the save path now depends on.
+const noteSource=excerpt('    // The Product Library owns the same note list','    function locate(id){');
+const sharedStorage=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
+const ownerSource=sharedStorage.slice(sharedStorage.indexOf('  function libraryFailure('),sharedStorage.indexOf('  window.GBLibraryStorage ='))+
+  highlights.slice(highlights.indexOf('  function commit('),highlights.indexOf('  function quotes() {'));
+assert.ok(ownerSource.includes('function mutateLibrary('),'canonical Product writer must exist');
 const makeFixture=(options={})=>{
  let notes=(options.notes||[]).map(x=>({...x}));
  const record=options.record||{id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
   url:'/articles/one/',annotation:{version:1,noteId:null}};
+ const nKey='gb-reader-notes-v1',qKey='gb-highlights-v1';
  const writes=[];
- const read=()=>notes.map(x=>({...x}));
- const updateRecord=(id,apply)=>{
-  if(options.failQuote||id!==record.id)return null;
-  apply(record);writes.push('quote');return record;
+ let corrupt=options.corrupt;
+ const read=key=>key===nKey?JSON.parse(JSON.stringify(notes)):[JSON.parse(JSON.stringify(record))];
+ const localStorageFixture={
+  getItem:key=>{
+   if(corrupt===key)return '{broken';
+   if(options.failRead===key)throw new Error('read failed');
+   return JSON.stringify(read(key));
+  },
+  setItem:(key,value)=>{
+   if((key===nKey&&options.failNote)||(key===qKey&&options.failQuote))
+    throw new Error('QuotaExceededError');
+   if(key===nKey){notes=JSON.parse(value);writes.push('note')}
+   else{Object.assign(record,JSON.parse(value)[0]);writes.push('quote')}
+  },
+  removeItem:()=>{throw new Error('unexpected missing fixture key')}
  };
- const write=(key,items)=>{
-  if(options.failNote)return false;
-  assert.equal(key,'gb-reader-notes-v1');
-  notes=items.map(x=>({...x}));writes.push('note');return true;
+ const navigatorFixture=options.lock==='absent'?{}:{locks:{request:(name,opts,task)=>{
+  assert.equal(name,'gb-library:'+nKey,'one shared lock name');
+  assert.equal(opts.mode,'exclusive');
+  if(options.lock==='rejected')return Promise.reject(new Error('lock rejected'));
+  if(options.lock==='null')return Promise.resolve(task(null));
+  if(options.lock==='held')return new Promise((_,reject)=>opts.signal.addEventListener('abort',()=>reject(new Error('aborted'))));
+  return Promise.resolve().then(()=>task({name}));
+ }}};
+ const windowFixture={dispatchEvent:()=>{if(options.failNotify)throw new Error('notify failed');return true}};
+ const CustomEventFixture=class{constructor(type,init){this.type=type;this.detail=init&&init.detail}};
+ // Deterministic abort timer, not a claim of native browser-lock acceptance.
+ const AbortControllerFixture=class{
+  constructor(){const listeners=[];this.signal={aborted:false,addEventListener:(_,fn)=>listeners.push(fn)};this.listeners=listeners}
+  abort(){this.signal.aborted=true;for(const fn of this.listeners)fn()}
  };
- const factory=new Function('read','write','updateRecord','nKey','Date','Math',
+ const timer=(fn)=>{const token={active:true};if(options.lock==='held')Promise.resolve().then(()=>{if(token.active)fn()});return token};
+ const cancel=token=>{token.active=false};
+ const makeOwner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',
+  'localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',
+  ownerSource+'return {mutateLibrary,commit,restoreDeleted};');
+ windowFixture.GBHighlights=makeOwner(nKey,qKey,500,200,localStorageFixture,navigatorFixture,
+  windowFixture,CustomEventFixture,AbortControllerFixture,timer,cancel,x=>x?.text||'');
+ const factory=new Function('read','qKey','nKey','Date','Math','window',
   noteSource+'return {linkedNote,captureNoteSnapshot,saveLinkedNote};');
- const api=factory(read,write,updateRecord,'gb-reader-notes-v1',Date,Math);
- return{api,record,notes:()=>notes,writes,
+ const api=factory(read,qKey,nKey,Date,Math,windowFixture);
+ return{api,record,notes:()=>notes,writes,owner:windowFixture.GBHighlights,
   replaceNotes:(items)=>{notes=items.map(x=>({...x}));}};
 };
 const newNote=makeFixture();
-assert.equal(newNote.api.saveLinkedNote(newNote.record,'Новая мысль').ok,true);
+assert.equal((await newNote.api.saveLinkedNote(newNote.record,'Новая мысль')).ok,true);
 assert.equal(newNote.notes().length,1,'create: one note');
 const originalId=newNote.notes()[0].id;
 assert.equal(originalId,newNote.record.annotation.noteId,'create: linked id matches');
-assert.equal(newNote.api.saveLinkedNote(newNote.record,'Исправленная мысль').ok,true);
+assert.equal((await newNote.api.saveLinkedNote(newNote.record,'Исправленная мысль')).ok,true);
 assert.equal(newNote.notes().length,1,'edit must UPDATE, not append another note');
 assert.equal(newNote.notes()[0].id,originalId,'edit must keep original note id');
 assert.equal(newNote.notes()[0].text,'Исправленная мысль','edit must retain new text');
 const rejectQuote=makeFixture({failQuote:true});
-assert.equal(rejectQuote.api.saveLinkedNote(rejectQuote.record,'Текст').ok,false);
+assert.equal((await rejectQuote.api.saveLinkedNote(rejectQuote.record,'Текст')).ok,false);
 assert.equal(rejectQuote.notes().length,0,'quote write failure must not create orphan note');
 assert.equal(rejectQuote.record.annotation.noteId,null,'quote failure leaves link intact');
 const rejectNote=makeFixture({failNote:true});
-assert.equal(rejectNote.api.saveLinkedNote(rejectNote.record,'Текст').ok,false);
+assert.equal((await rejectNote.api.saveLinkedNote(rejectNote.record,'Текст')).ok,false);
 assert.equal(rejectNote.record.annotation.noteId,null,'note failure must roll back quote link');
 assert.equal(rejectNote.notes().length,0,'note failure does not persist text');
 assert.deepEqual(rejectNote.writes,['quote','quote'],'failed note write causes compensating quote write');
 const maxNotes=Array.from({length:500},(_,i)=>({id:'n'+i,text:'Старый текст',quoteId:i?'other':'quote-1'}));
 const atLimit=makeFixture({notes:maxNotes,record:{id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
  url:'/articles/one/',annotation:{version:1,noteId:'n0'}}});
-assert.equal(atLimit.api.saveLinkedNote(atLimit.record,'Редактирование при лимите').ok,true);
+assert.equal((await atLimit.api.saveLinkedNote(atLimit.record,'Редактирование при лимите')).ok,true);
 assert.equal(atLimit.notes().length,500,'editing at quota must not append');
 assert.equal(atLimit.notes()[0].text,'Редактирование при лимите');
 const orphan=makeFixture({notes:[{id:'legacy-note',quoteId:'quote-1',text:'Старая заметка'}]});
-assert.equal(orphan.api.saveLinkedNote(orphan.record,'Восстановленная ссылка').ok,true);
+assert.equal((await orphan.api.saveLinkedNote(orphan.record,'Восстановленная ссылка')).ok,true);
 assert.equal(orphan.record.annotation.noteId,'legacy-note','one-way legacy association repaired');
 assert.equal(orphan.notes().length,1,'repair does not duplicate note');
 const ambiguous=makeFixture({notes:[
@@ -125,13 +159,13 @@ const linkedNotes=()=>[{id:'same-note',text:'Первоначально',quoteId
   articleTitle:'Статья',url:'/articles/one/',savedAt:100}];
 const stableOpen=makeFixture({record:linkedRecord(),notes:linkedNotes()});
 const stableSnapshot=stableOpen.api.captureNoteSnapshot(stableOpen.record);
-assert.equal(stableOpen.api.saveLinkedNote(stableOpen.record,'Моя правка',stableSnapshot).ok,true,
+assert.equal((await stableOpen.api.saveLinkedNote(stableOpen.record,'Моя правка',stableSnapshot)).ok,true,
  'W57 must permit editing the exact opened note when no competing write occurs');
 assert.equal(stableOpen.notes()[0].text,'Моя правка');
 const changedInOtherTab=makeFixture({record:linkedRecord(),notes:linkedNotes()});
 const changedSnapshot=changedInOtherTab.api.captureNoteSnapshot(changedInOtherTab.record);
 changedInOtherTab.replaceNotes([{...linkedNotes()[0],text:'Правка вкладки Б'}]);
-assert.equal(changedInOtherTab.api.saveLinkedNote(changedInOtherTab.record,'Черновик А',changedSnapshot).ok,false,
+assert.equal((await changedInOtherTab.api.saveLinkedNote(changedInOtherTab.record,'Черновик А',changedSnapshot)).ok,false,
  'changed-after-open must fail closed');
 assert.equal(changedInOtherTab.notes()[0].text,'Правка вкладки Б',
  'conflicting save must not overwrite B');
@@ -139,7 +173,7 @@ assert.equal(changedInOtherTab.writes.length,0,'conflict must not write either s
 const deletedInOtherTab=makeFixture({record:linkedRecord(),notes:linkedNotes()});
 const deletedSnapshot=deletedInOtherTab.api.captureNoteSnapshot(deletedInOtherTab.record);
 deletedInOtherTab.replaceNotes([]);
-assert.equal(deletedInOtherTab.api.saveLinkedNote(deletedInOtherTab.record,'Черновик А',deletedSnapshot).ok,false,
+assert.equal((await deletedInOtherTab.api.saveLinkedNote(deletedInOtherTab.record,'Черновик А',deletedSnapshot)).ok,false,
  'deleted-after-open must not recreate a note');
 assert.equal(deletedInOtherTab.notes().length,0,'deleted note remains deleted');
 assert.equal(deletedInOtherTab.record.annotation.noteId,'same-note',
@@ -148,20 +182,20 @@ assert.deepEqual(deletedInOtherTab.writes,[], 'delete/change must write nothing'
 const newLinkedInOtherTab=makeFixture();
 const newLinkSnapshot=newLinkedInOtherTab.api.captureNoteSnapshot(newLinkedInOtherTab.record);
 newLinkedInOtherTab.replaceNotes([{id:'other-note',text:'Создана во вкладке Б',quoteId:'quote-1'}]);
-assert.equal(newLinkedInOtherTab.api.saveLinkedNote(newLinkedInOtherTab.record,'А',newLinkSnapshot).ok,false,
+assert.equal((await newLinkedInOtherTab.api.saveLinkedNote(newLinkedInOtherTab.record,'А',newLinkSnapshot)).ok,false,
  'newly-created link after open must not be silently overwritten');
 assert.equal(newLinkedInOtherTab.notes().length,1);
 const duplicatesInStore=makeFixture({record:linkedRecord(),notes:[
  ...linkedNotes(),{...linkedNotes()[0],text:'Дубликат ID'}]});
 const dupSnapshot=duplicatesInStore.api.captureNoteSnapshot(duplicatesInStore.record);
-assert.equal(duplicatesInStore.api.saveLinkedNote(duplicatesInStore.record,'А',dupSnapshot).ok,false,
+assert.equal((await duplicatesInStore.api.saveLinkedNote(duplicatesInStore.record,'А',dupSnapshot)).ok,false,
  'duplicate ID must fail closed');
 assert.equal(duplicatesInStore.writes.length,0);
 const unrelatedChange=makeFixture({record:linkedRecord(),notes:[
  ...linkedNotes(),{id:'other-note',text:'Посторонняя заметка'}]});
 const unrelatedSnapshot=unrelatedChange.api.captureNoteSnapshot(unrelatedChange.record);
 unrelatedChange.replaceNotes([...linkedNotes(),{id:'other-note',text:'Изменено отдельно'}]);
-assert.equal(unrelatedChange.api.saveLinkedNote(unrelatedChange.record,'Обновлена моя',unrelatedSnapshot).ok,true,
+assert.equal((await unrelatedChange.api.saveLinkedNote(unrelatedChange.record,'Обновлена моя',unrelatedSnapshot)).ok,true,
  'editing another note must not block unrelated note save');
 assert.equal(unrelatedChange.notes().find(n=>n.id==='other-note').text,'Изменено отдельно',
  'unrelated notes must survive a guarded save');
@@ -172,4 +206,233 @@ assert.match(file,/saveLinkedNote\(record,value,pendingNoteSnapshot\)/,
 assert.match(file,/if\(!result.ok\)\{say\(result.message\);return\}/,
  'failed compare must leave the editor and draft intact');
 
+
+// Negative witnesses for the actual shared owner and W57 save path.
+for(const lock of ['absent','held','rejected','null']){
+ const f=makeFixture({lock});
+ const before=JSON.stringify([f.record,f.notes()]);
+ assert.equal((await f.api.saveLinkedNote(f.record,'Draft',f.api.captureNoteSnapshot(f.record))).ok,false,lock);
+ assert.equal(JSON.stringify([f.record,f.notes()]),before,lock+' leaves both arrays unchanged');
+ assert.deepEqual(f.writes,[],lock+' must not prewrite quote');
+ let entered=false;
+ const r=await f.owner.commit('gb-reader-notes-v1',null,current=>{entered=true;return{items:current}});
+ assert.equal(r.ok,false,lock+' Product refuses');
+ assert.equal(entered,false,lock+' Product mutation not entered');
+}
+for(const key of ['gb-reader-notes-v1','gb-highlights-v1']){
+ const f=makeFixture({corrupt:key});
+ assert.equal((await f.api.saveLinkedNote(f.record,'Draft')).ok,false,'corrupt '+key);
+ assert.deepEqual(f.writes,[],'corrupt store must not be overwritten');
+}
+const orphanFailure=makeFixture({failNote:true,notes:[{id:'legacy',quoteId:'quote-1',text:'old'}]});
+const oldOrphan=JSON.stringify([orphanFailure.record,orphanFailure.notes()]);
+assert.equal((await orphanFailure.api.saveLinkedNote(orphanFailure.record,'Draft')).ok,false);
+assert.equal(JSON.stringify([orphanFailure.record,orphanFailure.notes()]),oldOrphan,'failed legacy repair leaves both stores unchanged');
+const quoteDrift=makeFixture();
+const quoteOpen=quoteDrift.api.captureNoteSnapshot(quoteDrift.record);
+quoteDrift.record.annotation.color='rose';
+assert.equal((await quoteDrift.api.saveLinkedNote(quoteDrift.record,'Draft',quoteOpen)).ok,false);
+assert.deepEqual(quoteDrift.writes,[],'quote snapshot conflict refuses all writes');
+const notifyFailure=makeFixture({failNotify:true});
+assert.equal((await notifyFailure.api.saveLinkedNote(notifyFailure.record,'Saved')).ok,true,'notification failure is not storage failure');
+assert.equal(notifyFailure.notes().length,1);
+
+
+// Execute the Product save handler and the committed portion of deleteItem
+// against the same real mutation owner as W57. UI rendering is stubbed.
+const nKey='gb-reader-notes-v1',qKey='gb-highlights-v1';
+const deleteStart=highlights.indexOf('  async function deleteItem(item) {');
+const deleteEnd=highlights.indexOf('    render(); sync();\n    const u = pendingUndo;',deleteStart);
+assert.ok(deleteStart>=0&&deleteEnd>deleteStart,'Product delete source boundaries');
+const deleteSource=highlights.slice(deleteStart,deleteEnd)+'return pendingUndo;\n}';
+const removeProduct=(f,item)=>new Function('mutateLibrary','NOTES_KEY','QUOTES_KEY',
+ 'statusMessage','clearUndo','let pendingUndo;\n'+deleteSource+'\nreturn deleteItem;')(
+ f.owner.mutateLibrary,nKey,qKey,()=>{},()=>{})(item);
+const rawA={id:'A',text:'original',quoteId:'quote-1',legacy:{keep:true}};
+const rawB={id:'B',text:'other'};
+const rawQ=()=>({id:'quote-1',text:'Quote',annotation:{version:1,noteId:'A',color:'blue',anchor:{keep:true}}});
+const itemA={id:'A',type:'note',recordSnapshot:JSON.stringify(rawA)};
+const deletion=makeFixture({notes:[rawA],record:rawQ()});
+const otherWrite=deletion.owner.commit(nKey,null,current=>({items:[rawB,...current]}));
+const removal=removeProduct(deletion,itemA);
+assert.equal((await otherWrite).ok,true);
+assert.ok(await removal,'delete receipt after a queued unrelated create');
+assert.deepEqual(deletion.notes(),[rawB],'fresh-state delete must preserve concurrent create');
+assert.equal(deletion.record.annotation.noteId,null,'forward link cleared');
+assert.equal(deletion.record.annotation.color,'blue','quote metadata untouched');
+const deniedDelete=makeFixture({notes:[rawA],record:rawQ(),lock:'held'});
+const beforeDenied=JSON.stringify([deniedDelete.notes(),deniedDelete.record]);
+assert.equal(await removeProduct(deniedDelete,itemA),undefined);
+assert.equal(JSON.stringify([deniedDelete.notes(),deniedDelete.record]),beforeDenied);
+assert.deepEqual(deniedDelete.writes,[]);
+const staleDelete=makeFixture({notes:[{...rawA,text:'newer'},rawB],record:rawQ()});
+assert.equal(await removeProduct(staleDelete,itemA),undefined);
+assert.deepEqual(staleDelete.writes,[],'stale delete writes nothing');
+const duplicateDelete=makeFixture({notes:[rawA,{...rawA,text:'second'}],record:rawQ()});
+assert.equal(await removeProduct(duplicateDelete,itemA),undefined);
+assert.deepEqual(duplicateDelete.writes,[]);
+const failedDelete=makeFixture({notes:[rawA,rawB],record:rawQ(),failNote:true});
+const beforeFailed=JSON.stringify([failedDelete.notes(),failedDelete.record]);
+assert.equal(await removeProduct(failedDelete,itemA),undefined);
+assert.equal(JSON.stringify([failedDelete.notes(),failedDelete.record]),beforeFailed,'failed note deletion rolls back exact quote');
+const saveStart=highlights.indexOf('  async function saveNote(e) {');
+const saveEnd=highlights.indexOf('  function applySavedNote(editing)',saveStart);
+assert.ok(saveStart>=0&&saveEnd>saveStart,'Product save source boundaries');
+const saveSource=highlights.slice(saveStart,saveEnd);
+const saveProduct=async(f,opened,context=null)=>{
+ let applied=false;const textArea={value:'edited'};
+ const draft={context,editing:opened?{id:String(opened.id),text:opened.text,recordSnapshot:JSON.stringify(opened)}:null};
+ const run=new Function('textArea','draft','uid','currentTitle','location','mutateLibrary','NOTES_KEY','QUOTES_KEY',
+  'LIMIT_NOTES','statusMessage','applySavedNote',saveSource+'\nreturn saveNote;')(
+  textArea,draft,()=>'fresh-id',()=>'Article',{origin:'https://example.test',pathname:'/a'},
+  f.owner.mutateLibrary,nKey,qKey,500,()=>{},()=>{applied=true});
+ await run({preventDefault(){}});
+ return{applied,draftText:textArea.value};
+};
+const num={id:42,text:'original',legacy:{keep:true}};
+const legacyProduct=makeFixture({notes:[num]});
+assert.equal((await saveProduct(legacyProduct,num)).applied,true);
+assert.deepEqual(legacyProduct.notes(),[{...num,text:'edited'}],'raw legacy ID and metadata unchanged');
+const duplicateProduct=makeFixture({notes:[rawA,{...rawA,text:'second'}]});
+assert.equal((await saveProduct(duplicateProduct,rawA)).applied,false);
+assert.deepEqual(duplicateProduct.writes,[]);
+const driftProduct=makeFixture({notes:[{...rawA,quoteId:'newer'}]});
+const driftResult=await saveProduct(driftProduct,rawA);
+assert.equal(driftResult.applied,false);
+assert.equal(driftResult.draftText,'edited');
+assert.deepEqual(driftProduct.writes,[]);
+const atCapacity=makeFixture({notes:Array.from({length:500},(_,i)=>({id:'n'+i,text:'old'}))});
+assert.equal((await saveProduct(atCapacity,null)).applied,false);
+assert.deepEqual(atCapacity.writes,[]);
+const successfulProduct=makeFixture({notes:[rawB]});
+assert.equal((await saveProduct(successfulProduct,null)).applied,true);
+assert.equal(successfulProduct.notes().length,2);
+assert.deepEqual(successfulProduct.notes()[1],rawB);
+
+
+// Undo uses the same lock and exact post-delete quote snapshots.
+const undoFixture=makeFixture({notes:[rawA],record:rawQ()});
+const receipt=await removeProduct(undoFixture,itemA);
+assert.ok(receipt);
+assert.equal((await undoFixture.owner.restoreDeleted(receipt)).ok,true);
+assert.deepEqual(undoFixture.notes(),[rawA]);
+assert.equal(undoFixture.record.annotation.noteId,'A');
+const undoConflict=makeFixture({notes:[rawA],record:rawQ()});
+const oldReceipt=await removeProduct(undoConflict,itemA);
+const newNoteB={id:'B',text:'newer',quoteId:'quote-1'};
+undoConflict.replaceNotes([newNoteB]);
+undoConflict.record.annotation.noteId='B';
+undoConflict.record.annotation.color='rose';
+const newState=JSON.stringify([undoConflict.notes(),undoConflict.record]);
+assert.equal((await undoConflict.owner.restoreDeleted(oldReceipt)).ok,false,'cannot steal newer link');
+assert.equal(JSON.stringify([undoConflict.notes(),undoConflict.record]),newState);
+assert.equal((await undoConflict.owner.restoreDeleted(oldReceipt,'copy-A')).ok,true);
+assert.equal(undoConflict.record.annotation.noteId,'B');
+assert.deepEqual(undoConflict.notes().find(x=>x.id==='B'),newNoteB);
+const detached=undoConflict.notes().find(x=>x.id==='copy-A');
+assert.equal(detached.quoteId,undefined,'copy cannot claim newer note link');
+assert.equal(detached.text,rawA.text);
+assert.deepEqual(detached.legacy,rawA.legacy);
+const undoDrift=makeFixture({notes:[rawA],record:rawQ()});
+const driftReceipt=await removeProduct(undoDrift,itemA);
+undoDrift.record.annotation.color='rose';
+const driftState=JSON.stringify([undoDrift.notes(),undoDrift.record]);
+assert.equal((await undoDrift.owner.restoreDeleted(driftReceipt)).ok,false);
+assert.equal(JSON.stringify([undoDrift.notes(),undoDrift.record]),driftState);
+const undoHeld=makeFixture({lock:'held',notes:[],record:rawQ()});
+assert.equal((await undoHeld.owner.restoreDeleted(receipt)).ok,false);
+assert.deepEqual(undoHeld.writes,[]);
+const undoQuota=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:null}},failNote:true});
+const undoQuotaBefore=JSON.stringify([undoQuota.notes(),undoQuota.record]);
+assert.equal((await undoQuota.owner.restoreDeleted(receipt)).ok,false);
+assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefore);
+
+
+// Actual shared quote mutation paths with multiple quotes and a serialized scheduler.
+const markerStart=highlights.indexOf('  async function saveMarker(color) {');
+const markerEnd=highlights.indexOf('  /* mutateLibrary()',markerStart);
+const quoteStart=highlights.indexOf('  async function saveSelectedQuote() {');
+const quoteEnd=highlights.indexOf('  function bindSelectionButton(',quoteStart);
+assert.ok(markerStart>=0&&markerEnd>markerStart&&quoteStart>=0&&quoteEnd>quoteStart);
+const keySource=highlights.slice(highlights.indexOf('  function gbHighlightPath('),highlights.indexOf('  const MARK_COLORS'));
+const wQuoteSource=excerpt('    async function save(selection,kind){','    // The Product Library owns the same note list');
+const qFixture=(initial=[],mode='ok')=>{
+ let raw=JSON.stringify(initial),count=0,queue=Promise.resolve(),messages=[],id=0;
+ const n='gb-reader-notes-v1',q='gb-highlights-v1',loc={origin:'https://example.test',pathname:'/a'};
+ const ls={getItem:k=>k===q?raw:'[]',setItem:(k,v)=>{if(mode==='quota')throw Error('quota');assert.equal(k,q);raw=v;count++},removeItem:()=>{throw Error('unexpected remove')}};
+ const nav=mode==='absent'?{}:{locks:{request:(name,opts,fn)=>{
+  assert.equal(name,'gb-library:'+n);
+  if(mode==='rejected')return Promise.reject(Error('lock refused'));
+  const run=queue.then(()=>fn({name}));queue=run.catch(()=>{});return run;
+ }}};
+ const windowFixture={dispatchEvent:()=>true};
+ const keys=new Function('location','normalizeText','LIMIT_QUOTES',keySource+'return {gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey};')(loc,v=>String(v??'').replace(/\s+/g,' ').trim(),200);
+ const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary};')(n,q,500,200,ls,nav,windowFixture,class{},AbortController,()=>1,()=>{},keys.gbHighlightKey);
+ windowFixture.GBHighlights={...owner,highlightKey:keys.gbHighlightKey,addHighlight:keys.gbAddHighlight};
+ const selection=(text,anchor)=>({text,anchor,positionalAnchor:anchor,before:anchor.prefix,after:anchor.suffix});
+ const documentFixture={title:'Article',querySelector:()=>({})};
+ const noOp=()=>{};
+ const product=(selected)=>{
+  const factory=new Function('selection','uid','currentTitle','sourceUrl','mutateLibrary','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
+  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,owner.mutateLibrary,q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolve:(_,a)=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
+ };
+ const wapi=new Function('window','qKey','nKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,n,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
+ return {selection,product,wapi,rows:()=>JSON.parse(raw),raw:()=>raw,writes:()=>count,messages,owner};
+};
+const anchor1={blockId:'b1',start:0,end:12,exact:'First phrase',prefix:'',suffix:''};
+const anchor2={blockId:'b2',start:0,end:13,exact:'Second phrase',prefix:'',suffix:''};
+const qRace=qFixture();
+const qa=qRace.selection('First phrase',anchor1),qb=qRace.selection('Second phrase',anchor2);
+const raceResults=await Promise.all([qRace.product(qa).saveSelectedQuote(),qRace.wapi.save(qb,'marker')]);
+assert.equal(raceResults[0],true);assert.ok(raceResults[1]);assert.equal(qRace.rows().length,2,'cross-engine queued inserts retain both');
+assert.ok(qRace.rows().some(x=>x.text==='First phrase'));assert.ok(qRace.rows().some(x=>x.text==='Second phrase'));
+const oldRaw=qRace.raw();
+assert.ok(await qRace.wapi.save(qb,'marker'));assert.equal(qRace.raw(),oldRaw,'same range is idempotent');
+const oldMark=qRace.rows().find(x=>x.text==='Second phrase');
+assert.ok(await qRace.wapi.updateRecord(oldMark.id,x=>{x.annotation.color='rose'},JSON.stringify(oldMark)));
+const roseRaw=qRace.raw();
+assert.equal(await qRace.wapi.updateRecord(oldMark.id,x=>{x.annotation.color='sage'},JSON.stringify(oldMark)),null,'stale recolor refused');
+assert.equal(qRace.raw(),roseRaw);
+assert.equal(await qRace.product(qb).saveMarker('sage'),true);
+assert.equal(qRace.rows().find(x=>x.id===oldMark.id).annotation.color,'sage');
+assert.equal(qRace.rows().length,2);
+const numericMark={...oldMark,id:42,extra:{legacy:true}};
+const numeric=qFixture([numericMark]);
+assert.ok(await numeric.wapi.updateRecord('42',x=>{x.annotation.kind='underline'},JSON.stringify(numericMark)));
+assert.equal(numeric.rows()[0].id,42);
+assert.deepEqual(numeric.rows()[0].extra,numericMark.extra);
+assert.equal(numeric.rows()[0].annotation.kind,'underline');
+const duplicate=qFixture([numericMark,{...numericMark,text:'duplicate'}]);
+const dupBefore=duplicate.raw();
+assert.equal(await duplicate.wapi.updateRecord('42',x=>{x.annotation.color='sage'},JSON.stringify(numericMark)),null);
+assert.equal(duplicate.raw(),dupBefore);
+const capQuote=qFixture(Array.from({length:200},(_,i)=>({id:'q'+i,text:'other'+i,url:'/other'})));
+const capBefore=capQuote.raw();
+assert.equal(await capQuote.product(qa).saveSelectedQuote(),false);
+assert.equal(await capQuote.wapi.save(qb,'marker'),null);
+assert.equal(capQuote.raw(),capBefore);
+for(const mode of ['absent','rejected','quota']){
+ const f=qFixture([],mode);
+ assert.equal(await f.product(qa).saveSelectedQuote(),false,mode);
+ assert.equal(await f.product(qa).saveMarker('rose'),false,mode);
+ assert.equal(await f.wapi.save(qb,'marker'),null,mode);
+ assert.equal(f.raw(),'[]',mode);
+ assert.equal(f.writes(),0,mode);
+}
+assert.doesNotMatch(highlights,/\bfunction write\(key, items\)/,'Product has no raw array writer');
+assert.doesNotMatch(file,/localStorage\.(?:setItem|removeItem)\(/,'W57 has no independent storage writer');
+
+const danglingCopy=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:'copy-A'}}});
+const danglingBefore=JSON.stringify([danglingCopy.notes(),danglingCopy.record]);
+assert.equal((await danglingCopy.owner.restoreDeleted({key:nKey,entry:rawA,index:0},'copy-A')).ok,false);
+assert.equal(JSON.stringify([danglingCopy.notes(),danglingCopy.record]),danglingBefore);
+assert.deepEqual(danglingCopy.writes,[]);
+const danglingQuoteCopy=makeFixture({notes:[{id:'N',text:'old',quoteId:'copy-Q'}],record:rawQ()});
+const danglingQuoteBefore=JSON.stringify([danglingQuoteCopy.notes(),danglingQuoteCopy.record]);
+assert.equal((await danglingQuoteCopy.owner.restoreDeleted({key:qKey,entry:{id:'old-Q',text:'other quote'},index:0},'copy-Q')).ok,false);
+assert.equal(JSON.stringify([danglingQuoteCopy.notes(),danglingQuoteCopy.record]),danglingQuoteBefore);
+assert.deepEqual(danglingQuoteCopy.writes,[]);
+const danglingNew=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:'fresh-id'}}});
+assert.equal((await saveProduct(danglingNew,null)).applied,false);
+assert.deepEqual(danglingNew.writes,[]);
 console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');

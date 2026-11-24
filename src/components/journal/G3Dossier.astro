@@ -1,18 +1,26 @@
 ---
-import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import JournalEditorialShell from './JournalEditorialShell.astro';
+import JournalEditorialRail from './JournalEditorialRail.astro';
+import JournalArticleHeader from './JournalArticleHeader.astro';
+import JournalContents from './JournalContents.astro';
+import JournalDataFigure from './JournalDataFigure.astro';
+import JournalSourceReturn from './JournalSourceReturn.astro';
+import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
+import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 import {
   G3_PUBLICATION_HANDOFF,
   assertG3PublicationProjection,
-  researchSnapshotShort,
   type G3PublicationClaimId,
 } from '@/data/journal/g3PublicationHandoff';
-import { G3_SOURCE_BIBLIOGRAPHY, G3_SOURCE_LEDGER_URL } from '@/data/journal/g3SourceBibliography';
+import { G3_SOURCE_BIBLIOGRAPHY, type G3SourceBibliographyEntry } from '@/data/journal/g3SourceBibliography';
+
+const coverSizes = '(min-width: 1024px) 600px, (min-width: 768px) 700px, calc(100vw - 40px)';
 
 const projectedClaims: G3PublicationClaimId[] = [
   'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
   'G3-PUB-005', 'G3-PUB-006', 'G3-PUB-007', 'G3-PUB-008',
   'G3-PUB-009', 'G3-PUB-010', 'G3-PUB-011', 'G3-PUB-012',
-  'G3-PUB-013', 'G3-PUB-014', 'G3-PUB-015', 'G3-PUB-016',
+  'G3-PUB-013', 'G3-PUB-014', 'G3-PUB-016',
 ];
 projectedClaims.forEach(assertG3PublicationProjection);
 
@@ -23,89 +31,106 @@ const corrections: Array<{
   newMeaning: string;
   reason: string;
   researchSnapshot: string;
-}> = [];
+}> = [{
+  // Actual dated editorial withdrawal, independent of build and publication timestamps.
+  correctedAt: '2026-11-21T00:00:00+03:00',
+  scope: '§07 · Пример из издательской истории',
+  previousMeaning: 'Отдельный книжный пример мог восприниматься как подтверждение нового издания после возврата прав.',
+  newMeaning: 'Из §07 отозван пример с книгой Дэйва Дженкинса «The Word Matters». Его прежняя формулировка могла восприниматься как подтверждение нового издания после возврата прав. Наличие книжной карточки не доказывает ни такого переиздания, ни юридического перехода прав; новый вывод взамен отозванного не сделан.',
+  reason: 'Прежняя формулировка допускала более сильный вывод, чем позволяют доступные свидетельства.',
+  researchSnapshot: G3_PUBLICATION_HANDOFF.researchSealCommit,
+}];
 
-const handoffUrl = `https://github.com/${G3_PUBLICATION_HANDOFF.researchRepo}/blob/${G3_PUBLICATION_HANDOFF.researchSealCommit}/${G3_PUBLICATION_HANDOFF.handoffPath}`;
-const snapshot = researchSnapshotShort();
+const contents = [
+  { href: '#overview', label: 'Как G3 пришла к двум кризисам' },
+  { href: '#timeline', label: 'Хронология решений' },
+  { href: '#finance', label: 'Что показывают финансы' },
+  { href: '#governance', label: 'Совет и руководство' },
+  { href: '#buice', label: 'Джош Бьюс · 2025' },
+  { href: '#buck', label: 'Том Бак · 2026' },
+  { href: '#wind-down', label: 'Что именно завершилось' },
+  { href: '#unknowns', label: 'Открытые вопросы' },
+  { href: '#documents', label: 'Как проверены документы' },
+  { href: '#bibliography', label: 'Источники и сверка' },
+  { href: '#corrections', label: 'Исправления' },
+];
+// Same pinned G3-PUB-002 numbers feed both prose and the visual comparison.
+const financeDeltas = [
+  { label: 'Общее увеличение расходов', value: 1061800 },
+  { label: 'Конференции и встречи', value: 817283 },
+  { label: 'Реклама', value: 246511 },
+];
+const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
+// Reader-facing genres, not a second evidence scale or a tier → verdict map.
+// Exact Research classes/eligibility stay on the pinned bibliography objects.
+const sourceRoles: Record<string, string> = {
+  'G3-S001': 'Государственный реестр', 'G3-S002': 'Налоговые декларации',
+  'G3-S008': 'Заявление организации', 'G3-S009': 'Сообщение организации',
+  'G3-S010': 'Объявление о назначении', 'G3-S011': 'Регистрация мероприятия',
+  'G3-S012': 'Авторский разбор', 'G3-S015': 'Заявление участников',
+  'G3-S017': 'Журналистское сообщение', 'G3-S023': 'Кадровое сообщение',
+  'G3-S024': 'Программная страница', 'G3-S028': 'Архив налоговых документов',
+  'G3-S033': 'Листинг магазина приложений', 'G3-S035': 'Вторичный разбор',
+  'G3-S042': 'Перепечатки одного письма', 'G3-S046': 'Страница мероприятия',
+  'G3-S047': 'Страницы участников', 'G3-S050': 'Метаданные приложения',
+  'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Издательские страницы',
+  'G3-S096': 'Архивная страница организации',
+};
+const sourcePortalLabels: Record<string, string> = {
+  'G3-S001': 'Реестр штата Джорджия: поиск организаций',
+  'G3-S002': 'IRS: архив электронных деклараций Form 990',
+  'G3-S028': 'IRS: архив электронных деклараций Form 990',
+};
+// Reader display only: pinned source objects, provenance and evidence stay intact.
+// Keep document identifiers; omit internal acquisition/storage workflow prose.
+const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
+  let { title, locator } = entry;
+  let period: string | null = entry.period;
+  switch (entry.id) {
+    case 'G3-S002':
+      locator = locator.replace('; raw SHA зафиксированы в ledger.', '.');
+      break;
+    case 'G3-S008':
+      locator = locator.replace('; объект и формулировки зафиксированы в Research-досье.', '.');
+      break;
+    case 'G3-S011':
+      title = title.replace(' / event backend', '');
+      locator = 'Снимок страницы отмены конференции на официальном сайте, 2026 год.';
+      break;
+    case 'G3-S028':
+      title = title.replace(' + exact-head acquisition', '');
+      period = null; // An acquisition route is not a document date.
+      locator = 'Официальный архив электронных деклараций IRS Form 990; FY2025.';
+      break;
+    case 'G3-S096':
+      locator = locator
+        .replace('Raw archived payload SHA ', 'Префиксы SHA: архивное содержимое до декодирования — ')
+        .replace(', decoded HTML SHA ', '; декодированный HTML — ')
+        .replace('; roster из шести имён датирован снимком.', '. Список из шести имён датирован снимком.');
+      break;
+  }
+  return { title, period, locator };
+};
 ---
-<!-- Bypass-ссылка: первый узел body, поэтому первая Tab-остановка на любой ширине.
-     Класс .skip-link и цель #main-content — общесайтовый идиом (About/Articles/Home/
-     HardTexts, css/site.css), вне фокуса ссылка увезена за верхний край. -->
-<a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
-<MobileChromePage backHref="/journal/" homeHref="/" searchLabel="Поиск по сайту…" />
-
-<header class="journal-topbar" aria-label="Навигация журнала">
-  <a class="journal-brand" href="/journal/">Журнал</a>
-  <nav aria-label="Хлебные крошки">
-    <a href="/">Главная</a>
-    <span>·</span>
-    <a href="/journal/">Журнал</a>
-    <span>·</span>
-    <span aria-current="page">G3</span>
-  </nav>
-</header>
-
-<main class="dossier" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
-  <header class="dossier-hero">
-    <p class="kicker">Документальный журнал · G3 Ministries · 2019–2026</p>
-    <h1>G3: два кризиса и завершение работы</h1>
-    <figure class="dossier-cover">
-      <img
-        src="/images/journal/g3-ministries-cover-1200.avif"
-        srcset="/images/journal/g3-ministries-cover-640.avif 640w, /images/journal/g3-ministries-cover-1200.avif 1200w"
-        sizes="(max-width: 680px) calc(100vw - 36px), 970px"
-        width="1200"
-        height="675"
-        alt="G3 Ministries — Gospel, Grace, Glory: открытая книга и золотистые акценты на тёмно-синем фоне."
-        loading="eager"
-        fetchpriority="high"
-        decoding="async"
-      />
-    </figure>
-    <p class="dek">
-      G3 развивала конференции, издательские и цифровые проекты, а также объединяла церкви.
-      В 2025 году организация пережила кризис руководства, в 2026-м — новый конфликт.
-      Разбираемся, что изменилось, какие решения подтверждены документами и почему
-      объявление о прекращении работы не равнозначно юридической ликвидации.
-    </p>
-    <p class="reader-framing">
-      Здесь мы рассказываем историю событий, а не выносим приговор отдельным людям.
-      Документы позволяют установить даты, финансовые показатели и официальные заявления;
-      мотивы, нераскрытые сделки и часть обвинений остаются за пределами доказанного.
-    </p>
-    <div class="editorial-meta" aria-label="Сведения о материале">
-      <span>Документальное досье</span>
-      <span><time datetime="2026-09-09">9 сентября 2026 года</time></span>
-      <span>Обновлено <time datetime="2026-11-18">18 ноября 2026</time></span>
+<JournalEditorialShell kind="dossier" backHref="/journal/">
+<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-source-navigation data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
+  <JournalArticleHeader
+    title={G3_PRODUCT_METADATA.title}
+    label="Документальное досье" series="G3 Ministries" period="2025–2026"
+    readingTime={G3_PRODUCT_METADATA.readingTimeMinutes}
+    publishedAt={G3_PRODUCT_METADATA.publishedAt} modifiedAt={G3_PRODUCT_METADATA.modifiedAt}
+  >
+    <p>Отставка основателя, попытка обновления и новый конфликт.
+      Что документы говорят о руководстве, финансах и завершении работы служения —
+      и где заканчиваются доказательства.</p>
+  </JournalArticleHeader>
+  <div class="journal-feature-grid journal-feature-grid--text-first">
+    <div class="journal-opening-column">
+  <section id="overview" class="module intro-module" tabindex="-1">
+    <div class="module-label je-opening-label">
+      <span>01 · Предыстория</span>
+      <a class="je-contents-jump" href="#journal-g3-toc" data-pagefind-ignore>Содержание · {contents.length} разделов</a>
     </div>
-    <details class="research-disclosure">
-      <summary>Как проверен материал и где увидеть исходные документы</summary>
-      <p>
-        Публикация основана на ограниченном наборе из 16 утверждений, для которых
-        исследовательский архив разрешил публичное изложение. Использован 21 основной источник.
-        Не подтверждённые версии не включались в текст.
-      </p>
-      <p>
-        Контрольный снимок исследования: <code>{snapshot}</code>.
-        <a href={handoffUrl} rel="noopener">Исследовательское обоснование и ограничения</a>.
-      </p>
-    </details>
-  </header>
-
-  <nav class="dossier-nav" aria-label="Модули досье">
-    <a href="#overview">Предыстория</a>
-    <a href="#timeline">События</a>
-    <a href="#finance">Финансы</a>
-    <a href="#buice">Кризис 2025</a>
-    <a href="#buck">Кризис 2026</a>
-    <a href="#wind-down">Завершение</a>
-    <a href="#unknowns">Неизвестное</a>
-    <a href="#bibliography">Источники</a>
-  </nav>
-
-  <section id="overview" class="module intro-module">
-    <div class="module-label">01 · Предыстория</div>
     <div class="prose wide">
       <h2>Как G3 пришла к двум кризисам</h2>
       <p class="standfirst">
@@ -114,6 +139,15 @@ const snapshot = researchSnapshotShort();
         затем попыталась продолжить работу с новым руководством — и вскоре оказалась
         перед следующим конфликтом.
       </p>
+      <figure class="je-article-cover je-article-cover--intro">
+        <picture>
+          <source type="image/avif" srcset={cover.avifSrcset} sizes={coverSizes} />
+          <img src={cover.src} srcset={cover.webpSrcset} sizes={coverSizes}
+               width={cover.width} height={cover.height} alt={cover.alt}
+               decoding="async" loading="eager" fetchpriority="high" />
+        </picture>
+        <figcaption><span>G3 Ministries</span> {cover.caption}</figcaption>
+      </figure>
       <p>
         В 2019 году G3 Ministries была оформлена в штате Джорджия как некоммерческая корпорация.
         Позднее деятельность включала конференции, цифровую платформу G3+, издательское направление G3 Press
@@ -132,11 +166,23 @@ const snapshot = researchSnapshotShort();
         автоматически установить чужие мотивы, юридическую судьбу всех активов
         или виновность участников каждого конфликта.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Исследовательские основания: G3-PUB-001, 005–007, 012–016</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-005 G3-PUB-006 G3-PUB-007 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-016"><a class="source-note" href="#documents">Документы, на которых основан рассказ</a></p>
     </div>
   </section>
 
-  <section id="timeline" class="module">
+      <p class="reader-framing">Здесь мы восстанавливаем события, а не выносим приговор людям.
+        Заявление стороны, финансовая форма и юридическое решение — разные свидетельства.
+        Документальная база ограничена срезом 9 сентября 2026 года; позднейшие изменения
+        требуют отдельной проверки.</p>
+    </div>
+    <JournalEditorialRail label="Содержание документального досье G3">
+      <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed returnHref="#overview" />
+      <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
+        <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
+        <a href="#corrections">Журнал исправлений</a>.</p>
+    </JournalEditorialRail>
+    <div class="journal-story-column">
+  <section id="timeline" class="module" tabindex="-1">
     <div class="module-label">02 · Хронология</div>
     <div class="prose">
       <h2>Главные события по годам</h2>
@@ -145,42 +191,42 @@ const snapshot = researchSnapshotShort();
     <ol class="timeline">
       <li>
         <time datetime="2019-06-06">6 июня 2019</time>
-        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. зарегистрирована в штате Джорджия как некоммерческая корпорация.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-001</a> · <a href="#src-G3-S001">G3-S001</a></span></div>
+        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. зарегистрирована в штате Джорджия как некоммерческая корпорация.</p><a id="cite-timeline-G3-S001" data-journal-citation class="claim-ref" href="#src-G3-S001" data-publication-claims="G3-PUB-001">Реестр штата Джорджия</a></div>
       </li>
       <li>
         <time datetime="2025-05-08">8–12 мая 2025</time>
-        <div><h3>Кризис Josh Buice</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично рассказала об анонимных интернет-аккаунтах руководителя, разговоре с ним, признании и отставке. Конференция 2025 года была отменена.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-005</a> · <a href={handoffUrl} rel="noopener">G3-PUB-006</a></span></div>
+        <div><h3>Кризис Джоша Бьюса</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично рассказала об анонимных интернет-аккаунтах руководителя, разговоре с ним, признании и отставке. Конференция 2025 года была отменена.</p><a id="cite-timeline-G3-S008" data-journal-citation class="claim-ref" href="#src-G3-S008" data-publication-claims="G3-PUB-005 G3-PUB-006">Заявление G3, 12 мая 2025 года</a></div>
       </li>
       <li>
         <time datetime="2025-07-09">9 июля 2025</time>
-        <div><h3>Scott Aniol становится президентом</h3><p>Согласно официальному объявлению G3, Скотт Аниол вступил в должность 9 июля 2025 года.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-006</a></div>
+        <div><h3>Скотт Аниол становится президентом</h3><p>Согласно официальному объявлению G3, Скотт Аниол вступил в должность 9 июля 2025 года.</p><a id="cite-timeline-G3-S010" data-journal-citation class="claim-ref" href="#src-G3-S010" data-publication-claims="G3-PUB-006">Объявление о назначении</a></div>
       </li>
       <li>
         <time datetime="2026-07-21">21 июля 2026</time>
-        <div><h3>Подтверждённый архивом состав совета</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как членов совета директоров.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-008</a> · <a href="#src-G3-S096">G3-S096</a></span></div>
+        <div><h3>Подтверждённый архивом состав совета</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как членов совета директоров.</p><a id="cite-timeline-G3-S096" data-journal-citation class="claim-ref" href="#src-G3-S096" data-publication-claims="G3-PUB-008">Архив официальной страницы</a></div>
       </li>
       <li>
         <time datetime="2026-08">август 2026</time>
-        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-011</a></div>
+        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><a id="cite-timeline-G3-S015" data-journal-citation class="claim-ref" href="#src-G3-S015" data-publication-claims="G3-PUB-011">Сохранившееся заявление пасторов</a></div>
       </li>
       <li>
         <time datetime="2026-09">сентябрь 2026</time>
-        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-012</a></div>
+        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a id="cite-timeline-G3-S011" data-journal-citation class="claim-ref" href="#src-G3-S011" data-publication-claims="G3-PUB-012">Сообщения о завершении и отмене</a></div>
       </li>
     </ol>
   </section>
 
-  <section id="finance" class="module">
+  <section id="finance" class="module" tabindex="-1">
     <div class="module-label">03 · Финансы</div>
     <div class="prose">
       <h2>Что изменилось в расходах G3</h2>
       <p>
         Финансовая история началась ещё до громких конфликтов 2025–2026 годов.
         По сведениям из налоговых деклараций американской некоммерческой организации
-        общие расходы G3 за 2023 финансовый год оказались на <strong>1 061 800 долларов</strong>
+        общие расходы G3 за 2023 финансовый год оказались на <strong>{formatNumber(financeDeltas[0].value)} долларов</strong>{' '}
         выше, чем за предыдущий год. Наибольший вклад в этот рост внесли
-        затраты на конференции и встречи — плюс <strong>817 283 доллара</strong> —
-        и рекламу — плюс <strong>246 511 долларов</strong>.
+        затраты на конференции и встречи — плюс <strong>{formatNumber(financeDeltas[1].value)} доллара</strong> —
+        и рекламу — плюс <strong>{formatNumber(financeDeltas[2].value)} долларов</strong>.
       </p>
       <p>
         В той же форме расходы 2023 года были полностью отнесены к программной деятельности:
@@ -196,17 +242,22 @@ const snapshot = researchSnapshotShort();
         но не доказывают, что проблемы отсутствовали или, наоборот, существовали.
       </p>
       <p>
-        Декларации за 2024 и 2025 годы также раскрывают выплаты Карис Бьюс —
+        Декларации за 2024 и 2025 годы также раскрывают выплаты Карис Бьюс —{' '}
         <strong>30 409</strong> и <strong>31 880 долларов</strong> соответственно.
         Форма обозначает её дочерью члена совета. Эта запись требует прозрачного
         упоминания, но сама по себе не позволяет сделать вывод о незаконной выплате
         или определить личность родителя только по фамилии.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Налоговые данные и ограничения: G3-PUB-002–004</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-002 G3-PUB-003 G3-PUB-004"><a id="cite-finance-G3-S002" data-journal-citation class="source-note" href="#src-G3-S002">Налоговые формы IRS, финансовые годы 2022–2025</a></p>
     </div>
+    <JournalDataFigure title="Рост расходов до кризисов руководства" unit="Изменение FY2022 → FY2023 · доллары США" rows={financeDeltas}>
+      Два крупнейших увеличения сопоставлены с общим изменением расходов, а не сложены в его состав.
+      Это данные поданной декларации, не заключение внешнего аудитора.{' '}
+      <a id="cite-finance-G3-S002-2" data-journal-citation href="#src-G3-S002">Источник: IRS Form 990, часть IX</a>.
+    </JournalDataFigure>
   </section>
 
-  <section id="governance" class="module">
+  <section id="governance" class="module" tabindex="-1">
     <div class="module-label">04 · Управление</div>
     <div class="prose">
       <h2>Почему важны люди, входившие в руководство</h2>
@@ -226,11 +277,11 @@ const snapshot = researchSnapshotShort();
         Мы не переносим автоматически этот состав на конец августа, когда происходили
         события кризиса: необходимые документы за этот промежуток пока не получены.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Состав совета и ограничения: G3-PUB-008–009, 016</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-008 G3-PUB-009 G3-PUB-016"><a id="cite-governance-G3-S096" data-journal-citation class="source-note" href="#src-G3-S096">Архивная страница совета, 21 июля 2026 года</a></p>
     </div>
   </section>
 
-  <section id="buice" class="module">
+  <section id="buice" class="module" tabindex="-1">
     <div class="module-label">05 · Кризис 2025</div>
     <div class="prose">
       <h2>Уход Джоша Бьюса и попытка продолжить работу</h2>
@@ -252,11 +303,11 @@ const snapshot = researchSnapshotShort();
         Следовательно, корректнее говорить о <strong>попытке продолжить и перестроить служение</strong>,
         а не утверждать, что реформа обязательно оказалась успешной.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Заявления организации и даты: G3-PUB-005–007</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-005 G3-PUB-006 G3-PUB-007"><a id="cite-buice-G3-S008" data-journal-citation class="source-note" href="#src-G3-S008">Официальные заявления G3 и даты назначений</a></p>
     </div>
   </section>
 
-  <section id="buck" class="module sensitive-module">
+  <section id="buck" class="module sensitive-module" tabindex="-1">
     <div class="module-label">06 · Кризис 2026</div>
     <div class="prose">
       <h2>Спор о проповедях Тома Бака и последствия анонимной рассылки</h2>
@@ -290,11 +341,11 @@ const snapshot = researchSnapshotShort();
         оригинальную запись проповеди, установить издание использованного комментария
         и проверить контекст ссылки на автора.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Проверка двух разных вопросов: G3-PUB-010–011, 016</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-010 G3-PUB-011 G3-PUB-016"><a id="cite-buck-G3-S012" data-journal-citation class="source-note" href="#src-G3-S012">Разбор Фила Джонсона; заявление четырёх пасторов — в библиографии</a></p>
     </div>
   </section>
 
-  <section id="wind-down" class="module">
+  <section id="wind-down" class="module" tabindex="-1">
     <div class="module-label">07 · Что завершилось</div>
     <div class="prose">
       <h2>Что означает объявление о завершении деятельности G3</h2>
@@ -305,10 +356,10 @@ const snapshot = researchSnapshotShort();
         намеченного на <strong>27–29 мая 2027 года</strong>, и возврате регистрационных взносов.
       </p>
       <p>
-        Но для истории организации это не одна дата с единственным смыслом.
-        <strong>Прекратить мероприятия</strong> — не то же самое, что
+        Но для истории организации это не одна дата с единственным смыслом.{' '}
+        <strong>Прекратить мероприятия</strong> — не то же самое, что{' '}
         <strong>юридически ликвидировать корпорацию</strong>.
-        В доступной записи штата Джорджия на <strong>8 сентября 2026 года</strong>
+        В доступной записи штата Джорджия на <strong>8 сентября 2026 года</strong>{' '}
         юридическое лицо всё ещё числилось действующим. Это снимок реестра
         на указанную дату, а не обещание, что статус сохранился навсегда.
       </p>
@@ -319,18 +370,12 @@ const snapshot = researchSnapshotShort();
         определить нового владельца, условия сделки или юридический
         переход прав на книги и сервисы.
       </p>
-      <p>
-        Известен отдельный пример: книга Дэйва Дженкинса <em>The Word Matters</em>
-        появлялась в его нынешней издательско-образовательной среде.
-        Однако даже этот случай не раскрывает условия передачи прав
-        на весь каталог G3 Press.
-      </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Решения, реестры и открытые вопросы: G3-PUB-001, 012–016</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-016"><a class="source-note" href="#bibliography">Решения организаций, реестры и цифровые записи</a></p>
     </div>
   </section>
 
-  <section id="unknowns" class="module unknown-module">
-    <div class="module-label">08 · Неизвестное</div>
+  <section id="unknowns" class="module unknown-module" tabindex="-1">
+    <div class="module-label">08 · Открытые вопросы</div>
     <div class="prose">
       <h2>Какие вопросы пока остаются без ответа</h2>
       <p>
@@ -354,12 +399,12 @@ const snapshot = researchSnapshotShort();
         Если появится новый первичный документ, существенное изменение будет
         отражено открытым датированным исправлением, а не скрытой заменой выводов.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Полный перечень и границы: G3-PUB-016</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-016"><a class="source-note" href="#documents">Границы доступных документов и методика</a></p>
     </div>
   </section>
 
-  <section id="documents" class="module">
-    <div class="module-label">Документы</div>
+  <section id="documents" class="module" tabindex="-1">
+    <div class="module-label">09 · Документы</div>
     <div class="prose">
       <h2>На чём основан этот рассказ</h2>
       <p>
@@ -385,39 +430,50 @@ const snapshot = researchSnapshotShort();
     </div>
   </section>
 
-  <section id="bibliography" class="module">
-    <div class="module-label">Библиография</div>
+    <details class="research-disclosure">
+      <summary>Об источниках и границах доказательств</summary>
+      <p>
+        Досье опирается на перечисленные ниже источники; ограничения документов
+        и свидетельств оговорены в тексте.
+      </p>
+    </details>
+
+  <section id="bibliography" class="module" tabindex="-1">
+    <div class="module-label">10 · Библиография</div>
     <div class="prose">
       <h2>Источники и материалы для проверки</h2>
       <p>
         Мы сохранили привязку фактов к оригинальным документам. Ниже можно
-        открыть полный список из 21 источника: официальные записи,
+        найти 21 источник этого документального досье: официальные записи,
         налоговые формы, сообщения организаций и архивные материалы.
-        В списке указано, где доступен сам объект, а где —
-        только библиографическая запись без права воспроизводить документ.
+        Для части источников приведены библиографические сведения без прямой
+        ссылки на документ. Наличие ссылки само по себе не разрешает
+        воспроизводить документ.
       </p>
-      <details class="bibliography-details">
-        <summary>Развернуть все 21 библиографические записи</summary>
-        <ol class="bibliography-list">
-          {G3_SOURCE_BIBLIOGRAPHY.map((entry) => (
-            <li id={`src-${entry.id}`} class="bibliography-item">
-              <h3>{entry.title}</h3>
-              <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
-              <p>{entry.locator}</p>
-              <p class="biblio-links">
-                {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
-                <span aria-hidden="true">·</span>
-                <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
-              </p>
+      <ol class="bibliography-list">
+        {G3_SOURCE_BIBLIOGRAPHY.map((entry) => {
+          const reader = sourceReaderView(entry);
+          return (
+            <li id={`src-${entry.id}`} class="bibliography-item" tabindex="-1" data-source-id={entry.id} data-evidence-class={entry.tier} data-source-eligibility={entry.eligibility}>
+              <p class="biblio-meta">{reader.period && <>{reader.period} · </>}{sourceRoles[entry.id] || 'Библиографическая запись'}</p>
+              <h3>{reader.title}</h3>
+              <details class="biblio-details">
+                <summary>Локатор и доступ к документу</summary>
+                <p>{reader.locator}</p>
+                <p class="biblio-links">
+                  {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">{sourcePortalLabels[entry.id]}</a> : <span>Ссылка на полный оригинал в этой версии не предоставлена.</span>}
+                </p>
+              </details>
+              <JournalSourceReturn href="#documents" label="К методике проверки" />
             </li>
-          ))}
-        </ol>
-      </details>
+          );
+        })}
+      </ol>
     </div>
   </section>
 
-  <section id="corrections" class="module corrections-module">
-    <div class="module-label">09 · Исправления</div>
+  <section id="corrections" class="module corrections-module" tabindex="-1">
+    <div class="module-label">11 · Исправления</div>
     <div class="prose">
       <h2>Журнал исправлений</h2>
       {corrections.length === 0 ? (
@@ -428,97 +484,49 @@ const snapshot = researchSnapshotShort();
           Если новые документы изменят существенный вывод, мы укажем дату и содержание исправления.
         </p>
       ) : (
-        <ol>{corrections.map((item) => <li>{item.correctedAt}: {item.newMeaning}</li>)}</ol>
+        <ol>{corrections.map((item) => <li><time datetime={item.correctedAt}>{new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow' }).format(new Date(item.correctedAt))}</time>: {item.newMeaning}</li>)}</ol>
       )}
     </div>
   </section>
 
-  <footer class="dossier-footer">
+    </div>
+  </div>
+  <!-- A published theological text is not automatically a safe recommendation
+       beside this factual dispute. No unapproved/insinuating promo is mounted. -->
+  <div class="je-next-story" data-pagefind-ignore>
+    <p>Предыстория · 2011–2024</p>
+    <a href="/journal/dossiers/g3/history/">От первых конференций G3 к издательскому и образовательному служению <span aria-hidden="true">↗</span></a>
+  </div>
+  <p class="je-reading-exit" data-pagefind-ignore><a href="/">На основной сайт</a></p>
+  <footer class="dossier-footer author-card">
     <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>
-    <p><strong>Источники и методика:</strong> <a href={handoffUrl}>Исследовательское обоснование</a></p>
+    <p><strong>Источники и методика:</strong> <a href="#documents">Как проверены источники</a></p>
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
-
-<style>
-  :global(body) { margin: 0; background: var(--bg, #fdfcf9); color: var(--text, #25211d); font-family: var(--font-body, system-ui, sans-serif); }
-  .journal-topbar { max-width: 1180px; margin: 0 auto; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; gap: 22px; border-bottom: 1px solid var(--border, #ddd7cf); }
-  .journal-brand { text-decoration: none; color: inherit; font: 700 15px/1.2 var(--font-heading, Georgia, serif); }
-  .journal-topbar nav { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; color: var(--muted, #6c645c); font-size: 13px; }
-  .journal-topbar nav a { color: inherit; }
-  .dossier { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; }
-  .dossier-hero { padding: 76px 0 44px; max-width: 970px; }
-  .kicker, .module-label { color: #7a2e2e; text-transform: uppercase; letter-spacing: .11em; font: 750 12px/1.45 var(--font-body, system-ui, sans-serif); }
-  h1, h2, h3 { font-family: var(--font-heading, Georgia, serif); color: var(--text, #25211d); }
-  h1 { margin: 14px 0 0; max-width: 950px; font-size: clamp(43px, 7vw, 82px); line-height: .99; letter-spacing: -.04em; }
-  .dossier-cover { margin: 30px 0 0; overflow: hidden; border-radius: 18px; background: #07182b; box-shadow: 0 14px 38px rgba(7, 24, 43, .13); }
-  .dossier-cover img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
-  .dek { margin: 28px 0 0; max-width: 840px; color: var(--muted, #5f5951); font: 400 clamp(19px, 2.4vw, 27px)/1.5 var(--font-heading, Georgia, serif); }
-  .dossier-footer a { color: #7a2e2e; text-decoration: underline; text-underline-offset: 2px; }
-  .dossier-nav { position: sticky; top: 0; z-index: 20; margin: 0 -10px; padding: 11px 10px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; background: color-mix(in srgb, var(--bg, #fdfcf9) 92%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--border, #ddd7cf); border-bottom: 1px solid var(--border, #ddd7cf); }
-  .dossier-nav a { white-space: nowrap; text-decoration: none; color: var(--muted, #655d55); border: 1px solid var(--border, #ddd7cf); border-radius: 999px; padding: 7px 11px; font-size: 12px; background: var(--bg, #fdfcf9); }
-  .module { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 44px; padding: 68px 0; border-bottom: 1px solid var(--border, #ddd7cf); scroll-margin-top: 80px; }
-  .module-label { padding-top: 8px; }
-  .prose { max-width: 780px; }
-  .prose.wide { max-width: 850px; }
-  .prose h2 { margin: 0 0 24px; font-size: clamp(31px, 4vw, 48px); line-height: 1.08; letter-spacing: -.025em; }
-  .prose > p { font-size: 17px; line-height: 1.72; color: var(--text, #302b26); }
-  .standfirst { font: 400 clamp(20px, 2.5vw, 27px)/1.55 var(--font-heading, Georgia, serif) !important; }
-  .claim-ref { display: inline-block; color: #7a5c49; font: 650 10px/1.3 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .02em; }
-  .timeline { grid-column: 2; list-style: none; padding: 0; margin: 0; max-width: 800px; }
-  .timeline li { display: grid; grid-template-columns: 150px 1fr; gap: 26px; padding: 26px 0; border-top: 1px solid var(--border, #ddd7cf); }
-  .timeline time { color: #7a2e2e; font-weight: 750; font-size: 13px; }
-  .timeline h3 { margin: 0 0 8px; font-size: 23px; }
-  .timeline p { margin: 0 0 10px; line-height: 1.62; color: var(--muted, #615a52); }
-  /* Акцент в тёмной теме сохраняет читаемость, не возвращая карточки и матрицы. */
-  :global(html.dark) .kicker, :global(html.dark) .module-label,
-  :global(html.dark) .timeline time, :global(html.dark) .dossier-footer a { color: #e8a0a0; }
-  :global(html.dark) .claim-ref { color: #c9a893; }
-
-  .dossier-footer { padding: 42px 0 0 214px; color: var(--muted, #655d55); font-size: 13px; line-height: 1.55; }
-  .dossier-footer p { margin: 6px 0; }
-  @media (max-width: 820px) {
-    .journal-topbar { padding: 18px; }
-    .journal-topbar nav { font-size: 12px; }
-    .dossier { padding: 0 18px 64px; }
-    .dossier-hero { padding-top: 56px; }
-    .module { grid-template-columns: 1fr; gap: 18px; padding: 52px 0; }
-    .timeline { grid-column: 1; }
-    .dossier-footer { padding-left: 0; }
+<script>
+  // G3-only keyboard-history repair. Native fragments still own the URL.
+  // Use browser-native focus reveal on Back: preventScroll can strand focus
+  // above the viewport when scroll restoration and focus restoration race.
+  const earlyContentsJump = document.querySelector<HTMLAnchorElement>('.je-contents-jump');
+  const contentsSummary = document.getElementById('journal-g3-toc');
+  if (earlyContentsJump && contentsSummary) {
+    let jumpedFromOpening = false;
+    earlyContentsJump.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey ||
+          event.metaKey || event.shiftKey || event.altKey) return;
+      jumpedFromOpening = true;
+    });
+    window.addEventListener('popstate', () => {
+      if (!jumpedFromOpening || window.location.hash === '#journal-g3-toc') return;
+      jumpedFromOpening = false;
+      if (window.location.hash || document.activeElement !== contentsSummary) return;
+      window.requestAnimationFrame(() => {
+        if (window.location.hash === '' && document.activeElement === contentsSummary) {
+          earlyContentsJump.focus();
+        }
+      });
+    });
   }
-  @media (max-width: 620px) {
-    .journal-topbar nav span:not([aria-current]) { display: none; }
-    .timeline li { grid-template-columns: 1fr; gap: 8px; }
-  }
-
-  a.claim-ref { color: inherit; text-decoration: underline dotted; text-underline-offset: 3px; }
-  a.claim-ref:hover { text-decoration-style: solid; }
-  .biblio-meta { font-size: .8rem; letter-spacing: .03em; color: var(--muted, #6b6459); margin: 0 0 6px; }
-  .biblio-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .85rem; margin: 0; }
-  .biblio-links a { color: #7a2e2e; text-underline-offset: 3px; }
-  :global(html.dark) .biblio-meta { color: #b8b2a9; }
-
-  /* Основной текст ведёт историю; исследовательский аппарат остаётся доступным, но вторичным. */
-  .reader-framing { max-width: 800px; margin: 26px 0 0; color: var(--text, #302b26); font-size: 17px; line-height: 1.68; }
-  .editorial-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 30px; padding: 16px 0; border-top: 1px solid var(--border, #ddd7cf); border-bottom: 1px solid var(--border, #ddd7cf); font-size: 13px; color: var(--muted, #615a52); }
-  .editorial-meta > span:not(:last-child)::after { content: "·"; margin-left: 18px; color: var(--muted, #7b7269); }
-  .research-disclosure { max-width: 820px; margin-top: 15px; color: var(--muted, #6d655d); font-size: 14px; }
-  .research-disclosure summary, .bibliography-details summary { cursor: pointer; font-weight: 680; padding: 9px 0; color: var(--text, #302b26); }
-  .research-disclosure p { max-width: 740px; margin: 9px 0; line-height: 1.65; }
-  .research-disclosure a, .source-note, .bibliography-details a { text-decoration: underline; text-underline-offset: 3px; color: #7a2e2e; }
-  .prose > p.source-note-paragraph { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border, #ddd7cf); font-size: 13px; color: var(--muted, #6d655d); }
-  .source-note { font-size: 13px; font-weight: 550; }
-  .bibliography-details { margin: 24px 0 0; border-top: 1px solid var(--border, #ddd7cf); }
-  .bibliography-list { list-style: decimal; margin: 12px 0 0; padding: 0 0 0 26px; }
-  .bibliography-item { padding: 15px 0; border-top: 1px solid var(--border, #ddd7cf); }
-  .bibliography-item h3 { margin: 0 0 5px; font-size: 18px; line-height: 1.38; }
-  .bibliography-item > p { margin: 5px 0; font-size: 14px; line-height: 1.55; }
-  .bibliography-item .biblio-meta { font-size: 12px; }
-  :global(html.dark) .research-disclosure a, :global(html.dark) .source-note, :global(html.dark) .bibliography-details a { color: #e8a0a0; }
-  @media(max-width:620px) {
-    .editorial-meta { gap: 7px 14px; }
-    .editorial-meta > span:not(:last-child)::after { margin-left: 14px; }
-    .reader-framing { font-size: 16px; }
-  }
-
-</style>
+</script>
+</JournalEditorialShell>

@@ -74,9 +74,10 @@
 
     function isOpen() {
       // ReaderSpeedOptions owns one shared slot for both engines. Its
-      // speed-open class is canonical; during opening aria-hidden is removed,
-      // not set to the literal string "false". Reading the attribute here
-      // caused the a11y adapter to immediately hide a newly opened Gill rail.
+      // speed-open class is canonical for this adapter: open() now writes
+      // aria-hidden="false" synchronously (WebKit raced the previous
+      // removeAttribute → observer-resync window), but the class remains the
+      // single source of truth this adapter reads.
       return root.classList.contains('speed-open');
     }
 

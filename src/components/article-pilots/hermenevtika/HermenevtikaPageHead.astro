@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /** Native PageHead extracted from approved legacy head for /articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/ */
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
@@ -245,11 +246,11 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <meta content="Можно ли понять Библию без «христоцентричного» метода? Абнер Чау защищает грамматико-исторический подход и показывает, как он раскрывает Христа в Писании." name="description"/>
 <meta content="#fdfcf9" media="(prefers-color-scheme: light)" name="theme-color"/>
 <meta content="#171411" media="(prefers-color-scheme: dark)" name="theme-color"/>
-<link as="style" href="../../fonts/fonts.css?v=864cc57a" rel="preload"/>
+<link as="style" href={assetUrl('fonts/fonts.css')} rel="preload"/>
 <link as="font" crossorigin="" href="/fonts/Lora/lora-cyrillic-400.woff2" rel="preload" type="font/woff2"/>
-<link href="../../fonts/fonts.css?v=864cc57a" rel="stylesheet"/>
+<link href={assetUrl('fonts/fonts.css')} rel="stylesheet"/>
 <!-- Shared styles -->
-<link href="../../css/site.css?v=c2364e81" rel="stylesheet"/>
+<link href={assetUrl('css/site.css')} rel="stylesheet"/>
 <script is:inline>
 window.SITE_CONFIG = {
  "version": 1778943682,
@@ -764,6 +765,6 @@ window.SITE_CONFIG = {
 <!-- /Yandex.Metrika counter -->
 <meta content="RU-SPE" name="geo.region"/>
 <meta content="Санкт-Петербург" name="geo.placename"/>
-<link href="../../css/command-palette.css?v=3b88813f" rel="stylesheet"/>
-<link href="../../css/mobile-hotfix.css?v=9cfd6aee" rel="stylesheet"/>
-<link href="../../css/floating-cluster.css?v=a76d931e" rel="stylesheet"/>
+<link href={assetUrl('css/command-palette.css')} rel="stylesheet"/>
+<link href={assetUrl('css/mobile-hotfix.css')} rel="stylesheet"/>
+<link href={assetUrl('css/floating-cluster.css')} rel="stylesheet"/>

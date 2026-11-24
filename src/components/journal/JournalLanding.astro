@@ -1,165 +1,76 @@
 ---
-import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import JournalEditorialShell from './JournalEditorialShell.astro';
+import { G3_PRODUCT_METADATA as g3 } from '@/data/journal/g3ProductMetadata';
+import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
+import { G3_SOURCE_BIBLIOGRAPHY } from '@/data/journal/g3SourceBibliography';
+const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px) / 2), calc(100vw - 40px)';
 ---
-<!-- Bypass-ссылка: первый узел body, поэтому первая Tab-остановка на любой ширине.
-     Класс .skip-link и цель #main-content — общесайтовый идиом (About/Articles/Home/
-     HardTexts, css/site.css), вне фокуса ссылка увезена за верхний край. -->
-<a href="#main-content" class="skip-link">Перейти к содержимому</a>
+<JournalEditorialShell kind="journal" backHref="/">
+  <main class="journal-landing" id="main-content" tabindex="-1">
+    <section class="journal-hero" aria-labelledby="journal-title">
+      <p class="journal-kicker">Церковная жизнь · история · документы</p>
+      <h1 id="journal-title">Журнал</h1>
+      <p class="journal-lead">За новостью всегда есть история. Мы восстанавливаем контекст,
+        читаем документы и отделяем <span class="journal-lead-phrase">то, что</span> можно установить, <span class="journal-lead-phrase">от того, что</span> пока <span class="journal-lead-phrase">остаётся вопросом.</span></p>
+    </section>
 
-<MobileChromePage backHref="/" homeHref="/" searchLabel="Поиск по сайту…" />
-
-<header class="journal-topbar" aria-label="Навигация журнала">
-  <a class="journal-brand" href="/">Господь Бог — Сила Моя</a>
-  <nav aria-label="Разделы">
-    <a href="/articles/">Статьи</a>
-    <span aria-current="page">Журнал</span>
-  </nav>
-</header>
-
-<main class="journal-landing" id="main-content" tabindex="-1">
-  <section class="journal-hero" aria-labelledby="journal-title">
-    <p class="journal-kicker">Церковная жизнь · история · документы</p>
-    <h1 id="journal-title">Журнал</h1>
-    <p class="journal-lead">
-      Сложные события в жизни церквей заслуживают не громких заголовков,
-      а понятного рассказа. Здесь мы разбираем историю, изучаем документы,
-      объясняем причины конфликтов и показываем, где выводы пока делать рано.
-    </p>
-    <p class="journal-intro">
-      У каждого материала есть предыстория: люди, решения и обстоятельства,
-      без которых очередная новость мало что сообщает. Поэтому сначала
-      восстанавливаем контекст и проверяем обе стороны, а затем рассказываем,
-      что действительно известно.
-    </p>
-  </section>
-
-  <section class="journal-section journal-featured" aria-labelledby="lead-dossier">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Документальное досье</p>
-        <h2 id="lead-dossier">История G3 Ministries</h2>
+    <section class="journal-section journal-featured" aria-labelledby="lead-dossier">
+      <div class="section-heading">
+        <div><p class="eyebrow">Документальное досье</p><h2 id="lead-dossier" tabindex="-1">G3 Ministries</h2></div>
+        <p>Руководство, финансы,<br />судьба служения</p>
       </div>
-    </div>
-    <a class="lead-card" href="/journal/dossiers/g3/">
-      <div class="lead-card-copy">
-        <p class="lead-label">Глубокий разбор · события 2019–2026 годов</p>
-        <h3>Как организация развивалась, пережила два кризиса и объявила о завершении работы</h3>
-        <p>
-          G3 проводила конференции и развивала церковные, издательские и цифровые проекты.
-          В 2025 году разразился кризис руководства. В 2026-м новый спор привёл к
-          решению свернуть деятельность. Разбираем, что именно произошло,
-          какие изменения подтверждены документами и что осталось неизвестным.
-        </p>
-        <span class="read-link">Читать историю G3 <span aria-hidden="true">→</span></span>
+      <a class="lead-card" href="/journal/dossiers/g3/">
+        <div class="lead-card-copy">
+          <p class="lead-label">Досье · 2025–2026 · {g3.readingTimeMinutes} мин чтения</p>
+          <h3>{g3.title}</h3>
+          <p>Отставка Джоша Бьюса, попытка перестроить работу и новый конфликт.
+            Разбираем заявления руководства, финансовые документы и открытые вопросы
+            о конференциях, издательстве и церковной сети.</p>
+          <span class="read-link">Читать досье</span>
+        </div>
+        <div class="lead-context">
+          <picture>
+            <source type="image/avif" srcset={cover.avifSrcset} sizes={sizes} />
+            <img src={cover.src} srcset={cover.webpSrcset} sizes={sizes}
+                 width={cover.width} height={cover.height} alt={cover.alt}
+                 loading="eager" fetchpriority="high" decoding="async" />
+          </picture>
+          <p class="lead-context-caption"><span>Редакционная иллюстрация</span><span>{G3_SOURCE_BIBLIOGRAPHY.length} источник внутри</span></p>
+        </div>
+      </a>
+      <div class="je-next-story" data-pagefind-ignore>
+        <p>История G3 · 2011–2024 · 16 минут чтения</p>
+        <a href="/journal/dossiers/g3/history/">Как возникли конференции G3 и во что выросло служение <span aria-hidden="true">↗</span></a>
       </div>
-      <div class="lead-context">
-        <span class="lead-context-label">В центре истории</span>
-        <p>Люди и решения</p>
-        <p>Две волны кризиса</p>
-        <p>Что произошло с проектами</p>
-        <span class="lead-context-foot">Источники и документы — внутри материала</span>
-      </div>
-    </a>
-  </section>
+    </section>
 
-  <section class="journal-section" aria-labelledby="directions">
-    <div class="section-heading compact">
-      <div>
-        <p class="eyebrow">Наша редакционная работа</p>
-        <h2 id="directions">Новости, которым не нужен отдельный словарь</h2>
-      </div>
+    <div class="journal-editorial-grid">
+      <section aria-labelledby="directions">
+        <p class="eyebrow">О чём мы пишем</p>
+        <h2 id="directions">Событие нуждается в контексте</h2>
+        <div class="journal-prose">
+          <p>Новости церковной жизни, исторические разборы, сложные пастырские
+            и богословские конфликты. Читателю важно понимать, как возник вопрос,
+            кто в нём участвует и почему документы могут противоречить друг другу.</p>
+          <p>Новые материалы появляются после редакционной проверки.
+            Мы не заменяем их пустыми рубриками и не выдаём незавершённое исследование за публикацию.</p>
+        </div>
+      </section>
+      <section class="journal-method" aria-labelledby="method-title">
+        <p class="eyebrow">Редакционный принцип</p>
+        <h2 id="method-title" tabindex="-1">Источник — ещё не приговор</h2>
+        <div class="journal-prose">
+          <p>Свидетельство участника, заявление руководства и постановление суда — разные
+            виды источников. Мы проверяем первичные документы и не выдаём чьё-то обвинение
+            за уже доказанное событие.</p>
+          <p>Если новые документы меняют существенный вывод, материал получает явное
+            датированное исправление. Доверие читателя важнее громкого заголовка.</p>
+        </div>
+      </section>
     </div>
-    <div class="journal-prose">
-      <p>
-        Мы готовим новости церковной жизни, исторические разборы, исследования
-        сложных пастырских и богословских конфликтов. Но публикация начинается
-        не с последней даты в судебной хронике: сначала читатель должен понимать,
-        как возник вопрос, кто в нём участвует и почему документы могут противоречить друг другу.
-      </p>
-      <p>
-        В исследовательском архиве ведётся подготовка новых материалов.
-        Мы не выводим их на сайт до проверки фактов и источников.
-        Рубрики новостей и документов будут появляться здесь по мере выхода
-        полноценных текстов, а не как пустые разделы.
-      </p>
-    </div>
-  </section>
-
-  <section class="journal-method" aria-labelledby="method-title">
-    <p class="eyebrow">Редакционный принцип</p>
-    <h2 id="method-title">Что можно установить — и что ещё неизвестно</h2>
-    <div class="journal-prose">
-      <p>
-        Свидетельство очевидца, заявление руководства и постановление суда — разные
-        виды источников. Когда речь идёт о споре между людьми, мы представляем
-        аргументы сторон, проверяем первичные документы и не выдаём чьё-то обвинение
-        за уже доказанное событие.
-      </p>
-      <p>
-        Новые существенные документы могут менять прежнюю оценку. В таких случаях
-        публикация получает явное датированное исправление. Доверие читателя
-        важнее громкого вывода, который пока нельзя подтвердить.
-      </p>
-    </div>
-  </section>
-
-</main>
-
-<footer class="journal-footer">
-  <a href="/">На главную</a>
-  <span>·</span>
-  <a href="/articles/">Богословские статьи</a>
-  <span>·</span>
-  <span>Автор-редактор: Фёдор Милованов</span>
-</footer>
-
-<style>
-  :global(body) { margin: 0; background: var(--bg, #fdfcf9); color: var(--text, #25211d); font-family: var(--font-body, system-ui, sans-serif); }
-  .journal-topbar { max-width: 1180px; margin: 0 auto; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--border, #ddd7cf); }
-  .journal-brand { color: inherit; text-decoration: none; font: 700 15px/1.2 var(--font-heading, Georgia, serif); letter-spacing: .01em; }
-  .journal-topbar nav { display: flex; gap: 18px; align-items: center; font-size: 14px; }
-  .journal-topbar nav a { color: var(--muted, #6d665e); text-decoration: none; }
-  .journal-topbar nav span { font-weight: 700; }
-  .journal-landing { max-width: 1120px; margin: 0 auto; padding: 74px 28px 96px; }
-  .journal-hero { max-width: 880px; padding: 24px 0 72px; }\n  .journal-intro, .journal-prose p { max-width: 760px; font-size: 17px; line-height: 1.78; color: var(--text, #302b26); }\n  .journal-intro { margin: 26px 0 0; }\n  .journal-prose p { margin: 0 0 20px; }
-  .journal-kicker, .eyebrow { margin: 0 0 15px; color: #7a2e2e; font: 700 12px/1.4 var(--font-body, system-ui, sans-serif); letter-spacing: .12em; text-transform: uppercase; }
-  h1, h2, h3 { font-family: var(--font-heading, Georgia, serif); color: var(--text, #25211d); }
-  h1 { margin: 0; font-size: clamp(52px, 8vw, 96px); line-height: .96; font-weight: 650; letter-spacing: -.035em; }
-  .journal-lead { max-width: 800px; margin: 28px 0 0; font: 400 clamp(20px, 2.5vw, 29px)/1.45 var(--font-heading, Georgia, serif); color: var(--muted, #5f5952); }
-  .journal-trustline { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
-  .journal-trustline span, .status-chip { border: 1px solid var(--border, #ddd7cf); border-radius: 999px; padding: 8px 12px; font-size: 12px; color: var(--muted, #675f56); background: color-mix(in srgb, var(--bg, #fdfcf9) 88%, #7a2e2e 4%); }
-  .journal-section { padding: 60px 0; border-top: 1px solid var(--border, #ddd7cf); }
-  .section-heading { display: flex; justify-content: space-between; gap: 30px; align-items: end; margin-bottom: 28px; }
-  .section-heading.compact { align-items: start; }
-  .section-heading h2, .journal-method h2 { max-width: 800px; margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.08; letter-spacing: -.025em; }
-  .lead-card { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(220px, .65fr); gap: 38px; padding: clamp(26px, 4vw, 46px); border: 1px solid var(--border, #d9d2c8); border-radius: 22px; text-decoration: none; color: inherit; background: color-mix(in srgb, var(--bg, #fdfcf9) 92%, #7a2e2e 5%); transition: transform .2s ease, border-color .2s ease; }
-  .lead-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, #7a2e2e 45%, var(--border, #d9d2c8)); }
-  .lead-label { margin: 0 0 12px; color: #7a2e2e; font-weight: 700; font-size: 13px; }
-  .lead-card h3 { margin: 0; font-size: clamp(27px, 3.5vw, 42px); line-height: 1.08; }
-  .lead-card-copy > p:not(.lead-label) { max-width: 720px; margin: 20px 0; font-size: 17px; line-height: 1.65; color: var(--muted, #625b53); }
-  .read-link { display: inline-block; margin-top: 8px; font-weight: 750; color: #7a2e2e; }
-  .lead-context { border-left: 1px solid var(--border, #d9d2c8); padding: 8px 0 8px 28px; display: flex; flex-direction: column; justify-content: center; }
-  .lead-context-label { font-size: 11px; letter-spacing: .11em; text-transform: uppercase; color: var(--muted, #746c63); }
-  .lead-context p { border-bottom: 1px solid var(--border, #d9d2c8); padding: 13px 0; font: 600 18px/1.4 var(--font-heading, Georgia, serif); margin: 0; }
-  .lead-context-foot { margin-top: 20px; font-size: 12px; line-height: 1.5; color: var(--muted, #6d665e); }
-  /* Тёмная тема: кикеры/индексы на светло-красном #7a2e2e давали 2:1 на
-     #0e1116 и #131217. Осветлённый тон сохраняет акцент и даёт ≥ 8:1. */
-  :global(html.dark) .journal-kicker, :global(html.dark) .eyebrow,
-  :global(html.dark) .lead-label, :global(html.dark) .read-link,
-  :global(html.dark) .direction-index { color: #e8a0a0; }
-  .journal-method { padding: 60px 0 0; border-top: 1px solid var(--border, #ddd7cf); }
-  .journal-method .journal-prose { margin-top: 24px; }
-  .journal-footer { max-width: 1120px; margin: 0 auto; padding: 32px 28px 50px; border-top: 1px solid var(--border, #ddd7cf); display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted, #6d665e); font-size: 13px; }
-  .journal-footer a { color: inherit; }
-  @media (max-width: 760px) {
-    .journal-topbar { padding: 18px 18px; }
-    .journal-topbar nav { display: none; }
-    .journal-landing { padding: 54px 18px 72px; }
-    .journal-hero { padding-bottom: 52px; }
-    .section-heading { display: grid; align-items: start; }
-    .status-chip { width: fit-content; }
-    .lead-card { grid-template-columns: 1fr; padding: 24px; }
-    .evidence-mini { border-left: 0; border-top: 1px solid var(--border, #d9d2c8); padding: 22px 0 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .direction-grid, .method-grid { grid-template-columns: 1fr; }
-  }
-</style>
+  </main>
+  <footer class="journal-footer" data-pagefind-ignore>
+    <a href="/">На основной сайт</a>
+    <span>Автор-редактор: Фёдор Милованов</span>
+  </footer>
+</JournalEditorialShell>

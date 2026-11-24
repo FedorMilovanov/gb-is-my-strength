@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 
 const canonical = 'https://gospod-bog.ru/pastor-series/';
@@ -49,14 +50,14 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
 <meta name="twitter:description" content={description}>
 <meta name="twitter:image" content={image}>
 <meta name="twitter:image:alt" content="Тёмная сторона кафедры — серия материалов">
-<link rel="preload" as="style" href="../fonts/fonts.css?v=864cc57a">
+<link rel="preload" as="style" href={assetUrl('fonts/fonts.css')}>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
 <link rel="preload" as="image" href="../images/pastor-series/hero-main.webp" fetchpriority="high" type="image/webp">
-<link rel="stylesheet" href="../fonts/fonts.css?v=864cc57a">
-<link rel="stylesheet" href="../css/site.css?v=c2364e81">
-<link rel="stylesheet" href="../css/home.css?v=4a2fa9a3">
-<link rel="stylesheet" href="../css/command-palette.css?v=3b88813f">
-<link rel="stylesheet" href="../css/mobile-hotfix.css?v=9cfd6aee">
+<link rel="stylesheet" href={assetUrl('fonts/fonts.css')}>
+<link rel="stylesheet" href={assetUrl('css/site.css')}>
+<link rel="stylesheet" href={assetUrl('css/home.css')}>
+<link rel="stylesheet" href={assetUrl('css/command-palette.css')}>
+<link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')}>
 <script is:inline type="application/ld+json" set:html={JSON.stringify({
   '@context': 'https://schema.org',
   '@graph': [
@@ -119,7 +120,7 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
 window.SITE_CONFIG = {
   version: 20260908,
   site: { id: 'gb-strength', name: 'Господь Бог — Сила Моя', baseUrl: 'https://gospod-bog.ru', locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
-  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 157, companionReadingTime: 15 },
+  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 157, companionReadingTime: 35 },
   features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
 };
 </script>

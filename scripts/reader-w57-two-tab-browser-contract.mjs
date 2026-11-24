@@ -42,6 +42,34 @@ async function ready(page) {
 async function noteState(page) {
   return page.evaluate(() => JSON.parse(localStorage.getItem('gb-reader-notes-v1') || '[]'));
 }
+// Persisted note writes are serialized through the shared store lock, so the
+// commit resolves after the click returns. Wait for the exact stored value the
+// contract requires instead of sampling the store synchronously; the expected
+// values below are unchanged. No eval: the page CSP forbids Function().
+async function waitNoteState(page, expect, label) {
+  const matches = (items) => expect.none
+    ? items.length === 0
+    : items.length === 1 && items[0].text === expect.text;
+  try {
+    await page.waitForFunction(({text, none}) => {
+      const items = JSON.parse(localStorage.getItem('gb-reader-notes-v1') || '[]');
+      return none ? items.length === 0 : (items.length === 1 && items[0].text === text);
+    }, expect, {timeout:8000});
+  } catch (e) {
+    throw new Error(label + ' (stored notes: ' + JSON.stringify(await noteState(page)) + ')');
+  }
+  return matches(await noteState(page));
+}
+async function waitStatus(page, selector, pattern, label) {
+  try {
+    await page.waitForFunction(([sel, src]) => {
+      const el = document.querySelector(sel);
+      return Boolean(el) && new RegExp(src).test(el.textContent || '');
+    }, [selector, pattern.source], {timeout:8000});
+  } catch (e) {
+    throw new Error(label + ' (status: ' + JSON.stringify(await page.locator(selector).innerText().catch(() => '')) + ')');
+  }
+}
 async function quoteState(page) {
   return page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1') || '[]'));
 }
@@ -153,30 +181,37 @@ async function run(engine, name) {
     await B.goto(url, {waitUntil:'domcontentloaded',timeout:30000}); await ready(B);
     assert.equal(await A.locator('#npW57NotesList li[data-id="' + QID + '"]').count(),1,
       'W57 must render saved quote in the real research rail');
-    assert.equal((await noteState(B))[0].text,sourceNote);
+    await waitNoteState(B, {text:sourceNote}, 'seeded note must be visible in both tabs');
     // Update/update: W57 opens first; Product Library saves an edit in tab B.
     await openW57(A,'Черновик вкладки A');
     assert.equal(await A.locator('#npW57NoteText').inputValue(),'Черновик вкладки A');
     await openProduct(B);
     await editProduct(B,'Изменено через Product Library');
     await B.locator('#gb-hl-editor button[type="submit"]').click();
-    assert.equal((await noteState(B))[0].text,'Изменено через Product Library');
+    await waitNoteState(B, {text:'Изменено через Product Library'},
+      'Product Library edit must persist');
     await A.locator('#npW57SaveNote').click();
-    assert.match(await A.locator('#npW57NotesStatus').innerText(),/изменилась|связь изменилась/);
+    await waitStatus(A, '#npW57NotesDetails #npW57NotesStatus', /изменилась|связь изменилась/,
+      'stale W57 edit must be refused');
     assert.equal(await A.locator('#npW57NoteText').inputValue(),'Черновик вкладки A');
     assert.equal(await A.locator('#npW57NoteEditor').isVisible(),true);
-    assert.equal((await noteState(A))[0].text,'Изменено через Product Library');
+    await waitNoteState(A, {text:'Изменено через Product Library'},
+      'refused W57 write must leave the other tab edit intact');
     await A.screenshot({path:resolve(OUT,name+'-update-conflict.png'),animations:'disabled'});
     // Delete/update: a freshly opened W57 draft must not resurrect B's delete.
     await A.locator('#npW57CancelNote').click();
     await openW57(A,'Не воскрешать удалённую заметку');
     await B.locator('#gb-hl-list .gb-hl-item[data-type="note"][data-id="' + NID + '"] [data-library-action="delete"]').click();
-    assert.equal((await noteState(B)).length,0,'real Product delete must persist');
+    await waitNoteState(B, {none:true}, 'real Product delete must persist');
     await A.locator('#npW57SaveNote').click();
-    assert.equal((await noteState(A)).length,0,'stale W57 must not recreate deleted note');
+    await waitStatus(A, '#npW57NotesDetails #npW57NotesStatus', /удалена|изменилась/,
+      'stale W57 save must be refused after the delete');
+    await waitNoteState(A, {none:true}, 'stale W57 must not recreate deleted note');
     assert.equal(await A.locator('#npW57NoteText').inputValue(),'Не воскрешать удалённую заметку');
     assert.equal(await A.locator('#npW57NoteEditor').isVisible(),true);
-    assert.equal((await quoteState(A))[0].annotation.noteId,NID,
+    // The delete itself clears the reverse link, so the quote must carry no
+    // dangling noteId; a stale W57 save must not re-point it at the removed ID.
+    assert.equal((await quoteState(A))[0].annotation.noteId,null,
       'stale write must not alter the positional quote link');
     await A.screenshot({path:resolve(OUT,name+'-delete-conflict.png'),animations:'disabled'});
     // Reverse direction: Product opens, W57 writes, Product must retain draft.
@@ -191,11 +226,13 @@ async function run(engine, name) {
     await editProduct(B,'Черновик Product после открытия');
     await openW57(A,'Изменено через W57');
     await A.locator('#npW57SaveNote').click();
-    assert.equal((await noteState(A))[0].text,'Изменено через W57');
+    await waitNoteState(A, {text:'Изменено через W57'}, 'W57 edit must persist');
     await B.locator('#gb-hl-editor button[type="submit"]').click();
-    assert.match(await B.locator('#gb-hl-status').innerText(),/изменена в другом редакторе/);
+    await waitStatus(B, '#gb-hl-status', /изменена в другом редакторе/,
+      'stale Product edit must be refused');
     assert.equal(await B.locator('#gb-hl-note-text').inputValue(),'Черновик Product после открытия');
-    assert.equal((await noteState(B))[0].text,'Изменено через W57');
+    await waitNoteState(B, {text:'Изменено через W57'},
+      'refused Product write must leave the W57 edit intact');
     await B.screenshot({path:resolve(OUT,name+'-reverse-conflict.png'),animations:'disabled'});
     assert.equal(errors.length,0,'uncaught browser errors: '+errors.slice(0,3).join('; '));
     results.push({engine:name,status:'PASS',checks:16,seeded});

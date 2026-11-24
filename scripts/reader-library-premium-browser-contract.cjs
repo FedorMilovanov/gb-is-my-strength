@@ -22,6 +22,14 @@ const fixture={
  f:[{path:'/articles/kod-da-vinchi/',title:'Код да Винчи — исследование',description:'Избранный материал для чтения',addedAt:1781250000000}]
 };
 const checks=[];
+// Saving a note is now a serialized (async) commit: the assertion is unchanged,
+// but the contract must wait for the commit instead of assuming a sync write.
+const storeLength=(page)=>page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').length);
+const waitStore=async(page,expected)=>{
+  await page.waitForFunction((n)=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').length===n,
+    expected,{timeout:5000}).catch(()=>{});
+  return storeLength(page);
+};
 async function check(engine,driver,width,height,base,advanced){
  const browser=await driver.launch();
  const ctx=await browser.newContext({viewport:{width,height},serviceWorkers:'block',acceptDownloads:true,locale:'ru-RU'});
@@ -127,17 +135,18 @@ async function check(engine,driver,width,height,base,advanced){
   if(engine==='chromium')await page.screenshot({path:path.join(out,engine+'-'+width+'-editor.png'),animations:'disabled'});
   await page.locator('#gb-hl-note-text').fill('Новая локальная заметка для регрессионного теста');
   await page.locator('#gb-hl-editor button[type=submit]').click();
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'new note storage');
+  assert.equal(await waitStore(page,2),2,'new note storage');
   assert.equal(await page.locator('[data-library-tab="note"]').getAttribute('aria-pressed'),'true','save opens notes tab');
   const first=page.locator('.gb-hl-item').first();
   await first.locator('[data-library-action="edit-note"]').click();
   await page.locator('#gb-hl-note-text').fill('Отредактированная локальная заметка');
   await page.locator('#gb-hl-editor button[type=submit]').click();
+  await page.waitForFunction(()=>document.querySelector('#gb-hl-list').innerText.includes('Отредактированная локальная заметка'),null,{timeout:5000}).catch(()=>{});
   assert((await page.locator('#gb-hl-list').innerText()).includes('Отредактированная локальная заметка'),'edited note visible');
   await page.locator('.gb-hl-item').first().locator('[data-library-action="delete"]').click();
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),1,'delete note');
+  assert.equal(await waitStore(page,1),1,'delete note');
   await page.locator('#gb-hl-status [data-library-action="undo"]').click();
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'undo restores note');
+  assert.equal(await waitStore(page,2),2,'undo restores note');
   const download=page.waitForEvent('download');
   await page.locator('#gb-hl-export').click();
   const file=await download;

@@ -64,6 +64,7 @@ const ALLOWED_JS = new Set([
   'js/search.js',
   'js/enhancements.js',
   'js/highlights.js',
+  'js/reader-library-storage.js',
   'js/reader-library-presenter.js',
   'js/reader-library-v3.js',
   'js/reader-library-dock.js',
@@ -4339,8 +4340,9 @@ const JS_SIZE_FLOORS = {
 })();
 
 // G112. Search keyboard ownership contract.
-//   One raw global Ctrl/Meta+K boundary lives in js/site-utils.js.
-//   Route/Search consumers receive gb:openSearch and must never re-parse the chord.
+//   One global legacy/App Ctrl/Meta+K boundary lives in js/site-utils.js.
+//   The distinct strict-native NEWS and Articles documents each mount one local
+//   thin bootstrap shortcut; enforce disjoint page ownership and no duplicates.
 (function searchShortcutContractGuard() {
   const hasRawSearchShortcut = (source) => {
     const keydown = /addEventListener\s*\(\s*['"]keydown['"]/.test(source);
@@ -4358,8 +4360,32 @@ const JS_SIZE_FLOORS = {
   ].filter((file) => fs.existsSync(file)))];
   const rawOwners = candidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8'))).map(rel).sort();
 
-  if (rawOwners.length !== 1 || rawOwners[0] !== 'js/site-utils.js') {
-    R.err(`Search shortcuts: raw Ctrl/Meta+K owner set must be exactly js/site-utils.js; got: ${rawOwners.join(', ') || 'none'}`);
+  const expectedRawOwners = [
+    'js/site-utils.js',
+    'src/components/articles/ArticlesMasthead.astro',
+    'src/components/journal/JournalMasthead.astro',
+  ];
+  if (JSON.stringify(rawOwners) !== JSON.stringify(expectedRawOwners)) {
+    R.err(`Search shortcuts: unregistered raw Ctrl/Meta+K owner: ${rawOwners.join(', ') || 'none'}`);
+    return;
+  }
+  const journalShell = read('src/components/journal/JournalEditorialShell.astro');
+  const articlesChrome = read('src/components/articles/ArticlesPageChrome.astro');
+  for (const [name, source] of [
+    ['NEWS', read('src/components/journal/JournalMasthead.astro')],
+    ['Articles', read('src/components/articles/ArticlesMasthead.astro')],
+  ]) {
+    if (!hasRawSearchShortcut(source) ||
+        source.split("document.addEventListener('keydown'").length !== 2 ||
+        !source.includes('GBSearchBootstrap') || !source.includes('data-action="open-search"')) {
+      R.err(`Search shortcuts: ${name} must have exactly one route-local listener delegating to GBSearchBootstrap`);
+      return;
+    }
+  }
+  if (!journalShell.includes('<JournalMasthead') || journalShell.includes('<ArticlesMasthead') ||
+      !articlesChrome.includes('<ArticlesMasthead') || articlesChrome.includes('<JournalMasthead') ||
+      journalShell.includes('/js/site-utils.js') || articlesChrome.includes('/js/site-utils.js')) {
+    R.err('Search shortcuts: strict-native NEWS and Articles route owners must remain mutually exclusive');
     return;
   }
 
@@ -4390,7 +4416,7 @@ const JS_SIZE_FLOORS = {
     return;
   }
 
-  R.ok('Search shortcuts: sole SiteUtils Ctrl/Meta+K owner; invalid/editable/IME chords fail closed');
+  R.ok('Search shortcuts: exactly one owner per disjoint route; SiteUtils retains invalid/editable/IME guards');
 })();
 
 // G113. GBS series-world integrity contract.

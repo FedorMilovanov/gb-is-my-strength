@@ -10,15 +10,6 @@
   const pathname=()=>location.pathname.replace(/\/+$/,'')||'/';
   const samePage=r=>{try{return new URL(r.url||'',location.origin).pathname.replace(/\/+$/,'')===pathname()}catch(_){return false}};
   const read=key=>{try{let x=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(x)?x:[]}catch(_){return[]}};
-  const write=(key,list)=>{
-    try{
-      const old=localStorage.getItem(key);
-      localStorage.setItem(key,JSON.stringify(list));
-      window.dispatchEvent(new StorageEvent('storage',{key,oldValue:old,
-        newValue:JSON.stringify(list),storageArea:localStorage,url:location.href}));
-      return true;
-    }catch(e){console.error('W57_LIBRARY_STORE_FAILED',e);return false}
-  };
   const hash=s=>{
     let h=2166136261;
     for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
@@ -120,7 +111,7 @@
       x?.annotation?.version===1 ? x : {...x,
         annotation:{version:0,kind:x.kind||'marker',color:x.color||'amber',noteId:null}});
     const all=()=>read(qKey);
-    let rangeById=new Map(),pendingNoteId=null,pendingNoteSnapshot=null,pendingRecolorId=null;
+    let rangeById=new Map(),pendingNoteId=null,pendingNoteSnapshot=null,pendingRecolorId=null,pendingRecolorSnapshot=null;
     function paint(){
       rangeById=new Map();
       const groups={};
@@ -189,9 +180,10 @@
       }
       if(missing)say('Часть выделений не удалось уверенно привязать. Исходные записи сохранены.');
     }
-    function save(selection,kind){
+    async function save(selection,kind){
       if(!selection||!kinds.includes(kind))return null;
-      const store=window.GBHighlights,old=all();
+      const store=window.GBHighlights;
+      if(typeof store?.mutateLibrary!=='function'){say('Безопасное сохранение недоступно.');return null}
       const record={
         id:'quote-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
         text:selection.text,articleTitle:document.title.split(' | ')[0],
@@ -199,62 +191,77 @@
         before:selection.anchor.prefix,after:selection.anchor.suffix,savedAt:Date.now(),
         annotation:{version:1,kind,color:currentColor,anchor:selection.anchor,noteId:null}
       };
-      const key=store.highlightKey(record);
-      const previous=old.find(x=>store.highlightKey(x)===key);
-      if(previous){say('Это место текста уже сохранено.');return previous}
-      if(old.length>=200){say('Достигнут лимит 200 цитат. Экспортируйте библиотеку перед удалением.');return null}
-      const next=store.addHighlight(old,record);
-      // Comparing array lengths is wrong if native data included legacy
-      // duplicates; inspect the inserted record ID instead.
-      if(!next.some(x=>x.id===record.id)){
-        say('Помету не удалось добавить: исходные записи оставлены без изменений.');
+      const result=await store.mutateLibrary([qKey,nKey],stores=>{
+        const old=stores[qKey],key=store.highlightKey(record);
+        if(!key)return{reason:'conflict'};
+        const matches=old.filter(x=>store.highlightKey(x)===key);
+        if(matches.length>1)return{reason:'duplicate'};
+        if(matches.length===1)return{changes:{},result:{previous:matches[0]}};
+        if(old.length>=200)return{reason:'capacity'};
+        if(old.some(x=>x&&sameId(x.id,record.id))||stores[nKey].some(n=>sameId(n?.quoteId,record.id)))return{reason:'id-collision'};
+        const next=store.addHighlight(old,record);
+        if(!next.some(x=>x.id===record.id))return{reason:'conflict'};
+        return{changes:{[qKey]:next}};
+      });
+      if(!result.ok){
+        say(result.reason==='capacity'?'Достигнут лимит 200 цитат. Экспортируйте библиотеку перед удалением.':'Ошибка безопасного сохранения. Повторите попытку.');
         return null;
       }
-      if(!write(qKey,next)){say('Ошибка сохранения — библиотека не изменена.');return null}
+      if(result.previous){say('Это место текста уже сохранено.');return result.previous}
       repaint();
       const canPaint=kind==='quote'||(typeof CSS!=='undefined'&&CSS.highlights&&typeof Highlight!=='undefined');
       say(canPaint?'Помета сохранена в библиотеке.':
         'Помета сохранена, но этот браузер не поддерживает цветное выделение в тексте.');
       return record;
     }
-    function updateRecord(id,updater){
-      const old=all(),i=old.findIndex(x=>x.id===id &&
-        (x.annotation?.version===1 || !!x.color));
-      if(i<0)return null;
-      const positional=old[i].annotation?.version===1;
-      const updated={...old[i],annotation:{...old[i].annotation,
-        kind:old[i].annotation?.kind||old[i].kind||'marker',
-        color:old[i].annotation?.color||old[i].color||'amber'}};
-      updater(updated);
-      if(positional){
+    async function updateRecord(id,updater,expected){
+      const owner=window.GBHighlights;
+      if(typeof owner?.mutateLibrary!=='function'){say('Безопасное сохранение недоступно.');return null}
+      const result=await owner.mutateLibrary([qKey],stores=>{
+        const old=stores[qKey],matches=old.filter(x=>x&&sameId(x.id,id));
+        if(matches.length!==1)return{reason:'conflict'};
+        const live=matches[0],positional=live.annotation?.version===1;
+        if(!positional&&!live.color)return{reason:'conflict'};
+        const projected=positional?live:{...live,annotation:{version:0,kind:live.kind||'marker',color:live.color||'amber',noteId:null}};
+        if(expected!==JSON.stringify(projected))return{reason:'conflict'};
+        const updated={...live,annotation:{...live.annotation,
+          kind:live.annotation?.kind||live.kind||'marker',
+          color:live.annotation?.color||live.color||'amber'}};
+        updater(updated);
         updated.color=updated.annotation.color;
         updated.kind=updated.annotation.kind;
-      } else {
-        updated.color=updated.annotation.color;
-        updated.kind=updated.annotation.kind;
-        delete updated.annotation; // legacy position is never invented
+        if(!positional)delete updated.annotation;
+        return{changes:{[qKey]:old.map(x=>x===live?updated:x)},result:{updated}};
+      });
+      if(!result.ok){say('Не удалось обновить помету.');return null}
+      repaint();return result.updated;
+    }
+    // The Product Library owns the same note list and the shared mutation lock.
+    // W57 must refuse when that owner is not loaded; no independent fallback.
+    const sameId=(a,b)=>a!=null&&b!=null&&String(a)===String(b);
+    function resolveLinked(record,notes){
+      const explicit=record.annotation?.noteId;
+      const reverse=notes.filter(x=>x&&sameId(x.quoteId,record.id));
+      if(explicit!=null){
+        const matches=notes.filter(x=>x&&sameId(x.id,explicit));
+        if(matches.length!==1)return{conflict:true,note:null};
+        const note=matches[0];
+        if((note.quoteId!=null&&!sameId(note.quoteId,record.id))||reverse.some(x=>x!==note))
+          return{conflict:true,note:null};
+        return{note};
       }
-      const next=old.slice();next[i]=updated;
-      if(!write(qKey,next)){say('Не удалось обновить помету.');return null}
-      repaint();return updated;
+      if(reverse.length>1)return{conflict:true,note:null};
+      const note=reverse[0]||null;
+      if(note&&notes.filter(x=>x&&sameId(x.id,note.id)).length!==1)return{conflict:true,note:null};
+      return{note};
     }
-    function linkedNote(record){
-      const notes=read(nKey);
-      const explicit=record.annotation?.noteId&&notes.find(x=>x.id===record.annotation.noteId);
-      if(explicit)return explicit;
-      // Repair a single legacy one-way link without guessing among duplicates.
-      const linked=notes.filter(x=>x.quoteId===record.id);
-      return linked.length===1?linked[0]:null;
-    }
-    // A note editor must remember the exact saved version it opened. The
-    // Library owns the same note store; rereading only at Save time silently
-    // overwrote another tab or recreated a deleted note under a new ID.
+    function linkedNote(record){return resolveLinked(record,read(nKey)).note}
     function captureNoteSnapshot(record){
       const linked=linkedNote(record);
       return Object.freeze({
         quoteId:record.id,
-        quoteAnnotation:JSON.stringify(record.annotation||null),
-        noteId:linked?.id||null,
+        quoteState:JSON.stringify(record),
+        noteId:linked?.id??null,
         noteState:linked?JSON.stringify(linked):null
       });
     }
@@ -266,51 +273,54 @@
       window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
       requestAnimationFrame(()=>noteText.focus({preventScroll:true}));
     }
-    function saveLinkedNote(record,value,openingSnapshot){
-      const notes=read(nKey),existing=linkedNote(record);
-      const oldLink=record.annotation?.noteId||null;
-      if(openingSnapshot){
-        const sameOpenedVersion=openingSnapshot.quoteId===record.id &&
-          openingSnapshot.quoteAnnotation===JSON.stringify(record.annotation||null) &&
-          openingSnapshot.noteId===(existing?.id||null) &&
-          openingSnapshot.noteState===(existing?JSON.stringify(existing):null);
-        if(!sameOpenedVersion)return{ok:false,message:
-          'Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.'};
-      }
-      // Fail closed on broken/ambiguous associations. A deleted note must
-      // never be silently recreated under a fresh ID by a stale W57 editor.
-      if(existing && notes.filter(x=>x.id===existing.id).length!==1)
-        return{ok:false,message:'Несколько заметок имеют один ID. Сохранение остановлено; черновик остаётся в редакторе.'};
-      if((oldLink && existing?.id!==oldLink) ||
-          (!existing && notes.some(x=>x.quoteId===record.id)))
-        return{ok:false,message:'Связанная заметка удалена или её связь неоднозначна. Новая запись не создана; черновик остаётся в редакторе.'};
-      if(existing){
-        if(oldLink!==existing.id){
-          if(!updateRecord(record.id,x=>{x.annotation.noteId=existing.id}))
-            return{ok:false,message:'Не удалось восстановить связь заметки с цитатой.'};
+    async function saveLinkedNote(record,value,openingSnapshot){
+      const owner=window.GBHighlights;
+      if(typeof owner?.mutateLibrary!=='function')
+        return{ok:false,message:'Безопасное сохранение недоступно. Черновик остаётся в редакторе.'};
+      const snapshot=openingSnapshot||captureNoteSnapshot(record);
+      const result=await owner.mutateLibrary([qKey,nKey],stores=>{
+        const quotes=stores[qKey],notes=stores[nKey];
+        if(snapshot.noteId!=null&&!notes.some(x=>x&&sameId(x.id,snapshot.noteId)))
+          return{reason:'deleted'};
+        const matches=quotes.filter(x=>x&&sameId(x.id,snapshot.quoteId));
+        if(matches.length!==1)return{reason:'conflict'};
+        const raw=matches[0];
+        const current=raw.annotation?.version===1?raw:{...raw,
+          annotation:{version:0,kind:raw.kind||'marker',color:raw.color||'amber',noteId:null}};
+        if(JSON.stringify(current)!==snapshot.quoteState)return{reason:'conflict'};
+        const resolved=resolveLinked(current,notes),existing=resolved.note;
+        if(resolved.conflict||((snapshot.noteId==null)!=(existing==null))||
+          (existing&&(!sameId(snapshot.noteId,existing.id)||JSON.stringify(existing)!==snapshot.noteState)))
+          return{reason:'conflict'};
+        let note;
+        if(existing)note={...existing,text:value};
+        else{
+          if(notes.length>=500)return{reason:'capacity'};
+          const id='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+          if(notes.some(x=>x&&sameId(x.id,id))||quotes.some(q=>sameId(q?.annotation?.noteId,id)))return{reason:'id-collision'};
+          note={id,text:value,quoteText:raw.text,articleTitle:raw.articleTitle,
+            url:raw.url,savedAt:Date.now(),quoteId:raw.id};
         }
-        const next=notes.map(x=>x.id===existing.id?{...x,text:value}:x);
-        if(!write(nKey,next)){
-          if(oldLink!==existing.id)updateRecord(record.id,x=>{x.annotation.noteId=oldLink});
-          return{ok:false,message:'Ошибка сохранения: прежний текст заметки сохранён.'};
-        }
-        return{ok:true,message:'Заметка обновлена.'};
+        const changes={[nKey]:existing?notes.map(x=>x===existing?note:x):[note,...notes]};
+        // Stage both arrays before writing; do not change a quote on refusal.
+        // Legacy quotes without positional metadata keep their original shape.
+        if(raw.annotation?.version===1&&raw.annotation.noteId!==note.id)
+          changes[qKey]=quotes.map(x=>x===raw?{...raw,annotation:{...raw.annotation,noteId:note.id}}:x);
+        return{changes,result:{updated:!!existing}};
+      });
+      if(!result.ok){
+        const message=result.reason==='deleted'
+          ?'Связанная заметка удалена в другой вкладке. Новая запись не создана; черновик остаётся в редакторе.'
+          :result.reason==='conflict'
+            ?'Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.'
+            :result.reason==='capacity'
+              ?'Лимит 500 заметок. Экспортируйте библиотеку перед добавлением.'
+              :result.reason==='partial-write'
+                ?'Ошибка сохранения и восстановления связи. Черновик остаётся в редакторе; экспортируйте библиотеку.'
+                :'Ошибка сохранения. Черновик остаётся в редакторе.';
+        return{ok:false,message};
       }
-      if(notes.length>=500)return{ok:false,message:'Лимит 500 заметок. Экспортируйте библиотеку перед добавлением.'};
-      const id='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-      const note={id,text:value,quoteText:record.text,articleTitle:record.articleTitle,
-        url:record.url,savedAt:Date.now(),quoteId:record.id};
-      // Two localStorage keys are not transactional: write the reference first,
-      // then the note; compensate on failure and NEVER announce false success.
-      if(!updateRecord(record.id,x=>{x.annotation.noteId=id}))
-        return{ok:false,message:'Не удалось связать заметку с выделением. Ничего не записано.'};
-      if(!write(nKey,[note,...notes])){
-        const rolledBack=updateRecord(record.id,x=>{x.annotation.noteId=oldLink});
-        return{ok:false,message:rolledBack
-          ?'Ошибка сохранения. Связь с выделением восстановлена, текст остаётся в редакторе.'
-          :'Ошибка сохранения и отката связи. Текст остаётся в редакторе; не закрывайте страницу до экспорта.'};
-      }
-      return{ok:true,message:'Заметка сохранена в библиотеке.'};
+      return{ok:true,message:result.updated?'Заметка обновлена.':'Заметка сохранена в библиотеке.'};
     }
     function locate(id){
       const r=rangeById.get(id);
@@ -366,13 +376,14 @@
       if(!toolbar.hidden&&!toolbar.contains(e.target)&&!article.contains(e.target))toolbar.hidden=true;
     },true);
     document.addEventListener('scroll',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
-    toolbar.addEventListener('click',e=>{
+    toolbar.addEventListener('click',async e=>{
       const b=e.target.closest('[data-w57-action]');if(!b)return;
       const kind=b.dataset.w57Action;
       const s=lastSelection;
       toolbar.hidden=true;
       if(!s)return;
-      const record=save(s,kind==='note'?'quote':kind);
+      const record=await save(s,kind==='note'?'quote':kind);
+      if(!record)return;
       if(kind==='note'&&record){
         openNoteEditor(record);
         requestAnimationFrame(()=>editor.scrollIntoView({block:'nearest'}));
@@ -383,13 +394,13 @@
       }
       window.getSelection()?.removeAllRanges();
     });
-    palette.addEventListener('click',e=>{
+    palette.addEventListener('click',async e=>{
       const button=e.target.closest('[data-color]');if(!button)return;
       const chosenColor=button.dataset.color,targetId=pendingRecolorId;
       if(targetId){
-        const updated=updateRecord(targetId,x=>{x.annotation.color=chosenColor});
+        const updated=await updateRecord(targetId,x=>{x.annotation.color=chosenColor},pendingRecolorSnapshot);
         if(!updated){say('Цвет не сохранён. Выберите цвет ещё раз или нажмите Escape.');return}
-        pendingRecolorId=null;
+        pendingRecolorId=null;pendingRecolorSnapshot=null;
         palette.setAttribute('aria-label','Цвет выделения');
       }
       currentColor=chosenColor;
@@ -402,19 +413,19 @@
     palette.addEventListener('keydown',e=>{
       if(e.key!=='Escape'||!pendingRecolorId)return;
       e.preventDefault();e.stopPropagation();
-      pendingRecolorId=null;
+      pendingRecolorId=null;pendingRecolorSnapshot=null;
       palette.setAttribute('aria-label','Цвет выделения');
       say('Смена цвета отменена. Помета не изменена.');
     });
-    list.addEventListener('click',e=>{
+    list.addEventListener('click',async e=>{
       const b=e.target.closest('[data-action]'),li=b?.closest('li[data-id]');if(!li)return;
-      const id=li.dataset.id,action=b.dataset.action,record=entries().find(x=>x.id===id);
+      const id=li.dataset.id,action=b.dataset.action,record=entries().find(x=>sameId(x.id,id));
       if(!record)return;
       if(action==='goto'){locate(id);return}
       if(action==='switch'){
-        updateRecord(id,x=>{x.annotation.kind=x.annotation.kind==='marker'?'underline':x.annotation.kind==='underline'?'marker':'marker'});
+        await updateRecord(id,x=>{x.annotation.kind=x.annotation.kind==='marker'?'underline':x.annotation.kind==='underline'?'marker':'marker'},JSON.stringify(record));
       }else if(action==='recolor'){
-        pendingRecolorId=id;
+        pendingRecolorId=id;pendingRecolorSnapshot=JSON.stringify(record);
         palette.setAttribute('aria-label','Выберите новый цвет сохранённой пометы');
         say('Выберите цвет этой пометы в палитре выше. Escape — отмена.');
         palette.querySelector('[data-color="'+record.annotation.color+'"]')?.focus({preventScroll:true});
@@ -422,40 +433,46 @@
       }else if(action==='edit'){
         openNoteEditor(record);
       }else if(action==='delete'){
-        const old=all(),deleted=old.find(x=>x.id===id);
-        if(write(qKey,old.filter(x=>x.id!==id))){
-          if(pendingNoteId===id){pendingNoteId=null;pendingNoteSnapshot=null;editor.hidden=true}
-          if(pendingRecolorId===id){pendingRecolorId=null;palette.setAttribute('aria-label','Цвет выделения')}
-          lastUndo=deleted;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
-          const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
-          undo.setAttribute('aria-label','Восстановить удалённую помету');
-          undo.addEventListener('click',()=>{
-            if(!lastUndo||lastUndo.id!==deleted.id)return;
-            const next=all();
-            if(next.some(x=>x.id===deleted.id)){lastUndo=null;say('Помета уже восстановлена.');return}
-            if(next.length>=200){say('Нет места для восстановления: сохраните экспорт библиотеки.');return}
-            if(write(qKey,[deleted,...next])){
-              lastUndo=null;repaint();say('Помета восстановлена.');
-            }else{
-          // Preserve the SAME undo button and handler after a failed write.
-          // Replacing status.textContent here would erase the only retry.
-          status.replaceChildren(document.createTextNode('Восстановление не удалось. Повторите попытку. '),undo);
-        }
-          });
-          status.append(undo);
-        }
+        const owner=window.GBHighlights;
+        if(typeof owner?.mutateLibrary!=='function'||typeof owner?.restoreDeleted!=='function'){say('Безопасное удаление недоступно.');return}
+        const deleted=await owner.mutateLibrary([qKey],stores=>{
+          const old=stores[qKey],matches=old.filter(x=>x&&sameId(x.id,id));
+          if(matches.length!==1)return{reason:'conflict'};
+          const entry=matches[0],current=entry.annotation?.version===1?entry:{...entry,
+            annotation:{version:0,kind:entry.kind||'marker',color:entry.color||'amber',noteId:null}};
+          if(JSON.stringify(current)!==JSON.stringify(record))return{reason:'conflict'};
+          return{changes:{[qKey]:old.filter(x=>x!==entry)},result:{receipt:{key:qKey,entry,index:old.indexOf(entry)}}};
+        });
+        if(!deleted.ok){say('Не удалось безопасно удалить помету. Повторите попытку.');return}
+        // An open draft is never discarded as a side effect of deletion.
+        if(sameId(pendingRecolorId,id)){pendingRecolorId=null;pendingRecolorSnapshot=null;palette.setAttribute('aria-label','Цвет выделения')}
+        const receipt=deleted.receipt;
+        lastUndo=receipt;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
+        const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
+        undo.setAttribute('aria-label','Восстановить удалённую помету');
+        let restoring=false;
+        undo.addEventListener('click',async()=>{
+          if(lastUndo!==receipt||restoring)return;
+          restoring=true;
+          const result=await owner.restoreDeleted(receipt);
+          restoring=false;
+          if(lastUndo!==receipt){if(result.ok)repaint();return}
+          if(result.ok){lastUndo=null;repaint();say('Помета восстановлена.')}
+          else status.replaceChildren(document.createTextNode('Восстановление не удалось. Повторите попытку. '),undo);
+        });
+        status.append(undo);
       }
     });
     section.querySelector('#npW57CancelNote').addEventListener('click',()=>{
       pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';editor.hidden=true;
       say('Редактирование отменено; сохранённые заметки не изменены.');
     });
-    section.querySelector('#npW57SaveNote').addEventListener('click',()=>{
+    section.querySelector('#npW57SaveNote').addEventListener('click',async()=>{
       const value=noteText.value.trim(),id=pendingNoteId;
       if(!value||!id){say('Введите текст заметки.');return}
-      const record=entries().find(x=>x.id===id);
+      const record=entries().find(x=>sameId(x.id,id));
       if(!record){say('Исходное выделение не найдено. Текст остаётся в редакторе.');return}
-      const result=saveLinkedNote(record,value,pendingNoteSnapshot);
+      const result=await saveLinkedNote(record,value,pendingNoteSnapshot);
       if(!result.ok){say(result.message);return}
       pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';editor.hidden=true;
       // Same-tab localStorage writes never emit a storage event: update the card.
