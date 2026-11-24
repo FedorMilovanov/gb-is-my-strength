@@ -334,17 +334,22 @@ if (!problems.length) {
     bad(`unsupported non-authoritative legacy status: ${profile.legacyStatus || 'missing'}`);
   }
 
-  const lh = h2Count(legacyBody);
-  if (distHtml) {
-    const distArticle = articleInner(distHtml);
-    if (!distArticle) bad('dist article-body scope missing');
-    else {
-      const dh = h2Count(distArticle);
-      lh === dh ? ok(`H2 parity (dist article body): ${dh}`) : bad(`H2 drift: legacy=${lh}, distArticle=${dh}`);
+  // Compare editorial article with editorial article, not legacy page chrome.
+  const legacyArticle = articleInner(legacy);
+  if (!legacyArticle) bad('legacy article-body scope missing');
+  else {
+    const lh = h2Count(legacyArticle);
+    if (distHtml) {
+      const distArticle = articleInner(distHtml);
+      if (!distArticle) bad('dist article-body scope missing');
+      else {
+        const dh = h2Count(distArticle);
+        lh === dh ? ok(`H2 parity (dist article body): ${dh}`) : bad(`H2 drift: legacyArticle=${lh}, distArticle=${dh}`);
+      }
+    } else {
+      const rh = h2Count(sectionHtml);
+      lh === rh ? ok(`H2 parity (native editorial sections): ${rh}`) : bad(`H2 drift: legacyArticle=${lh}, nativeSections=${rh}`);
     }
-  } else {
-    const rh = h2Count(reconstructed);
-    Math.abs(lh - rh) <= 1 ? ok(`H2 parity within shared-chrome tolerance: legacy=${lh}, reconstructed=${rh}`) : bad(`H2 drift: legacy=${lh}, reconstructed=${rh}`);
   }
 }
 

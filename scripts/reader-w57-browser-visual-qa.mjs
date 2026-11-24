@@ -370,7 +370,16 @@ try{
     deltaPx:d.item.heroCenterShift,folded:d.item.geometryFolded,opened:d.item.geometryOpen});
   await snap(d.page,'desktop-annotations');
  });
- await safe('desktop-select-marker-note-edit',async()=>{
+ // W44: a click dispatch does not await a Web Locks mutation.
+  const waitW57Store=async(page,key,expected)=>{
+   await page.waitForFunction(({key,expected})=>{
+    const rows=JSON.parse(localStorage.getItem(key)||'[]');
+    const selected=expected.positional?rows.filter(x=>x.annotation?.version===1):rows;
+    return selected.length===expected.count&&(!expected.text||selected.some(x=>x.text===expected.text))&&
+     (!expected.color||selected.some(x=>x.annotation?.color===expected.color));
+   },{key,expected},{timeout:8000});
+  };
+  await safe('desktop-select-marker-note-edit',async()=>{
   await d.page.locator('#npW57Palette [data-color="sage"]').click();
   assert.equal(await d.page.locator('#npW57Palette [data-color="sage"]').getAttribute('aria-pressed'),'true');
   const selected=await selectText(d.page);await d.page.waitForTimeout(500);
@@ -417,6 +426,8 @@ try{
   });
   await snap(d.page,'desktop-selection');
   await d.page.locator('#npW57SelectionToolbar [data-w57-action="marker"]').click();
+  await waitW57Store(d.page,'gb-highlights-v1',{count:1,positional:true,color:'sage'});
+  await d.page.waitForFunction(()=>document.querySelectorAll('#npW57NotesList li[data-id]').length===1,null,{timeout:8000});
   const first=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1));
   assert.equal(first.length,1,'highlight save missing');
   d.item.marker={kind:first[0].annotation.kind,color:first[0].annotation.color,anchor:first[0].annotation.anchor};
@@ -433,11 +444,16 @@ try{
   await d.page.locator('#npW57SelectionToolbar [data-w57-action="note"]').click();
   await d.page.locator('#npW57NoteText').fill('Первоначальная заметка W57');
   await d.page.locator('#npW57SaveNote').click();
+  await waitW57Store(d.page,'gb-reader-notes-v1',{count:1,text:'Первоначальная заметка W57'});
+  await d.page.locator('#npW57NoteEditor').waitFor({state:'hidden'});
   const prev=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
   assert.equal(prev.length,1);
   await d.page.locator('#npW57NotesList li[data-id] [data-action="edit"]').first().click();
   await d.page.locator('#npW57NoteText').fill('Исправленная заметка W57');
   await d.page.locator('#npW57SaveNote').click();
+  await waitW57Store(d.page,'gb-reader-notes-v1',{count:1,text:'Исправленная заметка W57'});
+  await d.page.locator('#npW57NoteEditor').waitFor({state:'hidden'});
+  await d.page.waitForFunction(()=>document.querySelector('#npW57NotesList li[data-id] .np-w57-note-preview-text')?.textContent==='Исправленная заметка W57',null,{timeout:8000});
   const next=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
   assert.equal(next.length,1);assert.equal(next[0].id,prev[0].id);assert.equal(next[0].text,'Исправленная заметка W57');
   d.item.note={count:next.length,idPreserved:true};
@@ -454,6 +470,7 @@ try{
   assert.equal(cancelledColor,'sage','Escape must not mutate the highlight color');
   await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
   await d.page.locator('#npW57Palette [data-color="lime"]').click();
+  await waitW57Store(d.page,'gb-highlights-v1',{count:1,positional:true,color:'lime'});
   const recolored=await d.page.evaluate(()=>{
     const q=JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]');
     return q.find(x=>x.annotation?.version===1)?.annotation?.color;
@@ -462,7 +479,9 @@ try{
   assert.equal(recolored,'lime','explicit palette selection must recolor only the saved highlight');
   await snap(d.page,'desktop-lime-highlight');
   await d.page.locator('#npW57NotesList li[data-id] [data-action="delete"]').first().click();
-  await d.page.locator('#npW57NotesStatus button').click();
+  await waitW57Store(d.page,'gb-highlights-v1',{count:0,positional:true});
+   await d.page.locator('#npW57NotesStatus button').click();
+   await waitW57Store(d.page,'gb-highlights-v1',{count:1,positional:true,color:'lime'});
   assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
  });
  const library='#gb-hl-panel';
@@ -486,7 +505,9 @@ try{
    await other.goto(p.url(),{waitUntil:'domcontentloaded'});
    await other.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
    await openLibrary(p);
+   await waitW57Store(p,'gb-reader-notes-v1',{count:1,text:'Исправленная заметка W57'});
    const [record]=await notes(p),text='Исправлено через общую библиотеку';
+   assert.ok(record?.id!=null,'dependent W57 save did not establish the library fixture');
    await editNote(p,record.id,text);
    await submitNote(p);
    for(const page of [p,other])await page.waitForFunction(t=>
@@ -521,14 +542,30 @@ try{
    await editNote(p,'alpha','Draft A');
    if(mode!=='ordinary'){
     await openLibrary(other);
-    if(mode==='delete')await other.locator(`${library} .gb-hl-item[data-id=alpha] [data-library-action=delete]`).click();
-    else{await editNote(other,mode==='edit'?'alpha':'beta','Commit B');await submitNote(other);}
+     if(mode==='delete'){
+      await other.locator(`${library} .gb-hl-item[data-id=alpha] [data-library-action=delete]`).click();
+      await other.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').every(n=>n.id!=='alpha'),null,{timeout:8000});
+      await other.locator('#gb-hl-status [data-library-action=undo]').waitFor({state:'visible'});
+     }else{
+      const target=mode==='edit'?'alpha':'beta';
+      await editNote(other,target,'Commit B');await submitNote(other);
+      await other.waitForFunction(id=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').some(n=>n.id===id&&n.text==='Commit B'),target,{timeout:8000});
+      await other.locator('#gb-hl-editor').waitFor({state:'hidden'});
+     }
    }
-   await p.bringToFront();
-   await submitNote(p);
-   const read=async page=>Object.fromEntries((await notes(page)).map(n=>[n.id,n.text]));
-   const saved=await read(p);
    const conflict=mode==='edit'||mode==='delete';
+    const before=await p.evaluate(()=>localStorage.getItem('gb-reader-notes-v1'));
+    await p.bringToFront();
+    await submitNote(p);
+    if(conflict){
+     await p.waitForFunction(()=>/Черновик не сохранён/.test(document.querySelector('#gb-hl-status')?.textContent||'')&&document.querySelector('#gb-hl-note-text')?.readOnly===false,null,{timeout:8000});
+     assert.equal(await p.evaluate(()=>localStorage.getItem('gb-reader-notes-v1')),before,'refused commit must preserve exact note bytes');
+    }else{
+     await p.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').some(n=>n.id==='alpha'&&n.text==='Draft A'),null,{timeout:8000});
+     await p.locator('#gb-hl-editor').waitFor({state:'hidden'});
+    }
+    const read=async page=>Object.fromEntries((await notes(page)).map(n=>[n.id,n.text]));
+    const saved=await read(p);
    assert.equal(await p.locator('#gb-hl-editor').isVisible(),conflict);
    if(conflict){
     assert.equal(await p.locator('#gb-hl-note-text').inputValue(),'Draft A');

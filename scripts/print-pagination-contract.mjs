@@ -965,6 +965,143 @@ try {
   }
   if(report.privateLibrary.length!==2)report.failures.push('W42 required private-library routes missing');
 
+  // W43: the same physical privacy witness for opt-in W57 with real
+  // Analytics and linked-note editor. Keep native and pilot receipts separate.
+  report.privateW57={scope:'synthetic opt-in W57 QA only',checks:[],failures:[]};
+  {
+    const row=report.privateW57;
+    const route=BASE_ROUTES.find(([id])=>id==='gill-part2')[1];
+    const context=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+    try {
+      await context.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      const url=base+route+'?reader-pilot=1&paper=space&panel=open';
+      const source=await readFile(join(DIST,route,'index.html'));
+      const ready=async()=>{
+        await page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready&&window.__NP_UNIVERSAL_PREVIEW__?.ready);
+        await page.evaluate(async()=>{await document.fonts.ready;});
+        await page.locator('#npUResearch').waitFor({state:'visible'});
+        const section=page.locator('#npW57NotesDetails');
+        if(!(await section.evaluate(el=>el.open)))await section.locator('summary').click();
+        await page.waitForFunction(()=>document.querySelector('#npW57NotesDetails')?.open===true);
+      };
+      const response=await page.goto(url,{waitUntil:'load'});
+      if(!response?.ok()||privacyHash(await response.body())!==privacyHash(source))throw Error('W57 HTTP/dist mismatch');
+      row.route=route;row.sourceHash=privacyHash(source);
+      await ready();
+      const qid='gb-w43-private-quote',nid='gb-w43-private-note';
+      const saved='GBPRIVATEW43W57SAVED',draft='GBPRIVATEW43W57DRAFT';
+      const clean=await privacyPdf(page,'w57-gill-clean');
+      row.clean={pdf:clean.pdf,pages:clean.paper.total,textHash:clean.textHash,raster:clean.raster};
+      const compact=x=>x.normalize('NFKC').replace(/[\s\u00ad]+/g,'');
+      if(!clean.text.trim()||[saved,draft].some(token=>compact(clean.text).includes(token)))throw Error('W57 clean baseline invalid');
+      // Reuse actual visible selection + canonical anchor seed from the
+      // existing two-tab contract; all data stays in a disposable profile.
+
+    const seeded = await page.evaluate(({qid,nid,initial}) => {
+      const article = window.GBReaderContract?.articleRoot?.(document);
+      if (!article || !window.GBReaderAnchors?.capture) throw Error('Canonical anchor owner missing');
+      // Use the canonical authored-block list. An arbitrary first paragraph
+      // can be below the fold, in which case GBReaderAnchors.capture correctly
+      // returns null. Seed a REAL visible selection, never fake coordinates.
+      let textNode = null, sourceBlock = null;
+      for (const block of window.GBReaderAnchors.blocks(article)) {
+        if (!block.getClientRects().length || block.closest('[hidden],[inert],[aria-hidden="true"]')) continue;
+        const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          const owner=node.parentElement;
+          if (node.nodeValue.trim().length >= 75 &&
+              !owner?.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]')) {
+            textNode = node; sourceBlock = block; break;
+          }
+        }
+        if (textNode) break;
+      }
+      if (!textNode || !sourceBlock) throw Error('No eligible authored source block');
+      sourceBlock.scrollIntoView({block:'center',behavior:'instant'});
+      const range = document.createRange();
+      range.setStart(textNode, Math.min(3,textNode.length-1));
+      range.setEnd(textNode, Math.min(textNode.length,58));
+      const selection = window.getSelection();
+      selection.removeAllRanges(); selection.addRange(range);
+      const geometry=range.getBoundingClientRect();
+      if (geometry.width < 2 || geometry.height < 2 ||
+          geometry.bottom < 0 || geometry.top > innerHeight)
+        throw Error('Fixture selection is not visible to canonical anchor capture: '+JSON.stringify({
+          top:geometry.top,bottom:geometry.bottom,height:geometry.height,width:geometry.width
+        }));
+      const source = window.GBReaderAnchors.capture(article);
+      selection.removeAllRanges();
+      if (!source?.anchor || !source.text || source.text.length < 10)
+        throw Error('Canonical position capture failed');
+      const savedAt = Date.now();
+      const q = {
+        id:qid, text:source.text,articleTitle:document.title,
+        url:location.origin+location.pathname,savedAt,
+        before:source.anchor.prefix||'',after:source.anchor.suffix||'',
+        kind:'quote',color:'amber',
+        annotation:{version:1,kind:'quote',color:'amber',anchor:source.anchor,noteId:nid}
+      };
+      const n = {
+        id:nid,text:initial,quoteId:qid,quoteText:source.text,
+        articleTitle:document.title,url:q.url,savedAt
+      };
+      localStorage.setItem('gb-highlights-v1',JSON.stringify([q]));
+      localStorage.setItem('gb-reader-notes-v1',JSON.stringify([n]));
+      return {textLength:source.text.length,sourceId:qid};
+    },{qid:qid,nid:nid,initial:saved});
+      row.seeded=seeded;
+      const reloaded=await page.reload({waitUntil:'load'});
+      if(!reloaded?.ok()||privacyHash(await reloaded.body())!==row.sourceHash)throw Error('W57 reload source drift');
+      await ready();
+      const card=page.locator('#npW57NotesList li[data-id="'+qid+'"]');
+      const savedPreview=card.locator('.np-w57-note-preview-text');
+      await savedPreview.waitFor({state:'visible'});
+      if(await savedPreview.innerText()!==saved)throw Error('W57 saved private note not rendered');
+      await card.locator('[data-action="edit"]').click();
+      const area=page.locator('#npW57NoteText');
+      await area.fill(draft);
+      await area.evaluate(el=>{el.focus({preventScroll:true});el.setSelectionRange(2,8,'forward');});
+      const state=async()=>{
+        const general=await privateState(page);
+        const w57=await page.evaluate(()=>{
+          const root=document.querySelector('#npUniversalDemo'),panel=document.querySelector('#npUResearch');
+          const details=document.querySelector('#npW57NotesDetails'),editor=document.querySelector('#npW57NoteEditor');
+          const area=document.querySelector('#npW57NoteText');
+          return{panelOpen:!!root&&!root.classList.contains('np-u-hide-right')&&!!panel?.getClientRects().length,
+            panelScroll:panel?[panel.scrollLeft,panel.scrollTop]:null,detailsOpen:details?.open??null,
+            editorHidden:editor?.hidden??null,draft:area?.value??null,readOnly:area?.readOnly??null,
+            caret:area?[area.selectionStart,area.selectionEnd,area.selectionDirection]:null};
+        });
+        return{...general,w57};
+      };
+      const before=await state();
+      if(!before.w57.panelOpen||!before.w57.detailsOpen||before.w57.editorHidden||
+         before.w57.draft!==draft||before.focus!=='npW57NoteText'||before.w57.readOnly||
+         before.w57.caret?.[0]!==2||before.w57.caret?.[1]!==8||
+         !JSON.parse(before.stores['gb-reader-notes-v1']||'[]').some(n=>n.id===nid&&n.text===saved)||
+         Object.values(before.stores).some(raw=>raw?.includes(draft)))throw Error('W57 private fixture not established');
+      const actual=await privacyPdf(page,'w57-gill-private');
+      await page.waitForFunction(()=>!matchMedia('print').matches);
+      const after=await state();
+      const check={pdf:actual.pdf,pages:actual.paper.total,textHash:actual.textHash,raster:actual.raster,
+        leak:[saved,draft].filter(token=>compact(actual.text).includes(token)),
+        textEqual:actual.text===clean.text,
+        rasterEqual:JSON.stringify(actual.raster)===JSON.stringify(clean.raster),
+        stateChanges:Object.keys(before).filter(k=>JSON.stringify(before[k])!==JSON.stringify(after[k]))};
+      row.checks.push(check);
+      if(check.leak.length||!check.textEqual||!check.rasterEqual||check.stateChanges.length)
+        row.failures.push('W57 privacy/content/raster/lifecycle mismatch');
+      if(errors.length)row.failures.push('page errors: '+errors.slice(0,3).join('; '));
+    }catch(error){row.failures.push(String(error));}
+    finally{await context.close();}
+    if(row.checks.length!==1)row.failures.push('W57 physical comparison missing');
+    for(const failure of row.failures)report.failures.push('W43: '+failure);
+  }
+
+
 } finally {
   await browser.close().catch(() => {});
   await new Promise((resolve) => server.close(resolve));
