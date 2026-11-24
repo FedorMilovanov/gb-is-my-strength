@@ -120,6 +120,25 @@ async function nativeChecks(sample) {
  await page.locator('#partTocOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
  assert.ok(await page.locator('#gbrTocTab').isVisible(),'native TOC tab hidden');
  await page.keyboard.press('Escape');
+ await page.locator('#partTocOverlay[aria-hidden="true"]').waitFor({state:'hidden',timeout:5000});
+ // Preserve the old research interaction coverage on the actual native owner.
+ const researchTrigger=page.locator('.mobile-top-bar [data-gill-marginalia-open]');
+ assert.equal(await researchTrigger.count(),1,'native research opener ownership drift');
+ await researchTrigger.click();
+ await page.locator('#partTocOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
+ const researchTab=page.locator('#gbrMarginaliaTab[aria-selected="true"]');
+ await researchTab.waitFor({state:'visible',timeout:5000});
+ assert.ok(await page.locator('#gbrMarginalia').isVisible(),'native research content hidden');
+ assert.equal(await page.locator('#gbs2PartToc').evaluate(el=>el.hidden&&el.inert),true,'inactive TOC remains interactive');
+ assert.ok(await page.locator('#gbrMarginaliaContent .gbr-marginalia-group').count()>0,'native research data missing');
+ await researchTab.focus();
+ await page.keyboard.press('ArrowLeft');
+ await page.locator('#gbrTocTab[aria-selected="true"]').waitFor({state:'visible',timeout:5000});
+ assert.equal(await page.locator('#gbrMarginalia').evaluate(el=>el.hidden&&el.inert),true,'inactive research remains interactive');
+ assert.equal(await page.locator('#gbrTocTab').evaluate(el=>document.activeElement===el),true,'native keyboard tab focus lost');
+ await page.keyboard.press('Escape');
+ await page.locator('#partTocOverlay[aria-hidden="true"]').waitFor({state:'hidden',timeout:5000});
+ item.native.researchRoundTrip=true;
  await page.locator('#mobSettingsBtn').click();
  await page.locator('#gillSettingsOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
  assert.ok(await page.locator('#gillSettingsOverlay .type-choice').count()>=2,'native font controls missing');

@@ -38,6 +38,68 @@ const BASE_ROUTES = [
 ];
 const PAGINATION_ROUTE_URLS = new Set(BASE_ROUTES.map(([, url]) => url));
 
+// HERM-PAPER-CHROME: clean physical PDF witness independent of marker pagination.
+const HERM_HEADER_EXPECTED = {
+  "journal": "MSJ 27/2 (Fall 2016) 113–139",
+  "title": "Оценка христоцентричной герменевтики",
+  "author": "Абнер Чау",
+  "byline": "Редактор: Фёдор Милованов",
+  "body": "Проповедь занимает центральное место в служении пастора",
+  "end": "богословской и терминологической верификацией",
+  "content": {
+    "rights": "Русский перевод этой статьи публикуется с разрешения TMS Journal",
+    "source": "A Hermeneutical Evaluation of the Christocentric Hermeneutic",
+    "original": "открыть PDF на сайте TMS",
+    "abstractStart": "То, как изучать и преподавать Библию",
+    "abstractEnd": "как Он того требует"
+  }
+};
+
+function hermHeaderWitness(text, expected) {
+ const norm = value => String(value || '').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/\u00ad/g,'').replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+ const compact = value=>norm(value).replace(/ /g,'');
+ const pages=String(text).split('\f'); if(pages.length>1&&!pages.at(-1).trim())pages.pop();
+ // Compact only individual journal lines, not general publication text.
+ const journal=compact(expected.journal);
+ const lines=pages[0].split(/\r?\n/);
+ const lineIndexes=lines.map((line,i)=>compact(line)===journal?i:-1).filter(i=>i>=0);
+ const first=lineIndexes.length===1?norm(lines.slice(lineIndexes[0]+1).join('\n')):'';
+ let cursor=0;
+ const ordered=[expected.title,expected.author,expected.byline].map(norm).every(anchor=>{
+ if(!anchor)return false;const at=first.indexOf(anchor,cursor);if(at<0)return false;cursor=at+anchor.length;return true;
+ });
+ const allLines=pages.join('\n').split(/\r?\n/);
+ const start=allLines.findIndex(line=>compact(line)===journal);
+ const after=start>=0?norm(allLines.slice(start+1).join('\n')):'';
+ const body=norm(expected.body),bodyStart=body?after.indexOf(body):-1;
+ const front=bodyStart>0?after.slice(0,bodyStart):'';
+ const missing=Object.entries(expected.content).filter(([,value])=>!norm(value)||!front.includes(norm(value))).map(([key])=>key);
+ const failures=[];
+ if(!ordered)failures.push('first-page-journal-title-author-byline');
+ if(!front)failures.push('missing-front-boundary');
+ failures.push(...missing.map(key=>'missing-front-content:'+key));
+ if(!norm(expected.end)||!norm(text).includes(norm(expected.end)))failures.push('missing-end');
+ return {pages:pages.length,ordered,missing,failures};
+}
+
+function paperFormatWitness(file, format) {
+  const expected = { A4: [210 * 72 / 25.4, 297 * 72 / 25.4], Letter: [612, 792] }[format];
+  if (!expected) throw new Error(`Unsupported paper format: ${format}`);
+  const read = args => execFileSync('pdfinfo', args, { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' }, maxBuffer: 8 * 1024 * 1024 });
+  const total = Number(read([file]).match(/^Pages:\s+(\d+)\s*$/m)?.[1]);
+  if (!Number.isSafeInteger(total) || total < 1) throw new Error('PDF page count unavailable');
+  const output = read(['-f', '1', '-l', String(total), file]);
+  const sizes = new Map(), rotations = new Map();
+  for (const match of output.matchAll(/^Page\s+(\d+)\s+size:\s+([\d.]+)\s+x\s+([\d.]+)\s+pts\b/gm)) sizes.set(Number(match[1]), [Number(match[2]), Number(match[3])]);
+  for (const match of output.matchAll(/^Page\s+(\d+)\s+rot:\s+(-?\d+)\s*$/gm)) rotations.set(Number(match[1]), Number(match[2]));
+  const failures = [];
+  for (let page = 1; page <= total; page++) {
+    const actual = sizes.get(page), rotation = rotations.get(page);
+    if (!actual || rotation !== 0 || actual.some((value, i) => !Number.isFinite(value) || Math.abs(value - expected[i]) > 2)) failures.push({ page, actual: actual || null, rotation: rotation ?? null });
+  }
+  return { format, total, first: sizes.get(1) || null, failures };
+}
+
 function routeId(route) {
   const slug = String(route || '')
     .replace(/^\/+|\/+$/g, '')
@@ -564,6 +626,10 @@ try {
     await page.pdf({ path: cleanPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
     execFileSync('pdftotext', ['-layout', cleanPdf, cleanTxt]);
     const cleanPdfText = await readFile(cleanTxt, 'utf8');
+    const cleanPaper = paperFormatWitness(cleanPdf, 'A4');
+    if (cleanPaper.failures.length) report.failures.push(`${id}: physical A4 page-size witness failed: ${JSON.stringify(cleanPaper.failures.slice(0, 12))}`);
+    const hermHeader = id === 'single-article' ? hermHeaderWitness(cleanPdfText, HERM_HEADER_EXPECTED) : null;
+    if (hermHeader?.failures.length) report.failures.push(`${id}: HERM-PAPER-CHROME: ${hermHeader.failures.join(', ')}`);
     const textProbeMissingNotes = missingPublicationNotes(cleanPdfText, routeNotes);
 
     const noteTokens = routeNotes.map((note, index) => ({
@@ -651,6 +717,8 @@ try {
       noteDom,
       printNoteState,
       missingPublicationNoteIds: missingNotes.map((note) => note.id),
+      hermHeader,
+      cleanPaper,
       textProbeMissingPublicationNoteIds: textProbeMissingNotes.map((note) => note.id),
       paginationAuthority: enforcePaginationMarkers,
       noteMarkerPdf: routeNotes.length ? `note-markers/${id}.pdf` : null,
