@@ -130,7 +130,7 @@ assert.match(highlights,/\.gtip,\.btip,\.tooltip/,
  'glossary/tooltip prose must not be included in saved citations');
 assert.doesNotMatch(highlights,/const source=block\.textContent\|\|''/,
  'raw block textContent must never become the quoted text');
-assert.match(file,/next\.some\(x=>x\.id===record\.id\)/,
+assert.match(file,/next\.some\(x=>x\?\.id===record\.id\)/,
  'insertion success must be tested by identity, not list length');
 assert.doesNotMatch(file,/next\.length===old\.length/,
  'list length must not decide whether a quote was inserted');
@@ -201,7 +201,7 @@ assert.equal(unrelatedChange.notes().find(n=>n.id==='other-note').text,'Изме
  'unrelated notes must survive a guarded save');
 assert.match(file,/pendingNoteSnapshot=captureNoteSnapshot\(record\)/,
  'UI opening must capture the saved note version');
-assert.match(file,/saveLinkedNote\(record,value,pendingNoteSnapshot\)/,
+assert.match(file,/saveLinkedNote\(record,value,snapshot\)/,
  'UI save must pass the opening version');
 assert.match(file,/if\(!result.ok\)\{say\(result.message\);return\}/,
  'failed compare must leave the editor and draft intact');
@@ -289,6 +289,26 @@ const saveProduct=async(f,opened,context=null)=>{
  await run({preventDefault(){}});
  return{applied,draftText:textArea.value};
 };
+// Exercise the actual Product editor handler with a delayed storage owner.
+let releaseDraft,submitted=0,closedDrafts=0;
+const draftGate=new Promise(resolve=>{releaseDraft=resolve});
+const area={value:'first',readOnly:false};
+const handler=new Function('textArea','uid','currentTitle','location','mutateLibrary','NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','statusMessage','applySavedNote',
+ 'let draft=null;'+saveSource+'return {saveNote,setDraft:x=>{draft=x;textArea.readOnly=false;},getDraft:()=>draft};')(
+ area,()=> 'race-id',()=> 'Article',{origin:'https://example.test',pathname:'/a'},
+ async()=>{submitted++;await draftGate;return {ok:true};},nKey,qKey,500,()=>{},()=>{closedDrafts++;});
+const firstDraft={context:null,editing:null},secondDraft={context:null,editing:null};
+handler.setDraft(firstDraft);
+const inFlight=handler.saveNote({preventDefault(){}});
+assert.equal(area.readOnly,true);
+await handler.saveNote({preventDefault(){}});
+assert.equal(submitted,1,'double submit cannot create a duplicate note');
+handler.setDraft(secondDraft);area.value='new unsaved draft';
+releaseDraft();await inFlight;
+assert.equal(closedDrafts,0,'late result cannot close newer editor');
+assert.equal(handler.getDraft(),secondDraft);
+assert.equal(area.value,'new unsaved draft');
+assert.equal(area.readOnly,false);
 const num={id:42,text:'original',legacy:{keep:true}};
 const legacyProduct=makeFixture({notes:[num]});
 assert.equal((await saveProduct(legacyProduct,num)).applied,true);
@@ -435,4 +455,26 @@ assert.deepEqual(danglingQuoteCopy.writes,[]);
 const danglingNew=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:'fresh-id'}}});
 assert.equal((await saveProduct(danglingNew,null)).applied,false);
 assert.deepEqual(danglingNew.writes,[]);
+// W57 handlers themselves, not a rewritten simulation.
+const noteHandlerStart=file.indexOf("    section.querySelector('#npW57CancelNote').addEventListener");
+const noteHandlerEnd=file.indexOf('    let libraryFrame=',noteHandlerStart);
+const wHandlers=file.slice(noteHandlerStart,noteHandlerEnd);
+let releaseW, wCalls=0;
+const wGate=new Promise(resolve=>{releaseW=resolve});
+const actions={},wArea={value:'first',readOnly:false},wEditor={hidden:false},saveButton={disabled:false};
+const sectionMock={querySelector:key=>({get disabled(){return saveButton.disabled},set disabled(x){saveButton.disabled=x},addEventListener:(_,fn)=>{actions[key]=fn}})};
+const wSession=new Function('section','noteText','editor','entries','sameId','say','saveLinkedNote','repaint',
+ 'let pendingNoteId="A",pendingNoteSnapshot={id:"A"};const noteSaves=new WeakSet();'+wHandlers+
+ 'return {open:(id,snapshot)=>{pendingNoteId=id;pendingNoteSnapshot=snapshot;noteText.readOnly=false;editor.hidden=false;section.querySelector("#npW57SaveNote").disabled=false;},snapshot:()=>pendingNoteSnapshot};')(
+ sectionMock,wArea,wEditor,()=>[{id:'A'},{id:'B'}],(a,b)=>a===b,()=>{},async()=>{wCalls++;await wGate;return {ok:true,message:'saved'}},()=>{});
+const wPending=actions['#npW57SaveNote']();
+assert.equal(wArea.readOnly,true);
+await actions['#npW57SaveNote']();
+assert.equal(wCalls,1);
+const wNew={id:'B'};wSession.open('B',wNew);wArea.value='new W57 draft';
+releaseW();await wPending;
+assert.equal(wSession.snapshot(),wNew);
+assert.equal(wArea.value,'new W57 draft');
+assert.equal(wEditor.hidden,false);
+assert.equal(wArea.readOnly,false);
 console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');

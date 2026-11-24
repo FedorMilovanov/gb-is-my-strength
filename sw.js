@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v234-reader-exact-recovery-20261124';
+const CACHE_VERSION = 'gb-v235-reader-editor-session-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -36,7 +36,7 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=17f5d590',
+  '/js/highlights.js?v=779e1ce2',
   '/js/reader-library-storage.js?v=bb6b34c9',
   '/js/reader-library-presenter.js?v=95532247',
   '/js/reader-library-v3.js?v=7b71e298',

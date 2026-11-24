@@ -724,7 +724,8 @@
   }
   function showEditor(context = null, editing = null) {
     // The opened record itself is the version this editor may overwrite.
-    draft = { context, editing };
+    draft = { context, editing, saving:false };
+    textArea.readOnly = false;
     editor.hidden = false;
     panel.classList.add('is-editing');
     textArea.value = editing ? editing.text : '';
@@ -736,15 +737,19 @@
   }
   function hideEditor(focus = true) {
     if (!editor) return;
-    editor.hidden = true; draft = null;
+    editor.hidden = true; draft = null; textArea.readOnly = false;
     panel.classList.remove('is-editing');
     if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
   }
   async function saveNote(e) {
     e.preventDefault();
+    const activeDraft=draft;
+    if(!activeDraft||activeDraft.saving)return;
     const text = textArea.value.trim();
     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
-    const context = draft && draft.context, editing = draft && draft.editing;
+    activeDraft.saving=true;
+    textArea.readOnly=true;
+    const context=activeDraft.context, editing=activeDraft.editing;
     const created = {
       id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
       articleTitle: context && context.title || currentTitle(),
@@ -752,7 +757,8 @@
       savedAt: Date.now(),
     };
     const keys = !editing ? [NOTES_KEY, QUOTES_KEY] : [NOTES_KEY];
-    const result = await mutateLibrary(keys, stores => {
+    let result;
+    try { result = await mutateLibrary(keys, stores => {
       const current = stores[NOTES_KEY];
       if (!editing) {
         if (current.length >= LIMIT_NOTES) return { reason: 'capacity' };
@@ -772,7 +778,13 @@
       if (matches.length !== 1 || JSON.stringify(live) !== editing.recordSnapshot)
         return { reason: 'conflict', current };
       return { changes: { [NOTES_KEY]: current.map(x => x === live ? { ...x, text } : x) } };
-    });
+    }); } catch { result={ok:false}; }
+    finally {
+      activeDraft.saving=false;
+      if(draft===activeDraft)textArea.readOnly=false;
+    }
+    // A late save must never close or replace a newer editor.
+    if(draft!==activeDraft)return;
     if (result.conflict && editing) {
       const live = result.current.find(x => x && String(x.id) === String(editing.id));
       statusMessage(live
@@ -788,9 +800,7 @@
           : 'Не удалось безопасно сохранить заметку. Черновик остаётся в редакторе; повторите попытку.';
       statusMessage(message, true); return;
     }
-    // The commit itself is awaited (serialized), but the reader-visible result
-    // must land in the same turn as the click: callers and contracts check the
-    // rendered list right after clicking Save.
+    // Only the editor that initiated this completed save may be closed.
     applySavedNote(editing);
   }
   function applySavedNote(editing) {
