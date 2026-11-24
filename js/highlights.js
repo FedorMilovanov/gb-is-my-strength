@@ -229,7 +229,7 @@
   async function storageCall(method,...args) {
     try {
       if(window.GBLibraryStorage?.version!==1)
-        await import('/js/reader-library-storage.js?v=bb6b34c9');
+        await import('/js/reader-library-storage.js?v=74af6e6a');
       const owner=window.GBLibraryStorage;
       if(owner?.version!==1||typeof owner[method]!=='function')return libraryFailure('lock-unavailable');
       return await owner[method](...args);
@@ -374,7 +374,7 @@
     if (!presenterPromise) {
       presenterPromise = import('/js/reader-library-presenter.js?v=3acedc88')
         .then(async (module) => {
-          const researchModule = await import('/js/reader-library-v3.js?v=7b71e298');
+          const researchModule = await import('/js/reader-library-v3.js?v=d6fdb5cb');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
