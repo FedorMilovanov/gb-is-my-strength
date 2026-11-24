@@ -14,3 +14,12 @@ Hello, we are preparing a Russian-language documentary history of the G3 confere
 ## Draft to photographer (not sent)
 Subject: Editorial permission for G3 conference photographs
 Hello Mr. Heitschmidt, we are preparing a Russian-language documentary history of G3 Ministries for gospod-bog.ru. Your September 15, 2022 conference panel photograph (Flickr 52564663167) is especially valuable. Could we request a written editorial license for this image and potentially a small curated selection from your 2023 and February 2026 G3 collections? Please identify the photographs you own, dates/events, available resolution, required credit, fees and terms for web and downloadable article PDF reproduction. We would preserve the documentary context and use responsive resizing only, with any crop agreed in advance. No publication without your permission.
+
+## V13 — Church Works Media (draft, not sent)
+Official contact page read: https://churchworksmedia.com/contact/ ; general email connect@churchworksmedia.com. The 2020 report has seven captions; select at most three photos: preconference singing panel, Friday evening choir, and the wide auditorium (existing Research G3-M017). Ask for original filenames and photographer's license rather than assuming the article author owns them.
+
+Subject: Permission request — documentary photographs from G3 2020
+
+Hello, we are preparing a Russian-language documentary history of the G3 conference for gospod-bog.ru. May we request permission to reproduce up to three photographs from Chris Anderson's January 30, 2020 report, My Two Cents on the G3 Conference: the preconference panel on congregational singing, the Friday evening choir and the wide auditorium view? Please identify the photographer and copyright owner, and clarify whether web editorial publication and downloadable article PDFs are permitted, including resizing and an agreed crop. If originals are available, please let us know the credit, licensing terms and any fee. We will not publish the photos without clearance.
+
+V13 evidence: see media-candidates.json. 19 prior visually inspected derivatives, seven caption records, five inaccessible image leads; one of the seven maps to existing G3-M017. None is cleared. The Prata 2021 alternate audience derivative is deduplicated. This file does not alter Research authority or initiate outreach.
