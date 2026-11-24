@@ -1,6 +1,7 @@
 {
   "testedComponentHead": "a5d83b359b83065d6f7df532627bde0539e3e7fa",
-  "harnessGitBlob": "6f56a4d864a8744a78482e7f5965fe4334c3db1e",
+  "firstRunnerBlob": "6f56a4d864a8744a78482e7f5965fe4334c3db1e",
+  "correctedRunnerBlob": "7b8f95e4a6a15872ff506791a636a53a6fb13a9e",
   "environment": {
     "os": "Windows",
     "node": "22.23.4",
@@ -15,15 +16,33 @@
     "hashPass": 4,
     "printPass": 4,
     "crossPass": 4,
-    "total": 188
+    "total": 188,
+    "runner": "initial"
   },
   "firefox": {
-    "status": "INCOMPLETE",
-    "observation": "Engine process launched, did not return a completed scenario block. Diagnostic run requested; remote request not yet confirmed."
+    "geometryPass": 72,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "total": 188,
+    "runner": "corrected",
+    "exit": 0,
+    "failures": []
   },
   "webkit": {
-    "status": "NOT VERIFIED"
+    "geometryPass": 72,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "total": 188,
+    "runner": "corrected",
+    "exit": 0,
+    "failures": []
   },
+  "total": 564,
+  "diagnosis": "Initial Firefox noJS geometry stalled awaiting document.fonts.ready; bounded Node-side synchronous font-status polling fixed the harness. 8/8 probe and full Firefox rerun passed.",
   "hostedCI": "not complete",
   "componentChanges": 0
 }

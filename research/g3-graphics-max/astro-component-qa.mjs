@@ -8,12 +8,12 @@ import {createServer} from 'node:http';
 import {chromium,firefox,webkit} from 'playwright';
 const root=fileURLToPath(new URL('../../',import.meta.url));
 const at=(...p)=>path.join(root,...p);
-assert(process.env.G3_GRAPHICS_DISPOSABLE==='1'&&!existsSync(at('.git'))&&!existsSync(at('src/pages'))&&!existsSync(at('astro.config.mjs')),'disposable archive only');
+const reuse=process.env.G3_GRAPHICS_REUSE_BUILD==='1'; assert(process.env.G3_GRAPHICS_DISPOSABLE==='1'&&!existsSync(at('.git'))&&(reuse||(!existsSync(at('src/pages'))&&!existsSync(at('astro.config.mjs')))),'disposable archive only');
 const pkg=JSON.parse(readFileSync(at('package.json'),'utf8'));
 const astro=JSON.parse(readFileSync(at('node_modules/astro/package.json'),'utf8')).version;
 assert.equal(astro,pkg.devDependencies.astro);
 const out=process.env.G3_GRAPHICS_OUTPUT;assert(out&&!out.startsWith(root));
-mkdirSync(out,{recursive:true});mkdirSync(at('src/pages/journal/dossiers/g3/history'),{recursive:true});
+mkdirSync(out,{recursive:true});if(!reuse){mkdirSync(at('src/pages/journal/dossiers/g3/history'),{recursive:true});
 mkdirSync(at('public'),{recursive:true});cpSync(at('fonts'),at('public/fonts'),{recursive:true});
 writeFileSync(at('astro.config.mjs'),"import {defineConfig} from 'astro/config';import {fileURLToPath} from 'node:url';export default defineConfig({output:'static',vite:{resolve:{alias:{'@':fileURLToPath(new URL('./src/',import.meta.url))}}}});");
 const pageStart = '<!doctype html><html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>G3 component verification</title><link rel="stylesheet" href="/fonts/fonts.css"/><style is:global>body{margin:0}.witness-column{width:min(100% - 24px,740px);margin:auto}.bibliography-item{padding:1rem 0}.witness-anchor{margin:0;font-size:12px}@media print{.witness-column{width:100%}}</style></head><body><main class="journal-edition" data-journal-source-navigation><div class="witness-column">';
@@ -44,17 +44,17 @@ const crisis = [
 pageEnd].join('\n');
 writeFileSync(at('src/pages/journal/dossiers/g3/history/index.astro'),history);
 writeFileSync(at('src/pages/journal/dossiers/g3/index.astro'),crisis);
-const b=spawnSync(process.execPath,[at('scripts/astro-cli.mjs'),'build'],{cwd:root,stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});assert.equal(b.status,0);
+const b=spawnSync(process.execPath,[at('scripts/astro-cli.mjs'),'build'],{cwd:root,stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});assert.equal(b.status,0);}
 const dist=at('dist');const mime={'.html':'text/html; charset=utf-8','.js':'application/javascript','.css':'text/css','.woff2':'font/woff2'};
 const server=createServer((req,res)=>{let f=path.resolve(dist,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(existsSync(f)&&statSync(f).isDirectory())f=path.join(f,'index.html');if(!f.startsWith(dist+path.sep)||!existsSync(f)||!statSync(f).isFile()){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':mime[path.extname(f)]||'application/octet-stream'});res.end(readFileSync(f));});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base='http://127.0.0.1:'+server.address().port+'/journal/dossiers/g3/';
 const reports=[], failures=[];
-const widths=[320,390,580,680,704,740,850,1440,1920];
-const check=(ok,message)=>{if(!ok)throw Error(message)};
-async function geometry(page,which){
-  return page.evaluate(async(which)=>{
-    await document.fonts.ready;
+const widths=process.env.G3_GRAPHICS_WIDTHS?process.env.G3_GRAPHICS_WIDTHS.split(',').map(Number):[320,390,580,680,704,740,850,1440,1920];
+const check=(ok,message)=>{if(!ok)throw Error(message)}; const deadline=(p,label,ms=12000)=>{let timer;return Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIMEOUT '+label)),ms)})]).finally(()=>clearTimeout(timer))};
+async function waitFonts(page){for(let i=0;i<40;i++){const status=await deadline(page.evaluate(()=>({status:document.fonts.status,loaded:[...document.fonts].filter(f=>f.status==='loaded').length})),'font status',3000);if(status.status==='loaded'&&status.loaded>0)return;await new Promise(r=>setTimeout(r,125))}throw Error('Fonts did not settle')}; async function geometry(page,which){ await waitFonts(page);
+  return page.evaluate((which)=>{
+
     const fail=[],components=[...document.querySelectorAll('.g3g')];
     if(document.documentElement.scrollWidth>innerWidth+1)fail.push('page overflow');
     const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);if(ids.length!==new Set(ids).size)fail.push('duplicate IDs');
@@ -72,7 +72,7 @@ async function geometry(page,which){
   },which);
 }
 async function roundTrips(page,js,which){
-  if(which==='history')await page.locator('.g3g-chron-details summary').click();
+  if(which==='history'&&!(await page.locator('.g3g-chron-details').evaluate(e=>e.open)))await page.locator('.g3g-chron-details summary').click();
   const anchors=await page.locator('.g3g a[data-journal-citation]').evaluateAll(as=>as.map(a=>({id:a.id,hash:a.hash})));
   for(const a of anchors){
     const link=page.locator('#'+a.id);await link.focus();await page.keyboard.press('Enter');
@@ -91,13 +91,13 @@ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
   const browser=await type.launch({headless:true});
   try{
   for(const width of widths)for(const dark of [false,true])for(const js of [false,true]){
-    const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+    const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});const page=await ctx.newPage();page.setDefaultTimeout(8000);page.setDefaultNavigationTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(String(e)));
     try{
       for(const which of ['history','crisis']){
         try{
-          const url=base+(which==='history'?'history/':'');
+          const url=base+(which==='history'?'history/':''); console.log('SCENARIO',engine,width,dark,js,which);
           await page.goto(url);await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
-          const g=await geometry(page,which);check(!g.fail.length,JSON.stringify(g));check(g.fonts.length>0,'no canonical fonts loaded');geometryPass++;
+          console.log('GEOMETRY');const g=await deadline(geometry(page,which),'geometry');check(!g.fail.length,JSON.stringify(g));check(g.fonts.length>0,'no canonical fonts loaded');geometryPass++;
           if((width===390||width===850)&&!dark){
             if(which==='history'){
               await page.goto(url+'#cite-g3g-history-6');
@@ -105,14 +105,14 @@ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
               check(revealed,'closed disclosure hash not revealed');hashPass++;
               await page.goto(url);await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
             }
-            returnPass+=await roundTrips(page,js,which);
+            console.log('ROUNDTRIPS');returnPass+=await deadline(roundTrips(page,js,which),'roundTrips',45000);
             if(which==='crisis'){
               const cross=page.locator('#cite-g3g-ecosystem-object-1-1');await cross.click();
               check(await page.evaluate(()=>location.pathname.endsWith('/history/')&&location.hash==='#history-source-challies'),'cross route source');crossPass++;
             }
           }
           if((width===390||width===850)&&js){
-            await page.goto(url);await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);await page.evaluate(()=>document.fonts.ready);
+            await page.goto(url);await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);await deadline(page.evaluate(()=>document.fonts.ready),'fonts');
             for(const [i,c] of (await page.locator('.g3g').all()).entries())await c.screenshot({path:path.join(out,engine+'-'+which+'-'+i+'-'+width+'-'+(dark?'dark':'light')+'.png')});
             if(width===850){
               await page.emulateMedia({media:'print'});
