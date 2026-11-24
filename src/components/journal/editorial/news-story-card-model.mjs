@@ -8,10 +8,32 @@ function date(value) {
   const y=Number(m[1]), month=Number(m[2]), day=Number(m[3]);
   return month>=1 && month<=12 && day>=1 && day<=new Date(Date.UTC(y,month,0)).getUTCDate();
 }
-function srcset(value) {
-  return typeof value === 'string' && value.split(',').every(part => {
+function srcset(value, extension) {
+  if (typeof value !== 'string') return false;
+  const widths = new Set();
+  return value.split(',').every(part => {
     const m=part.trim().match(/^(\S+) ([1-9]\d*)w$/);
-    return !!m && image.test(m[1]);
+    if (!m || !image.test(m[1]) || !m[1].toLowerCase().endsWith('.'+extension)) return false;
+    const w=Number(m[2]);
+    if (!Number.isSafeInteger(w) || widths.has(w)) return false;
+    widths.add(w);
+    return true;
+  });
+}
+// Deliberately limited editorial sizes vocabulary, not a general CSS parser.
+// The final fallback is unconditional; earlier clauses descend by min-width.
+function sizes(value) {
+  if (!text(value)) return false;
+  const clauses=value.split(',').map(x=>x.trim());
+  const length=/^(?:[1-9]\d*(?:\.\d+)?(?:px|vw)|calc\([1-9]\d*(?:\.\d+)?vw - [1-9]\d*(?:\.\d+)?px\))$/;
+  let last=Infinity;
+  return clauses.every((clause,i)=>{
+    if(i===clauses.length-1) return length.test(clause);
+    const m=clause.match(/^\(min-width: ([1-9]\d*)px\) (.+)$/);
+    if(!m || !length.test(m[2])) return false;
+    const w=Number(m[1]);
+    if(!Number.isSafeInteger(w)||w>=last) return false;
+    last=w; return true;
   });
 }
 /** @param {any} card */
@@ -25,7 +47,7 @@ export function assertNewsStoryCard(card) {
   }
   const m=card.media;
   if (m !== undefined) {
-    if (!m || !text(m.alt) || !text(m.caption) || !text(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isInteger(m.width) || !Number.isInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
-    for (const key of ['avifSrcset','webpSrcset']) if (m[key] !== undefined && !srcset(m[key])) throw new Error('Invalid local responsive image list');
+    if (!m || !text(m.alt) || !text(m.caption) || !sizes(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isInteger(m.width) || !Number.isInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
+    for (const key of ['avifSrcset','webpSrcset']) if (m[key] !== undefined && !srcset(m[key], key === 'avifSrcset' ? 'avif' : 'webp')) throw new Error('Invalid local responsive image list');
   }
 }

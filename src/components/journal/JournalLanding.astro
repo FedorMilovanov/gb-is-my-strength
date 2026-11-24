@@ -1,9 +1,10 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
+import { G3_HISTORY_METADATA as history } from '@/data/journal/g3HistoryMetadata';
 import { G3_PRODUCT_METADATA as g3 } from '@/data/journal/g3ProductMetadata';
 import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
 import { G3_SOURCE_BIBLIOGRAPHY } from '@/data/journal/g3SourceBibliography';
-const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px) / 2), calc(100vw - 40px)';
+const sizes = '(min-width: 1280px) 790px, (min-width: 1024px) calc(67.74vw - 78.58px), (min-width: 851px) calc(67.74vw - 62.32px), (min-width: 691px) calc(100vw - 56px), calc(100vw - 40px)';
 ---
 <JournalEditorialShell kind="journal" backHref="/">
   <main class="journal-landing" id="main-content" tabindex="-1">
@@ -20,14 +21,8 @@ const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px
         <p>Руководство, финансы,<br />судьба служения</p>
       </div>
       <a class="lead-card" href="/journal/dossiers/g3/">
-        <div class="lead-card-copy">
-          <p class="lead-label">Досье · 2025–2026 · {g3.readingTimeMinutes} мин чтения</p>
-          <h3>{g3.title}</h3>
-          <p>Отставка Джоша Бьюса, попытка перестроить работу и новый конфликт.
-            Разбираем заявления руководства, финансовые документы и открытые вопросы
-            о конференциях, издательстве и церковной сети.</p>
-          <span class="read-link">Читать досье</span>
-        </div>
+        <p class="lead-label">Досье · 2025–2026 · {g3.readingTimeMinutes} мин чтения</p>
+        <h3>{g3.title}</h3>
         <div class="lead-context">
           <picture>
             <source type="image/avif" srcset={cover.avifSrcset} sizes={sizes} />
@@ -37,14 +32,19 @@ const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px
           </picture>
           <p class="lead-context-caption"><span>Редакционная иллюстрация</span><span>{G3_SOURCE_BIBLIOGRAPHY.length} источник внутри</span></p>
         </div>
+        <div class="lead-card-copy">
+          <p>Отставка Джоша Бьюса, попытка перестроить работу и новый конфликт.
+            Разбираем заявления руководства, финансовые документы и открытые вопросы
+            о конференциях, издательстве и церковной сети.</p>
+          <span class="read-link">Читать досье</span>
+        </div>
       </a>
+      <div class="news-side-column">
       <div class="je-next-story" data-pagefind-ignore>
-        <p>История G3 · 2011–2024 · 16 минут чтения</p>
-        <a href="/journal/dossiers/g3/history/">Как возникли конференции G3 и во что выросло служение <span aria-hidden="true">↗</span></a>
+        <p>История G3 · 2011–2024 · {history.readingTimeMinutes} минут чтения</p>
+        <h3><a href="/journal/dossiers/g3/history/">Как возникли конференции G3 и во что выросло служение <span aria-hidden="true">↗</span></a></h3>
+        <p class="news-history-deck">{history.description}</p>
       </div>
-    </section>
-
-    <div class="journal-editorial-grid">
       <section aria-labelledby="directions">
         <p class="eyebrow">О чём мы пишем</p>
         <h2 id="directions">Событие нуждается в контексте</h2>
@@ -56,6 +56,10 @@ const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px
             Мы не заменяем их пустыми рубриками и не выдаём незавершённое исследование за публикацию.</p>
         </div>
       </section>
+      </div>
+    </section>
+
+    <div class="journal-editorial-grid news-method-row">
       <section class="journal-method" aria-labelledby="method-title">
         <p class="eyebrow">Редакционный принцип</p>
         <h2 id="method-title" tabindex="-1">Источник — ещё не приговор</h2>
@@ -74,3 +78,83 @@ const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px
     <span>Автор-редактор: Фёдор Милованов</span>
   </footer>
 </JournalEditorialShell>
+
+<!-- Landing-only rules; shared Journal CSS remains unchanged. -->
+<style is:global>
+@media screen {
+.journal-edition .journal-landing .journal-hero {padding-bottom:clamp(24px,3vw,36px);align-items:end}
+.journal-edition .journal-landing .journal-hero h1 {font-size:clamp(58px,7vw,100px)}
+.journal-edition .journal-landing .journal-featured {display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:24px 36px;padding-block:24px 36px}
+.journal-edition .journal-landing .journal-featured .section-heading {grid-column:1/-1;margin:0;padding-bottom:12px;border-bottom:1px solid var(--je-rule)}
+.journal-edition .journal-landing .lead-card {display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:0;align-content:start}
+.journal-edition .journal-landing .lead-card-copy {display:block;padding:0;min-width:0}
+.journal-edition .journal-landing .lead-label {grid-row:1;margin:0}
+.journal-edition .journal-landing .lead-card h3 {grid-row:2;max-width:29ch;font-size:clamp(30px,3.2vw,42px);margin:0}
+.journal-edition .journal-landing .lead-context {grid-row:3;order:0}
+.journal-edition .journal-landing .lead-card-copy > p:not(.lead-label) {max-width:66ch;margin:0 0 12px}
+.journal-edition .journal-landing .read-link {display:inline-flex;align-items:center;min-height:44px}
+.journal-edition .journal-landing .lead-context-caption {flex-wrap:wrap;gap:4px 12px}
+.journal-edition .journal-landing .je-next-story {margin:0;padding:0 0 0 24px;border-block:0;border-inline-start:1px solid var(--je-rule);min-width:0;align-self:stretch}
+.journal-edition .journal-landing .je-next-story h3 {margin:0;font-size:inherit}
+.journal-edition .journal-landing .je-next-story a:focus-visible {outline-offset:4px}
+.journal-edition .journal-landing .je-next-story a {display:block;font-size:clamp(26px,2.7vw,38px);line-height:1.22;text-decoration:none;text-wrap:pretty}
+.journal-edition .journal-landing .je-next-story a:hover {text-decoration:underline;text-decoration-color:var(--je-gold)}
+.journal-edition .journal-landing .je-next-story .news-history-deck {margin:18px 0;color:var(--je-muted);font:16px/1.72 var(--je-body);letter-spacing:normal;text-transform:none}
+.journal-edition .journal-landing .journal-editorial-grid {gap:clamp(24px,4vw,60px)}
+@media(max-width:850px){
+.journal-edition .journal-landing .journal-featured {grid-template-columns:minmax(0,1fr);gap:22px}
+.journal-edition .journal-landing .je-next-story {border-inline-start:0;border-block-start:1px solid var(--je-rule);padding:22px 0 0}
+.journal-edition .journal-landing .lead-card h3 {font-size:clamp(28px,5.4vw,39px)}
+}
+@media(max-width:690px){
+.journal-edition .journal-landing .journal-hero h1 {font-size:clamp(52px,16vw,76px)}
+.journal-edition .journal-landing .section-heading {gap:12px}
+.journal-edition .journal-landing .section-heading h2 {font-size:clamp(26px,7.4vw,34px)}
+.journal-edition .journal-landing .journal-featured .eyebrow {max-inline-size:none}
+}
+}
+@media print {
+.journal-edition .journal-landing .journal-hero {display:block;padding:0 0 14pt}
+.journal-edition .journal-landing .journal-hero h1 {font-size:38pt;margin:0 0 8pt}
+.journal-edition .journal-landing .journal-lead {font-size:11pt;line-height:1.45}
+.journal-edition .journal-landing .journal-featured {display:block;padding:12pt 0}
+.journal-edition .journal-landing .section-heading {margin:0 0 10pt}
+.journal-edition .journal-landing .section-heading h2 {font-size:20pt}
+.journal-edition .journal-landing .lead-card {display:block;padding:0;break-inside:auto}
+.journal-edition .journal-landing .lead-label {margin:0 0 6pt}
+.journal-edition .journal-landing .lead-card h3 {font-size:22pt;margin:0 0 10pt}
+.journal-edition .journal-landing .lead-context {order:0;max-width:290pt;margin:0 0 8pt;break-inside:avoid}
+.journal-edition .journal-landing .lead-context-caption {flex-wrap:wrap}
+.journal-edition .journal-landing .lead-card-copy {padding:0}
+.journal-edition .journal-landing .lead-card-copy > p {font-size:11pt;line-height:1.45;margin:0 0 6pt}
+.journal-edition .journal-landing .read-link {display:none}
+.journal-edition .journal-landing .je-next-story {margin:12pt 0 0;padding:10pt 0;break-inside:avoid}
+.journal-edition .journal-landing .je-next-story h3 {margin:0}
+.journal-edition .journal-landing .je-next-story a {font-size:18pt}
+.journal-edition .journal-landing .je-next-story .news-history-deck {font:11pt/1.45 var(--je-body);text-transform:none;letter-spacing:normal;color:var(--je-ink);margin:6pt 0 0}
+.journal-edition .journal-landing .journal-editorial-grid {padding-top:12pt}
+.journal-edition .journal-landing .journal-editorial-grid h2 {font-size:19pt;margin:0 0 8pt}
+.journal-edition .journal-landing .journal-prose p {font-size:11pt;line-height:1.45;margin:0 0 6pt}
+}
+@media screen {
+.journal-edition .journal-landing .lead-card h3,
+.journal-edition .journal-landing .je-next-story h3 {hyphens:none;text-wrap:balance}
+.journal-edition .journal-landing .news-side-column {min-width:0;display:flex;flex-direction:column;gap:22px;border-inline-start:1px solid var(--je-rule);padding-inline-start:24px}
+.journal-edition .journal-landing .news-side-column .je-next-story {border:0;padding:0;align-self:auto}
+.journal-edition .journal-landing .news-side-column section {border-block-start:1px solid var(--je-rule);padding-block-start:22px}
+.journal-edition .journal-landing .news-side-column section h2 {font-size:clamp(21px,2vw,29px);line-height:1.3;margin:0 0 12px;hyphens:none;text-wrap:balance}
+.journal-edition .journal-landing .news-side-column .journal-prose p {font-size:15px;line-height:1.65;margin:0 0 10px}
+.journal-edition .journal-landing .news-method-row {display:block}
+.journal-edition .journal-landing .news-method-row .journal-method {border:0;padding:0}
+.journal-edition .journal-landing .news-method-row .journal-prose {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 48px}
+@media(max-width:850px){
+.journal-edition .journal-landing .news-side-column {padding:20px 0 0;border-inline-start:0;border-block-start:1px solid var(--je-rule)}
+.journal-edition .journal-landing .news-method-row .journal-prose {display:block}
+}
+}
+@media print {
+.journal-edition .journal-landing .news-side-column section {break-inside:avoid;padding-block:10pt}
+.journal-edition .journal-landing .news-side-column section h2 {font-size:19pt;margin:0 0 8pt}
+.journal-edition .journal-landing .news-method-row .journal-method {padding:0;border:0}
+}
+</style>

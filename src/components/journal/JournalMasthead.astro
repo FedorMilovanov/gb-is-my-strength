@@ -17,7 +17,7 @@ const { active = 'journal' } = Astro.props;
     </div>
     <p class="je-masthead__descriptor">Церковная жизнь.<br />Документы. Контекст.</p>
     <div class="je-masthead__actions" role="group" aria-label="Поиск и оформление">
-      <button class="je-masthead__button" type="button" data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
+      <button class="je-masthead__button" type="button" hidden data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
       </button>
       <button class="je-masthead__button je-masthead__button--theme" type="button" data-journal-theme aria-label="Переключить тему" aria-pressed="false" hidden>
@@ -65,12 +65,15 @@ const { active = 'journal' } = Astro.props;
   const masthead = document.querySelector<HTMLElement>('.je-masthead');
   if (masthead && !masthead.dataset.journalShortcutBound) {
     masthead.dataset.journalShortcutBound = 'true';
+    // SSR exposes no inert search control. Reveal only when the existing owner is ready.
+    const searchTrigger = masthead.querySelector<HTMLButtonElement>('[data-action="open-search"]');
+    if (searchTrigger && journalWindow.GBSearchBootstrap?.open) searchTrigger.hidden = false;
     document.addEventListener('keydown', (event) => {
       if (event.defaultPrevented || event.repeat || event.altKey || event.shiftKey ||
           !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
       const search = journalWindow.GBSearchBootstrap;
       const trigger = masthead.querySelector<HTMLButtonElement>('[data-action="open-search"]');
-      if (!search || !trigger) return;
+      if (!search || !trigger || trigger.hidden) return;
       event.preventDefault();
       const opener = document.activeElement !== document.body ? document.activeElement : trigger;
       void search.open(trigger.dataset.searchSrc, opener || trigger);
@@ -121,14 +124,18 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__mark { width: 32px; height: 24px; }
     .je-masthead__publication { font-size: 22px; }
     .je-masthead__publisher { font-size: 11px; }
-    .je-masthead__navigation { padding-inline: 20px; gap: 14px; }
-    .je-masthead__nav { justify-content: space-between; gap: 8px; }
-    .je-masthead__nav > a { min-height: 44px; font-size: 10px; letter-spacing: 0; text-transform: none; }
-    .je-masthead__home { font-size: 10px; }
+    .je-masthead__navigation { padding-inline: 20px; gap: 10px; }
+    .je-masthead__nav { justify-content: space-between; gap: 6px; }
+    .je-masthead__nav > a { min-height: 44px; font-size: 12px; letter-spacing: 0; text-transform: none; }
+    .je-masthead__home { font-size: 12px; }
     .je-masthead__actions { gap: 4px; min-width: 92px; }
     .je-masthead__button { width: 44px; height: 44px; }
   }
-  @media (max-width: 359px) { .je-masthead__mark { display: none; } }
+  @media (max-width: 359px) {
+    .je-masthead__mark { display: none; }
+    .je-masthead__navigation { padding-inline: 16px; gap: 6px; }
+    .je-masthead__nav { gap: 4px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .je-masthead__button--theme .je-masthead__theme-icon { transition: none; }
     .je-masthead__button--theme:hover .je-masthead__theme-icon { transform: translate(-50%, -50%); }
