@@ -38,3 +38,27 @@
 @container (max-width:420px){.g3-matrix .gm-filter label{flex-basis:100%}}
 @media(forced-colors:active){.g3-matrix .gm-dot{forced-color-adjust:none;background:LinkText;border-color:LinkText}.g3-matrix .gm-cell a{border:1px solid LinkText}}
 @media print{.g3-matrix{container-type:normal}.g3-matrix .gm-filter,.g3-matrix .gm-status{display:none!important}.g3-matrix .gm-row[hidden]{display:grid!important}.g3-matrix .gm-row{break-inside:avoid}.g3-matrix .gm-cell a,.g3-matrix .gm-cell{min-height:28px}.g3-matrix .gm-head{break-after:avoid}.g3-matrix .gm-head,.g3-matrix .gm-row{grid-template-columns:minmax(8rem,1.8fr) repeat(var(--gm-year-count),minmax(2rem,1fr))}.g3-matrix .gm-dot{background:#000!important;color:#000;border:1px solid #000;print-color-adjust:exact}}
+
+/* Keep the selected 26-name / nine-year matrix readable as one A4 block.
+   No screen changes; force dark-theme paper to the same ink and paper. */
+@media print {
+  .g3-matrix, html.dark .g3-matrix {
+    --je-ink:#111; --je-muted:#444; --je-gold:#333; --je-rule:#aaa;
+    color:#111; break-inside:avoid; page-break-inside:avoid; margin:12pt 0;
+  }
+  .journal-edition .prose .g3-matrix h2, .g3-matrix h2 {
+    font-size:18pt; margin:0 0 5pt; break-after:avoid;
+  }
+  .g3-matrix .gm-kicker { font-size:8pt; margin:0 0 4pt; break-after:avoid; }
+  .g3-matrix .gm-intro { font-size:9pt; line-height:1.4; margin:0 0 7pt; break-after:avoid; }
+  .g3-matrix .gm-head, .g3-matrix .gm-row {
+    grid-template-columns:minmax(8rem,1.8fr) repeat(var(--gm-year-count),minmax(1.8rem,1fr));
+  }
+  .g3-matrix .gm-head { padding:3pt 0; font-size:8pt; }
+  .g3-matrix .gm-row { padding:1pt 0; }
+  .g3-matrix .gm-cell, .g3-matrix .gm-cell a { min-height:18px; }
+  .g3-matrix .gm-cell a { width:100%; }
+  .g3-matrix .gm-name { font-size:9pt; line-height:1.2; }
+  .g3-matrix .gm-dot { width:8px; height:8px; }
+  .g3-matrix .gm-foot { font-size:8pt; margin:5pt 0 0; }
+}

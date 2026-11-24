@@ -66,6 +66,8 @@ writeFileSync(at('src/pages/journal/dossiers/g3/history/index.astro'),history);
 writeFileSync(at('src/pages/journal/dossiers/g3/index.astro'),crisis);
 const cli=(...args)=>spawnSync(process.execPath,[at('scripts/astro-cli.mjs'),...args],{cwd:root,stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});
 const mapOnly=process.env.G3_VISUAL_MAP_ONLY==='1';
+const printOnly=process.env.G3_VISUAL_PRINT_ONLY==='1';
+assert(!printOnly||adopted,'print-only witness requires adopted projection');
 const typecheck=mapOnly?{status:0,diagnosticOnly:true}:cli('check');
 console.log('TYPECHECK_EXIT',mapOnly?'not run: map diagnostic only':typecheck.status);
 assert.equal(cli('build').status,0,'joint Astro build failed');
@@ -83,15 +85,17 @@ const origin='http://127.0.0.1:'+server.address().port;
 const routes=['/journal/dossiers/g3/history/','/journal/dossiers/g3/'];
 const issues=[],reports=[];
 const note=(where,kind,detail)=>issues.push({where,kind,detail});
-const widths=mapOnly?[740]:process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
+const widths=(mapOnly||printOnly)?[740]:process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
 try{
  for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
+  if(printOnly&&engine!=='chromium')continue;
   if(process.env.G3_VISUAL_ENGINE&&process.env.G3_VISUAL_ENGINE!==engine)continue;
   const browser=await browserType.launch();
   let geometry=0,roundTrips=0,deepLinks=0,printCases=0;
   try{
    for(const route of routes)for(const width of widths)for(const dark of [false,true])for(const js of [false,true]){
     if(mapOnly&&(route!==routes[0]||dark||!js))continue;
+    if(printOnly&&!js)continue;
     const where={engine,route,width,dark,js};
     const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});
     const page=await ctx.newPage(), errors=[];page.setDefaultTimeout(6000);
@@ -135,7 +139,7 @@ try{
       if(!mapOnly&&(width===390||width===740)){
        if(route===routes[0])await page.locator('.g3g-chron-details summary').click();
        const links=await page.locator('.g3g a[data-journal-citation],.g3-annual-finance a[data-journal-citation],.gm-row a[data-journal-citation]').evaluateAll(es=>es.map(a=>({id:a.id,hash:a.hash})));
-       const selected=width===740&&!dark&&js?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002'||a.id==='cite-finance-annual-G3-S028'||(!dark&&adopted&&/cite-g3-matrix-.*-(2018|2021)$/.test(a.id)));
+       const selected=width===740&&!dark&&js&&!printOnly?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002'||a.id==='cite-finance-annual-G3-S028'||(!dark&&adopted&&/cite-g3-matrix-.*-(2018|2021)$/.test(a.id)));
        const expectedPairs=route===routes[0]&&adopted&&!dark;
        if(expectedPairs&&selected.filter(a=>/cite-g3-matrix-.*-(2018|2021)$/.test(a.id)).length!==23)note(where,'expanded-year-selection',selected.length);
        for(const a of selected){
@@ -173,6 +177,7 @@ try{
         const dir=at('pdf-evidence');mkdirSync(dir,{recursive:true});
         const filename=(route===routes[0]?'history':'finance')+'-'+(dark?'dark':'light')+'.pdf';
         await page.pdf({path:path.join(dir,filename),format:'A4',printBackground:true,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'}});
+        if(printOnly){const component=page.locator(route===routes[0]?'.g3-matrix':'.g3-annual-finance');await component.screenshot({path:path.join(dir,filename.replace('.pdf','.png'))});}
        }
        if(errors.length)note(where,'pageerror',errors);
       }
