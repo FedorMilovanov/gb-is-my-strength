@@ -19,6 +19,8 @@
  const paperMode=new URLSearchParams(location.search).get('paper');
  document.body.classList.add(paperMode==='book'?'np-u-w40-book':'np-u-w40-space');
  const root=document.createElement('div');root.id='npUniversalDemo';
+ // The article stays in its original main. This sibling contains only reader UI.
+ root.dataset.printPolicy='exclude';
  const $=(q,s=document)=>s.querySelector(q);
  const $$=(q,s=document)=>[...s.querySelectorAll(q)];
  const escape=s=>String(s??'').replace(/[&<>"']/g,t=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[t]));
@@ -266,9 +268,11 @@
   }
  }
  positionFontPanel();
+ syncFontDialog(false);
  window.addEventListener('resize',()=>{
   if(!fontPanel.hidden)setFontOpen(false);
   positionFontPanel();
+  syncFontDialog(false);
  },{passive:true});
  function setFontOpen(open){
   fontPanel.hidden=!open;
@@ -1234,10 +1238,12 @@
   const short=document.createElement('details');
   short.className='np-u-central-overview';
   short.dataset.npUCentralOverview='true';
+  short.dataset.printPolicy='exclude';
   short.innerHTML='<summary><span>Коротко</span><span class="np-u-central-meta">'+count+' '+(countNoun==='тезис'?plural(count,'тезис','тезиса','тезисов'):plural(count,'фрагмент','фрагмента','фрагментов'))+' <span class="np-u-central-chevron" aria-hidden="true">›</span></span></summary>'+
    '<ol class="np-u-central-points">'+points.map(t=>'<li>'+escape(t)+'</li>').join('')+'</ol>';
   const full=document.createElement('nav');
   full.className='np-u-central-contents';
+  full.dataset.printPolicy='exclude';
   full.setAttribute('aria-label','Полное оглавление материала');
   // W47 full source TOC: resolve real heading IDs before making links.
   // Some published h3 headings have no id, while their source-derived
