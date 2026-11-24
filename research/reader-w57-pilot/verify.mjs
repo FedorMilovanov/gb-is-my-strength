@@ -126,5 +126,9 @@ assert.ok(deliverySource.includes('(min-width:1121px)'), 'W57 styles must never 
 assert.ok(deliverySource.includes('window.location.reload()'), 'desktop/mobile mode crossing must rebuild the original Product DOM');
 assert.match(shell, /127\.0\.0\.1/, 'preview must bind to localhost');
 assert.match(shell, /No production mutation/, 'draft-only safety banner required');
+const astroIntegration=readFileSync(join(root,'../../scripts/astro-reader-desktop.mjs'),'utf8');
+assert.match(astroIntegration, /'astro:build:done'/, 'one build-owned static desktop publisher');
+assert.match(astroIntegration, /projectDesktopDist\(/, 'canonical projector must be invoked by Astro');
+await import(new URL('../../scripts/reader-desktop-delivery-regression-test.js', import.meta.url));
 await import(new URL('../../scripts/reader-w57-annotations-regression-test.mjs', import.meta.url));
 console.log('Reader W57 source/manifests/axis/pilot and annotation contracts: PASS (12 assets)');

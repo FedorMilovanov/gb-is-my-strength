@@ -96,10 +96,15 @@ assert.match(mobileBar, /initGillAnalyticsOpticalAlignment\(\)/, 'painted Analyt
 assert.match(mobileBar, /const targetCentre = \(home\.right \+ play\.left\) \/ 2/, 'optical centre uses actual Home and Play ink edges');
 assert.match(mobileBar, /--gb-analytics-ink-shift/, 'optical shift must affect ink, not touch target');
 const localPreview = fs.readFileSync(path.join(ROOT, 'research/reader-w57-pilot/preview.py'), 'utf8');
-assert.match(localPreview, /parse_qs\(req\.query\)\.get\("reader-pilot"\)!=\["0"\]/,
-  'ordinary localhost Reader URL must default to W57 desktop; native is an explicit opt-out');
-assert.match(localPreview, /matchMedia\('\(min-width:1121px\)'\)/,
-  'local W57 bootstrap must retain the native mobile reader');
+const { buildDesktopReaderContract } = require('./lib/reader-desktop-contract');
+const { createDesktopDelivery, MEDIA } = require('./lib/reader-desktop-delivery');
+const desktopPlan = createDesktopDelivery(buildDesktopReaderContract()).headFor('/articles/dzhon-gill-chast-1-chelovek/');
+assert.ok(desktopPlan, 'ordinary registered Gill reading URL must have canonical desktop delivery');
+assert.equal(MEDIA, '(min-width:1121px)', 'native mobile boundary');
+assert.ok(desktopPlan.links.every(link => link.media === 'not all'), 'initial static HTML must be native until desktop gate');
+assert.match(desktopPlan.bootstrap.code, /getAll\('reader-pilot'\)/, 'native comparison is an explicit opt-out');
+assert.match(desktopPlan.bootstrap.code, /window\.matchMedia\('\(min-width:1121px\)'\)/, 'bootstrap must retain native mobile');
+assert.doesNotMatch(localPreview, /def do_GET|html\.replace|__reader_w57__/, 'local preview serves canonical static dist without injection');
 assert.match(mobileBar, /<ReaderMobileActions engine="series" settingsPlacement="none"/, 'Gill bottom bar must reserve space for the current chapter, not duplicate Settings');
 assert.match(actionsSource, /settingsPlacement === 'bottom' && <ReaderMobileSettingsButton engine=\{engine\}/, 'other mobile Reader engines must retain their bottom settings');
 assert.match(settingsTrigger, /id=\{isSeries\?'mobSettingsBtn':'hmSettingsBtn'\}/, 'single settings control must preserve original owner IDs');
