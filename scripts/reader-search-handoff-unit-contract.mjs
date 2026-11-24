@@ -141,7 +141,7 @@ function harness({
     getComputedStyle() { return { display: 'block', visibility: 'visible' }; },
   };
   vm.runInNewContext(source, context, { filename: 'reader-search-handoff.js' });
-  return { storage, document, documentListeners, windowListeners, events, selection, ranges, heading, exactBlock, location, input, selectedItem, clickedItem, palette };
+  return { storage, document, documentListeners, windowListeners, events, selection, ranges, heading, exactBlock, location, input, selectedItem, clickedItem, palette, prepare: window.GBReaderSearchHandoff.prepare };
 }
 
 function entry(path = '/articles/gill-ii/', extra = {}) {
@@ -201,54 +201,75 @@ function entry(path = '/articles/gill-ii/', extra = {}) {
   assert.equal(fallback?.detail?.fallbackFocused, false);
 }
 
-// Keyboard activation records the selected preview's same-origin destination;
-// the W57 pilot state stays attached to the exact result handoff.
+// The actual result URL is the authority, even if a different preview is
+// selected. W57's presentation is included before the one navigation.
 {
-  const state = harness({ search: '?reader-pilot=1&paper=space&panel=open' });
-  state.document.activeElement = state.input;
-  state.documentListeners.get('keydown')({
-    key: 'Enter', defaultPrevented: false,
-    ctrlKey: false, metaKey: false, shiftKey: false, altKey: false,
-  });
-  const captured = JSON.parse(state.storage.get(KEY));
-  assert.equal(captured.query, 'беспрецедентный');
-  assert.equal(captured.path, '/articles/gill-ii/');
-  assert.equal(captured.pilot, true);
-  assert.equal(captured.paper, 'space');
-  assert.equal(captured.panel, 'open');
+  const state = harness({ search: '?reader-pilot=1&paper=space&panel=open', selectedHref:'/articles/other/' });
+  const href=state.prepare('/articles/gill-ii/?source=test#literal', 'беспрецедентный');
+  const url=new URL(href);
+  assert.equal(url.pathname,'/articles/gill-ii/');
+  assert.equal(url.searchParams.get('source'),'test');
+  assert.equal(url.hash,'#literal');
+  assert.equal(url.searchParams.get('reader-pilot'),'1');
+  assert.equal(url.searchParams.get('paper'),'space');
+  assert.equal(url.searchParams.get('panel'),'open');
+  const captured=JSON.parse(state.storage.get(KEY));
+  assert.equal(captured.query,'беспрецедентный');
+  assert.equal(captured.path,'/articles/gill-ii/');
+  assert.equal(captured.pilot,true);
+  assert.equal(captured.paper,'space');
+  assert.equal(captured.panel,'open');
+  assert.equal(state.location.replaced,null,'prepare never navigates');
 }
 
-// A clicked item must be the selected preview, and external destinations are
-// never accepted as this same-origin article handoff.
+// Invalid/external destinations and invalid queries discard stale handoffs.
 {
-  const mismatchedClick = harness({ clickIndex: '1', selectedIndex: '0' });
-  mismatchedClick.documentListeners.get('click')({
-    button: 0, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false,
-    target: { closest() { return mismatchedClick.clickedItem; } },
-  });
-  assert.equal(mismatchedClick.storage.has(KEY), false, 'click on a non-selected preview is not captured');
-
-  const external = harness({ selectedHref: 'https://elsewhere.test/article/' });
-  external.documentListeners.get('keydown')({
-    key: 'Enter', defaultPrevented: false,
-    ctrlKey: false, metaKey: false, shiftKey: false, altKey: false,
-  });
-  assert.equal(external.storage.has(KEY), false, 'cross-origin result is not captured');
+  const state=harness();
+  state.prepare('/articles/gill-ii/','беспрецедентный');
+  assert.equal(state.storage.has(KEY),true);
+  assert.equal(state.prepare('https://elsewhere.test/article/','беспрецедентный'),'https://elsewhere.test/article/');
+  assert.equal(state.storage.has(KEY),false);
+  state.prepare('/articles/gill-ii/','беспрецедентный');
+  state.prepare('/articles/gill-ii/','x');
+  assert.equal(state.storage.has(KEY),false);
 }
 
-// A W57 destination redirect is one-shot and preserves its pilot presentation
-// before the validated article-level fallback is consumed on the reloaded URL.
+// Single navigation: validated destination already carries presentation.
 {
-  const state = harness({ entry: entry('/articles/gill-ii/', { pilot: true, paper: 'space', panel: 'open' }) });
-  assert.match(state.location.replaced, /reader-pilot=1/);
-  assert.match(state.location.replaced, /paper=space/);
-  assert.match(state.location.replaced, /panel=open/);
-  assert.equal(state.storage.has(KEY), true, 'keep the handoff across the one W57 opt-in redirect');
-  state.location.search = '?reader-pilot=1&paper=space&panel=open';
-  state.location.href = `${state.location.origin}${state.location.pathname}${state.location.search}`;
-  state.windowListeners.get('pageshow')();
-  assert.equal(state.storage.has(KEY), false, 'consume after the validated W57 destination reload');
-  assert.equal(state.document.activeElement, state.heading);
+  const state=harness({entry:entry('/articles/gill-ii/',{pilot:true,paper:'space',panel:'open'}),
+    search:'?reader-pilot=1&paper=space&panel=open'});
+  assert.equal(state.location.replaced,null);
+  assert.equal(state.storage.has(KEY),false);
+  assert.equal(state.document.activeElement,state.heading);
 }
 
-console.log('reader-search-handoff unit contract: PASS (7 cases)');
+// No second redirect even if a legacy in-flight handoff lacks presentation.
+{
+  const state=harness({entry:entry('/articles/gill-ii/',{pilot:true})});
+  assert.equal(state.location.replaced,null);
+  assert.equal(state.storage.has(KEY),false);
+  assert.equal(state.document.activeElement,null);
+}
+
+// Same-document hash changes are consumed through the same owner.
+{
+  const state=harness({literalOccurrence:true});
+  state.prepare('/articles/gill-ii/#literal','беспрецедентный');
+  state.location.hash='#literal';
+  state.location.href=state.location.origin+state.location.pathname+'#literal';
+  state.windowListeners.get('hashchange')();
+  assert.equal(state.storage.has(KEY),false);
+  assert.equal(state.document.activeElement,state.exactBlock);
+  assert.equal(state.location.hash,'#literal');
+}
+
+// Default product does not add an explicit opt-in or change arbitrary params.
+{
+  const state=harness();
+  const url=new URL(state.prepare('/articles/gill-ii/?x=1','беспрецедентный'));
+  assert.equal(url.searchParams.get('reader-pilot'),null);
+  assert.equal(url.searchParams.get('x'),'1');
+  assert.equal(JSON.parse(state.storage.get(KEY)).pilot,false);
+}
+
+console.log('reader-search-handoff unit contract: PASS (10 cases)');

@@ -7,16 +7,27 @@ const norm=value=>String(value||'').toLocaleLowerCase('ru').replaceAll('ё','е'
 function targetArticle(){
  return document.querySelector('article.article-body')||document.querySelector('article[data-pagefind-body]');
 }
-function selectedDestinationPath(palette,clickedItem){
- const selected=palette?.querySelector('#cp-listbox .cp-item[aria-selected="true"]');
- if(!selected||(clickedItem&&selected.dataset.idx!==clickedItem.dataset.idx))return '';
- const link=palette.querySelector('#cp-read-btn');
- const href=link?.getAttribute('href')||link?.href;
- if(!href||href==='#')return '';
- try{
-  const target=new URL(href,location.href);
-  return target.origin===location.origin?target.pathname:'';
- }catch(_){return '';}
+// The canonical palette passes the actual activated result, never a preview
+// link inferred from hover, focus, or an independently updated result list.
+function prepare(href,rawQuery){
+ clearHandoff();
+ if(typeof href!=='string'||!href.trim()||href==='#')return href;
+ let target;
+ try{target=new URL(href,location.href);}catch(_){return href;}
+ if(target.origin!==location.origin||!/^https?:$/.test(target.protocol))return href;
+ const query=String(rawQuery||'').trim();
+ if(query.length<2||query.length>120)return href;
+ const params=new URLSearchParams(location.search);
+ const pilot=params.get('reader-pilot')==='1';
+ const paper=params.get('paper'),panel=params.get('panel');
+ if(pilot&&/^(?:\/articles\/|\/baptisty-rossii\/|\/biografii\/)/.test(target.pathname)){
+  target.searchParams.set('reader-pilot','1');
+  if(paper==='space'||paper==='book')target.searchParams.set('paper',paper);
+  if(panel==='open'||panel==='closed')target.searchParams.set('panel',panel);
+ }
+ try{sessionStorage.setItem(KEY,JSON.stringify({query,path:target.pathname,
+  timestamp:Date.now(),pilot,paper,panel}));}catch(_){}
+ return target.href;
 }
 function clearHandoff(){try{sessionStorage.removeItem(KEY)}catch(_){}}
 function locate(query){
@@ -101,16 +112,11 @@ function consume(){
  if(!targetPath||targetPath!==location.pathname){clearHandoff();return;}
  const article=targetArticle();
  if(!article){fallback(entry,'article-root-not-found',null);return;}
- // Results from W57 must not silently revert to the old desktop Reader.
- // Pagefind's canonical result URLs omit this local opt-in, so restore it
- // once on the validated destination before exact or article-level focus.
- if(entry.pilot && new URLSearchParams(location.search).get('reader-pilot')!=='1' &&
-    /^(?:\/articles\/|\/baptisty-rossii\/|\/biografii\/)/.test(location.pathname)){
-   const url=new URL(location.href);
-   url.searchParams.set('reader-pilot','1');
-   if(entry.paper==='space'||entry.paper==='book')url.searchParams.set('paper',entry.paper);
-   if(entry.panel==='open'||entry.panel==='closed')url.searchParams.set('panel',entry.panel);
-   location.replace(url.href);return;
+ // Presentation is carried in the original destination. Never issue a
+ // second navigation during consume; a mismatched old one-shot is discarded.
+ if(entry.pilot&&/^(?:\/articles\/|\/baptisty-rossii\/|\/biografii\/)/.test(location.pathname)&&
+    new URLSearchParams(location.search).get('reader-pilot')!=='1'){
+  clearHandoff();return;
  }
  let focused=false;
  try{focused=locate(entry.query)}catch(_){}
@@ -122,36 +128,11 @@ function consume(){
  }
 }
 function init(){
- function captureResult(clickedItem){
-  const palette=document.querySelector('.cp-backdrop.is-open');
-  const query=palette?.querySelector('.cp-input')?.value?.trim();
-  clearHandoff();
-  if(!query||query.length<2||query.length>120)return;
-  const path=selectedDestinationPath(palette,clickedItem);
-  if(!path)return;
-  const params=new URLSearchParams(location.search);
-  try{sessionStorage.setItem(KEY,JSON.stringify({
-    query,path,timestamp:Date.now(),pilot:params.get('reader-pilot')==='1',
-    paper:params.get('paper'),panel:params.get('panel')
-  }))}catch(_){}
-  // The result owner navigates; consume only on the validated destination.
- }
- document.addEventListener('click',event=>{
-  const result=event.target.closest?.('.cp-backdrop.is-open #cp-listbox .cp-item');
-  if(!result)return;
-  if(event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey){clearHandoff();return;}
-  captureResult(result);
- },true);
- // The canonical palette activates results with Enter directly from its input,
- // not by firing a click on the selected result. Keep keyboard parity.
- document.addEventListener('keydown',event=>{
-  if(event.key!=='Enter'||event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-  if(!document.activeElement?.matches?.('.cp-backdrop.is-open .cp-input,.cp-backdrop.is-open #cp-listbox .cp-item'))return;
-  if(!document.querySelector('.cp-backdrop.is-open #cp-listbox .cp-item[aria-selected="true"]'))return;
-  captureResult();
- },true);
+ window.GBReaderSearchHandoff=Object.freeze({prepare});
  consume();
  window.addEventListener('pageshow',consume);
+ // A legitimate same-document fragment navigation may not fire pageshow.
+ window.addEventListener('hashchange',consume);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
 else init();
