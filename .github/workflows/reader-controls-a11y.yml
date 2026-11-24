@@ -45,6 +45,11 @@ on:
       - "scripts/reader-library-tag-integrity-contract.mjs"
       - "js/reader-library-v3.js"
       - "js/reader-library-storage.js"
+      - "js/reader-library-presenter.js"
+      - "js/reader-library-record-transactions.js"
+      - "js/reader-library-selection.js"
+      - "js/reader-library-dock.js"
+      - "scripts/reader-library-browser-test.cjs"
       - "research/reader-w57-pilot/assets/reader_w57_annotations.js"
       - "scripts/reader-library-v3-browser-test.cjs"
       - "scripts/reader-w57-annotations-regression-test.mjs"
@@ -96,6 +101,11 @@ on:
       - "scripts/reader-library-tag-integrity-contract.mjs"
       - "js/reader-library-v3.js"
       - "js/reader-library-storage.js"
+      - "js/reader-library-presenter.js"
+      - "js/reader-library-record-transactions.js"
+      - "js/reader-library-selection.js"
+      - "js/reader-library-dock.js"
+      - "scripts/reader-library-browser-test.cjs"
       - "research/reader-w57-pilot/assets/reader_w57_annotations.js"
       - "scripts/reader-library-v3-browser-test.cjs"
       - "scripts/reader-w57-annotations-regression-test.mjs"
@@ -135,6 +145,7 @@ jobs:
           cache: npm
 
       - name: Install exact dependencies and browsers
+        id: reader_dependencies
         run: |
           npm ci
           npx playwright install --with-deps chromium webkit firefox
@@ -179,6 +190,18 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
 
+      # Source fixture does not depend on dist; a failed production build
+      # must not suppress this independent lifecycle witness.
+      - name: Run exact-head Library source browser integration
+        if: ${{ !cancelled() && steps.reader_dependencies.outcome == 'success' }}
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            node scripts/reader-library-browser-test.cjs
+          } 2>&1 | tee reports/reader-library-browser-test.log
+
       - name: Run exact-head Gill whole-page and atlas contracts
         if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
         run: |
@@ -220,6 +243,7 @@ jobs:
             reports/reader-speedrail-ssr-focus.log
             reports/reader-speedrail-ssr-focus/**
             reports/reader-library-premium-browser-contract.log
+            reports/reader-library-browser-test.log
             reports/reader-library-v3-browser-test.log
             reports/reader-library-v3/**
             reports/shared-play-and-series-number-browser-contract.log
