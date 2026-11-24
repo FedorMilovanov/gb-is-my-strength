@@ -79,17 +79,32 @@ async function scene(browser,name,path,width,height){
 // Probe the leading edge of actual interior article sections, then reverse
 // direction; at the old 30% viewport threshold these assertions were red.
 async function sectionFollowChecks(browser,name){
- const s=await scene(browser,name,'/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open',1440,900);
+ // Gill II has TWO authored primary chapters; test both, including real
+ // subordinate H3 targets. Hermeneutics has six authored major groups;
+ // use that existing article for the original interior-group regression.
+ const fixtures=[
+  {suffix:'gill',route:'/articles/dzhon-gill-chast-2-uchenyi/',width:1280,
+   groups:['part-theology','part-controversy'],first:'sec-hebrew',last:'sec-systematics',
+   firstGroup:'part-theology',lastGroup:'part-controversy'},
+  {suffix:'herm',route:'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',width:1440,
+   groups:['sec-definitions','sec-explanation','sec-assessment','sec-consequences','sec-sufficiency','sec-conclusion'],
+   first:'sec-explanation',last:'sec-sufficiency',firstGroup:'sec-explanation',lastGroup:'sec-sufficiency'}
+ ];
+ for(const fixture of fixtures){
+ await safe(name+'-'+fixture.suffix,async()=>{
+ const s=await scene(browser,name+'-'+fixture.suffix,fixture.route+'?reader-pilot=1&paper=space&panel=open',fixture.width,900);
  const {page,item}=s;
  try{
   await page.waitForFunction(()=>window.ReaderState?.getSnapshot()&&window.__NP_UNIVERSAL_PREVIEW__?.ready);
-  const candidates=await page.evaluate(()=>window.__NP_UNIVERSAL_PREVIEW__.groups.slice(1,-1).map(g=>g.id));
-  assert.ok(candidates.length>=2,'expected multiple interior visual groups');
-  const [first,last]=[candidates[0],candidates.at(-1)];
+  const actual=await page.evaluate(()=>window.__NP_UNIVERSAL_PREVIEW__.groups.map(g=>g.id));
+  assert.deepEqual(actual,fixture.groups,'major groups must match authored source exactly');
+  if(fixture.suffix==='herm')assert.ok(actual.slice(1,-1).length>=2,'expected multiple interior visual groups');
+  const {first,last,firstGroup,lastGroup}=fixture;
   const scrollToSection=async id=>{
    const y=await page.evaluate(id=>{
     const el=document.getElementById(id);
-    if(!el)throw Error('missing section '+id);
+    const article=document.querySelector('article.article-body');
+    if(!el||!article?.contains(el)||!/^H[23]$/.test(el.tagName))throw Error('missing authored section '+id);
     const y=el.getBoundingClientRect().top+scrollY-window.ReaderState.getReadingLine()+15;
     window.scrollTo({top:y,behavior:'instant'});
     return y;
@@ -99,24 +114,36 @@ async function sectionFollowChecks(browser,name){
     return state?.sectionId===id&&Math.abs(scrollY-y)<3;
    },{id,y},{timeout:10000});
   };
-  const active=()=>page.locator('#npUOutline .np-u-major-link[aria-current="location"]').getAttribute('data-np-u-goto');
-  const follows=async id=>{
-   await scrollToSection(id);
-   await page.waitForFunction(id=>document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]')?.dataset.npUGoto===id,id,{timeout:5000});
-   assert.equal(await active(),id);
+  const active=()=>page.locator('#npUOutline .np-u-major-link[aria-current="location"]');
+  const verifyGroup=async id=>{
+   const expected=fixture.groups.indexOf(id);
+   assert.ok(expected>=0);
+   await page.waitForFunction(({id,index})=>{
+    const link=document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]');
+    const group=window.__NP_UNIVERSAL_PREVIEW__.groups[index];
+    const label=document.querySelector('#npUFollowChapter');
+    return link?.dataset.npUGoto===id&&link.getClientRects().length>0&&
+     label?.getClientRects().length>0&&label.textContent==='Раздел '+group.roman;
+   },{id,index:expected},{timeout:5000});
+   assert.equal(await active().count(),1);
+   assert.equal(await active().getAttribute('data-np-u-goto'),id);
   };
-  await follows(first);await follows(last);await follows(first);
+  const follows=async(id,group)=>{await scrollToSection(id);await verifyGroup(group);};
+  await follows(first,firstGroup);await follows(last,lastGroup);await follows(first,firstGroup);
   await page.locator('#npUFollowToggle').click();
   await scrollToSection(last);
-  assert.equal(await active(),first,'manual research pin must survive canonical scroll');
+  await verifyGroup(firstGroup);
+  assert.equal(await active().getAttribute('data-np-u-goto'),firstGroup,'manual research pin must survive canonical scroll');
   await page.locator('#npUFollowToggle').click();
-  await page.waitForFunction(id=>document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]')?.dataset.npUGoto===id,last);
+  await verifyGroup(lastGroup);
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   await page.waitForFunction(()=>window.ReaderState.getSnapshot()?.phase==='before-content');
-  await page.waitForFunction(()=>document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]')?.dataset.npUGoto===window.__NP_UNIVERSAL_PREVIEW__.groups[0].id);
+  await verifyGroup(fixture.groups[0]);
   assert.deepEqual(item.errors,[]);
-  item.sectionFollow={forward:true,reverse:true,pin:true,resume:true,returnToIntro:true};
+  item.sectionFollow={forward:true,reverse:true,pin:true,resume:true,returnToIntro:true,authoredGroups:actual};
  }finally{await s.context.close()}
+ });
+ }
 }
 async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000)})}}
 // Mobile and the 1120px boundary use the actual native Reader, never W57 DOM.

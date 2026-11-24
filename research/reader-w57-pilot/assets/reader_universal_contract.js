@@ -36,8 +36,13 @@
   return 'article';
  }
  function articleRoot(doc){
-  return doc.querySelector('article[data-reader-projection],article.article-body,main article[data-pagefind-body],main article')
-   || doc.querySelector('[data-reader-projection]') || doc.querySelector('main');
+  // A comma selector returns the first DOM match, not the first preferred
+  // selector. Keep the canonical article ahead of any earlier ancillary card.
+  for(const selector of ['article[data-reader-projection]','article.article-body','main article[data-pagefind-body]','main article','[data-reader-projection]','main']){
+   const root=doc.querySelector(selector);
+   if(root)return root;
+  }
+  return null;
  }
  function properRoman(label){
   const match=/^\s*(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX)\s*[.)\:]\s+/i.exec(label);
