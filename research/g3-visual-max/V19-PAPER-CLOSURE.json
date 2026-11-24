@@ -1,0 +1,38 @@
+{
+  "wave": "V19",
+  "testedParent": "8f9130a97a916e58c5dbac7ce169ee1b8b93d98f",
+  "runner": "70c7a24cd5616d69dcd1aa10c04be92c2f0e7a93",
+  "scope": "Independent exact-parent three-route Astro archive with original archived static assets/native runtime, actual Chromium PDFs, canonical unmodified journal-print-pdf.py using existing PyMuPDF 1.26.6 and PYTHONUTF8=1. Not complete postbuild/site/hosted audit.",
+  "buildExit": 0,
+  "capture": {
+    "cases": 24,
+    "pdfs": 24,
+    "issues": 0
+  },
+  "analysis": {
+    "exit": 0,
+    "cases": 24,
+    "problems": 0,
+    "history": {
+      "cases": 8,
+      "pages": 20,
+      "lastPageWords": 145,
+      "sourceTitles": 33,
+      "companionPage": 20
+    },
+    "dossier": {
+      "cases": 8,
+      "pass": 8
+    },
+    "journal": {
+      "cases": 8,
+      "pass": 8
+    }
+  },
+  "raster": {
+    "exit": 0,
+    "historyLastPages": 8,
+    "manualInspection": "pending transfer"
+  },
+  "limitations": "Initial Python global environment lacked fitz; existing local dependencies reused, initial cp1252 read error resolved with UTF8 mode, analyzer unchanged. No baseline digest comparison. No new visual signoff or full release acceptance."
+}
