@@ -66,11 +66,10 @@
           "date": "2018-09",
           "dateKind": "reaction coverage month",
           "sourceIds": [
-            "responses-2018",
-            "challies"
+            "responses-2018"
           ],
           "title": "Разные позиции",
-          "claim": "Contemporary reactions include support and objection. Challies retrospectively reported in 2025 that he discussed but did not sign. Conference participation does not imply endorsement."
+          "claim": "Contemporary reactions include support and objection. Conference participation does not imply endorsement."
         }
       ]
     }
@@ -117,5 +116,17 @@
     "ownerWorkstation": false,
     "windowsWebKit": false
   },
-  "gate": "No production write, no new rights, no donor merge. Independent editorial review, real site QA, Firefox/WebKit, full accessibility and placement acceptance outstanding."
+  "gate": "No production write, no new rights, no donor merge. Independent editorial review, real site QA, Firefox/WebKit, full accessibility and placement acceptance outstanding.",
+  "retrospective": {
+    "date": "2025-05-23",
+    "dateKind": "retrospective article publication",
+    "sourceIds": [
+      "challies"
+    ],
+    "title": "Позднейшее свидетельство",
+    "claim": "Challies retrospectively reported that he participated in discussions but did not sign.",
+    "placement": "Outside both 2018 chronology lanes."
+  },
+  "sourceBoundary": "Ascol's account and History and Formation belong to the same testimony family, not independent corroboration.",
+  "qaHistoryNote": "The original G39 QA below refers to G39 artifact only; superseding G41 artifact and QA in G41-ACCESSIBILITY.md."
 }
