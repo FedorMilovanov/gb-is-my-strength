@@ -192,12 +192,21 @@ export function validateSupportManifestObject(manifest) {
   for (const asset of manifest.supportAssets) {
     assert.ok(asset && typeof asset === 'object' && !Array.isArray(asset), 'font support asset must be an object');
     const assetPath = normalizeManifestPath(asset.path);
-    assert.match(assetPath, /^fonts\/[A-Za-z0-9._/-]+\.(?:css|ttf|otf)$/, `${assetPath}: invalid support path`);
+    assert.match(assetPath, /^fonts\/(?:[A-Za-z0-9._/-]+\.(?:css|ttf|otf)|[A-Za-z0-9_-]+\/OFL\.txt)$/, `${assetPath}: invalid support path`);
     assert.equal(seen.has(assetPath), false, `${assetPath}: duplicate support path`);
     assert.ok(assetPath.localeCompare(previousPath) >= 0, `${assetPath}: support assets must be sorted`);
     seen.add(assetPath);
     previousPath = assetPath;
-    assert.ok(['css', 'sfnt'].includes(asset.kind), `${assetPath}: invalid support kind`);
+    assert.ok(['css', 'sfnt', 'ofl-license'].includes(asset.kind), `${assetPath}: invalid support kind`);
+    assert.ok(asset.kind === 'ofl-license' ? /^fonts\/[A-Za-z0-9_-]+\/OFL\.txt$/.test(assetPath) : asset.kind === 'css' ? /\.css$/.test(assetPath) : /\.(?:ttf|otf)$/.test(assetPath), `${assetPath}: support kind/path mismatch`);
+    if (asset.kind === 'ofl-license') {
+      assert.equal(asset.role, 'font-license', `${assetPath}: license role mismatch`);
+      assert.equal(asset.spdx, 'OFL-1.1', `${assetPath}: license SPDX mismatch`);
+      assert.ok(typeof asset.family === 'string' && asset.family.trim(), `${assetPath}: license family missing`);
+      const source = new URL(asset.sourceUrl);
+      assert.equal(source.href, `https://raw.githubusercontent.com/google/fonts/main/ofl/${assetPath.split('/')[1].toLowerCase()}/OFL.txt`, `${assetPath}: license source mismatch`);
+      assert.match(asset.observedUpstreamSha256, /^[a-f0-9]{64}$/, `${assetPath}: invalid observed upstream SHA-256`);
+    }
     assert.ok(typeof asset.role === 'string' && asset.role.trim(), `${assetPath}: support role is missing`);
     assert.ok(Number.isSafeInteger(asset.bytes) && asset.bytes > 0 && asset.bytes <= MAX_FONT_BYTES, `${assetPath}: invalid support byte size`);
     assert.match(asset.sha256, /^[a-f0-9]{64}$/, `${assetPath}: invalid support SHA-256`);
@@ -291,6 +300,28 @@ function validateCssSupport(bytes, label) {
   return { bytes: bytes.length, sha256: sha256(bytes), fontFaceCount: (text.match(/@font-face\s*\{/gi) || []).length };
 }
 
+function validateOflSupport(bytes, label) {
+  const text = bytes.toString('utf8');
+  assert.equal(text.includes('\uFFFD'), false, `${label}: invalid UTF-8 replacement character`);
+  assert.ok(!text.includes('\0'), `${label}: binary license text`);
+  assert.match(text, /^Copyright\s+\d{4}\s+/i, `${label}: copyright notice missing`);
+  const start = text.indexOf('SIL OPEN FONT LICENSE');
+  assert.ok(start > 0, `${label}: OFL heading missing`);
+  const body = text.slice(start).replace(/\s+/g, ' ').trim();
+  assert.match(body, /^SIL OPEN FONT LICENSE Version 1\.1 - 26 February 2007 /, `${label}: OFL version mismatch`);
+  for (const heading of ['PREAMBLE','DEFINITIONS','PERMISSION & CONDITIONS','TERMINATION','DISCLAIMER']) {
+    assert.ok(body.includes(heading), `${label}: OFL section missing: ${heading}`);
+  }
+  assert.ok(body.endsWith('OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.'), `${label}: OFL ending missing`);
+  return { bytes: bytes.length, sha256: sha256(bytes) };
+}
+
+function validateSupportBytes(bytes, asset) {
+  if (asset.kind === 'sfnt') return validateSfntBuffer(bytes, asset.path);
+  if (asset.kind === 'ofl-license') return validateOflSupport(bytes, asset.path);
+  return validateCssSupport(bytes, asset.path);
+}
+
 function faceMatchesVariant(face, variant) {
   return face.family === variant.family && face.weight === variant.weight && face.style === variant.style;
 }
@@ -335,7 +366,7 @@ export function verifyFontAssets({
   const verifiedSupport = [];
   for (const asset of supportManifest.supportAssets) {
     const bytes = fs.readFileSync(path.join(root, asset.path));
-    const result = asset.kind === 'sfnt' ? validateSfntBuffer(bytes, asset.path) : validateCssSupport(bytes, asset.path);
+    const result = validateSupportBytes(bytes, asset);
     assert.equal(result.bytes, asset.bytes, `${asset.path}: support byte size mismatch`);
     assert.equal(result.sha256, asset.sha256, `${asset.path}: support SHA-256 mismatch`);
     verifiedSupport.push({ path: asset.path, kind: asset.kind, ...result });
@@ -489,7 +520,7 @@ export async function generateFontAssets({
     for (const supportAsset of supportManifest.supportAssets) {
       const sourcePath = path.join(root, supportAsset.path);
       const bytes = fs.readFileSync(sourcePath);
-      const verified = supportAsset.kind === 'sfnt' ? validateSfntBuffer(bytes, supportAsset.path) : validateCssSupport(bytes, supportAsset.path);
+      const verified = validateSupportBytes(bytes, supportAsset);
       assert.equal(verified.bytes, supportAsset.bytes, `${supportAsset.path}: support byte size mismatch before staging`);
       assert.equal(verified.sha256, supportAsset.sha256, `${supportAsset.path}: support SHA-256 mismatch before staging`);
       const stagedPath = path.join(transactionRoot, supportAsset.path);
