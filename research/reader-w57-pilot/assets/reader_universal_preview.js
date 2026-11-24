@@ -1126,17 +1126,23 @@
   requestAnimationFrame(refreshGlossary);
  }
 
- // Original ARGON's "Коротко" and "Полное оглавление" live IN the book folio,
- // not in the research rail. Render them against real, already-published prose.
- // Do not synthesize claims: each bullet is a short, attributable extract
- // from an actual chapter paragraph, or from the page's editorial summary.
+ // Original ARGON's "Коротко" and "Полное оглавление" live IN the book folio.
+ // An authored summary remains the canonical DOM and disclosure owner; only
+ // articles without an authored summary may receive source-derived extracts.
  function installArgonCentralOverview(){
   if(document.querySelector('[data-np-u-central-overview]'))return;
   const host=article;
   const source=host.querySelector(':scope > .summary-card');
-  const editorialPoints=source?[...source.querySelectorAll('.summary-card__body .summary-card__text')]
-    .map(el=>el.textContent.replace(/\s+/g,' ').trim()).filter(Boolean):[];
-  const sourceBody=source?.querySelector('p')?.textContent?.replace(/\s+/g,' ').trim()||'';
+  if(source){
+   // Never hide or copy the authored summary. Its IDs, Speakable selectors,
+   // rich text, links, print content and canonical disclosure stay intact.
+   const heading=source.querySelector(':scope > .summary-card__head')||
+    [...source.querySelectorAll(':scope > h2,:scope > h3')].find(el=>
+     ['коротко','краткое содержание'].includes(el.textContent.trim().toLocaleLowerCase('ru')));
+   if(heading&&source.querySelector(':scope > .summary-card__body'))heading.classList.add('summary-card__head');
+   window.GBSummaryDisclosure?.initialize(host);
+   source.dataset.npUCentralOverview='authored';
+  }
   const extractOne=(index,depth=0)=>{
    const lines=getGroupMaterial(index).extracts;
    const tokens=sections[index].title.toLocaleLowerCase('ru').match(/[а-яё]{6,}/gu)||[];
@@ -1165,17 +1171,9 @@
    const text=fallback.replace(/\s+/g,' ').trim();
    return text.length>225?text.slice(0,222).replace(/\s+\S*$/u,'').trimEnd()+'…':text;
   };
-  // Editorial evidence takes priority over machine-extracted sentences:
-  // this is the exact five/six-point content already approved and published.
-  const points=editorialPoints.slice(0,6);
-  // Existing editorial theses take priority. Fill missing points with
-  // complete, attributable sentences from the page, covering more than
-  // one original chapter. Never invent a historical or theological claim.
-  if(points.length<5){
-   if(!points.length&&sourceBody.length>=55){
-    const lead=sourceBody.length>310?sourceBody.slice(0,307).replace(/\s+\S*$/u,'').trimEnd()+'\u2026':sourceBody;
-    if(lead)points.push(lead);
-   }
+  const points=[];
+  // Only a page without authored summary content gets verbatim extracts.
+  if(!source){
    for(let depth=0;depth<6&&points.length<6;depth++){
     for(let i=0;i<sections.length&&points.length<6;i++){
      const line=extractOne(i,depth);
@@ -1186,7 +1184,7 @@
   // Editorial coverage for Gill II: six literal source sentences from
   // six *different* named sections. These are extracted from the page DOM,
   // not newly composed claims, and remain attached to authentic paragraphs.
-  if(!editorialPoints.length&&/\/articles\/dzhon-gill-chast-2-uchenyi\/?$/.test(location.pathname)){
+  if(!source&&/\/articles\/dzhon-gill-chast-2-uchenyi\/?$/.test(location.pathname)){
    const sectionIds=[
     'sec-hebrew','sec-canticles','sec-commentary',
     'sec-covenant','sec-hebrew-diss','sec-lectures'
@@ -1206,12 +1204,10 @@
    if(selected.length===6)points.splice(0,points.length,...selected);
   }
   // A thin 1-3 item list is not a useful synopsis. Keep the full TOC.
-  const hasOverview=points.length>=4;
+  const hasOverview=!source&&points.length>=4;
   const count=points.length;
-  // Product summary-card bullets are approved editorial theses. For
-  // series/pages without one, the fallback consists of verbatim fragments,
-  // NOT newly authored theological claims; label that distinction honestly.
-  const countNoun=editorialPoints.length>=4?'тезис':'фрагмент';
+  // The fallback is verbatim source fragments, not authored editorial theses.
+  const countNoun='фрагмент';
   const short=document.createElement('details');
   short.className='np-u-central-overview';
   short.dataset.npUCentralOverview='true';
@@ -1256,14 +1252,15 @@
   // Article layouts differ: some keep their masthead inside article,
   // others have hero/header siblings above it.
   const inArticleHeader=host.querySelector(':scope > header.article-header');
-  if(inArticleHeader){
+  if(source){
+   // Keep the authored card exactly where its author placed it, inside the
+   // projection root. Place the adjacent TOC after that same original node.
+   source.after(full);
+  }else if(inArticleHeader){
    const rights=inArticleHeader.querySelector(':scope > .notice');
    if(rights)rights.after(...(hasOverview?[short,full]:[full]));
    else inArticleHeader.after(...(hasOverview?[short,full]:[full]));
   }else{host.before(...(hasOverview?[short,full]:[full]));}
-  // An already-published editorial summary is retained in the DOM for source
-  // provenance, but not shown twice when safely represented above.
-  if(source&&editorialPoints.length)source.hidden=true;
  }
 
  const icons={

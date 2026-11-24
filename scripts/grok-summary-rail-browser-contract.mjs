@@ -3,6 +3,7 @@ import path from 'node:path';
 import http from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {chromium,firefox,webkit} from 'playwright';
+import {gotoNativeReader} from './lib/native-reader-browser-fixture.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),dist=path.join(root,'dist'),out=path.join(root,'reports','grok-summary-motion');
 fs.mkdirSync(out,{recursive:true});
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2','.png':'image/png'};
@@ -13,13 +14,29 @@ const routes=walk(dist).filter(p=>{const h=fs.readFileSync(p,'utf8');return /sum
 const checks=[];
 const add=(engine,route,name,pass,evidence)=>{checks.push({engine,route,name,pass:Boolean(pass),evidence});if(!pass)throw new Error(engine+' '+route+' '+name+' '+JSON.stringify(evidence));};
 async function prep(page){await page.route('**/*',r=>/(^|\.)(yandex\.(ru|com)|yastatic\.net)$/.test(new URL(r.request().url()).hostname)?r.fulfill({status:200,body:''}):r.continue());}
-async function visit(type,engine,route,size,full){
+async function visit(type,engine,route,size,full,classic=false){
  const p=await type.newPage({viewport:size,reducedMotion:'no-preference',serviceWorkers:'block'});
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
  try{
   await prep(p);
-  await p.goto(origin+route,{waitUntil:'domcontentloaded',timeout:25000});
-  await p.waitForFunction(()=>window.GBSummaryDisclosure?.version===1,{timeout:10000});
+  const opts={waitUntil:'domcontentloaded',timeout:25000};
+  if(classic)await gotoNativeReader(p,origin+route,opts);
+  else await p.goto(origin+route,opts);
+  await p.waitForFunction(()=>window.GBSummaryDisclosure?.version===1,null,{timeout:10000});
+  const expectedArgon=!classic&&await p.evaluate(()=>!!document.querySelector('[data-gb-reader-desktop-bootstrap]')&&matchMedia('(min-width:1121px)').matches);
+  if(expectedArgon)await p.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
+  if(expectedArgon){
+   const original=await p.evaluate(()=>{
+    const root=window.GBReaderProjection?.getRoot?.()||document.querySelector('article.article-body,main article');
+    const source=root?.querySelector(':scope > .summary-card');
+    return {source:!!source,authored:source?.dataset.npUCentralOverview,hidden:source?.hidden,
+     duplicate:!!document.querySelector('details[data-np-u-central-overview]'),
+     sourceOwner:source?.dataset.gbSummaryOwner};
+   });
+   // This case is a real authored-card route. A hidden native card and a
+   // replacement made of copied text is not equivalent to a live original.
+   if(original.source)add(engine,route,'ARGON preserves one authored summary owner',original.authored==='authored'&&!original.hidden&&!original.duplicate&&original.sourceOwner==='1',original);
+  }
   const card=p.locator('.summary-card[data-gb-summary-owner="1"]').first();
   await card.waitFor({timeout:10000});
   const btn=card.locator('.gb-summary-toggle'),motion=card.locator('.gb-summary-motion');
@@ -138,7 +155,7 @@ async function visit(type,engine,route,size,full){
    add(engine,route,'printed summary fully visible',printed.h>30&&printed.opacity==='1',printed);
   }
   add(engine,route,'no runtime JS errors',errors.length===0,errors);
-  if(route.includes('hermenevticheskaya')&&size.width>=1200){
+  if(classic&&route.includes('hermenevticheskaya')&&size.width>=1200){
    const gaps=await p.evaluate(()=>{const e=document.querySelector('.article-byline'),prev=e?.previousElementSibling,next=e?.nextElementSibling;return{top:e.getBoundingClientRect().top-prev.getBoundingClientRect().bottom,bottom:next.getBoundingClientRect().top-e.getBoundingClientRect().bottom};});
    add(engine,route,'byline optically centered between rules',Math.abs(gaps.top-gaps.bottom)<=2,gaps);
    if(full){
@@ -226,6 +243,10 @@ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
  const browser=await type.launch({headless:true});
  const selected=process.env.GB_SUMMARY_ONLY_ROUTE?reps.filter(x=>x.includes(process.env.GB_SUMMARY_ONLY_ROUTE)):reps;
  for(const route of selected)await visit(browser,engine,route,{width:1440,height:900},selected.length<=3||route.includes('hermenevticheskaya'));
+ // The native Grok rail's geometry/motion is a separate comparison, not
+ // a replacement for default desktop summary acceptance.
+ const herm=selected.find(route=>route.includes('hermenevticheskaya'));
+ if(herm)await visit(browser,engine,herm,{width:1440,height:900},true,true);
  if(process.env.GB_SUMMARY_ONLY_ROUTE){await browser.close();continue;}
  await visit(browser,engine,'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',{width:390,height:844},false);
  // A search result can link directly to an item inside a closed summary.
