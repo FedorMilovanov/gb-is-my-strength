@@ -24,6 +24,7 @@ console.log('EVIDENCE_DIR='+root);
 await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
 for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/components/journal/journalEditorial.css','src/styles/editorial-edition.css','fonts']) await copy(path);
 if(historyMode){
+ await copy('research/news-visual-engineering/group-evidence-families.mjs','src/group-evidence-families.mjs');
  await copy('research/news-visual-engineering/g3-hist-pub-13-specimen.json','src/history-evidence.json');
  await copy('research/news-visual-engineering/g3-hist-pub-13-specimen.astro.txt','src/pages/index.astro');
 }

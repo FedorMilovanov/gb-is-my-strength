@@ -84,3 +84,31 @@ test('font readiness fails closed for permanently missing family and pending eva
     assert.rejects(waitForCanonicalFonts({evaluate:()=>new Promise(()=>{})}),/evaluation timed out/),
   ]);
 });
+
+// Real partition rules; synthetic records exercise invalid inputs.
+import {groupEvidenceFamilies} from './group-evidence-families.mjs';
+const evidenceFixture=()=>{
+ const sources=[{id:'a',family:'F1',locator:'1'},{id:'b',family:'F1',locator:'2'},{id:'c',family:'F2',locator:'3'}];
+ return {sources,citations:sources.map(source=>({source,locator:source.locator})),groups:[{label:'First',sourceIds:['a','b']},{label:'Second',sourceIds:['c']}]};
+};
+const partition=f=>groupEvidenceFamilies(f.sources,f.citations,f.groups);
+test('evidence partition retains exact source/citation objects and order',()=>{
+ const f=evidenceFixture(),before=JSON.stringify(f),result=partition(f);
+ assert.deepEqual(result.map(g=>g.rows.map(r=>r.source.id)),[['a','b'],['c']]);
+ assert.equal(result[0].rows[0].source,f.sources[0]);assert.equal(result[0].rows[0].citation,f.citations[0]);assert.equal(JSON.stringify(f),before);
+});
+for(const [name,change] of [
+ ['duplicate within group',f=>f.groups[0].sourceIds.push('a')],
+ ['duplicate across groups',f=>f.groups[1].sourceIds.push('a')],
+ ['missing member',f=>f.groups[0].sourceIds.pop()],
+ ['unknown member',f=>f.groups[0].sourceIds[0]='unknown'],
+ ['mixed families',f=>{f.groups[0].sourceIds=['a','c'];f.groups[1].sourceIds=['b']}],
+ ['empty group',f=>f.groups.push({label:'Empty',sourceIds:[]})],
+ ['duplicate trimmed label',f=>f.groups[1].label=' First '],
+ ['same family split',f=>{f.groups[0].sourceIds=['a'];f.groups.push({label:'Third',sourceIds:['b']})}],
+ ['wrong locator',f=>f.citations[0].locator='wrong'],
+ ['duplicate citation',f=>f.citations.push(f.citations[0])],
+ ['missing citation',f=>f.citations.pop()],
+ ['missing family',f=>f.sources[0].family=''],
+ ['duplicate source',f=>f.sources.push(f.sources[0])]
+])test('evidence partition rejects '+name,()=>{const f=evidenceFixture();change(f);assert.throws(()=>partition(f),/Evidence family partition/);});
