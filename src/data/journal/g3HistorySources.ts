@@ -176,6 +176,20 @@ export const G3_HISTORY_SOURCES = [
     boundary: 'Абзац о майской встрече в Countryside Bible Church. Участие издательства не подтверждает весь состав докладчиков или посещаемость.',
     returnHref: '#g3-year-2024', researchLocator: 'G3-HIST-PUB-11',
   },
+  {
+    id: 'gnl-2018', title: 'GNL. 2018 G3 Conference',
+    period: 'Записи 2018 года', role: 'Каталог видеозаписей',
+    url: 'https://www.gnli.com/titles/2018-G3-Conference-or-G3-Ministries/2902',
+    boundary: 'Выбранные записи и имена, от Questions & Answers 1 до The Church is Ground-Zero for Discipleship. Не полный список участников и не стенограмма.',
+    returnHref: '#g3-catalogue-matrix', researchLocator: 'G3-HIST-PUB-12',
+  },
+  {
+    id: 'gnl-2021', title: 'GNL. 2021 G3 National Conference',
+    period: 'Записи 2021 года', role: 'Каталог видеозаписей',
+    url: 'https://www.gnli.com/titles/2021-G3-National-Conference-or-G3-Ministries/2906',
+    boundary: 'Выбранные записи и имена, от Christ as Eternal Judge до The Cosmic Triumph of Christ. Каталог не устанавливает форму выступления или полный состав участников.',
+    returnHref: '#g3-catalogue-matrix', researchLocator: 'G3-HIST-PUB-12',
+  },
 ] as const;
 
 export type G3HistorySourceId = (typeof G3_HISTORY_SOURCES)[number]['id'];

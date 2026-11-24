@@ -35,11 +35,12 @@ test('Research #628 handoff is pinned, and the 2025–26 crisis seal is independ
   assert.ok(!oldCrisis.includes('G3-HIST-PUB-'), 'do not silently inflate old historical seal');
 });
 
-test('Adopted #632 text intake has exact source anchors without activating pending component claims', () => {
+test('Adopted #632 text and catalogue intake has exact source anchors; annual claim remains pending', () => {
   assert.ok(expansion.researchHandoffUrl.includes('f49d20d31931ec389690b3033cefbb66cda67522'));
   assert.deepEqual([...expansion.activeTextClaimIds], ['G3-HIST-PUB-10','G3-HIST-PUB-11']);
-  assert.deepEqual([...expansion.pendingComponentClaimIds], ['G3-HIST-PUB-12','G3-PUB-017']);
-  assert.deepEqual([...expansion.adoptedClaimIds], [...expansion.activeTextClaimIds,...expansion.pendingComponentClaimIds]);
+  assert.deepEqual([...expansion.activeComponentClaimIds], ['G3-HIST-PUB-12']);
+  assert.deepEqual([...expansion.pendingComponentClaimIds], ['G3-PUB-017']);
+  assert.deepEqual([...expansion.adoptedClaimIds], [...expansion.activeTextClaimIds,...expansion.activeComponentClaimIds,...expansion.pendingComponentClaimIds]);
   assert.equal(expansion.rights, 'TEXTUAL_PARAPHRASE_LINK_AND_ORIGINAL_DATA_GRAPHICS_ONLY');
   const expected = [
     ['piper-2019','G3-HIST-PUB-10','https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions','#g3-year-2019'],
@@ -53,8 +54,29 @@ test('Adopted #632 text intake has exact source anchors without activating pendi
     assert.ok(historicalText.includes(`cite('${id}')`));
     assert.ok(historicalText.includes(`data-history-expansion-claim="${claim}"`));
   }
-  assert.equal(sources.length,24);
-  assert.doesNotMatch(historicalText,/G3-HIST-PUB-12|G3-PUB-017|PENDING_ADOPTION/);
+  assert.equal(sources.length,26);
+  assert.doesNotMatch(historicalText,/G3-PUB-017|PENDING_ADOPTION/);
+  assert.match(historicalText, /<G3SpeakerMatrix data=\{adoptedMatrixData\(\)\} claimId=\{adoptedMatrixClaim\}/);
+  for (const [year, url] of [[2018,'https://www.gnli.com/titles/2018-G3-Conference-or-G3-Ministries/2902'],[2021,'https://www.gnli.com/titles/2021-G3-National-Conference-or-G3-Ministries/2906']]) {
+    const source = bibliography.get('gnl-' + year);
+    assert.equal(source?.url,url);
+    assert.equal(source?.researchLocator,'G3-HIST-PUB-12');
+    assert.equal(source?.returnHref,'#g3-catalogue-matrix');
+    assert.ok(historicalText.includes(year + ": 'gnl-" + year + "'"));
+  }
+  const dir='src/components/journal/g3-visual/';
+  const base=json(dir+'matrix-data.json'), added=json(dir+'adopted-visual-data.json');
+  assert.equal(added.researchMerge,'f49d20d31931ec389690b3033cefbb66cda67522');
+  assert.equal(added.matrix.claimId,'G3-HIST-PUB-12');
+  const oldPairs=base.rows.flatMap(r=>r.years.map(y=>r.id+':'+y));
+  const newPairs=added.matrix.entries.map(r=>r.id+':'+r.year);
+  assert.equal(oldPairs.length,37);
+  assert.equal(newPairs.length,23);
+  assert.deepEqual(added.matrix.entries.filter(r=>r.year===2018).map(r=>r.id),['lawson','johnson','ascol','baucham','thomas','white','tripp','kruger','challies','miller','buice']);
+  assert.deepEqual(added.matrix.entries.filter(r=>r.year===2021).map(r=>r.id),['strachan','peace','aniol','coates','buck','thornton','lawson','riccardi','washer','baucham','white','johnson']);
+  assert.equal(new Set([...oldPairs,...newPairs]).size,60);
+  assert.equal(new Set([...base.rows.map(r=>r.id),...added.matrix.entries.map(r=>r.id)]).size,26);
+  assert.match(read(dir+'G3SpeakerMatrix.astro'),/Выборка из каталогов GNL; не полный список участников/);
   assert.doesNotMatch(article,/PENDING_ADOPTION/);
 });
 
@@ -140,6 +162,10 @@ test('Built route is indexable, single-headed and has correct source anchors whe
   assert.ok(html.includes('data-pagefind-body'));
   assert.ok(html.includes('history-source-invitation-2011'));
   assert.ok(html.includes('history-source-ascol-2018'));
+  assert.equal((html.match(/id="cite-g3-matrix-[^"]+"/g)||[]).length,60,'all adopted catalogue pairs render once');
+  assert.equal((html.match(/id="history-source-gnl-2018"/g)||[]).length,1);
+  assert.equal((html.match(/id="history-source-gnl-2021"/g)||[]).length,1);
+  assert.equal((html.match(/data-publication-claims="G3-HIST-PUB-12"/g)||[]).length,1);
   assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('Не опубликовано'));
   assert.doesNotMatch(html, /href=["'][^"']*github\.com\/FedorMilovanov\/Research\//i, 'no internal handoff anchor in public HTML');
 });
