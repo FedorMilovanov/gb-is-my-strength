@@ -19,7 +19,9 @@ const server=http.createServer((req,res)=>{
  fs.createReadStream(target).pipe(res);
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const url='http://127.0.0.1:'+server.address().port+ROUTE;
+// This contract exercises the independent flag-ON native Grok rail and its
+// ReaderSettings owner, not ARGON's reparented desktop presentation.
+const url='http://127.0.0.1:'+server.address().port+ROUTE+'?reader-pilot=0';
 const outcomes=[];
 const measure=()=>{const q=s=>document.querySelector(s),rect=e=>{const r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null;},h=document.documentElement,b=document.body,a=q('.article-body'),p=a?.querySelector('p'),menu=q('#hMobileNav'),sheet=q('#hmSettings'),pop=sheet?.querySelector('.hmsheet-panel');
  return{cw:h.clientWidth,scrollY:scrollY,htmlGutter:getComputedStyle(h).scrollbarGutter,
@@ -39,6 +41,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
   const test=(name,ok,detail)=>{(ok?row.passed:row.failed).push({name,...(!ok?{detail}:{})})};
   try{
    await p.goto(url,{waitUntil:'domcontentloaded'});await p.locator('.hrail--grok.grok-ready').waitFor();
+   if(await p.evaluate(()=>document.body.classList.contains('np-w57-ready')))throw Error('Native Grok motion fixture mounted ARGON');
    await p.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';window.scrollTo({top:550,behavior:'instant'});});
    await p.waitForFunction(()=>Math.abs(window.scrollY-550)<2,{timeout:2500});
    await p.waitForTimeout(50);
