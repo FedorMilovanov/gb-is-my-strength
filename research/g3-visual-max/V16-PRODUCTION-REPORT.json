@@ -1,0 +1,166 @@
+{
+  "wave": "V16",
+  "testedParent": "a212a72245a42b6ed3b8c2bc5d3dec0ecedd4d11",
+  "runner": "a61be85b5882fca54654f9b068950a277d88b97c",
+  "distProvenance": "Existing GRAPHICS G15 production-like archive of exact parent, official legacy copy and postbuild sequence, read-only; source unchanged.",
+  "browser": [
+    {
+      "engine": "Firefox 153.0",
+      "geometry": 18,
+      "returns": 144,
+      "filters": 4,
+      "nativeTheme": 12,
+      "issues": 0,
+      "exit": 0
+    },
+    {
+      "engine": "WebKit 26.5",
+      "geometry": 18,
+      "returns": 144,
+      "filters": 4,
+      "nativeTheme": 12,
+      "issues": 0,
+      "exit": 0
+    },
+    {
+      "engine": "Chromium 151",
+      "geometry": 18,
+      "returns": 144,
+      "filters": 4,
+      "nativeTheme": 12,
+      "issues": 0,
+      "exit": 0
+    }
+  ],
+  "pdfs": [
+    {
+      "file": "finance-A4-dark-js.pdf",
+      "verified": 28,
+      "expected": 28,
+      "page": 5,
+      "pages": 18,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "finance-A4-light-js.pdf",
+      "verified": 28,
+      "expected": 28,
+      "page": 5,
+      "pages": 18,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "finance-A4-light-nojs.pdf",
+      "verified": 28,
+      "expected": 28,
+      "page": 5,
+      "pages": 18,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "finance-Letter-dark-js.pdf",
+      "verified": 28,
+      "expected": 28,
+      "page": 5,
+      "pages": 18,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "finance-Letter-light-js.pdf",
+      "verified": 28,
+      "expected": 28,
+      "page": 5,
+      "pages": 18,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "finance-Letter-light-nojs.pdf",
+      "verified": 28,
+      "expected": 28,
+      "page": 5,
+      "pages": 18,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "history-A4-dark-js.pdf",
+      "verified": 26,
+      "expected": 26,
+      "page": 7,
+      "pages": 19,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "history-A4-light-js.pdf",
+      "verified": 26,
+      "expected": 26,
+      "page": 7,
+      "pages": 19,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "history-A4-light-nojs.pdf",
+      "verified": 26,
+      "expected": 26,
+      "page": 7,
+      "pages": 19,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "history-Letter-dark-js.pdf",
+      "verified": 26,
+      "expected": 26,
+      "page": 7,
+      "pages": 19,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "history-Letter-light-js.pdf",
+      "verified": 26,
+      "expected": 26,
+      "page": 7,
+      "pages": 19,
+      "outside": 0,
+      "ok": true
+    },
+    {
+      "file": "history-Letter-light-nojs.pdf",
+      "verified": 26,
+      "expected": 26,
+      "page": 7,
+      "pages": 19,
+      "outside": 0,
+      "ok": true
+    }
+  ],
+  "pdfExit": 0,
+  "scope": "Targeted matrix and annual finance navigation, exact data, true native light/dark JS, light noJS fallback; 320/740/1440. No visual inspection of new PDF rasters or complete axe/mobile audit, no noJS dark claim.",
+  "hosted": {
+    "pass": 12,
+    "fail": 3,
+    "runIds": [
+      45306970790,
+      45306970820,
+      45306971099
+    ],
+    "triageComment": 7128105017,
+    "blocking": true,
+    "findings": [
+      "Empty initial hash in matrix.restoreTarget",
+      "Standalone finance note insufficient target size in WebKit",
+      "Cross-route fragment links rejected by stale blanket bibliography HTML assertion",
+      "Unknown exact axe incomplete contrast target; measure before fix",
+      "Stale scripture occurrence index"
+    ]
+  },
+  "disposition": "Transferred production files now parent-owned; no donor production changes; no merge/deploy."
+}
