@@ -56,7 +56,7 @@ const crisis=[
 "import Waterfall from '@/components/journal/g3-graphics/G3ExpenseWaterfall.astro';",
 "import Ecosystem from '@/components/journal/g3-graphics/G3EcosystemSpread.astro';",
 "import {G3_SOURCE_BIBLIOGRAPHY as sources} from '@/data/journal/g3SourceBibliography';",
-"import proposal from '../../../../../research/g3-visual-max/finance-proposal.json';",
+...(!adopted?["import proposal from '../../../../../research/g3-visual-max/finance-proposal.json';"]:[]),
 ...(adopted?["import {adoptedAnnualFinance} from '@/components/journal/g3-visual/adopted-visual-inputs';"]:[]),
 '---',shellStart,
 '<p id="documents">Методика проверки</p><p id="finance">Финансы</p>'+(adopted?'<Annual projection={adoptedAnnualFinance()}/>':'<Annual reviewOnly={true} proposal={proposal}/>')+'<Waterfall total={1061800} conferences={817283} advertising={246511}/><Ecosystem/>',
@@ -65,8 +65,9 @@ shellEnd].join('\n');
 writeFileSync(at('src/pages/journal/dossiers/g3/history/index.astro'),history);
 writeFileSync(at('src/pages/journal/dossiers/g3/index.astro'),crisis);
 const cli=(...args)=>spawnSync(process.execPath,[at('scripts/astro-cli.mjs'),...args],{cwd:root,stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});
-const typecheck=cli('check');
-console.log('TYPECHECK_EXIT',typecheck.status);
+const mapOnly=process.env.G3_VISUAL_MAP_ONLY==='1';
+const typecheck=mapOnly?{status:0,diagnosticOnly:true}:cli('check');
+console.log('TYPECHECK_EXIT',mapOnly?'not run: map diagnostic only':typecheck.status);
 assert.equal(cli('build').status,0,'joint Astro build failed');
 const dist=at('dist');
 const mime={'.html':'text/html; charset=utf-8','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml'};
@@ -82,7 +83,7 @@ const origin='http://127.0.0.1:'+server.address().port;
 const routes=['/journal/dossiers/g3/history/','/journal/dossiers/g3/'];
 const issues=[],reports=[];
 const note=(where,kind,detail)=>issues.push({where,kind,detail});
-const widths=process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
+const widths=mapOnly?[740]:process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
 try{
  for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
   if(process.env.G3_VISUAL_ENGINE&&process.env.G3_VISUAL_ENGINE!==engine)continue;
@@ -90,6 +91,7 @@ try{
   let geometry=0,roundTrips=0,deepLinks=0,printCases=0;
   try{
    for(const route of routes)for(const width of widths)for(const dark of [false,true])for(const js of [false,true]){
+    if(mapOnly&&(route!==routes[0]||dark||!js))continue;
     const where={engine,route,width,dark,js};
     const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});
     const page=await ctx.newPage(), errors=[];page.setDefaultTimeout(6000);
@@ -112,17 +114,23 @@ try{
       geometry++;
       if(route===routes[0] && width===740 && !dark && js){
        const map=await page.locator('.g3g-atlas-map svg').evaluate(svg=>{
-         const v=svg.viewBox.baseVal;
-         const entries=[...svg.querySelectorAll('text')].map(e=>{const b=e.getBBox(),m=e.getCTM(),s=svg.getCTM();const t=s.inverse().multiply(m);const points=[new DOMPoint(b.x,b.y),new DOMPoint(b.x+b.width,b.y+b.height)].map(p=>p.matrixTransform(t));return {text:e.textContent,minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minY:Math.min(...points.map(p=>p.y)),maxY:Math.max(...points.map(p=>p.y))}});
-         return {box:{x:v.x,y:v.y,w:v.width,h:v.height},entries};
+         const b=svg.getBoundingClientRect();
+         const box={left:b.left,top:b.top,right:b.right,bottom:b.bottom};
+         const entries=[...svg.querySelectorAll('text')].map(e=>{
+           const r=e.getBoundingClientRect();
+           return {text:e.textContent,left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};
+         });
+         return {box,entries};
        });
-       const v=map.box;const clipped=map.entries.filter(x=>x.minX<v.x-.5||x.maxX>v.x+v.w+.5||x.minY<v.y-.5||x.maxY>v.y+v.h+.5);
-       const visible=clipped.filter(x=>x.maxX>v.x&&x.minX<v.x+v.w&&x.maxY>v.y&&x.minY<v.y+v.h);
-       const outside=clipped.filter(x=>!visible.includes(x));
-       if(outside.length)console.log('MAP_FULLY_OUTSIDE_CROP',JSON.stringify(outside.map(x=>x.text)));
-       if(visible.length)note(where,'map-label-partial-clipping',visible);
+       const v=map.box;
+       const offCrop=map.entries.filter(x=>x.right<=v.left||x.left>=v.right||x.bottom<=v.top||x.top>=v.bottom);
+       const intendedOffCrop=offCrop.filter(x=>x.text==='40° с. ш.');
+       const unexpectedOffCrop=offCrop.filter(x=>!intendedOffCrop.includes(x));
+       const clipped=map.entries.filter(x=>!offCrop.includes(x)&&(x.left<v.left-1||x.right>v.right+1||x.top<v.top-1||x.bottom>v.bottom+1));
+       console.log('MAP_SCREEN_RECTS',JSON.stringify({engine,labels:map.entries.length,intendedOffCrop:intendedOffCrop.map(x=>x.text),unexpectedOffCrop:unexpectedOffCrop.map(x=>x.text),clipped:clipped.map(x=>x.text)}));
+       if(unexpectedOffCrop.length||clipped.length)note(where,'map-screen-clipping',{unexpectedOffCrop,clipped});
       }
-      if(width===390||width===740){
+      if(!mapOnly&&(width===390||width===740)){
        if(route===routes[0])await page.locator('.g3g-chron-details summary').click();
        const links=await page.locator('.g3g a[data-journal-citation],.g3-annual-finance a[data-journal-citation],.gm-row a[data-journal-citation]').evaluateAll(es=>es.map(a=>({id:a.id,hash:a.hash})));
        const selected=width===740&&!dark&&js&&process.env.G3_VISUAL_FOCUSED!=='1'?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002');
@@ -169,6 +177,6 @@ for(const issue of issues){
  (byKind[key]??={count:0,first:issue}).count++;
 }
 writeFileSync(at('joint-qa-result.json'),JSON.stringify({typecheck:typecheck.status,reports,issues},null,2));
-console.log('JOINT_RESULT',JSON.stringify({adopted,typecheck:typecheck.status,reports,issueCount:issues.length}));
+console.log('JOINT_RESULT',JSON.stringify({adopted,mapOnly,typecheck:mapOnly?null:typecheck.status,reports,issueCount:issues.length}));
 for(const [key,value] of Object.entries(byKind))console.log('ISSUE',key,value.count,JSON.stringify(value.first).slice(0,900));
 if(issues.length||typecheck.status!==0)process.exitCode=1;
