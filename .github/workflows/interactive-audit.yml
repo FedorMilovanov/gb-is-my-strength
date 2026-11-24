@@ -344,7 +344,7 @@ jobs:
           READER_W57_DIST="$GITHUB_WORKSPACE/dist" READER_W57_PORT=19061 python3 research/reader-w57-pilot/preview.py > /tmp/gb-w57.log 2>&1 &
           echo $! > /tmp/gb-w57.pid
           ready=false
-          for attempt in $(seq 1 20); do
+          for _attempt in $(seq 1 20); do
             if curl --fail --silent http://127.0.0.1:19061/reader-desktop/bootstrap.js -o /tmp/gb-w57-bootstrap.js; then
               ready=true
               break
