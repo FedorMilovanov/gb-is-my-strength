@@ -17,7 +17,9 @@ const excerpt=(start,end)=>{
 };
 // Include the serialized commit owner the save path now depends on.
 const noteSource=excerpt('    // The Product Library owns the same note list','    function locate(id){');
-const ownerSource=highlights.slice(highlights.indexOf('  function libraryFailure('),highlights.indexOf('  function quotes() {'));
+const sharedStorage=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
+const ownerSource=sharedStorage.slice(sharedStorage.indexOf('  function libraryFailure('),sharedStorage.indexOf('  window.GBLibraryStorage ='))+
+  highlights.slice(highlights.indexOf('  function commit('),highlights.indexOf('  function quotes() {'));
 assert.ok(ownerSource.includes('function mutateLibrary('),'canonical Product writer must exist');
 const makeFixture=(options={})=>{
  let notes=(options.notes||[]).map(x=>({...x}));

@@ -1,3 +1,4 @@
+import '../../js/reader-library-storage.js';
 (() => {
   'use strict';
 
@@ -15,10 +16,6 @@
   }
 
   const subscribers = new Set();
-  let lastSerialized = '';
-  // GBS-FAVORITES-WRITE-FAILURE-IGNORED: имя последней ошибки записи (QuotaExceededError
-  // и т.п.). Сбрасывается при каждом успешном commit, читается сразу после неудачного.
-  let lastPersistError = null;
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -30,7 +27,8 @@
 
   function normalizePath(value) {
     try {
-      const url = new URL(String(value || location.pathname || '/'), location.origin);
+      if(typeof value!=='string'||!value.trim())return '';
+      const url = new URL(value, location.origin);
       if (url.origin !== location.origin) return '';
       let path = decodeURIComponent(url.pathname || '/').replace(/index\.html$/i, '');
       path = path.replace(/\/{2,}/g, '/');
@@ -178,37 +176,30 @@
       .slice(0, MAX_ITEMS);
   }
 
-  function persist(list) {
-    const normalized = normalizeList(list);
-    const serialized = JSON.stringify(normalized);
+  // Reading is a projection only: no schema rewrite, deletion or truncation
+  // of the stored rows. All writes use the same authority as backup import.
+  function list(_options = {}) {
+    return clone(normalizeList(readRaw()));
+  }
+  function rawPath(row) {
+    return row && typeof row==='object' && !Array.isArray(row)
+      ? normalizePath(row.path||row.routePath||row.url) : '';
+  }
+  const exact=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const match=(items,path)=>items.filter(row=>rawPath(row)===path);
+  function snapshot() {
     try {
-      localStorage.setItem(STORAGE_KEY, serialized);
-      lastSerialized = serialized;
-      lastPersistError = null;
-      return true;
-    } catch (error) {
-      lastPersistError = (error && error.name) || 'Error';
-      return false;
-    }
+      const raw=localStorage.getItem(STORAGE_KEY);
+      const value=raw===null?[]:JSON.parse(raw);
+      const rows=Array.isArray(value)?value:value?.items;
+      return Array.isArray(rows)?rows:null;
+    } catch { return null; }
   }
-
-  function persistError() {
-    return lastPersistError || 'storage-write-failed';
+  async function transact(prepare) {
+    const owner=window.GBLibraryStorage;
+    if(owner?.version!==1)return {ok:false,reason:'lock-unavailable'};
+    return owner.mutateLibrary([STORAGE_KEY],stores=>prepare(stores[STORAGE_KEY]));
   }
-
-  function list(options = {}) {
-    const normalized = normalizeList(readRaw());
-    const serialized = JSON.stringify(normalized);
-    if (options.persistMigration !== false && serialized !== lastSerialized) {
-      try {
-        const rawSerialized = localStorage.getItem(STORAGE_KEY) || '[]';
-        if (serialized !== rawSerialized) localStorage.setItem(STORAGE_KEY, serialized);
-        lastSerialized = serialized;
-      } catch {}
-    }
-    return clone(normalized);
-  }
-
   function get(path = location.pathname) {
     const normalized = normalizePath(path);
     return list().find((item) => item.path === normalized) || null;
@@ -261,77 +252,85 @@
     return detail;
   }
 
-  function add(input = {}, options = {}) {
-    const item = metadataFromPage(input);
-    if (!item.path) return { saved: false, item: null, path: '', error: null };
-    const items = list().filter((entry) => entry.path !== item.path);
-    items.unshift(item);
-    if (!persist(items)) {
-      // Отказ записи не является сохранением: caller обязан показать ошибку,
-      // а не «Добавлено». syncButtons внутри publish вернёт aria-pressed
-      // из фактического хранилища.
-      const error = persistError();
-      publish(options.action || 'add', item.path, null, options.source || 'api', error);
-      return { saved: false, item: null, path: item.path, error };
-    }
-    publish(options.action || 'add', item.path, item, options.source || 'api');
-    return { saved: true, item: clone(item), path: item.path, error: null };
+  function finish(result,action,path,source) {
+    const error=result.ok?null:result.reason||'storage-write-failed';
+    const item=path?get(path):null;
+    try { publish(action,path,result.ok?(result.item||item):item,source,error); }
+    catch { /* notification failure does not reverse a committed mutation */ }
+    return {saved:Boolean(item),item:clone(result.item||item),path,error,receipt:result.receipt||null};
   }
-
-  function remove(path = location.pathname, options = {}) {
-    const normalized = normalizePath(path);
-    if (!normalized) return { saved: false, item: null, path: '', error: null };
-    const existing = get(normalized);
-    if (!persist(list().filter((entry) => entry.path !== normalized))) {
-      // Запись отклонена — запись фактически всё ещё сохранена (saved: true),
-      // иначе caller показал бы ложное «Убрано».
-      const error = persistError();
-      publish(options.action || 'remove', normalized, existing, options.source || 'api', error);
-      return { saved: true, item: clone(existing), path: normalized, error };
-    }
-    publish(options.action || 'remove', normalized, existing, options.source || 'api');
-    return { saved: false, item: clone(existing), path: normalized, error: null };
+  async function add(input = {}, options = {}) {
+    const item=metadataFromPage(input);
+    if(!item.path)return {saved:false,item:null,path:'',error:'invalid-path'};
+    const result=await transact(rows=>{
+      const found=match(rows,item.path);
+      if(found.length>1)return {reason:'conflict'};
+      if(found.length===1)return {changes:{},result:{item:found[0]}};
+      if(rows.length>=MAX_ITEMS)return {reason:'capacity'};
+      return {changes:{[STORAGE_KEY]:[item,...rows]},result:{item}};
+    });
+    return finish(result,options.action||'add',item.path,options.source||'api');
   }
-
-  function toggle(input = {}, options = {}) {
-    const path = normalizePath(input.path || location.pathname);
-    return has(path) ? remove(path, { action: 'remove', source: options.source || 'toggle' })
-      : add({ ...input, path }, { action: 'add', source: options.source || 'toggle' });
+  async function remove(path = location.pathname, options = {}) {
+    const normalized=normalizePath(path), initial=snapshot();
+    if(!normalized||!initial)return {saved:Boolean(normalized&&has(normalized)),item:normalized?get(normalized):null,path:normalized,error:'invalid-store'};
+    const expected=match(initial,normalized);
+    const result=await transact(rows=>{
+      const found=match(rows,normalized);
+      if(expected.length!==1||found.length!==1||!exact(expected[0],found[0]))return {reason:'conflict'};
+      const index=rows.indexOf(found[0]),entry=found[0];
+      return {changes:{[STORAGE_KEY]:rows.filter((_,i)=>i!==index)},result:{item:entry,receipt:{entry,index,path:normalized}}};
+    });
+    return finish(result,options.action||'remove',normalized,options.source||'api');
   }
-
-  function clear(options = {}) {
-    if (!persist([])) {
-      // Отказ записи: возвращаем фактический список, а не ложную пустоту.
-      const error = persistError();
-      publish('clear', '', null, options.source || 'api', error);
-      return list({ persistMigration: false });
-    }
-    publish('clear', '', null, options.source || 'api');
-    return [];
+  async function restore(receipt,options={}) {
+    const path=receipt?.path, entry=receipt?.entry;
+    if(!path||rawPath(entry)!==path||!Number.isInteger(receipt.index))return {saved:false,error:'invalid-receipt'};
+    const result=await transact(rows=>{
+      if(match(rows,path).length)return {reason:'conflict'};
+      if(rows.length>=MAX_ITEMS)return {reason:'capacity'};
+      const next=rows.slice();next.splice(Math.min(Math.max(0,receipt.index),next.length),0,entry);
+      return {changes:{[STORAGE_KEY]:next},result:{item:entry}};
+    });
+    return finish(result,'restore',path,options.source||'api');
   }
-
+  async function toggle(input = {}, options = {}) {
+    const path=normalizePath(input.path||location.pathname);
+    return has(path)?remove(path,{action:'remove',source:options.source||'toggle'})
+      :add({...input,path},{action:'add',source:options.source||'toggle'});
+  }
+  async function clear(options = {}) {
+    const expected=snapshot();
+    const result=await transact(rows=>{
+      if(!expected||!exact(expected,rows))return {reason:'conflict'};
+      // Clear only visible, uniquely identified records; hidden legacy rows
+      // remain recoverable rather than being erased by a UI action.
+      const visible=rows.filter(rawPath), ids=visible.map(rawPath);
+      if(ids.length>MAX_ITEMS||new Set(ids).size!==ids.length)return {reason:'conflict'};
+      return {changes:visible.length?{[STORAGE_KEY]:rows.filter(row=>!rawPath(row))}:{}};
+    });
+    const error=result.ok?null:result.reason||'storage-write-failed';
+    try {publish('clear','',null,options.source||'api',error);}catch{}
+    return {items:list(),error};
+  }
   function subscribe(callback) {
     if (typeof callback !== 'function') return () => {};
     subscribers.add(callback);
     return () => subscribers.delete(callback);
   }
 
-  function migrateCurrentLegacyFlag() {
-    const meta = metadataFromPage();
-    if (!meta.path || has(meta.path)) return;
-    const key = `fc:saved:${meta.path}`;
-    let legacySaved = false;
-    try { legacySaved = Boolean(localStorage.getItem(key)); } catch {}
-    if (!legacySaved) return;
-    const result = add(meta, { action: 'legacy-flag-migrate', source: 'migration' });
-    // GBS-FAVORITES-WRITE-FAILURE-IGNORED: легитимный флаг удаляется ТОЛЬКО после
-    // подтверждённого commit новой записи. При отказе записи (квота) флаг остаётся —
-    // после освобождения места следующая загрузка повторит миграцию, данные не теряются.
-    if (result.saved) {
-      try { localStorage.removeItem(key); } catch {}
+  async function migrateCurrentLegacyFlag() {
+    const meta=metadataFromPage();
+    if(!meta.path)return;
+    const key=`fc:saved:${meta.path}`;
+    let flag;
+    try{flag=localStorage.getItem(key);}catch{return;}
+    if(!flag)return;
+    const result=await add(meta,{action:'legacy-flag-migrate',source:'migration'});
+    if(result.saved&&!result.error) {
+      try {if(localStorage.getItem(key)===flag)localStorage.removeItem(key);}catch{}
     }
   }
-
   const api = Object.freeze({
     version: VERSION,
     schemaVersion: SCHEMA_VERSION,
@@ -345,15 +344,16 @@
     remove,
     toggle,
     clear,
+    restore,
+    notifyImport() { try { publish('import','',null,'library-import'); } catch {} },
     subscribe,
     syncButtons,
   });
 
   window.GBFavoriteStore = api;
 
-  function lifecycle(source = 'lifecycle') {
-    list();
-    migrateCurrentLegacyFlag();
+  async function lifecycle(source = 'lifecycle') {
+    await migrateCurrentLegacyFlag();
     syncButtons();
     document.documentElement.dataset.gbFavoriteStoreReady = '1';
     window.dispatchEvent(new CustomEvent(READY_EVENT, {
@@ -363,7 +363,6 @@
 
   window.addEventListener('storage', (event) => {
     if (event.key !== STORAGE_KEY) return;
-    lastSerialized = '';
     publish('external-sync', '', null, 'storage');
   });
   document.addEventListener('astro:page-load', () => lifecycle('astro:page-load'));

@@ -24,7 +24,7 @@ const html = [
   '<div class="hmbar"><button class="gb-save" data-fc-action="save" aria-label="Сохранить статью" type="button">☆</button>',
   '<button id="hmShareBtn" type="button">↗</button></div>',
   '<script>window.SITE_CONFIG={version:"reader-library-test",site:{id:"gb"},page:{title:"Статья для теста"}};</script>',
-  '<script src="/src/runtime/favorite-store.js"></script>',
+  '<script type="module" src="/src/runtime/favorite-store.js"></script>',
   '<script src="/js/highlights.js"></script>',
   '</body></html>',
 ].join('');
@@ -36,7 +36,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
-      url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js') {
+      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));
@@ -63,6 +63,7 @@ async function check(browserName, driver, url, width) {
     localStorage.setItem('gb-favorites', JSON.stringify([{ path: '/articles/another', title: 'Второй материал', addedAt: 1700000000020 }]));
   }, { quote: storedQuote, note: storedNote });
   const page = await context.newPage();
+  try {
   const errors = [];
   page.on('pageerror', (err) => errors.push(err.message));
   await page.goto(url, { waitUntil: 'load' });
@@ -93,11 +94,13 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-editor').isVisible(), true);
   await page.locator('#gb-hl-note-text').fill('Личная заметка изменена');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
   assert((await page.locator('.gb-hl-note').textContent()).includes('изменена'));
 
   await page.locator('#gb-hl-new-note').click();
   await page.locator('#gb-hl-note-text').fill('Вторая заметка текущей статьи');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
   assert.equal(await page.locator('.gb-hl-item[data-type="note"]').count(), 2);
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length), 2);
 
@@ -134,6 +137,7 @@ async function check(browserName, driver, url, width) {
     document.dispatchEvent(new Event('selectionchange'));
   });
   await page.locator('#ss-save').click();
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').length===2);
   const length = await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1')).length);
   assert.equal(length, 2, 'selection saved under existing quote key');
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1'))[0].url.includes('#more:~:text=')), true,
@@ -142,6 +146,7 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-editor').isVisible(), true);
   await page.locator('#gb-hl-note-text').fill('Заметка к новой цитате');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
   const linked = await page.evaluate(() => JSON.parse(localStorage.getItem('gb-reader-notes-v1')).some((x) => x.quoteText && x.quoteText.includes('Достаточно')));
   assert.equal(linked, true, 'notes can attach to selected quotes');
   await page.keyboard.press('Escape');
@@ -159,7 +164,7 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'book returns to mobile bar after resize');
   assert.deepEqual(errors, [], 'no client-side JS errors');
   console.log('PASS', browserName, width, 'legacy quote/favorite data, notes, expand, search, export, selection, accessibility');
-  await browser.close();
+  } finally { await context.close(); await browser.close(); }
 }
 
 async function checkGbs2(name, driver, url) {

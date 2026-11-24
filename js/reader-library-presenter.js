@@ -77,15 +77,15 @@ function button(action, label, text) {
   }
 
   let favoriteUndoTimer = null;
-  function removeFavorite(item, statusMessage) {
+  async function removeFavorite(item, statusMessage) {
     const store = window.GBFavoriteStore;
-    if (!store?.remove || !store?.add || !store?.get) {
+    if (!store?.remove || !store?.restore || !store?.get) {
       statusMessage('Хранилище избранного недоступно. Повторите попытку.', true); return;
     }
     const previous = store.get(item.id);
     if (!previous) { statusMessage('Статья уже отсутствует в избранном.'); return; }
-    const result = store.remove(item.id, { source: 'reader-library' });
-    if (result.saved || result.error) {
+    const result = await store.remove(item.id, { source: 'reader-library' });
+    if (result.saved || result.error || !result.receipt) {
       statusMessage('Не удалось убрать статью. Сохранённые данные не изменены.', true); return;
     }
     clearTimeout(favoriteUndoTimer);
@@ -94,10 +94,14 @@ function button(action, label, text) {
     const undo = button('undo-favorite', 'Восстановить статью в избранном', 'Отменить');
     host.append(undo);
     undo.focus({ preventScroll: true });
-    undo.addEventListener('click', () => {
-      const restored = store.add(previous, { source: 'reader-library-undo' });
+    undo.addEventListener('click', async () => {
+      if(undo.disabled)return;
+      undo.disabled=true;
+      const restored = await store.restore(result.receipt, { source: 'reader-library-undo' });
       if (!restored.saved || restored.error) {
-        statusMessage('Не удалось восстановить статью.', true); return;
+        statusMessage('Не удалось восстановить статью. Возможно, она уже сохранена.', true);
+        const retryHost=document.querySelector('#gb-hl-status');
+        retryHost?.append(undo);undo.disabled=false;return;
       }
       clearTimeout(favoriteUndoTimer); favoriteUndoTimer = null;
       statusMessage('Статья восстановлена.');

@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v232-reader-metadata-lock-20261124';
+const CACHE_VERSION = 'gb-v233-reader-shared-favorites-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -36,13 +36,14 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=9ec733e1',
-  '/js/reader-library-presenter.js?v=841cc1c0',
-  '/js/reader-library-v3.js?v=c202bc83',
+  '/js/highlights.js?v=77d174d0',
+  '/js/reader-library-storage.js?v=ebe36b5b',
+  '/js/reader-library-presenter.js?v=95532247',
+  '/js/reader-library-v3.js?v=0d92b26e',
   '/js/reader-library-dock.js?v=706a54b0',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
-  '/js/floating-cluster-controller.js?v=25a761e7',
+  '/js/floating-cluster-controller.js?v=51ff3f23',
   '/js/reader-preferences-head.js?v=bd4355e3',
   '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=af589b59',

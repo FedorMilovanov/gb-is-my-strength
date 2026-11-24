@@ -333,8 +333,8 @@ async function atomicImport(next, shouldContinue = () => true) {
     : 'Импорт не завершён. Проверьте хранилище и повторите попытку.'));
   if(result.favoritesChanged) {
     try {
-      window.GBFavoriteStore?.syncButtons?.();
-      window.dispatchEvent(new CustomEvent('gb:favorites-changed', {detail:{source:'library-import',items:result.merged.favorites}}));
+      if(window.GBFavoriteStore?.notifyImport) window.GBFavoriteStore.notifyImport();
+      else window.dispatchEvent(new CustomEvent('gb:favorites-changed', {detail:{source:'library-import',items:result.merged.favorites}}));
     } catch { /* notifications cannot turn a committed import into failure */ }
   }
   return result.merged;

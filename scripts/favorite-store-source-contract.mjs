@@ -56,9 +56,9 @@ check('FAV-META-10', 'metadata', 'path aliases are normalized', text.store.inclu
 
 check('FAV-MIG-01', 'migration', 'legacy arrays are accepted', /if \(Array\.isArray\(parsed\)\) return parsed/.test(text.store), 'legacy array');
 check('FAV-MIG-02', 'migration', 'future/alternate items envelope is accepted safely', /Array\.isArray\(parsed\.items\)/.test(text.store), 'items envelope');
-check('FAV-MIG-03', 'migration', 'legacy current-page metadata is replaced by canonical metadata', /const isCurrent[\s\S]*const canonical = isCurrent \? currentMeta : null/.test(text.store), 'current route canonicalization');
-check('FAV-MIG-04', 'migration', 'legacy entries receive schema version', /schemaVersion: SCHEMA_VERSION/.test(text.store), 'schema stamp');
-check('FAV-MIG-05', 'migration', 'duplicate paths collapse deterministically', /const byPath = new Map\(\)/.test(text.store), 'dedupe map');
+check('FAV-MIG-03', 'migration', 'legacy current-page metadata is projected from canonical metadata', /const isCurrent[\s\S]*const canonical = isCurrent \? currentMeta : null/.test(text.store), 'current route canonicalization');
+check('FAV-MIG-04', 'migration', 'legacy entries project schema version', /schemaVersion: SCHEMA_VERSION/.test(text.store), 'schema stamp');
+check('FAV-MIG-05', 'migration', 'duplicate paths collapse only in the read projection', /const byPath = new Map\(\)/.test(text.store), 'dedupe map');
 check('FAV-MIG-06', 'migration', 'legacy fc:saved current-page flag migrates', has(text.store, '`fc:saved:${meta.path}`'), 'legacy flag');
 check('FAV-MIG-07', 'migration', 'legacy flag is removed after successful migration', /localStorage\.removeItem\(key\)/.test(text.store), 'legacy cleanup');
 check('FAV-MIG-08', 'migration', 'invalid records fail closed', /if \(!value \|\| typeof value !== 'object' \|\| Array\.isArray\(value\)\) return null/.test(text.store), 'record guard');
@@ -105,6 +105,9 @@ check('FAV-TEST-10', 'tests', 'workflow runs production-like build', has(text.wo
 check('FAV-TEST-11', 'tests', 'workflow runs browser contract', has(text.workflow, 'favorite-store-browser-contract.mjs'), 'browser gate');
 check('FAV-TEST-12', 'tests', 'workflow uploads durable evidence', /upload-artifact@[0-9a-f]{40}/.test(text.workflow), 'artifact pin');
 
+check('FAV-OWN-07','ownership','FavoriteStore delegates to the one shared writer',/GBLibraryStorage[\s\S]*owner\.mutateLibrary/.test(text.store)&&!/localStorage\.setItem\(/.test(text.store),'shared authority, no raw writes');
+check('FAV-OWN-08','ownership','read projection does not persist migrations',/function list\(_options = \{\}\) \{\s*return clone\(normalizeList\(readRaw\(\)\)\)/.test(text.store),'read-only list');
+check('FAV-OWN-09','ownership','direct UI consumers await mutation results',/await store\.toggle/.test(text.controller)&&/await store\.remove/.test(text.favoritesPage)&&/await store\.clear/.test(text.favoritesPage),'async consumer contracts');
 const failed = checks.filter((entry) => !entry.pass);
 const sha = process.env.GITHUB_SHA || null;
 const summary = { sha, checks: checks.length, passed: checks.length - failed.length, failed: failed.length, results: checks };

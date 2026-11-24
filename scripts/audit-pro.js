@@ -64,6 +64,7 @@ const ALLOWED_JS = new Set([
   'js/search.js',
   'js/enhancements.js',
   'js/highlights.js',
+  'js/reader-library-storage.js',
   'js/reader-library-presenter.js',
   'js/reader-library-v3.js',
   'js/reader-library-dock.js',

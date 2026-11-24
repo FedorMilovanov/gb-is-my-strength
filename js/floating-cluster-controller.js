@@ -188,13 +188,18 @@
     return window.GBFavoriteStore || null;
   }
 
-  function saveCurrent(btn) {
+  async function saveCurrent(btn) {
     var store = favoriteStore();
     if (!store || typeof store.toggle !== 'function') {
       showToast('Избранное пока недоступно', false);
       return;
     }
-    var result = store.toggle({ path: location.pathname }, { source: 'floating-cluster' });
+    if (saveCurrent.busy) return;
+    saveCurrent.busy = true;
+    var result;
+    try { result = await store.toggle({ path: location.pathname }, { source: 'floating-cluster' }); }
+    catch (_) { result = { error: 'storage-write-failed' }; }
+    finally { saveCurrent.busy = false; }
     if (typeof store.syncButtons === 'function') store.syncButtons();
     if (result && result.error) {
       // GBS-FAVORITES-WRITE-FAILURE-IGNORED: отказ записи (напр. QuotaExceededError)
@@ -211,14 +216,14 @@
   // Backward-compatible public facade. Persistence, metadata and events
   // remain exclusively owned by GBFavoriteStore; this adapter only maps
   // the historical Boolean API to canonical mutations.
-  function setSaved(saved) {
+  async function setSaved(saved) {
     var store = favoriteStore();
     if (!store) return null;
     var path = location.pathname;
     var options = { source: 'floating-cluster-api' };
-    var result = saved
+    var result = await (saved
       ? (typeof store.add === 'function' ? store.add({ path: path }, options) : null)
-      : (typeof store.remove === 'function' ? store.remove(path, options) : null);
+      : (typeof store.remove === 'function' ? store.remove(path, options) : null));
     if (typeof store.syncButtons === 'function') store.syncButtons();
     return result;
   }

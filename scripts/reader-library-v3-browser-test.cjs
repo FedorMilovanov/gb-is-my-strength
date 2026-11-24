@@ -22,7 +22,7 @@ const html=[
 '<p>Нужно прочитать весь контекст, прежде чем сделать вывод. Сохранённые цитаты помогают возвращаться к изученному.</p>',
 '<p style="min-height:900px">Продолжение статьи для проверки положения прокрутки.</p>',
 '</article></main><div class="hmbar"><button id="hmShareBtn">Поделиться</button></div>',
-'<script src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script>',
+'<script type="module" src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script>',
 '</body></html>'].join('');
 const serve=http.createServer((req,res)=>{
  let url=new URL(req.url,'http://localhost');
@@ -90,6 +90,7 @@ async function test(engine,driver,width,height,base){
  await action('edit-tag').first().click();
  await page.locator('#gb-hl-tag-input').fill('Герменевтика');
  await action('save-tag').click();
+ await page.locator('#gb-hl-tag-editor').waitFor({state:'hidden'});
  assert.equal(await page.locator('.gb-hl-tag').filter({hasText:'Герменевтика'}).count(),1);
  await action('topic').filter({hasText:'Герменевтика'}).click();
  assert.equal(await page.locator('.gb-hl-item').count(),1,'topic filter');
@@ -117,6 +118,7 @@ async function test(engine,driver,width,height,base){
  addition.data.favorites.push({path:'/articles/third/',title:'Новое исследование',addedAt:1781100000000});
  await page.locator('#gb-hl-json-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(addition))});
  await action('confirm-import').click();
+ await page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
  const result=await page.evaluate(()=>({
   quotes:JSON.parse(localStorage.getItem('gb-highlights-v1')).length,
   notes:JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length,
@@ -125,9 +127,11 @@ async function test(engine,driver,width,height,base){
  assert.deepEqual(result,{quotes:3,notes:2,favorite:true},'merge import');
  await page.locator('#gb-hl-json-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(addition))});
  await action('confirm-import').click();
+ await page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'repeat import idempotent');
  const malicious={...backup,version:123};
  await page.locator('#gb-hl-json-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(malicious))});
+ await page.waitForFunction(()=>document.querySelector('#gb-hl-status')?.classList.contains('is-visible'));
  assert.equal(await page.locator('#gb-hl-import-confirm').isVisible(),false,'bad backup rejected');
  const failed=structuredClone(addition);
  failed.data.quotes.push({id:'qfail',text:'Эта цитата не должна сохраниться',articleTitle:'Проверка',url:'/articles/fail/',savedAt:1781100000000});
@@ -138,26 +142,32 @@ async function test(engine,driver,width,height,base){
   Storage.prototype.setItem=function(k,v){if(k==='gb-reader-notes-v1')throw new DOMException('blocked','QuotaExceededError');return window.__save.call(this,k,v)};
  });
  await action('confirm-import').click();
+ await page.waitForFunction(()=>!document.querySelector('[data-research-action=confirm-import]').disabled);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')).length),3,'quotes rolled back');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'untouched notes retained');
  await page.evaluate(()=>{Storage.prototype.setItem=window.__save;delete window.__save});
  // Return to the normal library, then exercise explicit reading states.
  await action('manage').click();
  await action('start-current').click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='reading');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'reading');
  assert.equal(await action('resume').count(),1,'continue only active reading');
  await action('finish-current').click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='finished');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'finished');
  assert.equal(await action('resume').count(),0,'finished disappears from continue');
  await action('manage').click();
  await action('start-reading').first().click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='reading');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'reading','explicit restore in menu');
  await action('manage').click();
  await action('dismiss-current').click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='dismissed');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'dismissed');
  assert.equal(await action('resume').count(),0,'dismissed disappears');
  assert.equal(await page.locator('.gb-hl-daily').count(),1,'daily quote');
  await action('hide-today').click();
+ await page.locator('.gb-hl-daily').waitFor({state:'hidden'});
  assert.equal(await page.locator('.gb-hl-daily').count(),0,'hidden today');
  await page.locator('#gb-hl-close').click();
  assert.equal(await page.locator('#gb-hl-backdrop').getAttribute('aria-hidden'),'true');

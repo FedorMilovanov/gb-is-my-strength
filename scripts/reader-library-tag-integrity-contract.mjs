@@ -47,7 +47,8 @@ assert.deepEqual(safeMerge(aliasOld,{...empty,favorites:[{path:'/a/',title:'inco
 
 // Execute actual shared owner plus actual import, not a duplicate planner.
 const hsrc=fs.readFileSync(path.join(root,'js/highlights.js'),'utf8');
-const ownerSource=hsrc.slice(hsrc.indexOf('  function libraryFailure('),hsrc.indexOf('  function quotes() {'));
+const sharedStorage=fs.readFileSync(path.join(root,'js/reader-library-storage.js'),'utf8');
+const ownerSource=sharedStorage.slice(sharedStorage.indexOf('  function libraryFailure('),sharedStorage.indexOf('  window.GBLibraryStorage ='));
 assert.ok(ownerSource.includes('function libraryStoreSpec('));
 const keys={quotes:'gb-highlights-v1',notes:'gb-reader-notes-v1',favorites:'gb-favorites',tags:'gb-library-tags-v1',reading:'gb-library-reading-v1',revisit:'gb-library-revisit-v1'};
 const fixture=(seed={},options={})=>{
