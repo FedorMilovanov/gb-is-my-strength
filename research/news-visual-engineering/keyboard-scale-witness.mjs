@@ -12,6 +12,7 @@ export function assertFocusWitness(state,label='keyboard focus'){
     label+' fails the existing G3 painted-outline contract');
   assert.ok(state.indicatorVisible,label+' has no painted focus indicator');
   assert.ok(state.boundsInside,label+' focus indicator is clipped by viewport/header');
+  assert.ok(state.clipInside,label+' focus indicator is clipped by an ancestor scrollport');
   assert.ok(state.unobscured,label+' focus target is obscured by an overlay');
   assert.ok(state.visible,label+' target and focus indicator are not fully visible');
   return state;
@@ -72,6 +73,19 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
       const boundsInside=paint.left>=-1&&paint.right<=usableViewportWidth+1&&paint.top>=headerBottom-1&&paint.bottom<=innerHeight+1;
       const center=document.elementFromPoint((rect.left+rect.right)/2,(rect.top+rect.bottom)/2);
       const centerVisible=!!center&&(center===el||el.contains(center));
+      const clippingAncestors=[];
+      for(let ancestor=el.parentElement;ancestor&&ancestor!==document.body&&ancestor!==document.documentElement;ancestor=ancestor.parentElement){
+        const style=getComputedStyle(ancestor),r=ancestor.getBoundingClientRect();
+        const clipX=['hidden','clip','auto','scroll'].includes(style.overflowX);
+        const clipY=['hidden','clip','auto','scroll'].includes(style.overflowY);
+        if(!clipX&&!clipY)continue;
+        const clip={left:r.left+ancestor.clientLeft,right:r.left+ancestor.clientLeft+ancestor.clientWidth,
+          top:r.top+ancestor.clientTop,bottom:r.top+ancestor.clientTop+ancestor.clientHeight};
+        const clipped=(clipX&&(paint.left<clip.left-1||paint.right>clip.right+1))||
+          (clipY&&(paint.top<clip.top-1||paint.bottom>clip.bottom+1));
+        if(clipped)clippingAncestors.push({tag:ancestor.tagName,id:ancestor.id,className:String(ancestor.className||''),clip});
+      }
+      const clipInside=clippingAncestors.length===0;
       const samples=[[paint.left+.5,(rect.top+rect.bottom)/2],[paint.right-.5,(rect.top+rect.bottom)/2],[(rect.left+rect.right)/2,paint.top+.5],[(rect.left+rect.right)/2,paint.bottom-.5]];
       const overlayAt=(x,y)=>{
         if(x<0||y<0||x>=usableViewportWidth||y>=innerHeight)return false;
@@ -84,9 +98,9 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
       const unobscured=centerVisible&&!samples.some(([x,y])=>overlayAt(x,y));
       return {
         active:document.activeElement===el,keyboard:el.matches(':focus-visible'),
-        targetInside,boundsInside,indicatorVisible,outlineWidth,outlineOffset,outline,outlineStyle,
+        targetInside,boundsInside,clipInside,clippingAncestors,indicatorVisible,outlineWidth,outlineOffset,outline,outlineStyle,
         outlineColor:css.outlineColor,outlineColorVisible,unobscured,
-        visible:targetInside&&boundsInside&&indicatorVisible&&unobscured,
+        visible:targetInside&&boundsInside&&clipInside&&indicatorVisible&&unobscured,
         scale:2,viewport:{width:innerWidth,height:innerHeight},headerBottom,usableViewportWidth,paint
       };
     });
