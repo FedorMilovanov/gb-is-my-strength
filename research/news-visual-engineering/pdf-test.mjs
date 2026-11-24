@@ -18,8 +18,9 @@ for(const format of ['A4','Letter'])for(const theme of ['light','dark']){
   for(const [i,heading] of headings.entries())assert.equal(text.split(heading).length-1,i<2?2:1,name+' heading '+heading);
   assert.equal(text.split('Предел доказательства').length-1,10,name+' limits');
   assert.equal(text.split('Значение').length-1,10,name+' meaning labels');
-  assert.equal(text.split('Источник:').length-1,11,name+' citations');
+  assert.equal(text.split('Источник:').length-1,12,name+' citations');
   assert.equal(text.split('Дополнительный локатор').length-1,1,name+' additional evidence locator');
+  assert.equal(text.split('Повторный источник, иной локатор').length-1,1,name+' distinct same-source locator');
   assert.equal(text.split('Не установлена').length-1,2,name+' unknown dates');
   for(const page of pages){
     assert.ok(!/^Источник:/u.test(page),name+' orphan citation at top');

@@ -19,7 +19,7 @@ const copy = async (from, to=from) => {
 };
 console.log('EVIDENCE_DIR='+root);
 await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
-for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/styles/editorial-edition.css','fonts']) await copy(path);
+for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/components/journal/journalEditorial.css','src/styles/editorial-edition.css','fonts']) await copy(path);
 await copy('research/news-visual-engineering/exhibit-fixture.astro.txt','src/pages/index.astro');
 await copy('research/news-visual-engineering/exhibit-long-fixture.astro.txt','src/pages/long.astro');
 await writeFile(join(root,'package.json'),'{"type":"module","private":true}');
@@ -121,11 +121,14 @@ try {
           const data=await page.evaluate(()=>({over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),rows:document.querySelectorAll('.jdx-section').length,exhibits:document.querySelectorAll('.jdx').length}));
           assert.equal(data.over,false);assert.equal(data.rows,10);assert.equal(data.exhibits,2);assert.equal(new Set(data.ids).size,data.ids.length);
           if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
-          const links=page.locator('.jdx a');assert.equal(await links.count(),11);
+          const links=page.locator('.jdx a');assert.equal(await links.count(),12);
           assert.equal(await page.locator('.jdx a[id$=":ref-2"]').count(),1);
           assert.ok((await page.locator('.jdx a[id$=":ref-2"]').textContent()).includes('Дополнительный локатор'));
           assert.equal(await page.locator('.jdx a[id$=":ref-2"]').getAttribute('href'),'#source-other');
-          for(let i=0;i<11;i++){
+          assert.equal(await page.locator('.jdx a[id$=":ref-3"]').count(),1);
+          assert.ok((await page.locator('.jdx a[id$=":ref-3"]').textContent()).includes('Повторный источник, иной локатор'));
+          assert.equal(await page.locator('.jdx a[id$=":ref-3"]').getAttribute('href'),'#source-fixture');
+          for(let i=0;i<12;i++){
             const link=links.nth(i),id=await link.getAttribute('id'),target=await link.getAttribute('href');
             await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,target);
             const back=page.locator(target+' [data-journal-source-return]');
@@ -143,10 +146,13 @@ try {
               await page.emulateMedia({media:'print'});
               const border=await page.locator('.jdx').first().evaluate(el=>{const s=getComputedStyle(el);return [s.borderBlockStartWidth,s.borderBlockEndWidth,s.borderBlockStartColor,s.borderBlockEndColor]});
               assert.deepEqual(border,['2px','1px','rgb(85, 85, 85)','rgb(85, 85, 85)']);
+              const paper=await page.evaluate(()=>({background:getComputedStyle(document.querySelector('.journal-edition')).backgroundColor,headingHyphens:[...document.querySelectorAll('.jdx h2,.jdx h3')].map(el=>getComputedStyle(el).hyphens)}));
+              assert.equal(paper.background,'rgb(255, 255, 255)','canonical white paper');
+              assert.ok(paper.headingHyphens.every(v=>v==='none'),'no headline hyphenation');
               for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,'long-'+format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
             }
           }
-          longResults.push({engine:name,width,dark,js,citations:11});await persist();
+          longResults.push({engine:name,width,dark,js,citations:12});await persist();
           console.log('CASE_PASS '+JSON.stringify({fixture:'long',engine:name,width,dark,js}));
         }finally{await context.close();}
       }

@@ -1,7 +1,7 @@
 ---
 import Exhibit from '../components/journal/editorial/JournalDocumentExhibit.astro';
 import SourceReturn from '../components/journal/JournalSourceReturn.astro';
-import '../styles/editorial-edition.css';
+import '../components/journal/journalEditorial.css';
 import '../../fonts/fonts.css';
 const sections = [
   {id:'one',heading:'Первое положение',locator:'§ 1 · Технический образец',summary:'Редакционный пересказ для проверки композиции, чтения на узком экране и навигации по документу.',significance:'Проверяется доступность редакционной аннотации.',limitation:'Образец не подтверждает исторические факты.',claimId:'fixture-one',sourceId:'fixture-source'},
