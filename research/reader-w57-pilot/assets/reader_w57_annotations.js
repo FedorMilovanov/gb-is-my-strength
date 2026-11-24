@@ -238,65 +238,32 @@
       if(!write(qKey,next)){say('Не удалось обновить помету.');return null}
       repaint();return updated;
     }
-    // The Product Library owns the same note list. Two tabs can read it before
-    // either writes, so a plain setItem drops the other tab's record while both
-    // report success. Web Locks serialize read -> compare -> write, and the
-    // per-record compare refuses a stale editor instead of overwriting it.
-    function withNoteLock(task){
-      const name='gb-library:'+nKey;
-      if(navigator.locks&&typeof navigator.locks.request==='function')
-        return navigator.locks.request(name,()=>task());
-      const leaseKey=name+':lease',token='w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),deadline=Date.now()+3000;
-      return new Promise(resolve=>{
-        const attempt=()=>{
-          let owner=null;
-          try{owner=JSON.parse(localStorage.getItem(leaseKey)||'null')}catch(_){}
-          if(!owner||owner.until<Date.now()){
-            try{localStorage.setItem(leaseKey,JSON.stringify({token,until:Date.now()+1000}))}catch(_){}
-            let mine=false;
-            try{mine=JSON.parse(localStorage.getItem(leaseKey)||'{}').token===token}catch(_){}
-            if(mine){
-              Promise.resolve().then(task).then(v=>{try{localStorage.removeItem(leaseKey)}catch(_){}resolve(v)},
-                ()=>{try{localStorage.removeItem(leaseKey)}catch(_){}resolve({ok:false,conflict:false})});
-              return;
-            }
-          }
-          if(Date.now()>deadline){resolve(task());return}
-          setTimeout(attempt,25);
-        };
-        attempt();
-      });
+    // The Product Library owns the same note list and the shared mutation lock.
+    // W57 must refuse when that owner is not loaded; no independent fallback.
+    const sameId=(a,b)=>a!=null&&b!=null&&String(a)===String(b);
+    function resolveLinked(record,notes){
+      const explicit=record.annotation?.noteId;
+      const reverse=notes.filter(x=>x&&sameId(x.quoteId,record.id));
+      if(explicit!=null){
+        const matches=notes.filter(x=>x&&sameId(x.id,explicit));
+        if(matches.length!==1)return{conflict:true,note:null};
+        const note=matches[0];
+        if((note.quoteId!=null&&!sameId(note.quoteId,record.id))||reverse.some(x=>x!==note))
+          return{conflict:true,note:null};
+        return{note};
+      }
+      if(reverse.length>1)return{conflict:true,note:null};
+      const note=reverse[0]||null;
+      if(note&&notes.filter(x=>x&&sameId(x.id,note.id)).length!==1)return{conflict:true,note:null};
+      return{note};
     }
-    // mutate(current) returns {items} to commit or {conflict} to refuse. The
-    // opened note itself is the version this editor is allowed to overwrite.
-    function commitNotes(guard,next){
-      return withNoteLock(()=>{
-        const current=read(nKey);
-        const outcome=next(current,guard);
-        if(!outcome||outcome.conflict)return{ok:false,conflict:true,current};
-        try{localStorage.setItem(nKey,JSON.stringify(outcome.items))}
-        catch(e){console.error('W57_LIBRARY_STORE_FAILED',e);return{ok:false,conflict:false,current}}
-        window.dispatchEvent(new CustomEvent('gb:library-committed',{detail:{key:nKey}}));
-        return{ok:true,conflict:false,items:outcome.items};
-      });
-    }
-    function linkedNote(record){
-      const notes=read(nKey);
-      const explicit=record.annotation?.noteId&&notes.find(x=>x.id===record.annotation.noteId);
-      if(explicit)return explicit;
-      // Repair a single legacy one-way link without guessing among duplicates.
-      const linked=notes.filter(x=>x.quoteId===record.id);
-      return linked.length===1?linked[0]:null;
-    }
-    // A note editor must remember the exact saved version it opened. The
-    // Library owns the same note store; rereading only at Save time silently
-    // overwrote another tab or recreated a deleted note under a new ID.
+    function linkedNote(record){return resolveLinked(record,read(nKey)).note}
     function captureNoteSnapshot(record){
       const linked=linkedNote(record);
       return Object.freeze({
         quoteId:record.id,
-        quoteAnnotation:JSON.stringify(record.annotation||null),
-        noteId:linked?.id||null,
+        quoteState:JSON.stringify(record),
+        noteId:linked?.id??null,
         noteState:linked?JSON.stringify(linked):null
       });
     }
@@ -309,72 +276,53 @@
       requestAnimationFrame(()=>noteText.focus({preventScroll:true}));
     }
     async function saveLinkedNote(record,value,openingSnapshot){
-      // Compare against the version the EDITOR opened, not against whatever the
-      // quote link points to now: after this same tab saved once, the link and
-      // the live record have already moved on and must not block the next edit.
-      const notes=read(nKey);
-      const opened=openingSnapshot&&openingSnapshot.noteId
-        ?notes.find(x=>x.id===openingSnapshot.noteId):null;
-      const existing=opened||linkedNote(record);
-      const oldLink=record.annotation?.noteId||null;
-      if(openingSnapshot){
-        // The positional quote link is a second owner: it must not have moved,
-        // and no note may have become linked to this quote since opening.
-        const sameLink=openingSnapshot.quoteId===record.id &&
-          openingSnapshot.quoteAnnotation===JSON.stringify(record.annotation||null) &&
-          openingSnapshot.noteId===(existing?.id||null);
-        if(!sameLink)return{ok:false,message:
-          'Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.'};
-      }
-      // Fail closed on broken/ambiguous associations. A deleted note must
-      // never be silently recreated under a fresh ID by a stale W57 editor.
-      if(existing && notes.filter(x=>x.id===existing.id).length!==1)
-        return{ok:false,message:'Несколько заметок имеют один ID. Сохранение остановлено; черновик остаётся в редакторе.'};
-      if((oldLink && existing?.id!==oldLink) ||
-          (!existing && notes.some(x=>x.quoteId===record.id)))
-        return{ok:false,message:'Связанная заметка удалена или её связь неоднозначна. Новая запись не создана; черновик остаётся в редакторе.'};
-      if(existing){
-        if(oldLink!==existing.id){
-          if(!updateRecord(record.id,x=>{x.annotation.noteId=existing.id}))
-            return{ok:false,message:'Не удалось восстановить связь заметки с цитатой.'};
+      const owner=window.GBHighlights;
+      if(typeof owner?.mutateLibrary!=='function')
+        return{ok:false,message:'Безопасное сохранение недоступно. Черновик остаётся в редакторе.'};
+      const snapshot=openingSnapshot||captureNoteSnapshot(record);
+      const result=await owner.mutateLibrary([qKey,nKey],stores=>{
+        const quotes=stores[qKey],notes=stores[nKey];
+        if(snapshot.noteId!=null&&!notes.some(x=>x&&sameId(x.id,snapshot.noteId)))
+          return{reason:'deleted'};
+        const matches=quotes.filter(x=>x&&sameId(x.id,snapshot.quoteId));
+        if(matches.length!==1)return{reason:'conflict'};
+        const raw=matches[0];
+        const current=raw.annotation?.version===1?raw:{...raw,
+          annotation:{version:0,kind:raw.kind||'marker',color:raw.color||'amber',noteId:null}};
+        if(JSON.stringify(current)!==snapshot.quoteState)return{reason:'conflict'};
+        const resolved=resolveLinked(current,notes),existing=resolved.note;
+        if(resolved.conflict||((snapshot.noteId==null)!=(existing==null))||
+          (existing&&(!sameId(snapshot.noteId,existing.id)||JSON.stringify(existing)!==snapshot.noteState)))
+          return{reason:'conflict'};
+        let note;
+        if(existing)note={...existing,text:value};
+        else{
+          if(notes.length>=500)return{reason:'capacity'};
+          const id='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+          if(notes.some(x=>x&&sameId(x.id,id)))return{reason:'id-collision'};
+          note={id,text:value,quoteText:raw.text,articleTitle:raw.articleTitle,
+            url:raw.url,savedAt:Date.now(),quoteId:raw.id};
         }
-        const commit=await commitNotes(openingSnapshot,x=>{
-          const live=x.find(y=>y.id===existing.id);
-          // Gone or changed since this editor opened: never overwrite it.
-          if(!live)return{conflict:true};
-          if(openingSnapshot&&openingSnapshot.noteState&&JSON.stringify(live)!==openingSnapshot.noteState)return{conflict:true};
-          return{items:x.map(y=>y.id===existing.id?{...y,text:value}:y)};
-        });
-        if(commit.conflict){
-          if(oldLink!==existing.id)updateRecord(record.id,x=>{x.annotation.noteId=oldLink});
-          const live=commit.current.find(y=>y.id===existing.id);
-          // Keep the canonical shared wording: the browser contract and the
-          // Product panel both promise this exact sentence to the reader.
-          return{ok:false,message:live
+        const changes={[nKey]:existing?notes.map(x=>x===existing?note:x):[note,...notes]};
+        // Stage both arrays before writing; do not change a quote on refusal.
+        // Legacy quotes without positional metadata keep their original shape.
+        if(raw.annotation?.version===1&&raw.annotation.noteId!==note.id)
+          changes[qKey]=quotes.map(x=>x===raw?{...raw,annotation:{...raw.annotation,noteId:note.id}}:x);
+        return{changes,result:{updated:!!existing}};
+      });
+      if(!result.ok){
+        const message=result.reason==='deleted'
+          ?'Связанная заметка удалена в другой вкладке. Новая запись не создана; черновик остаётся в редакторе.'
+          :result.reason==='conflict'
             ?'Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.'
-            :'Связанная заметка удалена в другой вкладке. Новая запись не создана; черновик остаётся в редакторе.'};
-        }
-        if(!commit.ok)return{ok:false,message:'Ошибка сохранения: прежний текст заметки сохранён.'};
-        return{ok:true,message:'Заметка обновлена.'};
+            :result.reason==='capacity'
+              ?'Лимит 500 заметок. Экспортируйте библиотеку перед добавлением.'
+              :result.reason==='partial-write'
+                ?'Ошибка сохранения и восстановления связи. Черновик остаётся в редакторе; экспортируйте библиотеку.'
+                :'Ошибка сохранения. Черновик остаётся в редакторе.';
+        return{ok:false,message};
       }
-      if(notes.length>=500)return{ok:false,message:'Лимит 500 заметок. Экспортируйте библиотеку перед добавлением.'};
-      const id='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-      const note={id,text:value,quoteText:record.text,articleTitle:record.articleTitle,
-        url:record.url,savedAt:Date.now(),quoteId:record.id};
-      // Two localStorage keys are not transactional: write the reference first,
-      // then the note; compensate on failure and NEVER announce false success.
-      if(!updateRecord(record.id,x=>{x.annotation.noteId=id}))
-        return{ok:false,message:'Не удалось связать заметку с выделением. Ничего не записано.'};
-      // Prepend to the FRESH list: another tab may have saved its own note
-      // between this editor's read and this commit.
-      const commit=await commitNotes(null,current=>({items:[note,...current]}));
-      if(!commit.ok){
-        const rolledBack=updateRecord(record.id,x=>{x.annotation.noteId=oldLink});
-        return{ok:false,message:rolledBack
-          ?'Ошибка сохранения. Связь с выделением восстановлена, текст остаётся в редакторе.'
-          :'Ошибка сохранения и отката связи. Текст остаётся в редакторе; не закрывайте страницу до экспорта.'};
-      }
-      return{ok:true,message:'Заметка сохранена в библиотеке.'};
+      return{ok:true,message:result.updated?'Заметка обновлена.':'Заметка сохранена в библиотеке.'};
     }
     function locate(id){
       const r=rangeById.get(id);

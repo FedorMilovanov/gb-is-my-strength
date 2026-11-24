@@ -58,8 +58,8 @@
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "65f72bef1268095cb29cf7c27473c7313f5c7f1342ad6d36145973076be224e6",
-      "bytes": 32765
+      "sha256": "60a55cff4a288a5719493126908d828b7abf5f644de19c6671281fc451a8b27d",
+      "bytes": 29098
     }
   ],
   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD. W121 removes old Learning UI declarations; no authored content, approved geometry or notes storage changed."

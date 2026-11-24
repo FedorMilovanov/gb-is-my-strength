@@ -230,53 +230,102 @@
     window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
     return true;
   }
-  // A read-modify-write is not atomic: two tabs can both read the list before
-  // either writes, so the later setItem drops the other tab's record while both
-  // tabs report success. Web Locks serialize that section across tabs of the
-  // same profile, and a per-record compare inside the lock turns a stale editor
-  // into an explicit refusal instead of a silent overwrite. No note gains a new
-  // field and nothing is migrated: old notes keep their exact shape.
-  function withLibraryLock(key, task) {
-    const name = 'gb-library:' + key;
-    if (navigator.locks && typeof navigator.locks.request === 'function') {
-      return navigator.locks.request(name, () => task());
+  function libraryFailure(reason, current = []) {
+    return { ok: false, conflict: reason === 'conflict', reason, current };
+  }
+  // One cross-tab owner for notes and the quotes they reference. A localStorage
+  // lease cannot provide atomic exclusion; unsupported/rejected locks refuse.
+  async function withLibraryLock(task) {
+    let timer;
+    try {
+      const locks = navigator.locks;
+      if (!locks || typeof locks.request !== 'function') return libraryFailure('lock-unavailable');
+      const controller = new AbortController();
+      timer = setTimeout(() => controller.abort(), 3000);
+      return await locks.request('gb-library:' + NOTES_KEY,
+        { mode: 'exclusive', signal: controller.signal }, lock => {
+          clearTimeout(timer);
+          if (!lock || controller.signal.aborted) return libraryFailure('lock-unavailable');
+          return task();
+        });
+    } catch {
+      return libraryFailure('lock-or-task-failed');
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
     }
-    // No Web Locks: short lease in storage gives the same guarantee for this store.
-    const leaseKey = name + ':lease', token = uid('lock'), deadline = Date.now() + 3000;
-    return new Promise((resolve) => {
-      const attempt = () => {
-        let owner = null;
-        try { owner = JSON.parse(localStorage.getItem(leaseKey) || 'null'); } catch {}
-        if (!owner || owner.until < Date.now()) {
-          try { localStorage.setItem(leaseKey, JSON.stringify({ token, until: Date.now() + 1000 })); } catch {}
-          let mine = false;
-          try { mine = JSON.parse(localStorage.getItem(leaseKey) || '{}').token === token; } catch {}
-          if (mine) {
-            Promise.resolve().then(task).then((value) => {
-              try { localStorage.removeItem(leaseKey); } catch {}
-              resolve(value);
-            }, () => { try { localStorage.removeItem(leaseKey); } catch {} resolve({ ok: false, conflict: false, current: [] }); });
-            return;
-          }
+  }
+  function strictLibraryRead(key) {
+    const raw = localStorage.getItem(key);
+    const items = raw === null ? [] : JSON.parse(raw);
+    if (!Array.isArray(items)) throw new Error('Invalid library store');
+    return { raw, items };
+  }
+  // Synchronous preparation under one lock. Cross-key writes are not a
+  // database transaction: compensate only our own unchanged bytes on failure,
+  // and report partial failure rather than claiming data is unchanged.
+  function mutateLibrary(keys, prepare) {
+    if (!Array.isArray(keys) || !keys.length || new Set(keys).size !== keys.length ||
+        keys.some(key => key !== NOTES_KEY && key !== QUOTES_KEY)) {
+      return Promise.resolve(libraryFailure('invalid-keys'));
+    }
+    return withLibraryLock(() => {
+      let state, outcome, staged;
+      try {
+        state = Object.fromEntries(keys.map(key => [key, strictLibraryRead(key)]));
+        outcome = prepare(Object.fromEntries(keys.map(key => [key, state[key].items])));
+        if (!outcome || outcome.reason) return libraryFailure(outcome?.reason || 'conflict', outcome?.current);
+        if (!outcome.changes || Object.keys(outcome.changes).some(key => !state[key]))
+          return libraryFailure('invalid-mutation');
+        staged = [];
+        for (const key of keys) {
+          if (!Object.hasOwn(outcome.changes, key)) continue;
+          const items = outcome.changes[key];
+          const limit = key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
+          if (!Array.isArray(items)) return libraryFailure('invalid-mutation');
+          if (items.length > limit && items.length > state[key].items.length)
+            return libraryFailure('capacity', state[key].items);
+          const raw = JSON.stringify(items);
+          if (raw !== state[key].raw) staged.push({ key, raw, before: state[key].raw });
         }
-        if (Date.now() > deadline) { resolve(task()); return; }
-        setTimeout(attempt, 25);
+      } catch {
+        return libraryFailure('storage-read-or-prepare');
+      }
+      const completed = [];
+      const notify = key => {
+        try { window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } })); }
+        catch { /* notification cannot turn a successful write into a failed save */ }
       };
-      attempt();
+      try {
+        for (const key of keys) {
+          if (localStorage.getItem(key) !== state[key].raw) return libraryFailure('storage-changed');
+        }
+        for (const change of staged) {
+          if (localStorage.getItem(change.key) !== change.before) throw new Error('Library changed');
+          localStorage.setItem(change.key, change.raw);
+          completed.push(change);
+        }
+      } catch {
+        let partial = false;
+        for (const change of completed.reverse()) {
+          try {
+            if (localStorage.getItem(change.key) !== change.raw) { partial = true; continue; }
+            if (change.before === null) localStorage.removeItem(change.key);
+            else localStorage.setItem(change.key, change.before);
+          } catch { partial = true; }
+        }
+        if (partial) for (const change of completed) notify(change.key);
+        return libraryFailure(partial ? 'partial-write' : 'storage-write');
+      }
+      for (const change of completed) notify(change.key);
+      return { ok: true, conflict: false, ...outcome.result };
     });
   }
-  // guard: null for a new record, or the saved record this editor opened.
-  // mutate(current, guard) returns { items } to commit or { conflict } to refuse.
-  // Both run inside the lock, against the freshest stored list.
   function commit(key, guard, mutate) {
-    return withLibraryLock(key, () => {
-      const current = read(key);
-      const outcome = mutate(current, guard);
-      if (!outcome || outcome.conflict) return { ok: false, conflict: true, current };
-      try { localStorage.setItem(key, JSON.stringify(outcome.items)); }
-      catch { return { ok: false, conflict: false, current }; }
-      window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
-      return { ok: true, conflict: false, items: outcome.items };
+    return mutateLibrary([key], stores => {
+      const current = stores[key], outcome = mutate(current, guard);
+      if (!outcome || outcome.conflict) return { reason: 'conflict', current };
+      if (outcome.reason) return { reason: outcome.reason, current };
+      return { changes: { [key]: outcome.items }, result: { items: outcome.items } };
     });
   }
   function quotes() {
@@ -297,7 +346,7 @@
   function all() {
     const q = quotes().map((x) => ({
       id: String(x.id),
-      type: 'quote',
+      type: 'quote', recordSnapshot: JSON.stringify(x),
       /* kind/color доносим до списка: иначе помета выглядит как цитата
          и цвет в библиотеке не виден (P2). */
       kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
@@ -305,7 +354,7 @@
       text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
       title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0,
     }));
-    const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const n = notes().map((x) => ({ id: String(x.id), type: 'note', recordSnapshot: JSON.stringify(x), text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
   }
@@ -704,32 +753,46 @@
     const text = textArea.value.trim();
     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
     const context = draft && draft.context, editing = draft && draft.editing;
-    if (!editing && notes().length >= LIMIT_NOTES) {
-      statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
-      return;
-    }
     const created = {
       id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
       articleTitle: context && context.title || currentTitle(),
       url: context && context.url || location.origin + location.pathname,
       savedAt: Date.now(),
     };
-    const result = await commit(NOTES_KEY, editing, (current) => {
-      if (!editing) return { items: [created].concat(current) };
-      const live = current.find((x) => String(x.id) === editing.id);
-      // Deleted, or changed by another editor, since this one opened.
-      if (!live || live.text !== editing.text) return { conflict: true };
-      return { items: current.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x) };
+    const keys = !editing && context?.quoteId ? [NOTES_KEY, QUOTES_KEY] : [NOTES_KEY];
+    const result = await mutateLibrary(keys, stores => {
+      const current = stores[NOTES_KEY];
+      if (!editing) {
+        if (current.length >= LIMIT_NOTES) return { reason: 'capacity' };
+        if (current.some(x => x && String(x.id) === String(created.id))) return { reason: 'id-collision' };
+        if (context?.quoteId) {
+          const linked = stores[QUOTES_KEY].filter(x => x && String(x.id) === String(context.quoteId));
+          if (linked.length !== 1 || linked[0].annotation?.noteId != null ||
+              current.some(x => x?.quoteId != null && String(x.quoteId) === String(context.quoteId)))
+            return { reason: 'link-conflict' };
+        }
+        return { changes: { [NOTES_KEY]: [created, ...current] } };
+      }
+      const matches = current.filter(x => x && String(x.id) === String(editing.id));
+      const live = matches[0];
+      if (matches.length !== 1 || JSON.stringify(live) !== editing.recordSnapshot)
+        return { reason: 'conflict', current };
+      return { changes: { [NOTES_KEY]: current.map(x => x === live ? { ...x, text } : x) } };
     });
-    if (result.conflict) {
-      const live = result.current.find((x) => String(x.id) === editing.id);
+    if (result.conflict && editing) {
+      const live = result.current.find(x => x && String(x.id) === String(editing.id));
       statusMessage(live
         ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
         : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
       return;
     }
     if (!result.ok) {
-      statusMessage('Не удалось сохранить заметку. Проверьте доступное место в браузере.', true); return;
+      const message = result.reason === 'capacity'
+        ? 'Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.'
+        : result.reason === 'link-conflict'
+          ? 'Цитата или её связь изменилась. Откройте её заново; черновик остаётся в редакторе.'
+          : 'Не удалось безопасно сохранить заметку. Черновик остаётся в редакторе; повторите попытку.';
+      statusMessage(message, true); return;
     }
     // The commit itself is awaited (serialized), but the reader-visible result
     // must land in the same turn as the click: callers and contracts check the
@@ -749,51 +812,40 @@
   }
   async function deleteItem(item) {
     const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
-    const old = item.type === 'note' ? notes() : quotes();
-    const matches = old.filter((x) => String(x.id) === item.id);
-    // Old/corrupt backups can already contain collisions. Never remove
-    // every version of an ID merely because one visible card was clicked.
-    if (matches.length > 1) {
-      statusMessage('Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.', true);
+    const keys = key === NOTES_KEY ? [QUOTES_KEY, NOTES_KEY] : [QUOTES_KEY];
+    const deleted = await mutateLibrary(keys, stores => {
+      const current = stores[key];
+      const matches = current.filter(x => x && String(x.id) === String(item.id));
+      if (matches.length > 1) return { reason: 'duplicate' };
+      if (matches.length !== 1 || JSON.stringify(matches[0]) !== item.recordSnapshot)
+        return { reason: 'conflict' };
+      const entry = matches[0], index = current.indexOf(entry);
+      const changes = { [key]: current.filter(x => x !== entry) };
+      const clearedLinks = [];
+      if (key === NOTES_KEY) {
+        const linked = stores[QUOTES_KEY].filter(q => q?.annotation?.noteId != null &&
+          String(q.annotation.noteId) === String(entry.id));
+        if (linked.some(q => stores[QUOTES_KEY].filter(x => x && String(x.id) === String(q.id)).length !== 1))
+          return { reason: 'duplicate' };
+        if (linked.length) changes[QUOTES_KEY] = stores[QUOTES_KEY].map(q => {
+          if (!linked.includes(q)) return q;
+          const next = { ...q, annotation: { ...q.annotation, noteId: null } };
+          clearedLinks.push({ id: q.id, noteId: q.annotation.noteId, postDelete: JSON.stringify(next) });
+          return next;
+        });
+      }
+      return { changes, result: { receipt: { key, entry, index, clearedLinks } } };
+    });
+    if (!deleted.ok) {
+      statusMessage(deleted.reason === 'duplicate'
+        ? 'Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.'
+        : deleted.reason === 'partial-write'
+          ? 'Ошибка удаления и восстановления связи. Экспортируйте текущие данные и проверьте библиотеку.'
+          : 'Не удалось безопасно удалить запись. Обновите библиотеку и повторите.', true);
       return;
     }
-    const index = old.findIndex((x) => String(x.id) === item.id);
-    if (index < 0) return;
-    // A note owns two links: quote.annotation.noteId -> note.id and
-    // note.quoteId -> quote.id. Deleting only the note leaves the quote
-    // pointing at an ID that no longer exists; W57 repairs that by falling
-    // back to quoteId, but any reader that trusts noteId would still claim the
-    // note is there. Clear the reverse link FIRST: if that write fails nothing
-    // is deleted, and if the later delete fails the note survives with a
-    // one-way link that W57 already knows how to repair.
-    let clearedLinks = null;
-    if (item.type === 'note') {
-      const linked = quotes().filter((q) => q && q.annotation && String(q.annotation.noteId) === String(item.id));
-      if (linked.length) {
-        const unlink = await commit(QUOTES_KEY, null, (current) => ({
-          items: current.map((q) => q && q.annotation && String(q.annotation.noteId) === String(item.id)
-            ? Object.assign({}, q, { annotation: Object.assign({}, q.annotation, { noteId: null }) })
-            : q),
-        }));
-        if (!unlink || !unlink.ok) {
-          statusMessage('Не удалось снять связь заметки с цитатами. Запись не удалена; повторите.', true);
-          return;
-        }
-        clearedLinks = linked.map((q) => ({ id: q.id, noteId: item.id }));
-      }
-    }
-    if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
-      // Put the links back so a failed delete does not silently unlink quotes.
-      if (clearedLinks) await commit(QUOTES_KEY, null, (current) => ({
-        items: current.map((q) => {
-          const back = clearedLinks.find((l) => String(l.id) === String(q.id));
-          return back && q.annotation ? Object.assign({}, q, { annotation: Object.assign({}, q.annotation, { noteId: back.noteId }) }) : q;
-        }),
-      }));
-      statusMessage('Не удалось удалить запись.', true); return;
-    }
     clearUndo();
-    pendingUndo = { key, entry: old[index], index, clearedLinks };
+    pendingUndo = deleted.receipt;
     render(); sync();
     const undoButton = button('undo', 'Отменить удаление', 'Отменить');
     status.replaceChildren(element('span', '', 'Запись удалена'), undoButton);
@@ -1321,7 +1373,7 @@
   });
 
   const api = Object.freeze({
-    libraryVersion: 2, open, close, getAll: quotes,
+    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary,
     getNotes: notes, getLibrary: all,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
