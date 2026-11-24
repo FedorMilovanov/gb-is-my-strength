@@ -14,10 +14,10 @@
     "manifestItems": 105,
     "indexedRoutes": 104,
     "scannedSourceFiles": 554,
-    "references": 1377,
-    "occurrences": 3515,
+    "references": 1378,
+    "occurrences": 3516,
     "canonicalTextRecords": 149,
-    "referencesWithoutCanonicalText": 1228,
+    "referencesWithoutCanonicalText": 1229,
     "chapterRanges": 45,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1,
@@ -54439,6 +54439,30 @@
             "сердце"
           ],
           "sourceOwner": "src/components/article-pilots/kak-menyaetsya/KakMenyaetsyaBody.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "filippiytsam:2:17–18",
+      "bookId": "filippiytsam",
+      "testament": "NT",
+      "key": "2:17–18",
+      "kind": "verse-range",
+      "label": "Филиппийцам 2:17–18",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/journal/dossiers/g3/history/",
+          "title": "G3 Ministries: от конференции к служению (2011–2024)",
+          "context": "вых общин, Пол Вошер — обсуждением определения миссии. 17 января 2019 года Джон Пайпер проповедовал на G3 в Атланте по Флп. 2:17–18. В опубликованном им тексте проповеди речь идёт о страхе, ненасытном потреблении и привычке к обеспеченной жизни как о препятствиях для всемирной миссии. Он призывал к радости, готовой на жертву ради других, и отдельно",
+          "anchor": "g3-year-2019",
+          "raw": "Флп. 2:17–18",
+          "topics": [
+            "Журнал"
+          ],
+          "sourceOwner": "src/components/journal/G3HistoryFeature.astro",
           "sourceKind": "astro-source"
         }
       ]
