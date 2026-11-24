@@ -2,6 +2,7 @@ import { build } from 'astro';
 import { chromium, firefox, webkit } from 'playwright';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { spawnSync } from 'node:child_process';
 import { cp, readFile, writeFile, mkdir, mkdtemp, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname, extname, sep } from 'node:path';
@@ -45,6 +46,8 @@ const url='http://127.0.0.1:'+server.address().port;
 const evidence=join(root,'evidence');await mkdir(evidence);
 const specimen=JSON.parse(await readFile(join(root,'src/specimen.json'),'utf8'));
 const results=[];
+const compactAcceptance=[];
+const paperAcceptance=[];
 try{
  for(const name of selected){
   const browser=await engines[name].launch({headless:true,timeout:30000});
@@ -73,6 +76,78 @@ try{
      results.push({name,width,dark,variant,opening:witness.opening,textStart:witness.textStart,links:witness.links.length});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
     }finally{await page.close();}
    }
+   // The comparison matrix is JS-enabled; separately certify compact noJS
+   // and Reader text preference without conflating it with browser zoom.
+   for(const width of [320,390,768,1024,1440,1920])for(const dark of [false,true]){
+    const page=await browser.newPage({viewport:{width,height:950},javaScriptEnabled:false});
+    try{
+     page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
+     assert.equal((await page.goto(url+'/compact/')).status(),200);
+     if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
+     await page.evaluate(()=>document.fonts.ready);
+     const snapshot=()=>page.evaluate(()=>({
+      summary:document.querySelector('.jdc-summary').textContent,
+      annotation:document.querySelector('.jdc-note div:first-child dd').textContent,
+      boundary:document.querySelector('.jdc-note div:last-child dd').textContent,
+      dates:[...document.querySelectorAll('.jdc-dates time')].map(t=>t.getAttribute('datetime')),
+      fields:document.querySelectorAll('.jdc-dates dt').length,
+      over:document.documentElement.scrollWidth>innerWidth,
+      fontSizes:[...document.querySelectorAll('.jdc-summary,.jdc-note dd')].map(el=>parseFloat(getComputedStyle(el).fontSize)),
+      ids:[...document.querySelectorAll('[id]')].map(el=>el.id),
+      targetSizes:[...document.querySelectorAll('.jdc-links a')].map(a=>a.getBoundingClientRect().height),
+      family:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family.replace(/['"]/g,''))
+     }));
+     const base=await snapshot();
+     assert.equal(base.summary,specimen.readerSafeText);assert.equal(base.annotation,specimen.annotation);assert.equal(base.boundary,specimen.boundary);
+     assert.equal(base.fields,5);assert.deepEqual(base.dates,['2025-05-12','2025-05-12','2025-05-12','2025-05-13']);
+     assert.equal(base.over,false);assert.equal(new Set(base.ids).size,base.ids.length);
+     assert.ok(base.targetSizes.length===2&&base.targetSizes.every(h=>h>=44));
+     for(const font of ['Lora','Playfair Display','Source Sans 3'])assert.ok(base.family.includes(font),'missing font '+font);
+     const links=page.locator('.jdc-links a');const primary=await links.first().getAttribute('id');
+     for(let i=0;i<2;i++){
+      await links.nth(i).focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#src-G3-S008');
+      const back=page.locator('#src-G3-S008 [data-journal-source-return]');
+      assert.equal(await back.getAttribute('href'),'#'+primary,'noJS primary fallback');
+      await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#'+primary);
+     }
+     await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+     const enlarged=await snapshot();assert.equal(enlarged.over,false);
+     assert.equal(enlarged.summary,base.summary);assert.equal(enlarged.boundary,base.boundary);
+     assert.ok(enlarged.fontSizes.every((size,i)=>Math.abs(size/base.fontSizes[i]-2)<.01),'Reader text scale ratio');
+     await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
+     assert.deepEqual((await snapshot()).fontSizes,base.fontSizes);
+     await page.goto(url+'/compact/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.evaluate(()=>document.fonts.ready);
+     const stem=[name,width,dark?'dark':'light','compact-nojs'].join('-');
+     await page.screenshot({path:join(evidence,stem+'-full.png'),fullPage:true});
+     if(name==='chromium'&&width===1440){
+      await page.emulateMedia({media:'print'});
+      assert.equal(await page.locator('.journal-edition').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(255, 255, 255)');
+      for(const format of ['A4','Letter']){
+       const file=join(evidence,'compact-'+format+'-'+(dark?'dark':'light')+'.pdf');
+       await page.pdf({path:file,format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
+       const extract=spawnSync('pdftotext',['-layout','-enc','UTF-8',file,'-'],{encoding:'utf8'});
+       assert.equal(extract.status,0,extract.error?.message??extract.stderr);
+       const pages=extract.stdout.split('\f').map(p=>p.trim()).filter(Boolean);
+       const normalize=v=>v.replace(/-\s*\n\s*/gu,'').replace(/\s+/gu,' ').trim();
+       const text=normalize(pages.join('\n'));
+       // Exact browser text is checked above. PDF may insert typographic
+       // hyphenation and layout whitespace, so compare all words normalized.
+       const words=v=>v.replace(/[\s\u00ad\-]/gu,'');
+       assert.equal(words(text).split(words(specimen.readerSafeText)).length-1,1,'approved paragraph in PDF');
+       assert.ok(words(text).includes(words(specimen.annotation)),'annotation retained');
+       assert.ok(words(text).includes(words(specimen.boundary)),'boundary retained');
+       assert.ok(text.includes('Архив заявления')&&text.includes('Воспроизведение заявления'),'both reference labels retained');
+       const notePages=pages.filter(p=>p.includes('Значение')||p.includes('Предел доказательства'));
+       assert.equal(notePages.length,1,'compact annotation pair on one sheet');
+       assert.ok(notePages[0].includes('Значение')&&notePages[0].includes('Предел доказательства'));
+       paperAcceptance.push({format,dark,pages:pages.length,file});console.log('PAPER_PASS '+format+' '+dark+' '+pages.length);
+      }
+     }
+     compactAcceptance.push({name,width,dark,js:false,citations:2,textScale:2});
+     await writeFile(join(evidence,'compact-acceptance.json'),JSON.stringify({compactAcceptance,paperAcceptance},null,2));
+     console.log('COMPACT_PASS '+stem);
+    }finally{await page.close();}
+   }
   }finally{await browser.close();}
  }
 }finally{server.close();}
@@ -83,4 +158,6 @@ for(const name of selected)for(const width of [320,390,768,1024,1440,1920])for(c
  assert.ok(compact.opening<full.opening,'compact section must be shorter than full exhibit');
  assert.ok(compact.textStart<full.textStart,'compact reader text must start earlier');
 }
-console.log('SPECIMEN_CASES='+results.length);
+assert.equal(compactAcceptance.length,12*selected.length);
+assert.equal(paperAcceptance.length,selected.includes('chromium')?4:0);
+console.log('SPECIMEN_CASES='+results.length+' COMPACT_NOJS='+compactAcceptance.length+' PAPER='+paperAcceptance.length);
