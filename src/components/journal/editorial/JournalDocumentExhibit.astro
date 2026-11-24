@@ -1,0 +1,83 @@
+---
+import { documentExhibitView } from './document-exhibit-model.mjs';
+interface Source { id: string; href: string; label: string }
+interface Section { id: string; heading: string; locator: string; summary: string; significance: string; limitation: string; claimId: string; sourceId: string }
+interface Props {
+  input: { id: string; mode: 'editorial-paraphrase'; title: string; issuer: string; deck: string;
+    documentDate: string | null; publicationDate: string | null; captureDate: string | null; sections: Section[] };
+  authority: { claimIds: readonly string[]; sources: readonly Source[] };
+}
+const { input, authority } = Astro.props;
+const view = documentExhibitView(input, authority);
+const dates = [
+  ['Дата документа', view.documentDate],
+  ['Дата публикации', view.publicationDate],
+  ['Дата архивной копии', view.captureDate],
+] as const;
+const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(value + 'T00:00:00Z'));
+---
+<section class="jdx" id={view.id} aria-labelledby={view.id + '-title'}>
+  <header class="jdx-lead">
+    <p class="jdx-kicker">Документ · редакционный разбор</p>
+    <h2 id={view.id + '-title'}>{view.title}</h2>
+    <p class="jdx-deck">{view.deck}</p>
+    <dl class="jdx-meta">
+      <div><dt>Составитель / издатель</dt><dd>{view.issuer}</dd></div>
+      {dates.map(([label, value]) => <div><dt>{label}</dt><dd>{value ? <time datetime={value}>{fmt(value)}</time> : 'Не установлена'}</dd></div>)}
+    </dl>
+    <p class="jdx-note">Ниже — редакционный пересказ, не факсимиле и не дословная цитата.</p>
+  </header>
+  <ol class="jdx-sections">
+    {view.sections.map(row => <li class="jdx-section" data-journal-document-claim={row.claimId}>
+      <div class="jdx-passage">
+        <p class="jdx-locator"><span aria-hidden="true">{row.number} / </span>{row.locator}</p>
+        <h3>{row.heading}</h3>
+        <p>{row.summary}</p>
+        <a id={row.citationId} data-journal-citation href={row.source.href}>Источник: {row.source.label}</a>
+      </div>
+      <div class="jdx-commentary">
+        <dl>
+          <div><dt>Значение</dt><dd>{row.significance}</dd></div>
+          <div><dt>Предел доказательства</dt><dd>{row.limitation}</dd></div>
+        </dl>
+      </div>
+    </li>)}
+  </ol>
+</section>
+<style>
+  .jdx { margin-block: 2.25rem; min-width: 0; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); color: var(--je-ink); container-type: inline-size; }
+  .jdx-lead { padding: clamp(1rem, 4cqi, 2rem); background: var(--je-paper-raised); }
+  .jdx-kicker, .jdx-locator { margin: 0 0 .65rem; color: var(--je-gold); font: 600 .8rem/1.5 var(--je-ui); letter-spacing: .065em; }
+  .jdx h2 { margin: 0 0 .75rem; font: 600 clamp(1.65rem, 5cqi, 2.5rem)/1.14 var(--je-serif); }
+  .jdx-deck { margin: 0 0 1.35rem; font: 400 1rem/1.7 var(--je-body); }
+  .jdx-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 1rem; margin: 0; border-block-start: 1px solid var(--je-rule); padding-block-start: 1rem; }
+  .jdx-meta div, .jdx-passage, .jdx-commentary { min-width: 0; overflow-wrap: anywhere; }
+  .jdx-meta dt { color: var(--je-muted); font: .8rem/1.4 var(--je-ui); }
+  .jdx-meta dd { margin: .25rem 0 0; font: 600 .95rem/1.5 var(--je-ui); }
+  .jdx-note { margin: 1rem 0 0; color: var(--je-muted); font: .8rem/1.5 var(--je-ui); }
+  .jdx-sections { list-style: none; padding: 0; margin: 0; }
+  .jdx-section { display: grid; grid-template-columns: minmax(0, 1fr); padding-block: 1.25rem; gap: 1rem; border-block-start: 1px solid var(--je-rule); }
+  .jdx-passage { padding-inline: clamp(1rem, 4cqi, 2rem); }
+  .jdx-passage h3 { margin: 0 0 .6rem; font: 600 1.25rem/1.3 var(--je-serif); }
+  .jdx-passage p:not(.jdx-locator) { margin: 0 0 .75rem; font: 400 1rem/1.7 var(--je-body); }
+  .jdx-passage a { display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
+  .jdx-commentary { margin-inline: clamp(1rem, 4cqi, 2rem); padding: 1rem 1.1rem; border-inline-start: 2px solid var(--je-soft-gold); background: var(--je-paper-raised); }
+  .jdx-commentary dl { margin: 0; }
+  .jdx-commentary div + div { border-block-start: 1px solid var(--je-rule); padding-block-start: .8rem; margin-block-start: .8rem; }
+  .jdx-commentary dt { font: 600 .85rem/1.5 var(--je-ui); color: var(--je-gold); }
+  .jdx-commentary dd { margin: .35rem 0 0; font: .95rem/1.65 var(--je-body); }
+  @container (min-width: 44rem) {
+    .jdx-section { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 0; }
+    .jdx-commentary { margin-inline-start: 0; }
+  }
+  @media print {
+    .jdx { container-type: normal; color: #111; border-color: #555; }
+    .jdx-lead, .jdx-commentary { background: transparent; }
+    .jdx :is(h2,h3,p,dt,dd,a) { color: #111; }
+    .jdx-lead { break-inside: avoid; break-after: avoid; }
+    .jdx-section { display: block; }
+    .jdx-passage h3, .jdx-commentary dt { break-after: avoid; }
+    .jdx-commentary { margin-block-start: .5rem; }
+    .jdx-commentary div { break-inside: avoid; }
+  }
+</style>
