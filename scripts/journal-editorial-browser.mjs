@@ -310,6 +310,69 @@ async function g44NativeReturns(page, js) {
 }
 
 
+function g44MeasureFocus(root){
+  const a=document.activeElement, css=getComputedStyle(a), r=a.getBoundingClientRect(), header=document.querySelector('.mcp-top'), hs=header&&getComputedStyle(header);
+  const headerBottom=hs&&hs.display!=='none'&&hs.visibility!=='hidden'&&Number(hs.opacity)>0?Math.max(0,header.getBoundingClientRect().bottom):0;
+  const width=parseFloat(css.outlineWidth)||0, offset=parseFloat(css.outlineOffset)||0, outset=Math.max(0,width+offset);
+  const hit=(x,y)=>{const e=document.elementFromPoint(x,y);return e===a||a.contains(e);};
+  const rects=node=>{
+    const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT), out=[];
+    while(walker.nextNode())if(walker.currentNode.textContent.trim()){
+      const range=document.createRange();range.selectNodeContents(walker.currentNode);
+      for(const rect of range.getClientRects())if(rect.width>0&&rect.height>0)out.push({rect:rect.toJSON(),parent:walker.currentNode.parentElement});
+    }
+    return out;
+  };
+  const fragments=[...a.getClientRects()].filter(x=>x.width>0&&x.height>0).map(x=>({rect:x.toJSON(),hit:hit((x.left+x.right)/2,(x.top+x.bottom)/2)}));
+  const textRects=rects(a).map(x=>x.rect), inset=Math.max(0,-offset);
+  const textClear=textRects.length>0&&textRects.every(x=>fragments.some(f=>x.left>=f.rect.left+inset-1&&x.right<=f.rect.right-inset+1&&x.top>=f.rect.top+inset-1&&x.bottom<=f.rect.bottom-inset+1));
+  const samples=fragments.flatMap(({rect:f})=>[[f.left+width,f.top+width],[f.right-width,f.top+width],
+    [f.left+width,f.bottom-width],[f.right-width,f.bottom-width],...[.2,.5,.8].flatMap(t=>[
+    [f.left+(f.right-f.left)*t,f.top+width/2],[f.left+(f.right-f.left)*t,f.bottom-width/2],
+    [f.left+width/2,f.top+(f.bottom-f.top)*t],[f.right-width/2,f.top+(f.bottom-f.top)*t]])]);
+  const edgeMisses=samples.filter(([x,y])=>!hit(x,y));
+  const textMisses=textRects.filter(t=>!hit((t.left+t.right)/2,(t.top+t.bottom)/2));
+  const strips=fragments.flatMap(({rect:f})=>[
+    {left:f.left,right:f.right,top:f.top,bottom:f.top+width},{left:f.left,right:f.right,top:f.bottom-width,bottom:f.bottom},
+    {left:f.left,right:f.left+width,top:f.top,bottom:f.bottom},{left:f.right-width,right:f.right,top:f.top,bottom:f.bottom}]);
+  const intersects=(x,y)=>Math.min(x.right,y.right)-Math.max(x.left,y.left)>.5&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>.5;
+  const neighborCollisions=rects(root).filter(t=>!a.contains(t.parent)&&strips.some(strip=>intersects(strip,t.rect))).map(t=>t.rect);
+  const clippingAncestors=[];
+  for(let el=a.parentElement;el&&el!==document.documentElement;el=el.parentElement){
+    const st=getComputedStyle(el), box=el.getBoundingClientRect();
+    const cx=['hidden','clip','auto','scroll'].includes(st.overflowX),cy=['hidden','clip','auto','scroll'].includes(st.overflowY);
+    if(!cx&&!cy)continue;
+    const clip={left:box.left+el.clientLeft,right:box.left+el.clientLeft+el.clientWidth,top:box.top+el.clientTop,bottom:box.top+el.clientTop+el.clientHeight};
+    if(fragments.some(({rect:f})=>(cx&&(f.left-outset<clip.left-1||f.right+outset>clip.right+1))||(cy&&(f.top-outset<clip.top-1||f.bottom+outset>clip.bottom+1))))clippingAncestors.push({tag:el.tagName,id:el.id,clip});
+  }
+  const rgba=value=>{
+    const m=value.match(/^rgba?\(([^)]+)\)$/i);if(!m)return null;
+    const values=m[1].trim().split(/[,\s/]+/).map(Number);
+    return (values.length===3||values.length===4)&&values.every(Number.isFinite)?[...values.slice(0,3),values[3]??1]:null;
+  };
+  const ring=rgba(css.outlineColor);let background=null,determinable=true,opacity=1;
+  for(let el=a;el;el=el.parentElement){
+    const st=getComputedStyle(el);opacity*=Number(st.opacity);
+    if(!background&&determinable){
+      const bg=rgba(st.backgroundColor);
+      if(st.backgroundImage!=='none'||!bg||(bg[3]>0&&bg[3]<1))determinable=false;
+      else if(bg[3]===1)background=bg;
+    }
+  }
+  const luminance=c=>c.slice(0,3).map(n=>{const s=n/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;}).reduce((sum,n,i)=>sum+n*[.2126,.7152,.0722][i],0);
+  let contrast=null;
+  if(ring&&background&&determinable&&opacity===1){
+    const painted=ring.slice(0,3).map((n,i)=>n*ring[3]+background[i]*(1-ring[3]));
+    const l=[luminance(painted),luminance(background)];contrast=(Math.max(...l)+.05)/(Math.min(...l)+.05);
+  }
+  const indicatorVisible=Boolean(ring&&ring[3]>0&&opacity>0&&css.visibility==='visible');
+  const viewportWidth=document.documentElement.clientWidth;
+  return {id:a.id,inside:root.contains(a),focusVisible:a.matches(':focus-visible'),rect:r.toJSON(),headerBottom,width,offset,outset,style:css.outlineStyle,color:css.outlineColor,indicatorVisible,contrast,background,opacity,fragments,textRects,textClear,edgeSamples:samples.length,edgeMisses,textMisses,neighborCollisions,clippingAncestors,scrollY,viewportWidth,viewportHeight:innerHeight,
+    viewportOK:r.height>=44&&r.left-outset>=-1&&r.right+outset<=viewportWidth+1&&r.top-outset>=headerBottom-1&&r.bottom+outset<=innerHeight+1,
+    overflow:document.documentElement.scrollWidth-viewportWidth,
+    scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom};
+}
+
 async function g44RouteWitness(page, js, name, controlOnly=false) {
   const index=page.locator('#g3-2018-document-index'), toc=page.locator('[data-journal-contents]');
   assert.equal(await index.count(),1);
@@ -375,6 +438,7 @@ async function g44RouteWitness(page, js, name, controlOnly=false) {
     await shot(page,name+'-g44-mobile-after-wheel');
     result.artWitness.afterShot=await firstRow();
     console.log('G44_ART_WHEEL '+JSON.stringify({name,before:result.artWitness.before.allTextVisible,after:result.artWitness.after.allTextVisible,afterShot:result.artWitness.afterShot.allTextVisible}));
+    assert.ok(result.artWitness.after.allTextVisible&&result.artWitness.afterShot.allTextVisible,'G44 first row must be readable after ordinary wheel input');
   }
   const original=await page.evaluate(()=>{
     const style=document.documentElement.style;
@@ -393,22 +457,7 @@ async function g44RouteWitness(page, js, name, controlOnly=false) {
     const focusState=async expected=>{
       let state, previous, stable=0;
       for(let attempt=0;attempt<45;attempt++){
-        state=await index.evaluate(root=>{
-          const a=document.activeElement, css=getComputedStyle(a), r=a.getBoundingClientRect(), header=document.querySelector('.mcp-top'), hs=header&&getComputedStyle(header);
-          const headerBottom=hs&&hs.display!=='none'&&hs.visibility!=='hidden'&&Number(hs.opacity)>0?Math.max(0,header.getBoundingClientRect().bottom):0;
-          const width=parseFloat(css.outlineWidth)||0, offset=parseFloat(css.outlineOffset)||0, outset=Math.max(0,width+offset);
-          const hit=(x,y)=>{const e=document.elementFromPoint(x,y);return e===a||a.contains(e);};
-          const fragments=[...a.getClientRects()].filter(x=>x.width>0&&x.height>0).map(x=>({rect:x.toJSON(),hit:hit((x.left+x.right)/2,(x.top+x.bottom)/2)}));
-          const range=document.createRange();range.selectNodeContents(a);
-          const textRects=[...range.getClientRects()].filter(x=>x.width>0&&x.height>0).map(x=>x.toJSON());
-          const inset=Math.max(0,-offset);
-          const textClear=textRects.length>0&&textRects.every(x=>fragments.some(f=>x.left>=f.rect.left+inset-1&&x.right<=f.rect.right-inset+1&&x.top>=f.rect.top+inset-1&&x.bottom<=f.rect.bottom-inset+1));
-          const viewportWidth=document.documentElement.clientWidth;
-          return {id:a.id,inside:root.contains(a),focusVisible:a.matches(':focus-visible'),rect:r.toJSON(),headerBottom,width,offset,outset,style:css.outlineStyle,color:css.outlineColor,fragments,textRects,textClear,scrollY,viewportWidth,viewportHeight:innerHeight,
-            viewportOK:r.height>=44&&r.left-outset>=-1&&r.right+outset<=viewportWidth+1&&r.top-outset>=headerBottom-1&&r.bottom+outset<=innerHeight+1,
-            overflow:document.documentElement.scrollWidth-viewportWidth,
-            scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom};
-        });
+        state=await index.evaluate(g44MeasureFocus);
         result.lastState=state;
         if(state.id!==expected){
           // Keep the original mismatch a failure; retain subsequent native
@@ -422,8 +471,14 @@ async function g44RouteWitness(page, js, name, controlOnly=false) {
         previous=now;await page.waitForTimeout(75);
       }
       assert.equal(state.id,expected,'native G44 Tab/Shift+Tab order');
+      assert.ok(stable>=4,'G44 native focus did not settle: '+JSON.stringify(state));
       assert.ok(state.inside&&state.focusVisible&&state.width>=2&&state.style==='solid'&&state.viewportOK&&state.overflow===0,'G44 focus / viewport: '+JSON.stringify(state));
       assert.ok(state.fragments.length>0&&state.fragments.every(f=>f.hit)&&state.textClear,'G44 focus fragments or text clipped: '+JSON.stringify(state));
+      assert.ok(state.indicatorVisible&&state.offset===-state.width,'G44 fully inset painted focus indicator: '+JSON.stringify(state));
+      // G44 is a flat-paper component: unknown composited contrast is missing evidence,
+      // not permission to pass. Other Journal surfaces retain their own rules.
+      assert.ok(state.contrast!==null&&state.contrast>=3,'G44 focus indicator contrast not established: '+JSON.stringify(state));
+      assert.ok(state.edgeSamples>0&&!state.edgeMisses.length&&!state.textMisses.length&&!state.neighborCollisions.length&&!state.clippingAncestors.length,'G44 focus edge/text/ancestor occlusion: '+JSON.stringify(state));
       return state;
     };
     // B: the acceptance sequence is native input only. No screenshot or

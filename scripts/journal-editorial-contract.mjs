@@ -102,6 +102,14 @@ const G44_ROWS = [
     "23 мая 2025 · публикация воспоминаний"
   ]
 ];
+const g44VisibleText=value=>value.replace(/\s+/gu,' ').trim();
+// Negative controls preserve meaningful word boundaries; wrapping is benign.
+const g44TextControls=[...G44_ROWS.flatMap(r=>[r[2],r[6],r[7]]),'Две линии одного года','Жизнь общины','Ретроспектива · 2025'];
+for(const label of g44TextControls){
+  assert.ok(label.includes(' '));
+  assert.notEqual(g44VisibleText(label.replace(' ','')),g44VisibleText(label),'G44 missing word separator must fail');
+  assert.equal(g44VisibleText(' \n '+label.replaceAll(' ',' \n ')+' \t '),g44VisibleText(label),'G44 benign wrapping must pass');
+}
 function assertG44Dist(doc) {
   const one=(parent,predicate,label)=>{const matches=all(parent,predicate);assert.equal(matches.length,1,label);return matches[0];};
   const id=(parent,key)=>one(parent,n=>attr(n,'id')===key,'unique ID '+key);
@@ -113,17 +121,17 @@ function assertG44Dist(doc) {
   assert.ok(pinnedStart>=0);
   const pinned=parse(pinnedSource.slice(pinnedStart,pinnedSource.indexOf('</section>',pinnedStart)+10));
   const pinnedOwner=one(pinned,n=>hasClass(n,'je-history-text'),'pinned prose owner');
-  const baselineParagraphs=pinnedOwner.childNodes.filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote')).map(n=>normalize(text(n)));
+  const baselineParagraphs=pinnedOwner.childNodes.filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote')).map(n=>g44VisibleText(text(n)));
   assert.equal(baselineParagraphs.length,3);
-  assert.deepEqual(paragraphs.map(n=>normalize(text(n))),baselineParagraphs,'three immutable paragraphs');
+  assert.deepEqual(paragraphs.map(n=>g44VisibleText(text(n))),baselineParagraphs,'three immutable paragraphs');
   assert.equal(one(section,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-13','PUB13 exactly once'),paragraphs[2]);
   const index=id(section,'g3-2018-document-index');
   assert.equal(index.parentNode,prose);
   assert.equal(paragraphs[2],(prose.childNodes||[]).filter(n=>n.tagName).at(-2),'index follows original narrative');
-  assert.equal(normalize(text(one(index,n=>n.tagName==='h3','index heading'))),normalize('Две линии одного года'));
+  assert.equal(g44VisibleText(text(one(index,n=>n.tagName==='h3','index heading'))),g44VisibleText('Две линии одного года'));
   const groups=all(index,n=>hasClass(n,'jcdi-group'));
   assert.equal(groups.length,3);
-  assert.deepEqual(groups.map(n=>normalize(text(one(n,x=>x.tagName==='h4','group heading')))),['Жизнь общины','Заявление','Ретроспектива · 2025'].map(normalize));
+  assert.deepEqual(groups.map(n=>g44VisibleText(text(one(n,x=>x.tagName==='h4','group heading')))),['Жизнь общины','Заявление','Ретроспектива · 2025'].map(g44VisibleText));
   assert.ok(hasClass(groups[2],'jcdi-retrospective'));
   const lists=groups.map(n=>one(n,x=>x.tagName==='ol'&&hasClass(x,'jcdi-records'),'native ordered group'));
   assert.deepEqual(lists.map(n=>n.childNodes.filter(x=>x.tagName==='li').length),[3,3,1]);
@@ -131,12 +139,12 @@ function assertG44Dist(doc) {
   assert.deepEqual(links.map(n=>attr(n,'id')),G44_ROWS.map(r=>r[0]),'ordered source vector');
   for(const [i,[citation,href,label,date,kind,backHref,heading,dateLabel]] of G44_ROWS.entries()){
     const link=id(doc,citation);assert.equal(link,links[i]);assert.equal(attr(link,'href'),href);
-    assert.equal(normalize(text(link)),normalize(label));
+    assert.equal(g44VisibleText(text(link)),g44VisibleText(label));
     const row=link.parentNode;assert.equal(row.tagName,'li');assert.equal(row.parentNode,lists[i<3?0:i<6?1:2]);
     assert.equal(attr(row,'data-g44-date-kind'),kind);
     assert.equal(attr(one(row,n=>n.tagName==='time','one date '+citation),'datetime'),date);
-    assert.equal(normalize(text(one(row,n=>hasClass(n,'jcdi-date'),'date role'))),normalize(dateLabel));
-    assert.equal(normalize(text(one(row,n=>hasClass(n,'jcdi-label'),'row heading'))),normalize(heading));
+    assert.equal(g44VisibleText(text(one(row,n=>hasClass(n,'jcdi-date'),'date role'))),g44VisibleText(dateLabel));
+    assert.equal(g44VisibleText(text(one(row,n=>hasClass(n,'jcdi-label'),'row heading'))),g44VisibleText(heading));
     const source=id(doc,href.slice(1));
     const back=one(source,n=>n.tagName==='a'&&attr(n,'data-journal-source-return')!==undefined,'one return '+citation);
     assert.equal(attr(back,'href'),backHref);id(doc,backHref.slice(1));
