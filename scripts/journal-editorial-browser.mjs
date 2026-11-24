@@ -309,6 +309,91 @@ async function g44NativeReturns(page, js) {
   return results;
 }
 
+
+async function g44RouteWitness(page, js, name) {
+  const index=page.locator('#g3-2018-document-index'), toc=page.locator('[data-journal-contents]');
+  assert.equal(await index.count(),1);
+  const links=index.locator('a[data-journal-citation]');
+  const ids=g44Sources.map(([id])=>id);
+  assert.deepEqual(await links.evaluateAll(nodes=>nodes.map(n=>n.id)),ids);
+  const result={viewport:page.viewportSize(),js,forward:[],backward:[]};
+  // Capture the real, built component before sequential keyboard navigation.
+  // A locator screenshot can scroll; never use it to make a focus state pass.
+  await index.screenshot({path:path.join(output,'after',name+'-g44-spread.png'),timeout:8000});
+  const original=await page.evaluate(()=>{
+    const style=document.documentElement.style;
+    return {value:style.getPropertyValue('--gb-reader-font-scale'),priority:style.getPropertyPriority('--gb-reader-font-scale')};
+  });
+  const font=()=>links.first().evaluate(a=>parseFloat(getComputedStyle(a).fontSize));
+  const before=await font();
+  try {
+    await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+    const after=await font();
+    assert.ok(Math.abs(after-2*before)<.25,'G44 must actually scale reading labels to 200%');
+    result.scale={before,after};
+    // Native TOC activation is the sequential starting point, not focus() on
+    // every link. The first Tab must arrive at the first real document citation.
+    if(!await toc.evaluate(el=>el.open)) await toc.locator('summary').click();
+    await toc.locator('a[href="#g3-year-2018"]').click();
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,'#g3-year-2018');
+    assert.equal(await page.locator('#g3-year-2018').evaluate(el=>el===document.activeElement),true);
+    const focusState=async expected=>{
+      let state, previous, stable=0;
+      for(let attempt=0;attempt<45;attempt++){
+        state=await index.evaluate(root=>{
+          const a=document.activeElement, css=getComputedStyle(a), r=a.getBoundingClientRect(), header=document.querySelector('.mcp-top'), hs=header&&getComputedStyle(header);
+          const headerBottom=hs&&hs.display!=='none'&&hs.visibility!=='hidden'&&Number(hs.opacity)>0?Math.max(0,header.getBoundingClientRect().bottom):0;
+          const width=parseFloat(css.outlineWidth)||0, offset=parseFloat(css.outlineOffset)||0, outset=Math.max(0,width+offset);
+          const hit=(x,y)=>{const e=document.elementFromPoint(x,y);return e===a||a.contains(e);};
+          const fragments=[...a.getClientRects()].filter(x=>x.width>0&&x.height>0).map(x=>({rect:x.toJSON(),hit:hit((x.left+x.right)/2,(x.top+x.bottom)/2)}));
+          const range=document.createRange();range.selectNodeContents(a);
+          const textRects=[...range.getClientRects()].filter(x=>x.width>0&&x.height>0).map(x=>x.toJSON());
+          const inset=Math.max(0,-offset);
+          const textClear=textRects.length>0&&textRects.every(x=>fragments.some(f=>x.left>=f.rect.left+inset-1&&x.right<=f.rect.right-inset+1&&x.top>=f.rect.top+inset-1&&x.bottom<=f.rect.bottom-inset+1));
+          const viewportWidth=document.documentElement.clientWidth;
+          return {id:a.id,inside:root.contains(a),focusVisible:a.matches(':focus-visible'),rect:r.toJSON(),headerBottom,width,offset,outset,style:css.outlineStyle,color:css.outlineColor,fragments,textRects,textClear,scrollY,viewportWidth,viewportHeight:innerHeight,
+            viewportOK:r.height>=44&&r.left-outset>=-1&&r.right+outset<=viewportWidth+1&&r.top-outset>=headerBottom-1&&r.bottom+outset<=innerHeight+1,
+            overflow:document.documentElement.scrollWidth-viewportWidth,
+            scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom};
+        });
+        result.lastState=state;
+        if(state.id!==expected)break;
+        const now=[state.scrollY,state.rect.top,state.rect.bottom,state.headerBottom];
+        stable=previous&&now.every((x,i)=>Math.abs(x-previous[i])<.5)?stable+1:0;
+        if(stable>=4&&state.viewportOK)break;
+        previous=now;await page.waitForTimeout(75);
+      }
+      assert.equal(state.id,expected,'native G44 Tab/Shift+Tab order');
+      assert.ok(state.inside&&state.focusVisible&&state.width>=2&&state.style==='solid'&&state.viewportOK&&state.overflow===0,'G44 focus / viewport: '+JSON.stringify(state));
+      assert.ok(state.fragments.length>0&&state.fragments.every(f=>f.hit)&&state.textClear,'G44 focus fragments or text clipped: '+JSON.stringify(state));
+      return state;
+    };
+    for(const [i,id] of ids.entries()){
+      await page.keyboard.press('Tab');result.forward.push(await focusState(id));
+      if(i===0||i===ids.length-1)await shot(page,name+'-g44-2x-'+(i===0?'first':'last'));
+    }
+    for(const id of ids.slice(0,-1).reverse()){
+      await page.keyboard.press('Shift+Tab');result.backward.push(await focusState(id));
+    }
+    assert.equal(result.forward.length,7);assert.equal(result.backward.length,6);
+    await shot(page,name+'-g44-2x-reverse');
+  }catch(error){
+    result.failure=error.message;
+    fs.writeFileSync(path.join(output,'after',name+'-g44-failure.json'),JSON.stringify({head:report.head,engine,...result},null,2)+'\n');
+    await shot(page,name+'-g44-failure',{timeout:8000}).catch(()=>{});
+    throw error;
+  }finally{
+    await page.evaluate(({value,priority})=>{
+      const style=document.documentElement.style;
+      if(value)style.setProperty('--gb-reader-font-scale',value,priority);else style.removeProperty('--gb-reader-font-scale');
+    },original);
+  }
+  result.returns=await g44NativeReturns(page,js);
+  assert.equal(result.returns.length,7);
+  return result;
+}
+
 // axe reports contrast review items for rows clipped by a native scrollport.
 // Retain every item; accept only this measured case, with a flat opaque paper
 // background and independently computed >=4.5:1 foreground contrast. Anything
@@ -860,6 +945,14 @@ try {
             await page.mouse.wheel(0, 200); await settleWithoutScripts(page);
             assert.ok((await railState()).y > item.tallResize.y + 100, 'native wheel must still reach the article when the rail fits');
           }
+          if (route.kind === 'history' && width === 1440 && height === 480) {
+            item.g44 = await g44RouteWitness(page,javaScriptEnabled,name);
+            const originalViewport=page.viewportSize();
+            try {
+              await page.setViewportSize({width:768,height:1024});
+              item.g44Tablet=await g44RouteWitness(page,javaScriptEnabled,name+'-768x1024');
+            } finally { await page.setViewportSize(originalViewport); }
+          }
           assert.deepEqual(item.runtime, []);
           console.log(`PASS ${name}`);
         } catch (error) {
@@ -1097,6 +1190,11 @@ try {
           assert.equal(item.viewport.scrollWidth, item.viewport.usableWidth);
           assert.deepEqual(item.layout.overflow, []);
           assert.deepEqual(item.runtime, []);
+          if (route.kind === 'history' && [320,390].includes(width) && height === 844) {
+            item.phase = 'G44 real route witness';
+            item.g44 = await g44RouteWitness(page,javaScriptEnabled,name);
+            assert.deepEqual(item.runtime, []);
+          }
           item.phase = 'complete';
           console.log(`PASS ${name}`);
         } catch (error) {
@@ -1220,6 +1318,44 @@ try {
           assert.equal(item.dom.paper, '#fff', 'print must use white paper in either browser preference');
           await page.pdf({ path: item.pdf, format: paper, printBackground: true,
             margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
+
+          if(route.kind==='history'){
+            const index=page.locator('#g3-2018-document-index');
+            const paperIndex=await index.evaluate(root=>{
+              const groups=[...root.querySelectorAll('.jcdi-group')];
+              return {heading:root.querySelector('h3').textContent.trim(),nextHeading:document.querySelector('#g3-later-title').textContent.trim(),
+                columns:getComputedStyle(root.querySelector('.jcdi-lanes')).display,
+                groups:groups.map(g=>({heading:g.querySelector('h4').textContent.trim(),rows:[...g.querySelectorAll('li')].map(li=>({
+                  date:li.querySelector('.jcdi-date').textContent.trim(),label:li.querySelector('.jcdi-label').textContent.trim(),
+                  citation:li.querySelector('a[data-journal-citation]').textContent.trim(),id:li.querySelector('a[data-journal-citation]').id,
+                  breakInside:getComputedStyle(li).breakInside
+                }))}))};
+            });
+            assert.equal(paperIndex.columns,'block');
+            assert.deepEqual(paperIndex.groups.map(g=>g.rows.length),[3,3,1]);
+            assert.deepEqual(paperIndex.groups.flatMap(g=>g.rows.map(r=>r.id)),g44Sources.map(([id])=>id));
+            assert.ok(paperIndex.groups.flatMap(g=>g.rows).every(r=>r.breakInside==='avoid'),'G44 print keeps only individual rows together');
+            item.g44Paper=paperIndex;
+            const pdfCheck=spawnSync(args['pdf-python']||'python3',['-c',[
+              'import fitz, json, sys, unicodedata',
+              'spec=json.loads(sys.argv[2])',
+              'norm=lambda t: "".join(c for c in unicodedata.normalize("NFKC",t) if not c.isspace() and ord(c)!=173)',
+              'with fitz.open(sys.argv[1]) as doc: content=norm(" ".join(p.get_text(sort=True) for p in doc))',
+              'title=norm(spec["heading"]); end=norm(spec["nextHeading"])',
+              'start=content.find(title); assert start>=0, "missing compact print heading"',
+              'stop=content.find(end,start+len(title)); assert stop>start, "missing next section"',
+              'region=content[start:stop]; cursor=0; total=0',
+              'for group in spec["groups"]:',
+              '    tokens=[group["heading"]]+[v for row in group["rows"] for v in (row["date"],row["label"],row["citation"])]',
+              '    for token in tokens:',
+              '        value=norm(token); at=region.find(value,cursor); assert at>=0, "missing/out-of-order printed G44 item: "+token',
+              '        cursor=at+len(value); total+=1',
+              'print(json.dumps({"orderedFields":total,"rows":sum(len(g["rows"]) for g in spec["groups"])}))'
+            ].join('\n'),item.pdf,JSON.stringify(paperIndex)],{cwd:root,encoding:'utf8'});
+            assert.equal(pdfCheck.status,0,pdfCheck.error?.message||pdfCheck.stderr);
+            item.g44Paper.actual=JSON.parse(pdfCheck.stdout);
+            assert.deepEqual(item.g44Paper.actual,{orderedFields:24,rows:7});
+          }
           assert.deepEqual(item.runtime, []);
         } catch (error) {
           item.failure = error.message; item.stack = error.stack;
