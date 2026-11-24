@@ -59,3 +59,16 @@
  html body article table thead{display:table-header-group;break-inside:avoid-page;break-after:avoid-page}
  html body article table tbody > tr:first-child{break-before:avoid-page}
 }
+
+/* Hermeneutics: the long editorial header is not an indivisible print block. */
+@media print {
+  [data-hm-reader] .article-header {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+  [data-hm-reader] .article-header > .msjline,
+  [data-hm-reader] .article-header > .original-author-card {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+}
