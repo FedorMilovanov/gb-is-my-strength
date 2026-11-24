@@ -49,7 +49,12 @@ const periods = groupSourceChronicle(sources, selection);
   .chronicle-source-year { font:600 .9rem/1.5 var(--je-ui); letter-spacing:.04em; display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; }
 }
 @media print {
-  .chronicle-period-head { break-after:avoid; }
+  .chronicle-period-head { break-inside:avoid; break-after:avoid; }
+  .chronicle-sources { break-before:avoid; }
+  .chronicle-sources li:first-child { break-before:avoid; }
+  .chronicle-sources li { display:block; }
+  .chronicle-source-year { display:flex; align-items:baseline; gap:.65rem; font:600 11pt/1.4 var(--je-ui); margin-bottom:4pt; }
+  .chronicle-year-role { display:inline; color:#333; }
   .chronicle-sources li { break-inside:avoid; }
   .chronicle-source-year,.chronicle-period-head p,.chronicle-source-boundary { color:#111; }
 }
