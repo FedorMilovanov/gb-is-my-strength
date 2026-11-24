@@ -321,4 +321,49 @@ function button(action, label, text) {
     if (action === 'card') exportQuoteCard(item, statusMessage);
   }
 
-export { renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab, handleLibraryClick };
+  const closeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>';
+  const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
+
+  function createLibraryPanel(penSvg) {
+    const overlay = document.createElement('div');
+    overlay.id = 'gb-hl-backdrop';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('inert', '');
+    overlay.innerHTML = [
+      '<section id="gb-hl-panel" role="dialog" aria-modal="true" aria-labelledby="gb-hl-title" tabindex="-1">',
+      '<div id="gb-hl-handle" aria-hidden="true"></div>',
+      '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ <span id="gb-hl-count"></span></span>',
+      '<h2 id="gb-hl-title">Моя библиотека</h2></div>',
+      '<button type="button" id="gb-hl-export" aria-label="Скачать материалы библиотеки" title="Цитаты, заметки и ссылки в текстовом файле (.md)">↓ Скачать</button>',
+      '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
+      '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',
+      '<button type="button" data-library-tab="all" aria-pressed="true">Все</button>',
+      '<button type="button" data-library-tab="source" aria-pressed="false">Источники</button>',
+      '<button type="button" data-library-tab="quote" aria-pressed="false">Цитаты</button>',
+      '<button type="button" data-library-tab="note" aria-pressed="false">Заметки</button>',
+      '<button type="button" data-library-tab="favorite" aria-pressed="false">Статьи</button></nav>',
+      '<div id="gb-hl-tools"><label id="gb-hl-searchwrap">' + searchSvg,
+      '<input id="gb-hl-search" type="search" placeholder="Найти в сохранениях…" aria-label="Поиск по сохранениям" autocomplete="off"></label>',
+      '<select id="gb-hl-source" aria-label="Фильтр по исходной статье"><option value="all">Все статьи</option></select></div>',
+      '<div id="gb-hl-list" tabindex="0" aria-label="Сохранённые материалы"></div>',
+      '<div id="gb-hl-status" role="status" aria-live="polite"></div>',
+      '<form id="gb-hl-editor" hidden><label for="gb-hl-note-text">Личная заметка</label>',
+      '<div id="gb-hl-note-context"></div><textarea id="gb-hl-note-text" rows="4" maxlength="16000" placeholder="Что вы хотите запомнить?"></textarea>',
+      '<div class="gb-hl-editor-actions"><button type="button" id="gb-hl-note-cancel">Отмена</button>',
+      '<button type="submit">Сохранить заметку</button></div></form>',
+      '<footer id="gb-hl-foot"><button type="button" id="gb-hl-new-note">' + penSvg + ' Новая заметка</button></footer>',
+      '</section>',
+    ].join('');
+    document.body.append(overlay);
+    const panel = overlay.querySelector('#gb-hl-panel');
+    const list = overlay.querySelector('#gb-hl-list');
+    const titleCount = overlay.querySelector('#gb-hl-count');
+    const search = overlay.querySelector('#gb-hl-search');
+    const sourceSelect = overlay.querySelector('#gb-hl-source');
+    const status = overlay.querySelector('#gb-hl-status');
+    const editor = overlay.querySelector('#gb-hl-editor');
+    const textArea = overlay.querySelector('#gb-hl-note-text');
+    return {overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea};
+  }
+
+export { createLibraryPanel, renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab, handleLibraryClick };

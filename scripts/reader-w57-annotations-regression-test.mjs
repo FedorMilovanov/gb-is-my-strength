@@ -372,7 +372,7 @@ assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefor
 
 
 // Actual shared quote mutation paths with multiple quotes and a serialized scheduler.
-const markerStart=highlights.indexOf('  async function saveMarker(color) {');
+const markerStart=highlights.indexOf('  function findMarkerIndex(old,record) {');
 const markerEnd=highlights.indexOf('  /* mutateLibrary()',markerStart);
 const quoteStart=highlights.indexOf('  async function saveSelectedQuote() {');
 const quoteEnd=highlights.indexOf('  function bindSelectionButton(',quoteStart);
@@ -396,8 +396,8 @@ const qFixture=(initial=[],mode='ok')=>{
  const documentFixture={title:'Article',querySelector:()=>({})};
  const noOp=()=>{};
  const product=(selected)=>{
-  const factory=new Function('selection','uid','currentTitle','sourceUrl','mutateLibrary','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
-  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,owner.mutateLibrary,q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolve:(_,a)=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
+  const factory=new Function('selection','uid','currentTitle','sourceUrl','transactionCall','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
+  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,(method,...args)=>createRecordTransactions({mutateLibrary:owner.mutateLibrary,libraryFailure:reason=>({ok:false,reason}),gbHighlightKey:keys.gbHighlightKey,NOTES_KEY:n,QUOTES_KEY:q,LIMIT_NOTES:500,LIMIT_QUOTES:200})[method](...args),q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolve:(_,a)=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
  };
  const wapi=new Function('window','qKey','nKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,n,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
  return {selection,product,wapi,rows:()=>JSON.parse(raw),raw:()=>raw,writes:()=>count,messages,owner};
@@ -533,3 +533,72 @@ for(const [name,record,notes,receipt] of [
  assert.equal(f.record.annotation.noteId,'A');
 }
 console.log('W40: 6/6 Undo integrity cases PASS');
+
+
+// Actual lazy dialog lifecycle: deterministic deferred imports, no DOM/browser claims.
+{
+ const from=highlights.indexOf('  let opening = null, openGeneration = 0;');
+ const to=highlights.indexOf('  function sync()',from);
+ assert.ok(from>=0&&to>from,'lazy dialog lifecycle source boundaries');
+ const lifecycle=highlights.slice(from,to);
+ function fixture(){
+  let requests=[],opened=false,locked=0,focus=0,paint=0,errors=0,broken=false;
+  const attributes=new Map();
+  const fab={setAttribute:(k,v)=>attributes.set(k,v),removeAttribute:k=>attributes.delete(k)};
+  const trigger={isConnected:true,focus:()=>{focus++}};
+  const overlay={classList:{add:()=>{opened=true},remove:()=>{opened=false}},setAttribute(){},removeAttribute(){},querySelector:()=>({focus(){}})};
+  const document={activeElement:trigger};
+  const window={SiteUtils:{lockScroll:()=>{locked++},unlockScroll:()=>{locked--}}};
+  const loadPresenter=()=>new Promise((resolve,reject)=>requests.push({resolve,reject}));
+  const render=()=>{paint++;if(broken)throw Error('render failure')};
+  const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo',
+   "let research=null, opener=null, tab='', filter='', searchTerm='', shown=0; const BATCH_SIZE=30, search={value:''};"+lifecycle+'return {open,close};');
+  const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{});
+  return {api,requests,trigger,attributes,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
+ }
+ const f=fixture();
+ const pending=f.api.open(f.trigger);
+ assert.equal(f.api.open(f.trigger),pending,'two open requests share one initialization');
+ assert.equal(f.requests.length,1);
+ assert.equal(f.attributes.get('aria-busy'),'true');
+ assert.equal(f.state().locked,0,'pending load must not lock underlying reading');
+ f.requests[0].resolve();assert.equal(await pending,true);
+ assert.deepEqual(f.state(),{opened:true,locked:1,focus:0,paint:1,errors:0});
+ assert.equal(f.attributes.has('aria-busy'),false);
+ f.api.close();assert.deepEqual(f.state(),{opened:false,locked:0,focus:1,paint:1,errors:0});
+ const cancel=fixture(),old=cancel.api.open(cancel.trigger);cancel.api.close();
+ const next=cancel.api.open(cancel.trigger);cancel.requests[0].resolve();
+ assert.equal(await old,false);assert.equal(cancel.state().opened,false);
+ assert.equal(cancel.attributes.get('aria-busy'),'true','obsolete load cannot clear newer busy state');
+ cancel.requests[1].resolve();assert.equal(await next,true);assert.equal(cancel.state().locked,1);
+ const retry=fixture(),failed=retry.api.open(retry.trigger);retry.requests[0].reject(Error('offline'));
+ assert.equal(await failed,false);assert.equal(retry.state().locked,0);assert.equal(retry.state().errors,1);
+ assert.equal(retry.attributes.has('aria-busy'),false);
+ const again=retry.api.open(retry.trigger);retry.requests[1].resolve();assert.equal(await again,true);
+ const broken=fixture(),rendering=broken.api.open(broken.trigger);broken.breakRender();broken.requests[0].resolve();
+ assert.equal(await rendering,false);assert.equal(broken.state().locked,0,'failed render must release scroll lock');
+ assert.equal(broken.state().opened,false);assert.equal(broken.state().errors,1);
+}
+
+
+// Painting must not traverse the entire article on a clean or positional-only page.
+{
+ const start=highlights.indexOf('  function paintMarks() {');
+ const end=highlights.indexOf('  function findMarkerIndex(',start);
+ assert.ok(start>=0&&end>start,'paint source boundaries');
+ const source=highlights.slice(start,end);
+ function scene(rows,desktop=false){
+  let scans=0,placed=[],removed=[],resolved=0;
+  const scope={};
+  const CSS={highlights:{set:(key)=>placed.push(key),delete:key=>removed.push(key)}};
+  const document={body:{classList:{contains:()=>desktop}},querySelector:()=>scope};
+  const paint=new Function('window','CSS','document','textIndex','quotes','gbHighlightPath','location','MARK_COLORS','GBReaderAnchors','locate','gbHighlightKey','matchMedia','Highlight',source+'return paintMarks;')({CSS},CSS,document,()=>{scans++;return{}},()=>rows,x=>x.url,{href:'/a'},['amber','sage'],{resolve:()=>{resolved++;return{}}},()=>({}),x=>x.id,()=>({matches:desktop}),function(){});
+  const result=paint();return {scans,resolved,placed,removed,painted:result.painted,ids:[...result.placed]};
+ }
+ const clean=scene([]);
+ assert.equal(clean.scans,0);assert.equal(clean.painted,0);assert.deepEqual(clean.removed,['gb-hl-amber','gb-hl-sage']);
+ const positional={id:'p',url:'/a',color:'amber',annotation:{version:1,anchor:{}}};
+ const native=scene([positional]);assert.equal(native.scans,0);assert.equal(native.resolved,1);assert.deepEqual(native.ids,['p']);
+ const w57=scene([positional],true);assert.equal(w57.scans,0);assert.equal(w57.resolved,0);assert.equal(w57.painted,0);
+ const legacy=scene([{id:'a',url:'/a',color:'amber'},{id:'b',url:'/a',color:'sage'},{id:'other',url:'/b',color:'sage'}]);assert.equal(legacy.scans,1);assert.equal(legacy.painted,2);assert.deepEqual(legacy.ids,['a','b']);
+}

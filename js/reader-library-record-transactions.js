@@ -128,5 +128,60 @@ export function createRecordTransactions({mutateLibrary, libraryFailure, gbHighl
       return { changes, result: { receipt } };
     });
   }
-  return Object.freeze({restoreDeleted,saveNoteRecord,deleteRecord});
+  function saveQuoteRecord(record,gbAddHighlight) {
+    return mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const old = stores[QUOTES_KEY], key = gbHighlightKey(record);
+      if (!key) return { reason: 'conflict' };
+      const matches = old.filter(x => gbHighlightKey(x) === key);
+      if (matches.length > 1) return { reason: 'duplicate' };
+      if (matches.length === 1) return { changes: {}, result: { already: true } };
+      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
+      if (old.some(x => x && String(x.id) === String(record.id)) ||
+          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
+        return { reason: 'id-collision' };
+      const next = gbAddHighlight(old, record);
+      if (next === old) return { reason: 'conflict' };
+      return { changes: { [QUOTES_KEY]: next } };
+    });
+  }
+  function saveMarkerRecord(record,nextColor,findMarkerIndex,gbAddHighlight) {
+    return mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const old = stores[QUOTES_KEY];
+      const existingIndex = findMarkerIndex(old,record);
+      if (existingIndex >= 0) {
+        const existing = old[existingIndex];
+        if (old.filter(x => x && String(x.id) === String(existing.id)).length !== 1)
+          return { reason: 'duplicate' };
+        if (String(existing.color || existing.annotation?.color || '') === nextColor)
+          return { changes: {}, result: { already: true } };
+        const updated = { ...existing, kind:'marker', color:nextColor,
+          ...(existing.annotation?.version===1
+            ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
+            : record.annotation ? {annotation:record.annotation} : {}) };
+        return { changes: { [QUOTES_KEY]: old.map((x,i)=>i===existingIndex?updated:x) },
+          result: { previous: existing, written: updated } };
+      }
+      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
+      if (old.some(x => x && String(x.id) === String(record.id)) ||
+          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
+        return { reason: 'id-collision' };
+      const next = gbAddHighlight(old, record);
+      if (next === old) return { reason: 'conflict' };
+      return { changes: { [QUOTES_KEY]: next }, result: { written: record } };
+    });
+  }
+  function undoQuoteRecord(written,previous) {
+    return mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const current = stores[QUOTES_KEY];
+      const matches = current.filter(item => item && String(item.id) === String(written.id));
+      if (matches.length !== 1 || JSON.stringify(matches[0]) !== JSON.stringify(written))
+        return { reason: 'conflict' };
+      if (!previous && (written.annotation?.noteId != null || stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(written.id))))
+        return { reason: 'link-conflict' };
+      return { changes: { [QUOTES_KEY]: previous
+        ? current.map(x => x === matches[0] ? previous : x)
+        : current.filter(x => x !== matches[0]) } };
+    });
+  }
+  return Object.freeze({restoreDeleted,saveNoteRecord,deleteRecord,saveQuoteRecord,saveMarkerRecord,undoQuoteRecord});
 }

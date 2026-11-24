@@ -12,9 +12,6 @@
   const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
   const bookSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-2.5-2-5.5-2.5-9-1.5v14c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v-14c-3.5-1-6.5-.5-9 1.5Z"/><path d="M12 6v14"/></svg>';
   const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
-  const closeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>';
-  const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
-
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
   /* W57/Product share one positional identity and one exact DOM resolver.
      Reusing the published visible text avoids blind string-index guesses. */
@@ -252,7 +249,7 @@
   async function transactionCall(method,...args) {
     try {
       if(!recordTransactions) {
-        recordTransactionsLoad ||= import('/js/reader-library-record-transactions.js?v=1ba18bb9')
+        recordTransactionsLoad ||= import('/js/reader-library-record-transactions.js?v=ecb28bb6')
           .then(m=>m.createRecordTransactions({mutateLibrary,libraryFailure,gbHighlightKey,NOTES_KEY,QUOTES_KEY,LIMIT_NOTES,LIMIT_QUOTES}))
           .catch(error=>{recordTransactionsLoad=null;throw error});
         recordTransactions=await recordTransactionsLoad;
@@ -372,9 +369,10 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=3acedc88')
+      presenterPromise = import('/js/reader-library-presenter.js?v=e1af11e7')
         .then(async (module) => {
           const researchModule = await import('/js/reader-library-v3.js?v=d6fdb5cb');
+          mountPanel(module);
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -444,17 +442,7 @@
   }
   function undoQuotes(written, previous, message) {
     return async () => {
-      const result = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
-        const current = stores[QUOTES_KEY];
-        const matches = current.filter(item => item && String(item.id) === String(written.id));
-        if (matches.length !== 1 || JSON.stringify(matches[0]) !== JSON.stringify(written))
-          return { reason: 'conflict' };
-        if (!previous && (written.annotation?.noteId != null || stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(written.id))))
-          return { reason: 'link-conflict' };
-        return { changes: { [QUOTES_KEY]: previous
-          ? current.map(x => x === matches[0] ? previous : x)
-          : current.filter(x => x !== matches[0]) } };
-      });
+      const result = await transactionCall('undoQuoteRecord',written,previous);
       if (!result.ok) {
         toast('Запись уже изменилась или недоступна. Отмена не выполнена.', { label: 'Повторить', run: undoQuotes(written, previous, message) });
         return;
@@ -472,56 +460,32 @@
     statusMessage.timer = setTimeout(() => { if (!pendingUndo) status.classList.remove('is-visible'); }, 5000);
   }
   function create() {
-    if (!document.body || document.getElementById('gb-hl-backdrop')) return;
-    overlay = document.createElement('div');
-    overlay.id = 'gb-hl-backdrop';
-    overlay.setAttribute('aria-hidden', 'true');
-    overlay.setAttribute('inert', '');
-    overlay.innerHTML = [
-      '<section id="gb-hl-panel" role="dialog" aria-modal="true" aria-labelledby="gb-hl-title" tabindex="-1">',
-      '<div id="gb-hl-handle" aria-hidden="true"></div>',
-      '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ <span id="gb-hl-count"></span></span>',
-      '<h2 id="gb-hl-title">Моя библиотека</h2></div>',
-      '<button type="button" id="gb-hl-export" aria-label="Скачать материалы библиотеки" title="Цитаты, заметки и ссылки в текстовом файле (.md)">↓ Скачать</button>',
-      '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
-      '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',
-      '<button type="button" data-library-tab="all" aria-pressed="true">Все</button>',
-      '<button type="button" data-library-tab="source" aria-pressed="false">Источники</button>',
-      '<button type="button" data-library-tab="quote" aria-pressed="false">Цитаты</button>',
-      '<button type="button" data-library-tab="note" aria-pressed="false">Заметки</button>',
-      '<button type="button" data-library-tab="favorite" aria-pressed="false">Статьи</button></nav>',
-      '<div id="gb-hl-tools"><label id="gb-hl-searchwrap">' + searchSvg,
-      '<input id="gb-hl-search" type="search" placeholder="Найти в сохранениях…" aria-label="Поиск по сохранениям" autocomplete="off"></label>',
-      '<select id="gb-hl-source" aria-label="Фильтр по исходной статье"><option value="all">Все статьи</option></select></div>',
-      '<div id="gb-hl-list" tabindex="0" aria-label="Сохранённые материалы"></div>',
-      '<div id="gb-hl-status" role="status" aria-live="polite"></div>',
-      '<form id="gb-hl-editor" hidden><label for="gb-hl-note-text">Личная заметка</label>',
-      '<div id="gb-hl-note-context"></div><textarea id="gb-hl-note-text" rows="4" maxlength="16000" placeholder="Что вы хотите запомнить?"></textarea>',
-      '<div class="gb-hl-editor-actions"><button type="button" id="gb-hl-note-cancel">Отмена</button>',
-      '<button type="submit">Сохранить заметку</button></div></form>',
-      '<footer id="gb-hl-foot"><button type="button" id="gb-hl-new-note">' + penSvg + ' Новая заметка</button></footer>',
-      '</section>',
-    ].join('');
-    document.body.append(overlay);
-    panel = overlay.querySelector('#gb-hl-panel');
-    list = overlay.querySelector('#gb-hl-list');
-    titleCount = overlay.querySelector('#gb-hl-count');
-    search = overlay.querySelector('#gb-hl-search');
-    sourceSelect = overlay.querySelector('#gb-hl-source');
-    status = overlay.querySelector('#gb-hl-status');
-    editor = overlay.querySelector('#gb-hl-editor');
-    textArea = overlay.querySelector('#gb-hl-note-text');
+    if (!document.body || fab || document.getElementById('gb-hl-fab')) return;
     fab = document.createElement('button');
     fab.id = 'gb-hl-fab';
     fab.type = 'button';
     fab.setAttribute('aria-label', 'Моя библиотека');
     fab.setAttribute('aria-haspopup', 'dialog');
-    fab.setAttribute('aria-controls', 'gb-hl-panel');
     fab.setAttribute('aria-expanded', 'false');
     fab.innerHTML = bookSvg + '<span id="gb-hl-fab-count" aria-hidden="true"></span>';
     document.body.append(fab);
     fab.classList.add('visible');
     fab.addEventListener('click', () => open(fab));
+    document.addEventListener('keydown', keydown);
+    window.addEventListener('gb:favorites-changed', sync);
+    window.addEventListener('gb:favorite-store-ready', sync);
+    window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
+    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); });
+    document.addEventListener('gb:mobile-fallback-ready', dock);
+    window.addEventListener('resize', dock, { passive: true });
+    attachSelection();
+    dock();
+    sync();
+  }
+  function mountPanel(module) {
+    if (overlay) return;
+    ({overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}=module.createLibraryPanel(penSvg));
+    fab.setAttribute('aria-controls', 'gb-hl-panel');
     overlay.querySelector('#gb-hl-close').addEventListener('click', close);
     overlay.querySelector('#gb-hl-export').addEventListener('click', async () => { try { (await loadPresenter()).exportMarkdown(all(), statusMessage); } catch { statusMessage('Не удалось подготовить экспорт. Повторите попытку.', true); } });
     overlay.querySelector('#gb-hl-new-note').addEventListener('click', () => showEditor());
@@ -536,19 +500,9 @@
     sourceSelect.addEventListener('change', () => { filter = sourceSelect.value; shown = BATCH_SIZE; render(); });
     list.addEventListener('click', listClick);
     editor.addEventListener('submit', saveNote);
-    document.addEventListener('keydown', keydown);
-    window.addEventListener('gb:favorites-changed', sync);
-    window.addEventListener('gb:favorite-store-ready', sync);
-    window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
-    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); });
-    document.addEventListener('gb:mobile-fallback-ready', dock);
-    window.addEventListener('resize', dock, { passive: true });
-    attachSelection();
-    dock();
-    sync();
   }
   function keydown(e) {
-    if (!isOpen()) return;
+    if (!isOpen()) { if (opening && e.key === 'Escape') { e.preventDefault(); close(); } return; }
     if (e.key === 'Escape') {
       e.preventDefault();
       if (!editor.hidden) hideEditor();
@@ -556,31 +510,43 @@
     }
     else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
   }
+  let opening = null, openGeneration = 0;
   function open(trigger) {
-    if (!overlay) create();
-    if (!overlay) return Promise.resolve(false);
+    if (!fab) create();
+    if (!fab) return Promise.resolve(false);
     if (isOpen()) return Promise.resolve(true);
-    opener = trigger || document.activeElement;
-    tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
-    search.value = '';
-    list.replaceChildren(element('div', 'gb-hl-empty', 'Открываем библиотеку…'));
-    overlay.removeAttribute('inert');
-    overlay.classList.add('is-open');
-    overlay.setAttribute('aria-hidden', 'false');
-    fab.setAttribute('aria-expanded', 'true');
-    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
-    else document.body.classList.add('no-scroll');
-    overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
-    return loadPresenter().then(() => {
-      if (isOpen()) render();
-      return isOpen();
+    if (opening) return opening;
+    const generation = ++openGeneration;
+    const activeTrigger = trigger || document.activeElement;
+    fab.setAttribute('aria-busy','true');
+    const task = loadPresenter().then(() => {
+      if (generation !== openGeneration) return false;
+      opener = activeTrigger;
+      tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
+      search.value = '';
+      overlay.removeAttribute('inert');
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      fab.setAttribute('aria-expanded', 'true');
+      if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
+      else document.body.classList.add('no-scroll');
+      overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
+      render();
+      return true;
     }).catch(() => {
-      if (isOpen()) list.replaceChildren(element('div', 'gb-hl-empty',
-        'Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.'));
+      if (generation === openGeneration) {
+        if (isOpen()) close();
+        toast('Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.', null);
+      }
       return false;
+    }).finally(() => {
+      if (opening === task) { opening = null; fab.removeAttribute('aria-busy'); }
     });
+    opening = task;
+    return task;
   }
   function close() {
+    if (opening) { ++openGeneration; opening = null; fab?.removeAttribute('aria-busy'); }
     if (!isOpen()) return;
     hideEditor(false);
     clearUndo();
@@ -594,13 +560,13 @@
     if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true });
     opener = null;
   }
-  function sync() { if (fab) { fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = all().length === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + all().length); } if (isOpen()) render(); }
+  function sync() { if (fab) { const count=all().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
   let dockImpl, dockLoad, contextFromSelection = () => ({ before: '', after: '' });
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
     dockLoad ||= import('/js/reader-library-dock.js?v=706a54b0')
-      .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter(); })
+      .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter().catch(() => {}); })
       .catch(() => { dockLoad = null; });
   }
   function render() {
@@ -759,20 +725,7 @@
       record.annotation = { version: 1, kind: 'quote',
         anchor: selected.positionalAnchor, noteId: null };
     }
-    const result = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
-      const old = stores[QUOTES_KEY], key = gbHighlightKey(record);
-      if (!key) return { reason: 'conflict' };
-      const matches = old.filter(x => gbHighlightKey(x) === key);
-      if (matches.length > 1) return { reason: 'duplicate' };
-      if (matches.length === 1) return { changes: {}, result: { already: true } };
-      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
-      if (old.some(x => x && String(x.id) === String(record.id)) ||
-          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
-        return { reason: 'id-collision' };
-      const next = gbAddHighlight(old, record);
-      if (next === old) return { reason: 'conflict' };
-      return { changes: { [QUOTES_KEY]: next } };
-    });
+    const result = await transactionCall('saveQuoteRecord',record,gbAddHighlight);
     if (!result.ok) {
       statusMessage(result.reason === 'capacity'
         ? 'Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
@@ -880,21 +833,22 @@
     if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0, placed: new Set() };
     const scope = document.querySelector('article.article-body') || document.querySelector('article') || document.querySelector('main');
     if (!scope) return { supported: true, painted: 0, placed: new Set() };
-    const index = textIndex(scope);
+    let index = null;
     const groups = new Map();
     const placed = new Set();
     const desktopW57 = document.body?.classList.contains('np-w57-ready')
       && !!document.querySelector('#npUResearch .np-u-right-scroll')
       && matchMedia('(min-width:1121px)').matches;
     let painted = 0;
+    const here = gbHighlightPath({url: location.href});
     for (const item of quotes()) {
-      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href})) continue;
+      if (gbHighlightPath(item) !== here) continue;
       const annotated = item?.annotation?.version === 1;
       if (annotated && desktopW57) continue;
       const color = String(item && (item.color || item.annotation?.color) || '');
       if (!MARK_COLORS.includes(color)) continue;
       const range = annotated
-        ? GBReaderAnchors.resolve(scope, item.annotation.anchor) : locate(index, item);
+        ? GBReaderAnchors.resolve(scope, item.annotation.anchor) : locate(index ||= textIndex(scope), item);
       if (!range) continue;
       if (!groups.has(color)) groups.set(color, []);
       groups.get(color).push(range);
@@ -907,6 +861,37 @@
       else CSS.highlights.delete(name);
     }
     return { supported: true, painted, placed };
+  }
+
+  function findMarkerIndex(old,record) {
+    const fragment = gbFragmentKey(record);
+    const context = gbContextKey(record);
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const exact = article && record.annotation
+      ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
+    let legacyIndex = null;
+    let existingIndex = -1;
+    if (exact && article) {
+      // A saved quote and its colored mark are ONE positional record. Reuse
+      // its ID/anchor/noteId instead of losing the mark to duplicate-key
+      // rejection. If legacy data already contains both, prefer the colored
+      // record to avoid creating a second painter on the same DOM Range.
+      const candidates = [];
+      old.forEach((x, i) => {
+        if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
+        const found = x.annotation?.version === 1
+          ? GBReaderAnchors.resolve(article,x.annotation.anchor)
+          : locate(legacyIndex ||= textIndex(article),x);
+        if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
+      });
+      existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
+        ?? candidates[0] ?? -1;
+    } else if (!record.annotation) {
+      existingIndex = fragment ? old.findIndex((x) =>
+        gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+    }
+
+    return existingIndex;
   }
 
   async function saveMarker(color) {
@@ -927,56 +912,7 @@
        текст перекрашивается, а одинаковый цвет честно сообщается как уже
        применённый — без ложного успеха. */
     const key = gbHighlightKey(record);
-    const mutation = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
-      const old = stores[QUOTES_KEY];
-      const fragment = gbFragmentKey(record);
-      const context = gbContextKey(record);
-      const article = document.querySelector('article.article-body') || document.querySelector('article');
-      const exact = article && record.annotation
-        ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
-      let legacyIndex = null;
-      let existingIndex = -1;
-      if (exact && article) {
-        // A saved quote and its colored mark are ONE positional record. Reuse
-        // its ID/anchor/noteId instead of losing the mark to duplicate-key
-        // rejection. If legacy data already contains both, prefer the colored
-        // record to avoid creating a second painter on the same DOM Range.
-        const candidates = [];
-        old.forEach((x, i) => {
-          if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
-          const found = x.annotation?.version === 1
-            ? GBReaderAnchors.resolve(article,x.annotation.anchor)
-            : locate(legacyIndex ||= textIndex(article),x);
-          if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
-        });
-        existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
-          ?? candidates[0] ?? -1;
-      } else if (!record.annotation) {
-        existingIndex = fragment ? old.findIndex((x) =>
-          gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
-      }
-
-      if (existingIndex >= 0) {
-        const existing = old[existingIndex];
-        if (old.filter(x => x && String(x.id) === String(existing.id)).length !== 1)
-          return { reason: 'duplicate' };
-        if (String(existing.color || existing.annotation?.color || '') === nextColor)
-          return { changes: {}, result: { already: true } };
-        const updated = { ...existing, kind:'marker', color:nextColor,
-          ...(existing.annotation?.version===1
-            ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
-            : record.annotation ? {annotation:record.annotation} : {}) };
-        return { changes: { [QUOTES_KEY]: old.map((x,i)=>i===existingIndex?updated:x) },
-          result: { previous: existing, written: updated } };
-      }
-      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
-      if (old.some(x => x && String(x.id) === String(record.id)) ||
-          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
-        return { reason: 'id-collision' };
-      const next = gbAddHighlight(old, record);
-      if (next === old) return { reason: 'conflict' };
-      return { changes: { [QUOTES_KEY]: next }, result: { written: record } };
-    });
+    const mutation = await transactionCall('saveMarkerRecord',record,nextColor,findMarkerIndex,gbAddHighlight);
     if (!mutation.ok) {
       statusMessage(mutation.reason === 'capacity'
         ? 'Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
