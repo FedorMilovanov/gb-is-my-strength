@@ -189,6 +189,7 @@ async function auditRoute(page, engine, origin, route) {
   // Always inspect the actual mobile rendering first. Do not silently switch to
   // desktop merely because the trigger is hidden: that old fallback is exactly
   // how an orphan mobile menu could leak gigantic SVGs while the test stayed green.
+  await page.goto('about:blank');
   await page.setViewportSize(MOBILE);
   await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
   await waitForRuntime(page);
@@ -266,8 +267,12 @@ async function auditRoute(page, engine, origin, route) {
   let supportedViewport = 'mobile';
   let state = await snapshot(page);
   if (!state.triggerVisible) {
+    await page.goto('about:blank');
     await page.setViewportSize(DESKTOP);
-    await page.waitForTimeout(300);
+    await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+    await waitForRuntime(page);
+    const expected=await page.evaluate(()=>!!document.querySelector('[data-gb-reader-desktop-bootstrap]')&&matchMedia('(min-width:1121px)').matches);
+    if(expected)await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
     supportedViewport = 'desktop';
     state = await snapshot(page);
   }
