@@ -152,6 +152,8 @@ html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
  .g3g .g3g-snapshot article{display:block}
  .g3g .g3g-specimen svg{max-height:36pt}
  .g3g .g3g-sectionhead{margin-top:8px;padding:6px 0}
+ /* Keep only heading, explanatory deck and initial plot together; table may follow on next sheet. */
+ .g3g-finance .g3g-finance-lead{break-inside:avoid;page-break-inside:avoid}
  .g3g-finance .g3g-chart{display:block;break-inside:avoid}
  .g3g-finance .g3g-table-track{display:none}
  .g3g-finance .g3g-finance-table{break-inside:avoid}
