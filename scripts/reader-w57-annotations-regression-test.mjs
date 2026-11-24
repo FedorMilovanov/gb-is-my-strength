@@ -345,4 +345,79 @@ const undoQuotaBefore=JSON.stringify([undoQuota.notes(),undoQuota.record]);
 assert.equal((await undoQuota.owner.restoreDeleted(receipt)).ok,false);
 assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefore);
 
+
+// Actual shared quote mutation paths with multiple quotes and a serialized scheduler.
+const markerStart=highlights.indexOf('  async function saveMarker(color) {');
+const markerEnd=highlights.indexOf('  /* mutateLibrary()',markerStart);
+const quoteStart=highlights.indexOf('  async function saveSelectedQuote() {');
+const quoteEnd=highlights.indexOf('  function bindSelectionButton(',quoteStart);
+assert.ok(markerStart>=0&&markerEnd>markerStart&&quoteStart>=0&&quoteEnd>quoteStart);
+const keySource=highlights.slice(highlights.indexOf('  function gbHighlightPath('),highlights.indexOf('  const MARK_COLORS'));
+const wQuoteSource=excerpt('    async function save(selection,kind){','    // The Product Library owns the same note list');
+const qFixture=(initial=[],mode='ok')=>{
+ let raw=JSON.stringify(initial),count=0,queue=Promise.resolve(),messages=[],id=0;
+ const n='gb-reader-notes-v1',q='gb-highlights-v1',loc={origin:'https://example.test',pathname:'/a'};
+ const ls={getItem:k=>k===q?raw:'[]',setItem:(k,v)=>{if(mode==='quota')throw Error('quota');assert.equal(k,q);raw=v;count++},removeItem:()=>{throw Error('unexpected remove')}};
+ const nav=mode==='absent'?{}:{locks:{request:(name,opts,fn)=>{
+  assert.equal(name,'gb-library:'+n);
+  if(mode==='rejected')return Promise.reject(Error('lock refused'));
+  const run=queue.then(()=>fn({name}));queue=run.catch(()=>{});return run;
+ }}};
+ const windowFixture={dispatchEvent:()=>true};
+ const keys=new Function('location','normalizeText','LIMIT_QUOTES',keySource+'return {gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey};')(loc,v=>String(v??'').replace(/\s+/g,' ').trim(),200);
+ const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary};')(n,q,500,200,ls,nav,windowFixture,class{},AbortController,()=>1,()=>{},keys.gbHighlightKey);
+ windowFixture.GBHighlights={...owner,highlightKey:keys.gbHighlightKey,addHighlight:keys.gbAddHighlight};
+ const selection=(text,anchor)=>({text,anchor,positionalAnchor:anchor,before:anchor.prefix,after:anchor.suffix});
+ const documentFixture={title:'Article',querySelector:()=>({})};
+ const noOp=()=>{};
+ const product=(selected)=>{
+  const factory=new Function('selection','uid','currentTitle','sourceUrl','mutateLibrary','QUOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
+  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,owner.mutateLibrary,q,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolve:(_,a)=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
+ };
+ const wapi=new Function('window','qKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
+ return {selection,product,wapi,rows:()=>JSON.parse(raw),raw:()=>raw,writes:()=>count,messages,owner};
+};
+const anchor1={blockId:'b1',start:0,end:12,exact:'First phrase',prefix:'',suffix:''};
+const anchor2={blockId:'b2',start:0,end:13,exact:'Second phrase',prefix:'',suffix:''};
+const qRace=qFixture();
+const qa=qRace.selection('First phrase',anchor1),qb=qRace.selection('Second phrase',anchor2);
+const raceResults=await Promise.all([qRace.product(qa).saveSelectedQuote(),qRace.wapi.save(qb,'marker')]);
+assert.equal(raceResults[0],true);assert.ok(raceResults[1]);assert.equal(qRace.rows().length,2,'cross-engine queued inserts retain both');
+assert.ok(qRace.rows().some(x=>x.text==='First phrase'));assert.ok(qRace.rows().some(x=>x.text==='Second phrase'));
+const oldRaw=qRace.raw();
+assert.ok(await qRace.wapi.save(qb,'marker'));assert.equal(qRace.raw(),oldRaw,'same range is idempotent');
+const oldMark=qRace.rows().find(x=>x.text==='Second phrase');
+assert.ok(await qRace.wapi.updateRecord(oldMark.id,x=>{x.annotation.color='rose'},JSON.stringify(oldMark)));
+const roseRaw=qRace.raw();
+assert.equal(await qRace.wapi.updateRecord(oldMark.id,x=>{x.annotation.color='sage'},JSON.stringify(oldMark)),null,'stale recolor refused');
+assert.equal(qRace.raw(),roseRaw);
+assert.equal(await qRace.product(qb).saveMarker('sage'),true);
+assert.equal(qRace.rows().find(x=>x.id===oldMark.id).annotation.color,'sage');
+assert.equal(qRace.rows().length,2);
+const numericMark={...oldMark,id:42,extra:{legacy:true}};
+const numeric=qFixture([numericMark]);
+assert.ok(await numeric.wapi.updateRecord('42',x=>{x.annotation.kind='underline'},JSON.stringify(numericMark)));
+assert.equal(numeric.rows()[0].id,42);
+assert.deepEqual(numeric.rows()[0].extra,numericMark.extra);
+assert.equal(numeric.rows()[0].annotation.kind,'underline');
+const duplicate=qFixture([numericMark,{...numericMark,text:'duplicate'}]);
+const dupBefore=duplicate.raw();
+assert.equal(await duplicate.wapi.updateRecord('42',x=>{x.annotation.color='sage'},JSON.stringify(numericMark)),null);
+assert.equal(duplicate.raw(),dupBefore);
+const capQuote=qFixture(Array.from({length:200},(_,i)=>({id:'q'+i,text:'other'+i,url:'/other'})));
+const capBefore=capQuote.raw();
+assert.equal(await capQuote.product(qa).saveSelectedQuote(),false);
+assert.equal(await capQuote.wapi.save(qb,'marker'),null);
+assert.equal(capQuote.raw(),capBefore);
+for(const mode of ['absent','rejected','quota']){
+ const f=qFixture([],mode);
+ assert.equal(await f.product(qa).saveSelectedQuote(),false,mode);
+ assert.equal(await f.product(qa).saveMarker('rose'),false,mode);
+ assert.equal(await f.wapi.save(qb,'marker'),null,mode);
+ assert.equal(f.raw(),'[]',mode);
+ assert.equal(f.writes(),0,mode);
+}
+assert.doesNotMatch(highlights,/\bfunction write\(key, items\)/,'Product has no raw array writer');
+assert.doesNotMatch(file,/localStorage\.(?:setItem|removeItem)\(/,'W57 has no independent storage writer');
+
 console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');

@@ -223,13 +223,6 @@
     } catch {}
     return [];
   }
-  function write(key, items) {
-    try { localStorage.setItem(key, JSON.stringify(items)); }
-    catch { return false; }
-    // storage only reaches other documents; same-tab readers need a commit signal.
-    window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
-    return true;
-  }
   function libraryFailure(reason, current = []) {
     return { ok: false, conflict: reason === 'conflict', reason, current };
   }
@@ -957,10 +950,10 @@
     showUndo('Запись удалена');
     pendingUndo.timer = setTimeout(clearUndo, 6000);
   }
-  function saveSelectedQuote() {
+  async function saveSelectedQuote() {
     const selected = selection();
     if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
-    const old = quotes(), record = {
+    const record = {
       id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
       url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
     };
@@ -971,18 +964,25 @@
       record.annotation = { version: 1, kind: 'quote',
         anchor: selected.positionalAnchor, noteId: null };
     }
-    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
-      statusMessage('Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
+    const result = await mutateLibrary([QUOTES_KEY], stores => {
+      const old = stores[QUOTES_KEY], key = gbHighlightKey(record);
+      if (!key) return { reason: 'conflict' };
+      const matches = old.filter(x => gbHighlightKey(x) === key);
+      if (matches.length > 1) return { reason: 'duplicate' };
+      if (matches.length === 1) return { changes: {}, result: { already: true } };
+      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
+      if (old.some(x => x && String(x.id) === String(record.id))) return { reason: 'id-collision' };
+      const next = gbAddHighlight(old, record);
+      if (next === old) return { reason: 'conflict' };
+      return { changes: { [QUOTES_KEY]: next } };
+    });
+    if (!result.ok) {
+      statusMessage(result.reason === 'capacity'
+        ? 'Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
+        : 'Не удалось безопасно сохранить цитату. Повторите попытку.', true);
       return false;
     }
-    const next = gbAddHighlight(old, record);
-    if (next.length === old.length && next.every((x, i) => x === old[i])) {
-      statusMessage('Такая цитата уже сохранена.'); return true;
-    }
-    if (!write(QUOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить цитату. Хранилище недоступно или заполнено.', true);
-      return false;
-    }
+    if (result.already) { statusMessage('Такая цитата уже сохранена.'); return true; }
     sync(); statusMessage('Цитата сохранена вместе с источником.');
     toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
@@ -1112,10 +1112,9 @@
     return { supported: true, painted, placed };
   }
 
-  function saveMarker(color) {
+  async function saveMarker(color) {
     const selected = selection();
     if (selected.text.length < 3) { statusMessage('Сначала выделите текст.', true); return false; }
-    const old = quotes();
     const nextColor = MARK_COLORS.includes(color) ? color : 'amber';
     const record = {
       id: uid('mark'), kind: 'marker', color: nextColor,
@@ -1131,80 +1130,79 @@
        текст перекрашивается, а одинаковый цвет честно сообщается как уже
        применённый — без ложного успеха. */
     const key = gbHighlightKey(record);
-    const fragment = gbFragmentKey(record);
-    const context = gbContextKey(record);
-    const article = document.querySelector('article.article-body') || document.querySelector('article');
-    const exact = article && record.annotation
-      ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
-    let legacyIndex = null;
-    let existingIndex = -1;
-    if (exact && article) {
-      // A saved quote and its colored mark are ONE positional record. Reuse
-      // its ID/anchor/noteId instead of losing the mark to duplicate-key
-      // rejection. If legacy data already contains both, prefer the colored
-      // record to avoid creating a second painter on the same DOM Range.
-      const candidates = [];
-      old.forEach((x, i) => {
-        if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
-        const found = x.annotation?.version === 1
-          ? GBReaderAnchors.resolve(article,x.annotation.anchor)
-          : locate(legacyIndex ||= textIndex(article),x);
-        if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
-      });
-      existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
-        ?? candidates[0] ?? -1;
-    } else if (!record.annotation) {
-      existingIndex = fragment ? old.findIndex((x) =>
-        gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
-    }
+    const mutation = await mutateLibrary([QUOTES_KEY], stores => {
+      const old = stores[QUOTES_KEY];
+      const fragment = gbFragmentKey(record);
+      const context = gbContextKey(record);
+      const article = document.querySelector('article.article-body') || document.querySelector('article');
+      const exact = article && record.annotation
+        ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
+      let legacyIndex = null;
+      let existingIndex = -1;
+      if (exact && article) {
+        // A saved quote and its colored mark are ONE positional record. Reuse
+        // its ID/anchor/noteId instead of losing the mark to duplicate-key
+        // rejection. If legacy data already contains both, prefer the colored
+        // record to avoid creating a second painter on the same DOM Range.
+        const candidates = [];
+        old.forEach((x, i) => {
+          if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
+          const found = x.annotation?.version === 1
+            ? GBReaderAnchors.resolve(article,x.annotation.anchor)
+            : locate(legacyIndex ||= textIndex(article),x);
+          if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
+        });
+        existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
+          ?? candidates[0] ?? -1;
+      } else if (!record.annotation) {
+        existingIndex = fragment ? old.findIndex((x) =>
+          gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+      }
 
-    if (existingIndex >= 0) {
-      const existing = old[existingIndex] || {};
-      if (String(existing.color || existing.annotation?.color || '') === nextColor) {
-        statusMessage('Этот текст уже выделен этим цветом.');
-        toast('Этот текст уже выделен этим цветом', null);
-        return true;
+      if (existingIndex >= 0) {
+        const existing = old[existingIndex];
+        if (old.filter(x => x && String(x.id) === String(existing.id)).length !== 1)
+          return { reason: 'duplicate' };
+        if (String(existing.color || existing.annotation?.color || '') === nextColor)
+          return { changes: {}, result: { already: true } };
+        const updated = { ...existing, kind:'marker', color:nextColor,
+          ...(existing.annotation?.version===1
+            ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
+            : record.annotation ? {annotation:record.annotation} : {}) };
+        return { changes: { [QUOTES_KEY]: old.map((x,i)=>i===existingIndex?updated:x) },
+          result: { previous: existing, written: updated } };
       }
-      const next = old.slice();
-      next[existingIndex] = {
-        ...existing,kind:'marker',color:nextColor,
-        ...(existing.annotation?.version===1
-          ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
-          : record.annotation ? {annotation:record.annotation} : {}),
-      };
-      if (!write(QUOTES_KEY, next)) {
-        statusMessage('Не удалось изменить цвет пометы. Хранилище недоступно.', true);
-        return false;
-      }
+      if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
+      if (old.some(x => x && String(x.id) === String(record.id))) return { reason: 'id-collision' };
+      const next = gbAddHighlight(old, record);
+      if (next === old) return { reason: 'conflict' };
+      return { changes: { [QUOTES_KEY]: next }, result: { written: record } };
+    });
+    if (!mutation.ok) {
+      statusMessage(mutation.reason === 'capacity'
+        ? 'Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
+        : 'Не удалось безопасно сохранить помету. Повторите попытку.', true);
+      return false;
+    }
+    if (mutation.already) {
+      statusMessage('Этот текст уже выделен этим цветом.');
+      toast('Этот текст уже выделен этим цветом', null);
+      return true;
+    }
+    if (mutation.previous) {
       const painted = paintMarks();
       sync();
-      const wasMarker = existing.kind === 'marker';
-      const storedKey = gbHighlightKey(next[existingIndex]);
+      const wasMarker = mutation.previous.kind === 'marker';
+      const storedKey = gbHighlightKey(mutation.written);
       const anchored = painted.supported && painted.placed && painted.placed.has(storedKey);
       const base = wasMarker ? 'Цвет пометы изменён' : 'Цитата выделена цветом';
       const message = !painted.supported
         ? (wasMarker ? 'Цвет пометы сохранён, подсветка недоступна' : 'Цвет сохранён, подсветка недоступна')
-        : anchored
-          ? base
+        : anchored ? base
           : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
       statusMessage(message + '.');
-      toast(message, { label: 'Вернуть', run: undoQuotes(next[existingIndex], existing, 'Цвет возвращён') });
+      toast(message, { label: 'Вернуть', run: undoQuotes(mutation.written, mutation.previous, 'Цвет возвращён') });
       return true;
-    }
-    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
-      statusMessage('Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
-      return false;
-    }
-    const next = gbAddHighlight(old, record);
-    // A positional collision that cannot be resolved must never be reported
-    // as successful storage/painting, or silently rewrite the old record.
-    if (next === old) {
-      statusMessage('Помета не создана: сохранённая запись имеет тот же якорь, но её позиция не подтверждена.', true);
-      return false;
-    }
-    if (!write(QUOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить помету. Хранилище недоступно или заполнено.', true);
-      return false;
     }
     const result = paintMarks();
     sync();
@@ -1222,7 +1220,7 @@
     return true;
   }
 
-  /* write() публикует событие на window, поэтому слушаем именно window:
+  /* mutateLibrary() публикует событие на window, поэтому слушаем именно window:
      удаление пометы через библиотеку обязано снять подсветку в тексте. */
   window.addEventListener('gb:library-committed', (e) => {
     if (!e || !e.detail || e.detail.key === QUOTES_KEY) setTimeout(paintMarks, 0);
@@ -1278,10 +1276,10 @@
     note.setAttribute('aria-label', 'Добавить заметку к выделенному тексту');
     note.textContent = 'Заметка';
     bar.append(colors, quote, note);
-    colors.addEventListener('click', (e) => {
+    colors.addEventListener('click', async (e) => {
       const swatch = e.target.closest('[data-hl-color]');
       if (!swatch) return;
-      if (saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
+      if (await saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
     });
     document.body.appendChild(bar);
     /* Pointerdown snapshots the selection without cancelling the native gesture.
@@ -1292,8 +1290,8 @@
       b.addEventListener('pointerdown', rememberSelection);
       b.addEventListener('mousedown', (event) => event.preventDefault(), { passive: false });
     }
-    quote.addEventListener('click', () => {
-      if (saveSelectedQuote()) {
+    quote.addEventListener('click', async () => {
+      if (await saveSelectedQuote()) {
         quote.textContent = 'Сохранено';
         clearTimeout(selBarHideTimer);
         selBarHideTimer = setTimeout(() => { quote.textContent = 'Цитата'; dismissSelectionBar(); }, 700);
@@ -1388,8 +1386,8 @@
     }
     if (popup.querySelector('#ss-save')) return;
     popup.append(element('span', 'ss-sep'));
-    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, () => {
-      if (saveSelectedQuote()) {
+    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, async () => {
+      if (await saveSelectedQuote()) {
         const label = popup.querySelector('#ss-save span');
         if (label) label.textContent = 'Сохранено';
         popup.classList.add('gb-hl-selection-saved');

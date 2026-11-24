@@ -10,15 +10,6 @@
   const pathname=()=>location.pathname.replace(/\/+$/,'')||'/';
   const samePage=r=>{try{return new URL(r.url||'',location.origin).pathname.replace(/\/+$/,'')===pathname()}catch(_){return false}};
   const read=key=>{try{let x=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(x)?x:[]}catch(_){return[]}};
-  const write=(key,list)=>{
-    try{
-      const old=localStorage.getItem(key);
-      localStorage.setItem(key,JSON.stringify(list));
-      window.dispatchEvent(new StorageEvent('storage',{key,oldValue:old,
-        newValue:JSON.stringify(list),storageArea:localStorage,url:location.href}));
-      return true;
-    }catch(e){console.error('W57_LIBRARY_STORE_FAILED',e);return false}
-  };
   const hash=s=>{
     let h=2166136261;
     for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
@@ -120,7 +111,7 @@
       x?.annotation?.version===1 ? x : {...x,
         annotation:{version:0,kind:x.kind||'marker',color:x.color||'amber',noteId:null}});
     const all=()=>read(qKey);
-    let rangeById=new Map(),pendingNoteId=null,pendingNoteSnapshot=null,pendingRecolorId=null;
+    let rangeById=new Map(),pendingNoteId=null,pendingNoteSnapshot=null,pendingRecolorId=null,pendingRecolorSnapshot=null;
     function paint(){
       rangeById=new Map();
       const groups={};
@@ -189,9 +180,10 @@
       }
       if(missing)say('Часть выделений не удалось уверенно привязать. Исходные записи сохранены.');
     }
-    function save(selection,kind){
+    async function save(selection,kind){
       if(!selection||!kinds.includes(kind))return null;
-      const store=window.GBHighlights,old=all();
+      const store=window.GBHighlights;
+      if(typeof store?.mutateLibrary!=='function'){say('Безопасное сохранение недоступно.');return null}
       const record={
         id:'quote-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
         text:selection.text,articleTitle:document.title.split(' | ')[0],
@@ -199,44 +191,50 @@
         before:selection.anchor.prefix,after:selection.anchor.suffix,savedAt:Date.now(),
         annotation:{version:1,kind,color:currentColor,anchor:selection.anchor,noteId:null}
       };
-      const key=store.highlightKey(record);
-      const previous=old.find(x=>store.highlightKey(x)===key);
-      if(previous){say('Это место текста уже сохранено.');return previous}
-      if(old.length>=200){say('Достигнут лимит 200 цитат. Экспортируйте библиотеку перед удалением.');return null}
-      const next=store.addHighlight(old,record);
-      // Comparing array lengths is wrong if native data included legacy
-      // duplicates; inspect the inserted record ID instead.
-      if(!next.some(x=>x.id===record.id)){
-        say('Помету не удалось добавить: исходные записи оставлены без изменений.');
+      const result=await store.mutateLibrary([qKey],stores=>{
+        const old=stores[qKey],key=store.highlightKey(record);
+        if(!key)return{reason:'conflict'};
+        const matches=old.filter(x=>store.highlightKey(x)===key);
+        if(matches.length>1)return{reason:'duplicate'};
+        if(matches.length===1)return{changes:{},result:{previous:matches[0]}};
+        if(old.length>=200)return{reason:'capacity'};
+        if(old.some(x=>x&&sameId(x.id,record.id)))return{reason:'id-collision'};
+        const next=store.addHighlight(old,record);
+        if(!next.some(x=>x.id===record.id))return{reason:'conflict'};
+        return{changes:{[qKey]:next}};
+      });
+      if(!result.ok){
+        say(result.reason==='capacity'?'Достигнут лимит 200 цитат. Экспортируйте библиотеку перед удалением.':'Ошибка безопасного сохранения. Повторите попытку.');
         return null;
       }
-      if(!write(qKey,next)){say('Ошибка сохранения — библиотека не изменена.');return null}
+      if(result.previous){say('Это место текста уже сохранено.');return result.previous}
       repaint();
       const canPaint=kind==='quote'||(typeof CSS!=='undefined'&&CSS.highlights&&typeof Highlight!=='undefined');
       say(canPaint?'Помета сохранена в библиотеке.':
         'Помета сохранена, но этот браузер не поддерживает цветное выделение в тексте.');
       return record;
     }
-    function updateRecord(id,updater){
-      const old=all(),i=old.findIndex(x=>x.id===id &&
-        (x.annotation?.version===1 || !!x.color));
-      if(i<0)return null;
-      const positional=old[i].annotation?.version===1;
-      const updated={...old[i],annotation:{...old[i].annotation,
-        kind:old[i].annotation?.kind||old[i].kind||'marker',
-        color:old[i].annotation?.color||old[i].color||'amber'}};
-      updater(updated);
-      if(positional){
+    async function updateRecord(id,updater,expected){
+      const owner=window.GBHighlights;
+      if(typeof owner?.mutateLibrary!=='function'){say('Безопасное сохранение недоступно.');return null}
+      const result=await owner.mutateLibrary([qKey],stores=>{
+        const old=stores[qKey],matches=old.filter(x=>x&&sameId(x.id,id));
+        if(matches.length!==1)return{reason:'conflict'};
+        const live=matches[0],positional=live.annotation?.version===1;
+        if(!positional&&!live.color)return{reason:'conflict'};
+        const projected=positional?live:{...live,annotation:{version:0,kind:live.kind||'marker',color:live.color||'amber',noteId:null}};
+        if(expected!==JSON.stringify(projected))return{reason:'conflict'};
+        const updated={...live,annotation:{...live.annotation,
+          kind:live.annotation?.kind||live.kind||'marker',
+          color:live.annotation?.color||live.color||'amber'}};
+        updater(updated);
         updated.color=updated.annotation.color;
         updated.kind=updated.annotation.kind;
-      } else {
-        updated.color=updated.annotation.color;
-        updated.kind=updated.annotation.kind;
-        delete updated.annotation; // legacy position is never invented
-      }
-      const next=old.slice();next[i]=updated;
-      if(!write(qKey,next)){say('Не удалось обновить помету.');return null}
-      repaint();return updated;
+        if(!positional)delete updated.annotation;
+        return{changes:{[qKey]:old.map(x=>x===live?updated:x)},result:{updated}};
+      });
+      if(!result.ok){say('Не удалось обновить помету.');return null}
+      repaint();return result.updated;
     }
     // The Product Library owns the same note list and the shared mutation lock.
     // W57 must refuse when that owner is not loaded; no independent fallback.
@@ -378,13 +376,14 @@
       if(!toolbar.hidden&&!toolbar.contains(e.target)&&!article.contains(e.target))toolbar.hidden=true;
     },true);
     document.addEventListener('scroll',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
-    toolbar.addEventListener('click',e=>{
+    toolbar.addEventListener('click',async e=>{
       const b=e.target.closest('[data-w57-action]');if(!b)return;
       const kind=b.dataset.w57Action;
       const s=lastSelection;
       toolbar.hidden=true;
       if(!s)return;
-      const record=save(s,kind==='note'?'quote':kind);
+      const record=await save(s,kind==='note'?'quote':kind);
+      if(!record)return;
       if(kind==='note'&&record){
         openNoteEditor(record);
         requestAnimationFrame(()=>editor.scrollIntoView({block:'nearest'}));
@@ -395,13 +394,13 @@
       }
       window.getSelection()?.removeAllRanges();
     });
-    palette.addEventListener('click',e=>{
+    palette.addEventListener('click',async e=>{
       const button=e.target.closest('[data-color]');if(!button)return;
       const chosenColor=button.dataset.color,targetId=pendingRecolorId;
       if(targetId){
-        const updated=updateRecord(targetId,x=>{x.annotation.color=chosenColor});
+        const updated=await updateRecord(targetId,x=>{x.annotation.color=chosenColor},pendingRecolorSnapshot);
         if(!updated){say('Цвет не сохранён. Выберите цвет ещё раз или нажмите Escape.');return}
-        pendingRecolorId=null;
+        pendingRecolorId=null;pendingRecolorSnapshot=null;
         palette.setAttribute('aria-label','Цвет выделения');
       }
       currentColor=chosenColor;
@@ -414,7 +413,7 @@
     palette.addEventListener('keydown',e=>{
       if(e.key!=='Escape'||!pendingRecolorId)return;
       e.preventDefault();e.stopPropagation();
-      pendingRecolorId=null;
+      pendingRecolorId=null;pendingRecolorSnapshot=null;
       palette.setAttribute('aria-label','Цвет выделения');
       say('Смена цвета отменена. Помета не изменена.');
     });
@@ -424,9 +423,9 @@
       if(!record)return;
       if(action==='goto'){locate(id);return}
       if(action==='switch'){
-        updateRecord(id,x=>{x.annotation.kind=x.annotation.kind==='marker'?'underline':x.annotation.kind==='underline'?'marker':'marker'});
+        await updateRecord(id,x=>{x.annotation.kind=x.annotation.kind==='marker'?'underline':x.annotation.kind==='underline'?'marker':'marker'},JSON.stringify(record));
       }else if(action==='recolor'){
-        pendingRecolorId=id;
+        pendingRecolorId=id;pendingRecolorSnapshot=JSON.stringify(record);
         palette.setAttribute('aria-label','Выберите новый цвет сохранённой пометы');
         say('Выберите цвет этой пометы в палитре выше. Escape — отмена.');
         palette.querySelector('[data-color="'+record.annotation.color+'"]')?.focus({preventScroll:true});
@@ -446,7 +445,7 @@
         });
         if(!deleted.ok){say('Не удалось безопасно удалить помету. Повторите попытку.');return}
         // An open draft is never discarded as a side effect of deletion.
-        if(sameId(pendingRecolorId,id)){pendingRecolorId=null;palette.setAttribute('aria-label','Цвет выделения')}
+        if(sameId(pendingRecolorId,id)){pendingRecolorId=null;pendingRecolorSnapshot=null;palette.setAttribute('aria-label','Цвет выделения')}
         const receipt=deleted.receipt;
         lastUndo=receipt;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
         const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
