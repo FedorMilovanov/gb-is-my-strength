@@ -23,14 +23,24 @@ function bindG3Matrix(root) {
   query.addEventListener('input', update); year.addEventListener('change', update);
   reset.addEventListener('click', () => { query.value = ''; year.value = ''; update(); query.focus(); });
   update();
-  function restoreTarget() {
+  function restoreTarget(hash) {
     let id;
-    try { id = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+    try { id = decodeURIComponent(hash.slice(1)); } catch { return; }
     const target = document.getElementById(id);
     const row = target?.closest('.gm-row');
     if (!row || !root.contains(row) || !row.hidden) return;
     query.value = ''; year.value = ''; update();
     target.focus({preventScroll:true}); target.scrollIntoView({block:'center'});
+  }
+  // Explicit local links are handled before native fragment navigation. Both history
+  // events can follow later (notably WebKit); do not clear a newly entered filter
+  // again for a destination already handled by this activation.
+  let observedHash = location.hash;
+  function reconcileHash() {
+    const hash = location.hash;
+    if (hash === observedHash) return;
+    observedHash = hash;
+    restoreTarget(hash);
   }
   const article = root.closest('[data-journal-source-navigation]');
   article?.addEventListener('click', (event) => {
@@ -38,10 +48,13 @@ function bindG3Matrix(root) {
         event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
     const link = event.target.closest('a[href]');
     if (!link || link.origin !== location.origin || link.pathname !== location.pathname ||
-        link.search !== location.search || !link.hash || link.hash !== location.hash) return;
-    restoreTarget();
+        link.search !== location.search || !link.hash || link.hasAttribute('download') ||
+        (link.target && link.target !== '_self')) return;
+    observedHash = link.hash;
+    restoreTarget(link.hash);
   });
-  window.addEventListener('hashchange', restoreTarget);
-  restoreTarget();
+  window.addEventListener('popstate', reconcileHash);
+  window.addEventListener('hashchange', reconcileHash);
+  restoreTarget(observedHash);
 }
 document.querySelectorAll('[data-g3-matrix]').forEach(bindG3Matrix);

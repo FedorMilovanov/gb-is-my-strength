@@ -54,6 +54,7 @@ const widths=[320,390,580,680,704,740,850,1440,1920];
 const reports=[];
 try {
   for (const [engine,type] of Object.entries({chromium,firefox,webkit})) {
+    if (process.env.G3_VISUAL_ENGINE && process.env.G3_VISUAL_ENGINE!==engine) continue;
     const browser=await type.launch({headless:true});
     try {
       let count=0;
@@ -61,6 +62,8 @@ try {
         const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});
         const page=await ctx.newPage();
         const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+        await page.addInitScript(()=>{window.__g3Events=[]; for(const event of ['input','click','popstate','hashchange'])window.addEventListener(event,e=>{const input=document.querySelector('.gm-filter input');const target=document.getElementById('cite-g3-matrix-lawson-2013');window.__g3Events.push({event,hash:location.hash,value:input?.value,hidden:target?.closest('.gm-row')?.hidden});},true);});
+        try {
         await page.goto(url);
         await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
         assert.equal(await page.locator('.gm-row:visible').count(),15);
@@ -92,7 +95,9 @@ try {
           await taxBack.click();
         }
         assert.deepEqual(errors,[]);
-        count++;await ctx.close();
+        count++;
+        } catch(error) {console.error('FAILED SCENARIO',JSON.stringify({engine,width,dark,js,events:await page.evaluate(()=>window.__g3Events||[])}));throw error}
+        finally {await ctx.close()}
       }
       reports.push({engine,version:browser.version(),scenarios:count});
       console.log(engine,count,'PASS');
