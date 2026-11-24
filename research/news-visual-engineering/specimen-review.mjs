@@ -26,7 +26,7 @@ await mkdir(join(root,'src/components'),{recursive:true});
 // The fixture is a component, not a published route.
 await cp(join(root,'src/pages/specimen.astro'),join(root,'src/components/PrivateSpecimen.astro'));
 await import('node:fs/promises').then(fs=>fs.unlink(join(root,'src/pages/specimen.astro')));
-for(const variant of ['before','after']) await writeFile(join(root,'src/pages',variant+'.astro'),`---\nimport PrivateSpecimen from '../components/PrivateSpecimen.astro';\n---\n<PrivateSpecimen variant="${variant}"/>\n`);
+for(const variant of ['before','after','compact']) await writeFile(join(root,'src/pages',variant+'.astro'),`---\nimport PrivateSpecimen from '../components/PrivateSpecimen.astro';\n---\n<PrivateSpecimen variant="${variant}"/>\n`);
 await writeFile(join(root,'package.json'),'{"type":"module","private":true}');
 await build({root,cacheDir:join(root,'.astro-cache'),vite:{cacheDir:join(root,'.vite-cache')},telemetry:false});
 const dist=resolve(root,'dist');
@@ -49,20 +49,19 @@ try{
  for(const name of selected){
   const browser=await engines[name].launch({headless:true,timeout:30000});
   try{
-   for(const width of [320,390,768,1024,1440,1920])for(const dark of [false,true])for(const variant of ['before','after']){
+   for(const width of [320,390,768,1024,1440,1920])for(const dark of [false,true])for(const variant of ['before','after','compact']){
     const page=await browser.newPage({viewport:{width,height:950}});
     try{
      page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
      assert.equal((await page.goto(url+'/'+variant+'/')).status(),200);
      if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
      await page.evaluate(()=>document.fonts.ready);
-     const witness=await page.evaluate(()=>({text:document.querySelector('#buice').textContent,summary:document.querySelector('.jdx-passage p:not(.jdx-locator)')?.textContent??document.querySelector('[data-publication-claims]').textContent,over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),opening:Math.round(document.querySelector('#buice').getBoundingClientRect().height),links:[...document.querySelectorAll('#buice a[data-journal-citation]')].map(a=>({id:a.id,href:a.getAttribute('href')}))}));
+     const witness=await page.evaluate(()=>({text:document.querySelector('#buice').textContent,summary:document.querySelector('.jdx-passage p:not(.jdx-locator)')?.textContent??document.querySelector('[data-publication-claims]').textContent,over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),opening:Math.round(document.querySelector('#buice').getBoundingClientRect().height),textStart:Math.round((document.querySelector('.jdx-passage p:not(.jdx-locator),[data-publication-claims]')).getBoundingClientRect().top+scrollY),links:[...document.querySelectorAll('#buice a[data-journal-citation]')].map(a=>({id:a.id,href:a.getAttribute('href')}))}));
      assert.equal(witness.summary,specimen.readerSafeText);assert.equal(witness.text.split(specimen.readerSafeText).length-1,1);assert.equal(witness.over,false);assert.equal(new Set(witness.ids).size,witness.ids.length);
-     assert.equal(witness.links.length,variant==='after'?2:1);
+     assert.equal(witness.links.length,variant==='before'?1:2);
      assert.ok(witness.links.every(l=>l.href==='#src-G3-S008'));
      assert.equal(await page.locator('#src-G3-S008 a[href^="https://"]').count(),2);
      for(const link of witness.links){
-      const anchor=page.locator('a[data-journal-citation]').filter({hasText:''});
       const target=page.locator('[id='+JSON.stringify(link.id)+']');
       await target.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#src-G3-S008');
       const back=page.locator('#src-G3-S008 [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+link.id);
@@ -71,11 +70,17 @@ try{
      await page.goto(url+'/'+variant+'/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.evaluate(()=>document.fonts.ready);
      const stem=[name,width,dark?'dark':'light',variant].join('-');
      await page.screenshot({path:join(evidence,stem+'-full.png'),fullPage:true});await page.screenshot({path:join(evidence,stem+'-viewport.png')});
-     results.push({name,width,dark,variant,opening:witness.opening,links:witness.links.length});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
+     results.push({name,width,dark,variant,opening:witness.opening,textStart:witness.textStart,links:witness.links.length});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
     }finally{await page.close();}
    }
   }finally{await browser.close();}
  }
 }finally{server.close();}
-assert.equal(results.length,24*selected.length);
+assert.equal(results.length,36*selected.length);
+for(const name of selected)for(const width of [320,390,768,1024,1440,1920])for(const dark of [false,true]){
+ const rows=results.filter(r=>r.name===name&&r.width===width&&r.dark===dark);
+ const full=rows.find(r=>r.variant==='after'), compact=rows.find(r=>r.variant==='compact');
+ assert.ok(compact.opening<full.opening,'compact section must be shorter than full exhibit');
+ assert.ok(compact.textStart<full.textStart,'compact reader text must start earlier');
+}
 console.log('SPECIMEN_CASES='+results.length);

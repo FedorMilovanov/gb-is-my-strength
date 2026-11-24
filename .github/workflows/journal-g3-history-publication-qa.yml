@@ -207,7 +207,8 @@ jobs:
           output="reports/news-document-exhibit-${ENGINE}"
           mkdir -p "$output"
           git rev-parse HEAD > "$output/checkout-sha.txt"
-          export TMPDIR="$(mktemp -d "${RUNNER_TEMP}/news-exhibit-XXXXXX")"
+          TMPDIR="$(mktemp -d "${RUNNER_TEMP}/news-exhibit-XXXXXX")"
+          export TMPDIR
           retain() {
             local root
             for root in "$TMPDIR"/news-document-exhibit-*; do
