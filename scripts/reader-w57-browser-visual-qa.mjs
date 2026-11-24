@@ -560,6 +560,29 @@ try{
   assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
  });
  const library='#gb-hl-panel';
+ // Exercise the real visible Analytics opener, not a hidden FAB fallback.
+ await safe('desktop-library-visible-opener',async()=>{
+  const p=d.page,button=p.locator('#npULibraryButton'),dialog=p.locator(library);
+  await button.waitFor({state:'visible'});
+  await p.waitForFunction(()=>!document.getElementById('npULibraryButton')?.disabled&&
+   typeof window.GBHighlights?.open==='function',null,{timeout:10000});
+  assert.equal(await button.getAttribute('aria-haspopup'),'dialog');
+  for(const dismissal of ['escape','button']){
+   await button.click();
+   await dialog.waitFor({state:'visible'});
+   await p.waitForFunction(()=>document.getElementById('npULibraryButton')?.getAttribute('aria-expanded')==='true'&&
+    document.getElementById('npULibraryButton')?.getAttribute('aria-busy')!=='true',null,{timeout:10000});
+   assert.equal(await button.getAttribute('aria-controls'),'gb-hl-panel');
+   assert.equal(await p.locator('#gb-hl-close').evaluate(el=>document.activeElement===el),true,'first real dialog focus');
+   if(dismissal==='escape')await p.keyboard.press('Escape');
+   else await p.locator('#gb-hl-close').click();
+   await dialog.waitFor({state:'hidden'});
+   assert.equal(await button.getAttribute('aria-expanded'),'false');
+   assert.equal(await button.evaluate(el=>document.activeElement===el),true,'return focus to the actual Analytics opener');
+   assert.equal(await button.isVisible(),true,'parent Analytics remains open');
+  }
+  d.item.visibleLibraryOpener={escape:true,closeButton:true,realFocus:true};
+ });
  const openLibrary=async p=>{
   await p.bringToFront();
   if(!await p.locator(library).isVisible()){

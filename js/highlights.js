@@ -9,7 +9,6 @@
   const LIMIT_QUOTES = 200;
   const LIMIT_NOTES = 500;
   const BATCH_SIZE = 30;
-  const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
   const bookSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-2.5-2-5.5-2.5-9-1.5v14c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v-14c-3.5-1-6.5-.5-9 1.5Z"/><path d="M12 6v14"/></svg>';
   const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
@@ -210,7 +209,6 @@
       ?[item,...unique]:unique;
   }
   const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
-  const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
 
   function read(key) {
     try {
@@ -364,12 +362,12 @@
 
   let overlay, panel, list, fab, titleCount, search, sourceSelect, status, editor, textArea;
   let tab = 'all', filter = 'all', searchTerm = '', shown = BATCH_SIZE, opener = null;
-  let expanded = new Set(), draft = null, pendingUndo = null;
+  let expanded = new Set(), editorController = null;
   let presenter = null, presenterPromise = null, research = null;
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=e1af11e7')
+      presenterPromise = import('/js/reader-library-presenter.js?v=e0eb7d74')
         .then(async (module) => {
           const researchModule = await import('/js/reader-library-v3.js?v=d6fdb5cb');
           mountPanel(module);
@@ -396,14 +394,6 @@
   stylesheet.href = '/css/highlights-runtime.css?v=7d6f17ca';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
-  function button(action, label, text) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.dataset.libraryAction = action;
-    b.setAttribute('aria-label', label);
-    b.textContent = text;
-    return b;
-  }
   function element(tag, cls, value) {
     const node = document.createElement(tag);
     if (cls) node.className = cls;
@@ -451,13 +441,9 @@
     };
   }
 
-  function statusMessage(message, error) {
-    if (!status) return;
-    status.replaceChildren(element('span', '', message));
-    status.classList.add('is-visible');
-    status.classList.toggle('is-error', Boolean(error));
-    clearTimeout(statusMessage.timer);
-    statusMessage.timer = setTimeout(() => { if (!pendingUndo) status.classList.remove('is-visible'); }, 5000);
+  function statusMessage(message,error) {
+    if (editorController && isOpen()) return editorController.statusMessage(message,error);
+    if (error) toast(message,null);
   }
   function create() {
     if (!document.body || fab || document.getElementById('gb-hl-fab')) return;
@@ -485,6 +471,9 @@
   function mountPanel(module) {
     if (overlay) return;
     ({overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}=module.createLibraryPanel(penSvg));
+    editorController = module.createLibraryEditor({overlay,panel,status,editor,textArea,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,render,sync,
+      selectNotes: () => { tab = 'note'; filter = 'all'; shown = BATCH_SIZE; },
+    });
     fab.setAttribute('aria-controls', 'gb-hl-panel');
     overlay.querySelector('#gb-hl-close').addEventListener('click', close);
     overlay.querySelector('#gb-hl-export').addEventListener('click', async () => { try { (await loadPresenter()).exportMarkdown(all(), statusMessage); } catch { statusMessage('Не удалось подготовить экспорт. Повторите попытку.', true); } });
@@ -499,7 +488,7 @@
     search.addEventListener('input', () => { searchTerm = normalizeText(search.value).toLocaleLowerCase(); shown = BATCH_SIZE; render(); });
     sourceSelect.addEventListener('change', () => { filter = sourceSelect.value; shown = BATCH_SIZE; render(); });
     list.addEventListener('click', listClick);
-    editor.addEventListener('submit', saveNote);
+    editor.addEventListener('submit', editorController.saveNote);
   }
   function keydown(e) {
     if (!isOpen()) { if (opening && e.key === 'Escape') { e.preventDefault(); close(); } return; }
@@ -510,7 +499,12 @@
     }
     else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
   }
-  let opening = null, openGeneration = 0;
+  let opening = null, openGeneration = 0, pendingTrigger = null;
+  function clearOpenBusy() {
+    fab?.removeAttribute('aria-busy');
+    pendingTrigger?.removeAttribute?.('aria-busy');
+    pendingTrigger = null;
+  }
   function open(trigger) {
     if (!fab) create();
     if (!fab) return Promise.resolve(false);
@@ -518,7 +512,9 @@
     if (opening) return opening;
     const generation = ++openGeneration;
     const activeTrigger = trigger || document.activeElement;
+    pendingTrigger = activeTrigger;
     fab.setAttribute('aria-busy','true');
+    if (activeTrigger !== fab) activeTrigger?.setAttribute?.('aria-busy','true');
     const task = loadPresenter().then(() => {
       if (generation !== openGeneration) return false;
       opener = activeTrigger;
@@ -528,6 +524,10 @@
       overlay.classList.add('is-open');
       overlay.setAttribute('aria-hidden', 'false');
       fab.setAttribute('aria-expanded', 'true');
+      if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') {
+        opener.setAttribute('aria-controls','gb-hl-panel');
+        opener.setAttribute('aria-expanded','true');
+      }
       if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
       else document.body.classList.add('no-scroll');
       overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
@@ -540,13 +540,13 @@
       }
       return false;
     }).finally(() => {
-      if (opening === task) { opening = null; fab.removeAttribute('aria-busy'); }
+      if (opening === task) { opening = null; clearOpenBusy(); }
     });
     opening = task;
     return task;
   }
   function close() {
-    if (opening) { ++openGeneration; opening = null; fab?.removeAttribute('aria-busy'); }
+    if (opening) { ++openGeneration; opening = null; clearOpenBusy(); }
     if (!isOpen()) return;
     hideEditor(false);
     clearUndo();
@@ -555,6 +555,7 @@
     overlay.setAttribute('aria-hidden', 'true');
     overlay.setAttribute('inert', '');
     fab.setAttribute('aria-expanded', 'false');
+    if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') opener.setAttribute('aria-expanded','false');
     if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
     else document.body.classList.remove('no-scroll');
     if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true });
@@ -585,132 +586,11 @@
       clearFilters: () => { searchTerm = ''; search.value = ''; filter = 'all'; research?.resetFilters(); shown = BATCH_SIZE; render(); },
     });
   }
-  function showEditor(context = null, editing = null) {
-    // The opened record itself is the version this editor may overwrite.
-    draft = { context, editing, saving:false };
-    textArea.readOnly = false;
-    editor.hidden = false;
-    panel.classList.add('is-editing');
-    textArea.value = editing ? editing.text : '';
-    overlay.querySelector('#gb-hl-note-context').textContent = context && context.quoteText
-      ? 'К цитате: «' + context.quoteText.slice(0, 180) + '»'
-      : editing && editing.quoteText ? 'К цитате: «' + editing.quoteText.slice(0, 180) + '»'
-      : 'Мысли во время чтения';
-    textArea.focus({ preventScroll: true });
-  }
-  function hideEditor(focus = true) {
-    if (!editor) return;
-    editor.hidden = true; draft = null; textArea.readOnly = false;
-    panel.classList.remove('is-editing');
-    if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
-  }
-  async function saveNote(e) {
-    e.preventDefault();
-    const activeDraft=draft;
-    if(!activeDraft||activeDraft.saving)return;
-    const text = textArea.value.trim();
-    if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
-    activeDraft.saving=true;
-    textArea.readOnly=true;
-    const context=activeDraft.context, editing=activeDraft.editing;
-    const created = {
-      id: uid('note'), text, ...(context?.quoteId != null ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
-      articleTitle: context && context.title || currentTitle(),
-      url: context && context.url || location.origin + location.pathname,
-      savedAt: Date.now(),
-    };
-    let result;
-    try { result = await transactionCall('saveNoteRecord',{context,editing,created,text}); } catch { result={ok:false}; }
-    finally {
-      activeDraft.saving=false;
-      if(draft===activeDraft)textArea.readOnly=false;
-    }
-    // A late save must never close or replace a newer editor.
-    if(draft!==activeDraft)return;
-    if (result.conflict && editing) {
-      const live = result.current.find(x => x && String(x.id) === String(editing.id));
-      statusMessage(live
-        ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
-        : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
-      return;
-    }
-    if (!result.ok) {
-      const message = result.reason === 'capacity'
-        ? 'Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.'
-        : result.reason === 'link-conflict'
-          ? 'Цитата или её связь изменилась. Откройте её заново; черновик остаётся в редакторе.'
-          : 'Не удалось безопасно сохранить заметку. Черновик остаётся в редакторе; повторите попытку.';
-      statusMessage(message, true); return;
-    }
-    // Only the editor that initiated this completed save may be closed.
-    applySavedNote(editing);
-  }
-  function applySavedNote(editing) {
-    hideEditor(false);
-    tab = 'note'; filter = 'all'; shown = BATCH_SIZE;
-    render(); sync();
-    statusMessage(editing ? 'Заметка обновлена.' : 'Заметка сохранена.');
-  }
-  function clearUndo() {
-    if (pendingUndo) clearTimeout(pendingUndo.timer);
-    pendingUndo = null;
-    if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }
-  }
-  async function deleteItem(item) {
-    const deleted = await transactionCall('deleteRecord',item);
-    if (!deleted.ok) {
-      statusMessage(deleted.reason === 'duplicate'
-        ? 'Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.'
-        : deleted.reason === 'partial-write'
-          ? 'Ошибка удаления и восстановления связи. Экспортируйте текущие данные и проверьте библиотеку.'
-          : 'Не удалось безопасно удалить запись. Обновите библиотеку и повторите.', true);
-      return;
-    }
-    clearUndo();
-    pendingUndo = deleted.receipt;
-    render(); sync();
-    const u = pendingUndo;
-    let restoring = false;
-    function showUndo(message, allowCopy = false) {
-      if (pendingUndo !== u) return;
-      const undoButton = button('undo', 'Отменить удаление', 'Отменить');
-      const controls = [element('span', '', message), undoButton];
-      undoButton.addEventListener('click', () => restore(false));
-      if (allowCopy) {
-        const copyButton = button('undo-copy', 'Сохранить удалённую версию с отдельным ID', 'Сохранить копию');
-        copyButton.addEventListener('click', () => restore(true));
-        controls.push(copyButton);
-      }
-      status.replaceChildren(...controls);
-      status.classList.add('is-visible');
-      status.classList.remove('is-error');
-    }
-    async function restore(copy) {
-      if (pendingUndo !== u || restoring) return;
-      restoring = true;
-      clearTimeout(u.timer);
-      const result = await restoreDeleted(u, copy ? uid(u.key === NOTES_KEY ? 'note' : 'quote') : null);
-      restoring = false;
-      if (pendingUndo !== u) { if (result.ok) { render(); sync(); } return; }
-      if (result.ok) {
-        clearUndo(); render(); sync();
-        statusMessage(copy ? 'Версия сохранена отдельной копией без прежней связи.' : 'Запись восстановлена.');
-        return;
-      }
-      const collision = ['id-collision','link-conflict'].includes(result.reason);
-      const message = result.reason === 'capacity'
-        ? 'Лимит библиотеки достигнут. Освободите место или сохраните экспорт.'
-        : result.reason === 'partial-write'
-          ? 'Ошибка восстановления. Сохраните экспорт и проверьте библиотеку.'
-          : collision
-            ? 'Запись или её связь уже изменилась. Можно сохранить отдельную копию без прежней связи.'
-            : 'Восстановление не удалось. Повторите попытку.';
-      showUndo(message, collision);
-      u.timer = setTimeout(clearUndo, 30000);
-    }
-    showUndo('Запись удалена');
-    pendingUndo.timer = setTimeout(clearUndo, 6000);
-  }
+  function showEditor(...args) { return editorController?.showEditor(...args); }
+  function hideEditor(...args) { return editorController?.hideEditor(...args); }
+  function clearUndo() { return editorController?.clearUndo(); }
+  function deleteItem(item) { return editorController?.deleteItem(item); }
+
   async function saveSelectedQuote() {
     const selected = selection();
     if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
@@ -736,15 +616,6 @@
     sync(); statusMessage('Цитата сохранена вместе с источником.');
     toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
-  }
-  function bindSelectionButton(id, label, icon, handler, popup) {
-    if (popup.querySelector('#' + id)) return;
-    const b = document.createElement('button');
-    b.id = id; b.type = 'button';
-    b.setAttribute('aria-label', label);
-    b.innerHTML = icon + '<span>' + (id === 'ss-save' ? 'Сохранить' : 'Заметка') + '</span>';
-    popup.append(b);
-    b.addEventListener('click', handler);
   }
   /* Цветные пометы: одно хранилище (gb-highlights-v1), один владелец.
      Запись — обычная цитата плюс kind:'marker' и color. Рисуем через
@@ -977,173 +848,34 @@
      собственный мини-тулбар только там, где нет W57-тулбара пилота (он живёт
      от 1121px и при выделении создаёт #npW57SelectionToolbar) — один владелец,
      одно хранилище, те же функции сохранения, что и у десктопного попапа. */
-  function mobileSelectionBar() {
-    let bar = document.getElementById('gb-hl-selbar');
-    if (bar) return bar;
-    bar = document.createElement('div');
-    bar.id = 'gb-hl-selbar';
-    bar.className = 'gb-hl-selbar';
-    bar.setAttribute('role', 'toolbar');
-    bar.setAttribute('aria-label', 'Действия с выделенным текстом');
-    bar.setAttribute('aria-hidden', 'true');
-    const colors = document.createElement('div');
-    colors.className = 'gb-hl-selbar-colors';
-    colors.setAttribute('role', 'group');
-    colors.setAttribute('aria-label', 'Цвет пометы');
-    for (const color of MARK_COLORS) {
-      const swatch = document.createElement('button');
-      swatch.type = 'button';
-      swatch.className = 'gb-hl-selbar-swatch';
-      swatch.dataset.hlColor = color;
-      const colorName = MARK_COLOR_NAMES[color] || color;
-      swatch.setAttribute('aria-label', 'Выделить цветом: ' + colorName);
-      swatch.title = 'Выделить цветом: ' + colorName;
-      colors.appendChild(swatch);
-    }
-    const quote = document.createElement('button');
-    quote.type = 'button';
-    quote.id = 'gb-hl-selbar-quote';
-    quote.setAttribute('aria-label', 'Сохранить выделенный текст как цитату');
-    quote.textContent = 'Цитата';
-    const note = document.createElement('button');
-    note.type = 'button';
-    note.id = 'gb-hl-selbar-note';
-    note.setAttribute('aria-label', 'Добавить заметку к выделенному тексту');
-    note.textContent = 'Заметка';
-    bar.append(colors, quote, note);
-    colors.addEventListener('click', async (e) => {
-      const swatch = e.target.closest('[data-hl-color]');
-      if (!swatch) return;
-      if (await saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
-    });
-    document.body.appendChild(bar);
-    /* Pointerdown snapshots the selection without cancelling the native gesture.
-       preventDefault on touchstart suppresses Chrome's compatibility click, so
-       mobile swatch, Quote and Note taps must keep their default behavior.
-       Cancelling mousedown preserves the text selection for mouse users. */
-    for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
-      b.addEventListener('pointerdown', rememberSelection);
-      b.addEventListener('mousedown', (event) => event.preventDefault(), { passive: false });
-    }
-    quote.addEventListener('click', async () => {
-      if (await saveSelectedQuote()) {
-        quote.textContent = 'Сохранено';
-        clearTimeout(selBarHideTimer);
-        selBarHideTimer = setTimeout(() => { quote.textContent = 'Цитата'; dismissSelectionBar(); }, 700);
-      }
-    });
-    note.addEventListener('click', () => {
-      const s = selection();
-      const context = noteContextForSelection(s);
-      hide();
-      open(null).then((opened) => { if (opened) showEditor(context); });
-    });
-    return bar;
-  }
-  function hide() {
-    const bar = document.getElementById('gb-hl-selbar');
-    if (!bar) return;
-    bar.dataset.open = 'false';
-    bar.setAttribute('aria-hidden', 'true');
-  }
-  /* После действия выделение снимаем: если оставить его, следующий тап по тому
-     же тексту Chrome трактует как перетаскивание уже выделенного фрагмента —
-     mouseup не доходит, и тулбар для этого текста больше не открывается. */
-  function collapseSelection() {
-    try {
-      const sel = window.getSelection();
-      if (sel && !sel.isCollapsed) sel.removeAllRanges();
-    } catch {}
-  }
-  function dismissSelectionBar() { hide(); collapseSelection(); }
-  let selBarHideTimer = 0;
-  function placeSelectionBar() {
-    if (document.getElementById('npW57SelectionToolbar')) { hide(); return; }
-    // A touchend can re-schedule this bar after the TOC trigger's pointerdown
-    // hid it. Never project selection actions over an open reading sheet.
-    if (document.querySelector('#partTocOverlay.is-open')) { hide(); return; }
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.rangeCount) { hide(); return; }
-    const text = sel.toString().replace(/\s+/g, ' ').trim();
-    if (text.length < 8) { hide(); return; }
-    const range = sel.getRangeAt(0);
-    const host = range.commonAncestorContainer;
-    const node = host.nodeType === 1 ? host : host.parentElement;
-    if (!node || node.closest('#gb-hl-panel, #gb-hl-selbar, input, textarea, [contenteditable="true"]')) { hide(); return; }
-    if (!node.closest('article, main, .article-body')) { hide(); return; }
-    const rect = range.getBoundingClientRect();
-    if (!rect || (!rect.width && !rect.height)) { hide(); return; }
-    const bar = mobileSelectionBar();
-    /* Сброс «отложенного» скрытия: таймер от предыдущего действия не должен
-       гасить тулбар, который только что открылся для нового выделения. */
-    clearTimeout(selBarHideTimer);
-    bar.dataset.open = 'true';
-    bar.setAttribute('aria-hidden', 'false');
-    const bw = bar.offsetWidth || 180;
-    const bh = bar.offsetHeight || 56;
-    const clampX = Math.min(Math.max(8, rect.left + rect.width / 2 - bw / 2), window.innerWidth - bw - 8);
-    /* Нижняя панель читалки фиксирована и выше тулбара по z-index, поэтому
-       при размещении под выделением её высоту нужно вычитать — иначе тулбар
-       уезжает под панель и до кнопок не достать. */
-    const bottomBar = document.querySelector('.mobile-bottom-bar, .gbs2-bbar');
-    const bottomInset = bottomBar
-      ? Math.max(0, Math.round(window.innerHeight - bottomBar.getBoundingClientRect().top)) : 0;
-    const maxBottom = window.innerHeight - bottomInset - 8;
-    let top = rect.top - bh - 10;
-    if (top < 68) {
-      top = rect.bottom + 10;
-      if (top + bh > maxBottom) top = Math.max(68, rect.top - bh - 10);
-      top = Math.min(top, maxBottom - bh);
-    }
-    bar.style.left = Math.round(clampX) + 'px';
-    bar.style.top = Math.round(Math.max(8, top)) + 'px';
-  }
+  let selectionController, selectionLoad;
+  function hide() { selectionController?.hide(); }
   function attachSelection() {
-    const popup = document.getElementById('selection-share-popup');
-    if (!popup) {
-      let pending = 0;
-      const schedule = () => { clearTimeout(pending); pending = setTimeout(placeSelectionBar, 40); };
-      document.addEventListener('selectionchange', schedule, { passive: true });
-      document.addEventListener('mouseup', schedule, { passive: true });
-      document.addEventListener('touchend', schedule, { passive: true });
-      window.addEventListener('scroll', hide, { passive: true, capture: true });
-      window.addEventListener('resize', hide, { passive: true });
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
-      document.addEventListener('pointerdown', (e) => {
-        if (!e.target.closest('#gb-hl-selbar')) hide();
-      }, { passive: true });
-      // Sheet navigation supersedes the short-lived save confirmation. Keep
-      // Undo in storage; only dismiss its transient toast and selection bar.
-      document.addEventListener('click', (e) => {
-        if (e.target.closest('#mobPartTocBtn, [data-gill-marginalia-open]')) { hide(); hideToast(); }
-      }, true);
-      return;
-    }
-    if (popup.querySelector('#ss-save')) return;
-    popup.append(element('span', 'ss-sep'));
-    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, async () => {
-      if (await saveSelectedQuote()) {
-        const label = popup.querySelector('#ss-save span');
-        if (label) label.textContent = 'Сохранено';
-        popup.classList.add('gb-hl-selection-saved');
-        setTimeout(() => {
-          if (label && label.isConnected) label.textContent = 'Сохранить';
-          popup.classList.remove('gb-hl-selection-saved', 'ss-visible');
-          popup.setAttribute('aria-hidden', 'true');
-        }, 660);
-      }
-    }, popup);
-    bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
-      const s = selection();
-      const context = noteContextForSelection(s);
-      popup.classList.remove('ss-visible');
-      popup.setAttribute('aria-hidden', 'true');
-      open(document.getElementById('ss-note')).then((opened) => { if (opened) showEditor(context); });
-    }, popup);
+    if (selectionController) { selectionController.attachSelection(); return; }
+    const sel = window.getSelection?.();
+    if (!sel || sel.isCollapsed || !sel.rangeCount || normalizeText(sel.toString()).length < 8) return;
+    loadSelectionController();
   }
+  function loadSelectionController() {
+    if (selectionController) return Promise.resolve(selectionController);
+    selectionLoad ||= import('/js/reader-library-selection.js?v=0d5c90fc')
+      .then(module => {
+        const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,noteContextForSelection,saveMarker,saveSelectedQuote,open,showEditor,hideToast,element});
+        controller.attachSelection();
+        selectionController = controller;
+        controller.placeSelectionBar();
+        return controller;
+      }).catch(() => { selectionLoad = null; return null; });
+    return selectionLoad;
+  }
+  // Capture intent ahead of long-press/drag; keyboard selection is covered by
+  // selectionchange. Capture remains synchronous even while UI is loading.
+  document.addEventListener('pointerdown', e => {
+    if (e.target.closest?.('article, main [data-pagefind-body], .article-body')) loadSelectionController();
+  }, {passive:true});
   document.addEventListener('mouseup', () => setTimeout(rememberSelection, 25));
   document.addEventListener('touchend', () => setTimeout(rememberSelection, 60), { passive: true });
-  document.addEventListener('selectionchange', rememberSelection);
+  document.addEventListener('selectionchange', () => { rememberSelection(); attachSelection(); });
   document.addEventListener('click', (e) => {
     if (e.target.closest('#selection-share-popup')) attachSelection();
   });

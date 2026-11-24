@@ -120,7 +120,7 @@ assert.match(highlights,/GBReaderAnchors\.sameRange\(exact, stored\)/,
  'notes must compare real source DOM Ranges');
 assert.match(highlights,/if\s*\(matches\.length === 1\)\s*\{\s*context\.quoteId = matches\[0\]\.id;\s*context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\);\s*\}/,
  'unknown and ambiguous occurrences must fail closed; unique selection must capture the exact linked record');
-assert.equal((highlights.match(/const context = noteContextForSelection\(s\);/g)||[]).length,2,
+assert.equal((readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8').match(/const context = noteContextForSelection\(s\);/g)||[]).length,2,
  'touch toolbar and native selection popup must share one association rule');
 
 assert.doesNotMatch(file,/function resolve\(article,anchor\)/,
@@ -245,10 +245,10 @@ assert.equal(notifyFailure.notes().length,1);
 // Execute the Product save handler and the committed portion of deleteItem
 // against the same real mutation owner as W57. UI rendering is stubbed.
 const nKey='gb-reader-notes-v1',qKey='gb-highlights-v1';
-const deleteStart=highlights.indexOf('  async function deleteItem(item) {');
-const deleteEnd=highlights.indexOf('    render(); sync();\n    const u = pendingUndo;',deleteStart);
+const deleteStart=presenterSource.indexOf('  async function deleteItem(item) {');
+const deleteEnd=presenterSource.indexOf('    render(); sync();\n    const u = pendingUndo;',deleteStart);
 assert.ok(deleteStart>=0&&deleteEnd>deleteStart,'Product delete source boundaries');
-const deleteSource=highlights.slice(deleteStart,deleteEnd)+'return pendingUndo;\n}';
+const deleteSource=presenterSource.slice(deleteStart,deleteEnd)+'return pendingUndo;\n}';
 const removeProduct=(f,item)=>new Function('transactionCall',
  'statusMessage','clearUndo','let pendingUndo;\n'+deleteSource+'\nreturn deleteItem;')(
  (method,...args)=>f.owner[method](...args),()=>{},()=>{})(item);
@@ -279,10 +279,10 @@ const failedDelete=makeFixture({notes:[rawA,rawB],record:rawQ(),failNote:true});
 const beforeFailed=JSON.stringify([failedDelete.notes(),failedDelete.record]);
 assert.equal(await removeProduct(failedDelete,itemA),undefined);
 assert.equal(JSON.stringify([failedDelete.notes(),failedDelete.record]),beforeFailed,'failed note deletion rolls back exact quote');
-const saveStart=highlights.indexOf('  async function saveNote(e) {');
-const saveEnd=highlights.indexOf('  function applySavedNote(editing)',saveStart);
+const saveStart=presenterSource.indexOf('  async function saveNote(e) {');
+const saveEnd=presenterSource.indexOf('  function applySavedNote(editing)',saveStart);
 assert.ok(saveStart>=0&&saveEnd>saveStart,'Product save source boundaries');
-const saveSource=highlights.slice(saveStart,saveEnd);
+const saveSource=presenterSource.slice(saveStart,saveEnd);
 const saveProduct=async(f,opened,context=null)=>{
  let applied=false;const textArea={value:'edited'};
  const draft={context,editing:opened?{id:String(opened.id),text:opened.text,recordSnapshot:JSON.stringify(opened)}:null};
@@ -375,7 +375,7 @@ assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefor
 const markerStart=highlights.indexOf('  function findMarkerIndex(old,record) {');
 const markerEnd=highlights.indexOf('  /* mutateLibrary()',markerStart);
 const quoteStart=highlights.indexOf('  async function saveSelectedQuote() {');
-const quoteEnd=highlights.indexOf('  function bindSelectionButton(',quoteStart);
+const quoteEnd=highlights.indexOf('  /* Цветные пометы:',quoteStart);
 assert.ok(markerStart>=0&&markerEnd>markerStart&&quoteStart>=0&&quoteEnd>quoteStart);
 const keySource=highlights.slice(highlights.indexOf('  function gbHighlightPath('),highlights.indexOf('  const MARK_COLORS'));
 const wQuoteSource=excerpt('    async function save(selection,kind){','    // The Product Library owns the same note list');
@@ -537,7 +537,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 
 // Actual lazy dialog lifecycle: deterministic deferred imports, no DOM/browser claims.
 {
- const from=highlights.indexOf('  let opening = null, openGeneration = 0;');
+ const from=highlights.indexOf('  let opening = null, openGeneration = 0, pendingTrigger = null;');
  const to=highlights.indexOf('  function sync()',from);
  assert.ok(from>=0&&to>from,'lazy dialog lifecycle source boundaries');
  const lifecycle=highlights.slice(from,to);
@@ -545,7 +545,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   let requests=[],opened=false,locked=0,focus=0,paint=0,errors=0,broken=false;
   const attributes=new Map();
   const fab={setAttribute:(k,v)=>attributes.set(k,v),removeAttribute:k=>attributes.delete(k)};
-  const trigger={isConnected:true,focus:()=>{focus++}};
+  const triggerAttributes=new Map([['aria-haspopup','dialog']]);
+  const trigger={isConnected:true,focus:()=>{focus++},setAttribute:(k,v)=>triggerAttributes.set(k,v),removeAttribute:k=>triggerAttributes.delete(k),getAttribute:k=>triggerAttributes.get(k)};
   const overlay={classList:{add:()=>{opened=true},remove:()=>{opened=false}},setAttribute(){},removeAttribute(){},querySelector:()=>({focus(){}})};
   const document={activeElement:trigger};
   const window={SiteUtils:{lockScroll:()=>{locked++},unlockScroll:()=>{locked--}}};
@@ -554,22 +555,29 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo',
    "let research=null, opener=null, tab='', filter='', searchTerm='', shown=0; const BATCH_SIZE=30, search={value:''};"+lifecycle+'return {open,close};');
   const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{});
-  return {api,requests,trigger,attributes,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
+  return {api,requests,trigger,attributes,triggerAttributes,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
  }
  const f=fixture();
  const pending=f.api.open(f.trigger);
  assert.equal(f.api.open(f.trigger),pending,'two open requests share one initialization');
  assert.equal(f.requests.length,1);
  assert.equal(f.attributes.get('aria-busy'),'true');
+ assert.equal(f.triggerAttributes.get('aria-busy'),'true');
  assert.equal(f.state().locked,0,'pending load must not lock underlying reading');
  f.requests[0].resolve();assert.equal(await pending,true);
  assert.deepEqual(f.state(),{opened:true,locked:1,focus:0,paint:1,errors:0});
  assert.equal(f.attributes.has('aria-busy'),false);
+ assert.equal(f.triggerAttributes.has('aria-busy'),false);
+ assert.equal(f.triggerAttributes.get('aria-expanded'),'true');
+ assert.equal(f.triggerAttributes.get('aria-controls'),'gb-hl-panel');
  f.api.close();assert.deepEqual(f.state(),{opened:false,locked:0,focus:1,paint:1,errors:0});
+ assert.equal(f.triggerAttributes.get('aria-expanded'),'false');
  const cancel=fixture(),old=cancel.api.open(cancel.trigger);cancel.api.close();
+ assert.equal(cancel.triggerAttributes.has('aria-busy'),false);
  const next=cancel.api.open(cancel.trigger);cancel.requests[0].resolve();
  assert.equal(await old,false);assert.equal(cancel.state().opened,false);
  assert.equal(cancel.attributes.get('aria-busy'),'true','obsolete load cannot clear newer busy state');
+ assert.equal(cancel.triggerAttributes.get('aria-busy'),'true');
  cancel.requests[1].resolve();assert.equal(await next,true);assert.equal(cancel.state().locked,1);
  const retry=fixture(),failed=retry.api.open(retry.trigger);retry.requests[0].reject(Error('offline'));
  assert.equal(await failed,false);assert.equal(retry.state().locked,0);assert.equal(retry.state().errors,1);
@@ -601,4 +609,25 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const native=scene([positional]);assert.equal(native.scans,0);assert.equal(native.resolved,1);assert.deepEqual(native.ids,['p']);
  const w57=scene([positional],true);assert.equal(w57.scans,0);assert.equal(w57.resolved,0);assert.equal(w57.painted,0);
  const legacy=scene([{id:'a',url:'/a',color:'amber'},{id:'b',url:'/a',color:'sage'},{id:'other',url:'/b',color:'sage'}]);assert.equal(legacy.scans,1);assert.equal(legacy.painted,2);assert.deepEqual(legacy.ids,['a','b']);
+}
+
+
+// W55: the native selection surface has exactly one fallback event owner.
+{
+ const selectionSource=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
+ const make=new Function('document','window','setTimeout','clearTimeout',selectionSource.replace('export function','function')+'return createSelectionController;');
+ let popup=null, listeners=[], timers=[];
+ const document={getElementById:id=>id==='selection-share-popup'?popup:null,addEventListener:(type,cb)=>listeners.push(['document',type,cb])};
+ const window={addEventListener:(type,cb)=>listeners.push(['window',type,cb]),getSelection:()=>null};
+ const controller=make(document,window,fn=>{timers.push(fn);return timers.length},()=>{})({});
+ controller.attachSelection();
+ const first=listeners.length;
+ assert.ok(first>0,'fallback installs real listeners');
+ controller.attachSelection();controller.attachSelection();
+ assert.equal(listeners.length,first,'repeated attach must not duplicate fallback listeners');
+ popup={querySelector:()=>({})};
+ controller.attachSelection();
+ assert.equal(listeners.length,first,'existing native popup must not install more fallback listeners');
+ controller.placeSelectionBar();
+ assert.equal(timers.length,0,'native popup must exclude fallback placement');
 }

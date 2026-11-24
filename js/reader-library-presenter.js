@@ -366,4 +366,143 @@ function button(action, label, text) {
     return {overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea};
   }
 
-export { createLibraryPanel, renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab, handleLibraryClick };
+  function createLibraryEditor({overlay,panel,status,editor,textArea,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,render,sync,selectNotes}) {
+  let draft = null, pendingUndo = null;
+  function statusMessage(message, error) {
+    if (!status) return;
+    status.replaceChildren(element('span', '', message));
+    status.classList.add('is-visible');
+    status.classList.toggle('is-error', Boolean(error));
+    clearTimeout(statusMessage.timer);
+    statusMessage.timer = setTimeout(() => { if (!pendingUndo) status.classList.remove('is-visible'); }, 5000);
+  }
+  function showEditor(context = null, editing = null) {
+    // The opened record itself is the version this editor may overwrite.
+    draft = { context, editing, saving:false };
+    textArea.readOnly = false;
+    editor.hidden = false;
+    panel.classList.add('is-editing');
+    textArea.value = editing ? editing.text : '';
+    overlay.querySelector('#gb-hl-note-context').textContent = context && context.quoteText
+      ? 'К цитате: «' + context.quoteText.slice(0, 180) + '»'
+      : editing && editing.quoteText ? 'К цитате: «' + editing.quoteText.slice(0, 180) + '»'
+      : 'Мысли во время чтения';
+    textArea.focus({ preventScroll: true });
+  }
+  function hideEditor(focus = true) {
+    if (!editor) return;
+    editor.hidden = true; draft = null; textArea.readOnly = false;
+    panel.classList.remove('is-editing');
+    if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
+  }
+  async function saveNote(e) {
+    e.preventDefault();
+    const activeDraft=draft;
+    if(!activeDraft||activeDraft.saving)return;
+    const text = textArea.value.trim();
+    if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
+    activeDraft.saving=true;
+    textArea.readOnly=true;
+    const context=activeDraft.context, editing=activeDraft.editing;
+    const created = {
+      id: uid('note'), text, ...(context?.quoteId != null ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
+      articleTitle: context && context.title || currentTitle(),
+      url: context && context.url || location.origin + location.pathname,
+      savedAt: Date.now(),
+    };
+    let result;
+    try { result = await transactionCall('saveNoteRecord',{context,editing,created,text}); } catch { result={ok:false}; }
+    finally {
+      activeDraft.saving=false;
+      if(draft===activeDraft)textArea.readOnly=false;
+    }
+    // A late save must never close or replace a newer editor.
+    if(draft!==activeDraft)return;
+    if (result.conflict && editing) {
+      const live = result.current.find(x => x && String(x.id) === String(editing.id));
+      statusMessage(live
+        ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
+        : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
+      return;
+    }
+    if (!result.ok) {
+      const message = result.reason === 'capacity'
+        ? 'Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.'
+        : result.reason === 'link-conflict'
+          ? 'Цитата или её связь изменилась. Откройте её заново; черновик остаётся в редакторе.'
+          : 'Не удалось безопасно сохранить заметку. Черновик остаётся в редакторе; повторите попытку.';
+      statusMessage(message, true); return;
+    }
+    // Only the editor that initiated this completed save may be closed.
+    applySavedNote(editing);
+  }
+  function applySavedNote(editing) {
+    hideEditor(false);
+    selectNotes();
+    render(); sync();
+    statusMessage(editing ? 'Заметка обновлена.' : 'Заметка сохранена.');
+  }
+  function clearUndo() {
+    if (pendingUndo) clearTimeout(pendingUndo.timer);
+    pendingUndo = null;
+    if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }
+  }
+  async function deleteItem(item) {
+    const deleted = await transactionCall('deleteRecord',item);
+    if (!deleted.ok) {
+      statusMessage(deleted.reason === 'duplicate'
+        ? 'Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.'
+        : deleted.reason === 'partial-write'
+          ? 'Ошибка удаления и восстановления связи. Экспортируйте текущие данные и проверьте библиотеку.'
+          : 'Не удалось безопасно удалить запись. Обновите библиотеку и повторите.', true);
+      return;
+    }
+    clearUndo();
+    pendingUndo = deleted.receipt;
+    render(); sync();
+    const u = pendingUndo;
+    let restoring = false;
+    function showUndo(message, allowCopy = false) {
+      if (pendingUndo !== u) return;
+      const undoButton = button('undo', 'Отменить удаление', 'Отменить');
+      const controls = [element('span', '', message), undoButton];
+      undoButton.addEventListener('click', () => restore(false));
+      if (allowCopy) {
+        const copyButton = button('undo-copy', 'Сохранить удалённую версию с отдельным ID', 'Сохранить копию');
+        copyButton.addEventListener('click', () => restore(true));
+        controls.push(copyButton);
+      }
+      status.replaceChildren(...controls);
+      status.classList.add('is-visible');
+      status.classList.remove('is-error');
+    }
+    async function restore(copy) {
+      if (pendingUndo !== u || restoring) return;
+      restoring = true;
+      clearTimeout(u.timer);
+      const result = await restoreDeleted(u, copy ? uid(u.key === NOTES_KEY ? 'note' : 'quote') : null);
+      restoring = false;
+      if (pendingUndo !== u) { if (result.ok) { render(); sync(); } return; }
+      if (result.ok) {
+        clearUndo(); render(); sync();
+        statusMessage(copy ? 'Версия сохранена отдельной копией без прежней связи.' : 'Запись восстановлена.');
+        return;
+      }
+      const collision = ['id-collision','link-conflict'].includes(result.reason);
+      const message = result.reason === 'capacity'
+        ? 'Лимит библиотеки достигнут. Освободите место или сохраните экспорт.'
+        : result.reason === 'partial-write'
+          ? 'Ошибка восстановления. Сохраните экспорт и проверьте библиотеку.'
+          : collision
+            ? 'Запись или её связь уже изменилась. Можно сохранить отдельную копию без прежней связи.'
+            : 'Восстановление не удалось. Повторите попытку.';
+      showUndo(message, collision);
+      u.timer = setTimeout(clearUndo, 30000);
+    }
+    showUndo('Запись удалена');
+    pendingUndo.timer = setTimeout(clearUndo, 6000);
+  }
+  return Object.freeze({showEditor,hideEditor,saveNote,clearUndo,deleteItem,statusMessage});
+  }
+
+export { createLibraryEditor, createLibraryPanel, renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab, handleLibraryClick };

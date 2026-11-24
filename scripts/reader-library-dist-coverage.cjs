@@ -18,6 +18,7 @@ for(const name of ['articles','hardTexts']){
 }
 const crypto = require('crypto');
 const storagePath = path.join(root, 'js/reader-library-storage.js');
+const selectionPath = path.join(root, 'js/reader-library-selection.js');
 const transactionsPath = path.join(root, 'js/reader-library-record-transactions.js');
 const presenterPath = path.join(root, 'js/reader-library-presenter.js');
 const researchPath = path.join(root, 'js/reader-library-v3.js');
@@ -33,6 +34,10 @@ assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-storage.
   'lazy owner must reference exact published storage authority bytes');
 assert(fs.readFileSync(swPath, 'utf8').includes('reader-library-storage.js?v=' + storageVersion),
   'offline service worker must precache exact storage authority revision');
+assert(fs.existsSync(selectionPath), 'selection controller must be published in dist');
+const selectionVersion = crypto.createHash('md5').update(fs.readFileSync(selectionPath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath,'utf8').includes('js/reader-library-selection.js?v=' + selectionVersion), 'bootstrap must import exact selection controller revision');
+assert(fs.readFileSync(swPath,'utf8').includes('js/reader-library-selection.js?v=' + selectionVersion), 'SW must precache exact selection controller revision');
 assert(fs.existsSync(transactionsPath), 'record domain must be published in dist');
 const transactionsVersion = crypto.createHash('md5').update(fs.readFileSync(transactionsPath)).digest('hex').slice(0,8);
 assert(fs.readFileSync(highlightsPath,'utf8').includes('js/reader-library-record-transactions.js?v=' + transactionsVersion),

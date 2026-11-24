@@ -147,9 +147,14 @@
   historyButton.setAttribute('aria-expanded',String(!historyDrawer.hidden));
   if(!historyDrawer.hidden)historyDrawer.querySelector('button')?.focus({preventScroll:true});
  });
- root.querySelector('#npULibraryButton').addEventListener('click',()=>{
-  const native=document.getElementById('gb-hl-fab')||root.querySelector('#npUNativeTools .gb-save');
-  if(native)native.click();
+ const libraryButton=root.querySelector('#npULibraryButton');
+ libraryButton.setAttribute('aria-haspopup','dialog');
+ libraryButton.setAttribute('aria-expanded','false');
+ libraryButton.disabled=true;
+ // Product owns the entire async lifecycle and actual opener ARIA/focus.
+ libraryButton.addEventListener('click',event=>{
+  const opener=event.currentTarget;
+  if(typeof window.GBHighlights?.open==='function')window.GBHighlights.open(opener);
  });
  // ARGON RightResearchPanel: the live section follows the article; every
  // window below has its own collapse and maximise controls.
@@ -680,6 +685,7 @@
  // Mobile retains the original Reader dock.
  function dockNativeLibrary(){
   const fab=document.getElementById('gb-hl-fab');
+  libraryButton.disabled=!(fab&&typeof window.GBHighlights?.open==='function');
   if(!fab)return false;
   if((nativeSeriesRoot||nativeLegacyRoot)&&!isMobile()){
    if(fab.parentElement!==document.body)document.body.append(fab);
@@ -2019,7 +2025,9 @@
   // Escape dismisses the TOPMOST dialog first, not both layers at once.
   if(e.key==='Escape'){
    const fromProductDialog=!!e.target.closest?.('#gb-hl-panel,.cp-backdrop');
-   const productDialogActive=document.getElementById('gb-hl-fab')?.getAttribute('aria-expanded')==='true'||
+   const libraryFab=document.getElementById('gb-hl-fab');
+   const productDialogActive=e.defaultPrevented||libraryButton.getAttribute('aria-busy')==='true'||
+    libraryFab?.getAttribute('aria-busy')==='true'||libraryFab?.getAttribute('aria-expanded')==='true'||
     !!document.querySelector('.cp-backdrop.is-open');
    if(fromProductDialog||productDialogActive)return;
   }
