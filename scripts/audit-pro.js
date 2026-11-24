@@ -930,6 +930,34 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // 14. Security/static-site hygiene
 (function securityHygiene() {
   let problems = 0;
+  // Remove only the repository prefix of real GitHub permalinks, not
+  // arbitrary HTTP URLs or the remainder of a permalink (which may leak a path).
+  // Construct the fixture repository name as SEO-01 does: fixture strings
+  // are not deployed paths and must not trip the independent source scanner.
+  const repoName = 'gb-' + 'is-my-strength';
+  function hasLocalRepositoryPath(source) {
+    const githubPrefix = new RegExp('\\bhttps://github\\.com/FedorMilovanov/' + repoName + '/(?=(?:pull|issues|commit|blob|tree|actions/runs)/)', 'gi');
+    const repositoryPath = new RegExp('[\\\\/]' + repoName + '[\\\\/]', 'i');
+    return repositoryPath.test(source.replace(githubPrefix, ''));
+  }
+  const permalink = 'https://github.com/FedorMilovanov/' + repoName + '/pull/2346#issuecomment-7048520954';
+  const localPath = '/tmp/' + repoName + '/src/';
+  const pathFixtures = [
+    ['github-permalink', permalink, false],
+    ['linux-path', localPath, true],
+    ['windows-path', 'C:\\Users\\Fedor\\projects\\' + repoName + '\\src\\file.js', true],
+    ['mixed', permalink + ' and ' + localPath, true],
+    ['production-subpath', '/' + repoName + '/css/site.css', true],
+    ['github-pages-subpath', 'https://fedormilovanov.github.io/' + repoName + '/css/site.css', true],
+    ['lookalike-host', 'https://github.com.evil.example/FedorMilovanov/' + repoName + '/pull/2346', true],
+    ['embedded-path', permalink + '?path=' + localPath, true],
+  ];
+  for (const [label, sample, expected] of pathFixtures) {
+    if (hasLocalRepositoryPath(sample) !== expected) {
+      problems++;
+      R.err('Repository path detector self-test failed: ' + label);
+    }
+  }
   for (const p of allFiles.filter(f => /\.(html|css|js|json|xml|txt|md)$/.test(f))) {
     const file = rel(p);
     let text;
@@ -937,7 +965,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     // SANDBOX-ENV-*.md intentionally documents the real sandbox filesystem
     // paths for the next agent (copy-pasteable setup commands). That is not an
     // accidental leak; exempt it the same way this audit file itself is exempt.
-    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/') && !file.startsWith('scripts/') && text.includes('/gb-' + 'is-my-strength/')) { problems++; R.err(`Repository base path leak in ${file}`); }
+    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/') && !file.startsWith('scripts/') && hasLocalRepositoryPath(text)) { problems++; R.err(`Repository base path leak in ${file}`); }
     // Match real href/src/content attributes only; do not flag XML namespaces like xmlns:content="http://..." in RSS.
     if (/(?:^|[\s<])(?:href|src|content)=[\"']http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org|www\.google\.com\/schemas)([^\"']+)[\"']/i.test(text)) R.warn(`Possible http:// mixed content in ${file}`);
     if (file.startsWith('js/') && /\beval\s*\(|new\s+Function\s*\(/.test(text)) { problems++; R.err(`Dangerous JS dynamic execution in ${file}`); }
