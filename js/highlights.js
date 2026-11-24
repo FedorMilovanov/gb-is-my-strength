@@ -328,6 +328,62 @@
       return { changes: { [key]: outcome.items }, result: { items: outcome.items } };
     });
   }
+  // Restore only the deleted version and relationships that are still valid.
+  // A conflict never rewinds a newer quote or note; detached copy is explicit.
+  function restoreDeleted(receipt, copyId = null) {
+    if (!receipt || !receipt.entry || ![NOTES_KEY, QUOTES_KEY].includes(receipt.key))
+      return Promise.resolve(libraryFailure('invalid-receipt'));
+    const {key, entry, index, clearedLinks = []} = receipt;
+    return mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+      const items = stores[key], quotes = stores[QUOTES_KEY], notes = stores[NOTES_KEY];
+      const sameId = (a,b) => a != null && b != null && String(a) === String(b);
+      const id = copyId ?? entry.id;
+      if (items.some(x => x && sameId(x.id,id))) return { reason: 'id-collision' };
+      if (items.length >= (key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES)) return { reason: 'capacity' };
+      let restored = copyId === null ? entry : { ...entry, id: copyId, savedAt: Date.now() };
+      const changes = {};
+      if (key === NOTES_KEY) {
+        if (copyId !== null) {
+          delete restored.quoteId;
+        } else {
+          if (entry.quoteId != null && notes.some(n => n && sameId(n.quoteId,entry.quoteId)))
+            return { reason: 'link-conflict' };
+          if (entry.quoteId != null && Object.hasOwn(receipt,'relatedQuote')) {
+            const related = quotes.filter(q => q && sameId(q.id,entry.quoteId));
+            if (related.length > 1 || (related.length ? JSON.stringify(related[0]) : null) !== receipt.relatedQuote)
+              return { reason: 'link-conflict' };
+          }
+          for (const link of clearedLinks) {
+            const found = quotes.filter(q => q && sameId(q.id,link.id));
+            if (found.length !== 1 || JSON.stringify(found[0]) !== link.postDelete ||
+                notes.some(n => n && sameId(n.quoteId,link.id))) return { reason: 'link-conflict' };
+          }
+          if (clearedLinks.length) changes[QUOTES_KEY] = quotes.map(q => {
+            const link = clearedLinks.find(l => q && sameId(q.id,l.id));
+            return link ? { ...q, annotation: { ...q.annotation, noteId: link.noteId } } : q;
+          });
+        }
+      } else {
+        const rangeKey = gbHighlightKey(entry);
+        if (rangeKey && quotes.some(q => gbHighlightKey(q) === rangeKey))
+          return { reason: 'range-conflict' };
+        if (copyId !== null && restored.annotation)
+          restored = { ...restored, annotation: { ...restored.annotation, noteId: null } };
+        const explicit = restored.annotation?.noteId;
+        const reverse = notes.filter(n => n && sameId(n.quoteId,restored.id));
+        if (reverse.length > 1) return { reason: 'link-conflict' };
+        if (explicit != null) {
+          const linked = notes.filter(n => n && sameId(n.id,explicit));
+          if (linked.length !== 1 || (linked[0].quoteId != null && !sameId(linked[0].quoteId,restored.id)) ||
+              reverse.some(n => n !== linked[0])) return { reason: 'link-conflict' };
+        }
+      }
+      const next = items.slice();
+      next.splice(Math.min(index,next.length),0,restored);
+      changes[key] = next;
+      return { changes, result: { restored } };
+    });
+  }
   function quotes() {
     return read(QUOTES_KEY);
   }
@@ -496,16 +552,22 @@
     toast.timer = setTimeout(hideToast, 6000);
   }
   function undoQuotes(written, previous, message) {
-    return () => {
-      const current = read(QUOTES_KEY);
-      const index = current.findIndex(item => item.id === written.id);
-      if (index < 0 || JSON.stringify(current[index]) !== JSON.stringify(written)) {
-        toast('Запись уже изменилась. Отмена недоступна.', null);
+    return async () => {
+      const result = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
+        const current = stores[QUOTES_KEY];
+        const matches = current.filter(item => item && String(item.id) === String(written.id));
+        if (matches.length !== 1 || JSON.stringify(matches[0]) !== JSON.stringify(written))
+          return { reason: 'conflict' };
+        if (!previous && (written.annotation?.noteId != null || stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(written.id))))
+          return { reason: 'link-conflict' };
+        return { changes: { [QUOTES_KEY]: previous
+          ? current.map(x => x === matches[0] ? previous : x)
+          : current.filter(x => x !== matches[0]) } };
+      });
+      if (!result.ok) {
+        toast('Запись уже изменилась или недоступна. Отмена не выполнена.', { label: 'Повторить', run: undoQuotes(written, previous, message) });
         return;
       }
-      if (previous) current[index] = previous;
-      else current.splice(index, 1);
-      if (!write(QUOTES_KEY, current)) { toast('Не удалось отменить запись.', null); return; }
       paintMarks(); sync(); toast(message, null);
     };
   }
@@ -834,7 +896,13 @@
           return next;
         });
       }
-      return { changes, result: { receipt: { key, entry, index, clearedLinks } } };
+      const receipt = { key, entry, index, clearedLinks };
+      if (key === NOTES_KEY && entry.quoteId != null) {
+        const related = (changes[QUOTES_KEY] || stores[QUOTES_KEY]).filter(q => q && String(q.id) === String(entry.quoteId));
+        if (related.length > 1) return { reason: 'duplicate' };
+        receipt.relatedQuote = related.length ? JSON.stringify(related[0]) : null;
+      }
+      return { changes, result: { receipt } };
     });
     if (!deleted.ok) {
       statusMessage(deleted.reason === 'duplicate'
@@ -847,71 +915,46 @@
     clearUndo();
     pendingUndo = deleted.receipt;
     render(); sync();
-    const undoButton = button('undo', 'Отменить удаление', 'Отменить');
-    status.replaceChildren(element('span', '', 'Запись удалена'), undoButton);
-    status.classList.add('is-visible');
-    undoButton.addEventListener('click', async () => {
-      if (!pendingUndo) return;
-      const u = pendingUndo, items = read(u.key);
-      const limit = u.key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
-      const taken = items.some((x) => String(x.id) === String(u.entry.id));
-      if (taken) {
-        // Another tab may import/recreate this ID while Undo is available.
-        // Preserve both versions: never splice a duplicate ID or overwrite.
+    const u = pendingUndo;
+    let restoring = false;
+    function showUndo(message, allowCopy = false) {
+      if (pendingUndo !== u) return;
+      const undoButton = button('undo', 'Отменить удаление', 'Отменить');
+      const controls = [element('span', '', message), undoButton];
+      undoButton.addEventListener('click', () => restore(false));
+      if (allowCopy) {
         const copyButton = button('undo-copy', 'Сохранить удалённую версию с отдельным ID', 'Сохранить копию');
-        status.replaceChildren(
-          element('span', '', 'Запись с таким ID уже есть. Для сохранения обеих версий выберите копию.'),
-          copyButton
-        );
-        status.classList.add('is-visible');
-        clearTimeout(u.timer);
-        u.timer = setTimeout(clearUndo, 30000);
-        copyButton.addEventListener('click', () => {
-          if (pendingUndo !== u) return;
-          const latest = read(u.key);
-          if (latest.length >= limit) {
-            statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
-            return;
-          }
-          let newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
-          while (latest.some((x) => String(x.id) === newId)) {
-            newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
-          }
-          const preserved = { ...u.entry, id: newId, savedAt: Date.now() };
-          latest.splice(Math.min(u.index, latest.length), 0, preserved);
-          if (!write(u.key, latest)) {
-            statusMessage('Не удалось сохранить копию. Данные другой вкладки не изменены.', true);
-            return;
-          }
-          clearUndo(); render(); sync();
-          statusMessage('Обе версии сохранены с разными ID. Проверьте связи заметок и цитат.');
-        });
+        copyButton.addEventListener('click', () => restore(true));
+        controls.push(copyButton);
+      }
+      status.replaceChildren(...controls);
+      status.classList.add('is-visible');
+      status.classList.remove('is-error');
+    }
+    async function restore(copy) {
+      if (pendingUndo !== u || restoring) return;
+      restoring = true;
+      clearTimeout(u.timer);
+      const result = await restoreDeleted(u, copy ? uid(u.key === NOTES_KEY ? 'note' : 'quote') : null);
+      restoring = false;
+      if (pendingUndo !== u) { if (result.ok) { render(); sync(); } return; }
+      if (result.ok) {
+        clearUndo(); render(); sync();
+        statusMessage(copy ? 'Версия сохранена отдельной копией без прежней связи.' : 'Запись восстановлена.');
         return;
       }
-      if (items.length >= limit) {
-        statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
-        return;
-      }
-      items.splice(Math.min(u.index, items.length), 0, u.entry);
-      if (!write(u.key, items)) {
-        statusMessage('Не удалось восстановить запись.', true); return;
-      }
-      // Restore the reverse links that the delete cleared, so Undo gives the
-      // record back exactly as it was rather than as an unlinked orphan.
-      if (u.clearedLinks && u.clearedLinks.length) {
-        const restored = await commit(QUOTES_KEY, null, (current) => ({
-          items: current.map((q) => {
-            const back = u.clearedLinks.find((l) => String(l.id) === String(q.id));
-            return back && q.annotation ? Object.assign({}, q, { annotation: Object.assign({}, q.annotation, { noteId: back.noteId }) }) : q;
-          }),
-        }));
-        if (!restored || !restored.ok) {
-          statusMessage('Запись восстановлена, но связь с цитатой вернуть не удалось. Откройте заметку из цитаты.', true);
-          clearUndo(); render(); sync(); return;
-        }
-      }
-      clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
-    });
+      const collision = ['id-collision','link-conflict'].includes(result.reason);
+      const message = result.reason === 'capacity'
+        ? 'Лимит библиотеки достигнут. Освободите место или сохраните экспорт.'
+        : result.reason === 'partial-write'
+          ? 'Ошибка восстановления. Сохраните экспорт и проверьте библиотеку.'
+          : collision
+            ? 'Запись или её связь уже изменилась. Можно сохранить отдельную копию без прежней связи.'
+            : 'Восстановление не удалось. Повторите попытку.';
+      showUndo(message, collision);
+      u.timer = setTimeout(clearUndo, 30000);
+    }
+    showUndo('Запись удалена');
     pendingUndo.timer = setTimeout(clearUndo, 6000);
   }
   function saveSelectedQuote() {
@@ -1373,7 +1416,7 @@
   });
 
   const api = Object.freeze({
-    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary,
+    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted,
     getNotes: notes, getLibrary: all,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,

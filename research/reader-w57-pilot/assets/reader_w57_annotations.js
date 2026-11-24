@@ -418,9 +418,9 @@
       palette.setAttribute('aria-label','Цвет выделения');
       say('Смена цвета отменена. Помета не изменена.');
     });
-    list.addEventListener('click',e=>{
+    list.addEventListener('click',async e=>{
       const b=e.target.closest('[data-action]'),li=b?.closest('li[data-id]');if(!li)return;
-      const id=li.dataset.id,action=b.dataset.action,record=entries().find(x=>x.id===id);
+      const id=li.dataset.id,action=b.dataset.action,record=entries().find(x=>sameId(x.id,id));
       if(!record)return;
       if(action==='goto'){locate(id);return}
       if(action==='switch'){
@@ -434,28 +434,34 @@
       }else if(action==='edit'){
         openNoteEditor(record);
       }else if(action==='delete'){
-        const old=all(),deleted=old.find(x=>x.id===id);
-        if(write(qKey,old.filter(x=>x.id!==id))){
-          if(pendingNoteId===id){pendingNoteId=null;pendingNoteSnapshot=null;editor.hidden=true}
-          if(pendingRecolorId===id){pendingRecolorId=null;palette.setAttribute('aria-label','Цвет выделения')}
-          lastUndo=deleted;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
-          const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
-          undo.setAttribute('aria-label','Восстановить удалённую помету');
-          undo.addEventListener('click',()=>{
-            if(!lastUndo||lastUndo.id!==deleted.id)return;
-            const next=all();
-            if(next.some(x=>x.id===deleted.id)){lastUndo=null;say('Помета уже восстановлена.');return}
-            if(next.length>=200){say('Нет места для восстановления: сохраните экспорт библиотеки.');return}
-            if(write(qKey,[deleted,...next])){
-              lastUndo=null;repaint();say('Помета восстановлена.');
-            }else{
-          // Preserve the SAME undo button and handler after a failed write.
-          // Replacing status.textContent here would erase the only retry.
-          status.replaceChildren(document.createTextNode('Восстановление не удалось. Повторите попытку. '),undo);
-        }
-          });
-          status.append(undo);
-        }
+        const owner=window.GBHighlights;
+        if(typeof owner?.mutateLibrary!=='function'||typeof owner?.restoreDeleted!=='function'){say('Безопасное удаление недоступно.');return}
+        const deleted=await owner.mutateLibrary([qKey],stores=>{
+          const old=stores[qKey],matches=old.filter(x=>x&&sameId(x.id,id));
+          if(matches.length!==1)return{reason:'conflict'};
+          const entry=matches[0],current=entry.annotation?.version===1?entry:{...entry,
+            annotation:{version:0,kind:entry.kind||'marker',color:entry.color||'amber',noteId:null}};
+          if(JSON.stringify(current)!==JSON.stringify(record))return{reason:'conflict'};
+          return{changes:{[qKey]:old.filter(x=>x!==entry)},result:{receipt:{key:qKey,entry,index:old.indexOf(entry)}}};
+        });
+        if(!deleted.ok){say('Не удалось безопасно удалить помету. Повторите попытку.');return}
+        // An open draft is never discarded as a side effect of deletion.
+        if(sameId(pendingRecolorId,id)){pendingRecolorId=null;palette.setAttribute('aria-label','Цвет выделения')}
+        const receipt=deleted.receipt;
+        lastUndo=receipt;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
+        const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
+        undo.setAttribute('aria-label','Восстановить удалённую помету');
+        let restoring=false;
+        undo.addEventListener('click',async()=>{
+          if(lastUndo!==receipt||restoring)return;
+          restoring=true;
+          const result=await owner.restoreDeleted(receipt);
+          restoring=false;
+          if(lastUndo!==receipt){if(result.ok)repaint();return}
+          if(result.ok){lastUndo=null;repaint();say('Помета восстановлена.')}
+          else status.replaceChildren(document.createTextNode('Восстановление не удалось. Повторите попытку. '),undo);
+        });
+        status.append(undo);
       }
     });
     section.querySelector('#npW57CancelNote').addEventListener('click',()=>{
@@ -465,7 +471,7 @@
     section.querySelector('#npW57SaveNote').addEventListener('click',async()=>{
       const value=noteText.value.trim(),id=pendingNoteId;
       if(!value||!id){say('Введите текст заметки.');return}
-      const record=entries().find(x=>x.id===id);
+      const record=entries().find(x=>sameId(x.id,id));
       if(!record){say('Исходное выделение не найдено. Текст остаётся в редакторе.');return}
       const result=await saveLinkedNote(record,value,pendingNoteSnapshot);
       if(!result.ok){say(result.message);return}

@@ -59,10 +59,10 @@ const makeFixture=(options={})=>{
  const timer=(fn)=>{const token={active:true};if(options.lock==='held')Promise.resolve().then(()=>{if(token.active)fn()});return token};
  const cancel=token=>{token.active=false};
  const makeOwner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',
-  'localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout',
-  ownerSource+'return {mutateLibrary,commit};');
+  'localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',
+  ownerSource+'return {mutateLibrary,commit,restoreDeleted};');
  windowFixture.GBHighlights=makeOwner(nKey,qKey,500,200,localStorageFixture,navigatorFixture,
-  windowFixture,CustomEventFixture,AbortControllerFixture,timer,cancel);
+  windowFixture,CustomEventFixture,AbortControllerFixture,timer,cancel,x=>x?.text||'');
  const factory=new Function('read','qKey','nKey','Date','Math','window',
   noteSource+'return {linkedNote,captureNoteSnapshot,saveLinkedNote};');
  const api=factory(read,qKey,nKey,Date,Math,windowFixture);
@@ -240,7 +240,7 @@ assert.equal(notifyFailure.notes().length,1);
 // against the same real mutation owner as W57. UI rendering is stubbed.
 const nKey='gb-reader-notes-v1',qKey='gb-highlights-v1';
 const deleteStart=highlights.indexOf('  async function deleteItem(item) {');
-const deleteEnd=highlights.indexOf('    render(); sync();\n    const undoButton',deleteStart);
+const deleteEnd=highlights.indexOf('    render(); sync();\n    const u = pendingUndo;',deleteStart);
 assert.ok(deleteStart>=0&&deleteEnd>deleteStart,'Product delete source boundaries');
 const deleteSource=highlights.slice(deleteStart,deleteEnd)+'return pendingUndo;\n}';
 const removeProduct=(f,item)=>new Function('mutateLibrary','NOTES_KEY','QUOTES_KEY',
@@ -306,5 +306,43 @@ const successfulProduct=makeFixture({notes:[rawB]});
 assert.equal((await saveProduct(successfulProduct,null)).applied,true);
 assert.equal(successfulProduct.notes().length,2);
 assert.deepEqual(successfulProduct.notes()[1],rawB);
+
+
+// Undo uses the same lock and exact post-delete quote snapshots.
+const undoFixture=makeFixture({notes:[rawA],record:rawQ()});
+const receipt=await removeProduct(undoFixture,itemA);
+assert.ok(receipt);
+assert.equal((await undoFixture.owner.restoreDeleted(receipt)).ok,true);
+assert.deepEqual(undoFixture.notes(),[rawA]);
+assert.equal(undoFixture.record.annotation.noteId,'A');
+const undoConflict=makeFixture({notes:[rawA],record:rawQ()});
+const oldReceipt=await removeProduct(undoConflict,itemA);
+const newNoteB={id:'B',text:'newer',quoteId:'quote-1'};
+undoConflict.replaceNotes([newNoteB]);
+undoConflict.record.annotation.noteId='B';
+undoConflict.record.annotation.color='rose';
+const newState=JSON.stringify([undoConflict.notes(),undoConflict.record]);
+assert.equal((await undoConflict.owner.restoreDeleted(oldReceipt)).ok,false,'cannot steal newer link');
+assert.equal(JSON.stringify([undoConflict.notes(),undoConflict.record]),newState);
+assert.equal((await undoConflict.owner.restoreDeleted(oldReceipt,'copy-A')).ok,true);
+assert.equal(undoConflict.record.annotation.noteId,'B');
+assert.deepEqual(undoConflict.notes().find(x=>x.id==='B'),newNoteB);
+const detached=undoConflict.notes().find(x=>x.id==='copy-A');
+assert.equal(detached.quoteId,undefined,'copy cannot claim newer note link');
+assert.equal(detached.text,rawA.text);
+assert.deepEqual(detached.legacy,rawA.legacy);
+const undoDrift=makeFixture({notes:[rawA],record:rawQ()});
+const driftReceipt=await removeProduct(undoDrift,itemA);
+undoDrift.record.annotation.color='rose';
+const driftState=JSON.stringify([undoDrift.notes(),undoDrift.record]);
+assert.equal((await undoDrift.owner.restoreDeleted(driftReceipt)).ok,false);
+assert.equal(JSON.stringify([undoDrift.notes(),undoDrift.record]),driftState);
+const undoHeld=makeFixture({lock:'held',notes:[],record:rawQ()});
+assert.equal((await undoHeld.owner.restoreDeleted(receipt)).ok,false);
+assert.deepEqual(undoHeld.writes,[]);
+const undoQuota=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:null}},failNote:true});
+const undoQuotaBefore=JSON.stringify([undoQuota.notes(),undoQuota.record]);
+assert.equal((await undoQuota.owner.restoreDeleted(receipt)).ok,false);
+assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefore);
 
 console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');
