@@ -1,0 +1,196 @@
+{
+  "status": "RESEARCH_HANDOFF_ONLY",
+  "authority": "MAX0 W25 7137193415; ART W5.9 7136910111; AGENT2 W6 7136262262",
+  "main": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "rollback": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "sourceBlobs": {
+    "historyFeature": "d0063bece78e953e607d48b7e98956ede3cb64f7",
+    "historySources": "410b57903b6fe4bb67f2e976253baee5b9591232",
+    "sourceReturn": "f3ce414163b60da8560924eaf1cbb18a703332c0",
+    "approvedSpread": "84c987315109487d5f261fdbc22a615ea30dd442"
+  },
+  "placement": "One compact companion at existing #g3-year-2018 in G3HistoryFeature.astro, conditional on exact engineering CI and coordinator collision preflight; GRAPHICS does not write product.",
+  "layout": {
+    "title": "Две линии одного года",
+    "lanes": [
+      {
+        "id": "conference",
+        "title": "Жизнь общины",
+        "claimId": "G3-HIST-PUB-13",
+        "rows": [
+          "challies-video",
+          "firstlove",
+          "hospitality"
+        ]
+      },
+      {
+        "id": "discussion",
+        "title": "Заявление",
+        "rows": [
+          "dallas",
+          "statement",
+          "reactions"
+        ]
+      }
+    ],
+    "retrospective": "Separate below both lanes, explicit 23 May 2025.",
+    "readingOrder": "Conference lane then discussion lane then retrospective; DOM order same; stack by available column width; do not connect lanes or imply causation. Dates are documentary types, no exact session schedule.",
+    "contentPolicy": "Existing approved paragraphs are losslessly partitioned below as source mapping only; retain exact canonical text and claim marker unless editorial owner approves reflow. Do not render a duplicate full block beside unchanged prose; if one compact companion is selected, summarize without duplicating full text or relocate existing citations once with same IDs. The row 'В феврале он' may require an explicit name for standalone context; editorial approval required. Preserve source-return hrefs and native data-journal-citation; no duplicate IDs. No new public claims or rights.",
+    "atlas": "DEFERRED; do not import."
+  },
+  "intro": "Отдельная линия истории — The Statement on Social Justice and the Gospel.",
+  "rows": [
+    {
+      "key": "challies-video",
+      "lane": "conference",
+      "date": "2018-01-23",
+      "dateKind": "publication",
+      "heading": "Тим Чаллис",
+      "sourceId": "challies-2018-video",
+      "citationId": "cite-r6-challies-2018-video",
+      "researchLocator": "G3-HIST-PUB-13",
+      "text": "В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках.",
+      "family": "Challies-2018",
+      "boundary": "Авторское сообщение о показе видеозаписи, не проверенный просмотр.",
+      "sourceRole": "Свидетельство автора выступления",
+      "sourcePeriod": "23 января 2018",
+      "sourceUrl": "https://www.challies.com/vlog/from-every-tribe-and-language-and-people-and-nation/",
+      "returnHref": "#g3-year-2018",
+      "href": "#history-source-challies-2018-video",
+      "existingVisibleLabel": "Тим Чаллис. From Every Tribe and Language and People and Nation"
+    },
+    {
+      "key": "firstlove",
+      "lane": "conference",
+      "date": "2018-01-30",
+      "dateKind": "publication",
+      "heading": "FirstLove Missions",
+      "sourceId": "firstlove-2018",
+      "citationId": "cite-r6-firstlove-2018",
+      "researchLocator": "G3-HIST-PUB-13",
+      "text": "В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы.",
+      "family": "FirstLove self-report",
+      "boundary": "Число экземпляров, не посетителей.",
+      "sourceRole": "Отчёт участника выставки",
+      "sourcePeriod": "30 января 2018",
+      "sourceUrl": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia",
+      "returnHref": "#g3-year-2018",
+      "href": "#history-source-firstlove-2018",
+      "existingVisibleLabel": "FirstLove Missions. G3 Conference in Atlanta, Georgia"
+    },
+    {
+      "key": "hospitality",
+      "lane": "conference",
+      "date": "2018-02-02",
+      "dateKind": "publication",
+      "heading": "Гостеприимство",
+      "sourceId": "challies-2018-lessons",
+      "citationId": "cite-r6-challies-2018-lessons",
+      "researchLocator": "G3-HIST-PUB-13",
+      "text": "В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства.",
+      "family": "Challies-2018",
+      "boundary": "Авторская статья о собственной общине.",
+      "sourceRole": "Авторская статья",
+      "sourcePeriod": "2 февраля 2018",
+      "sourceUrl": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/",
+      "returnHref": "#g3-year-2018",
+      "href": "#history-source-challies-2018-lessons",
+      "existingVisibleLabel": "Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church"
+    },
+    {
+      "key": "dallas",
+      "lane": "discussion",
+      "date": "2018-06-19",
+      "dateKind": "attributed_event",
+      "heading": "Встреча в Далласе",
+      "sourceId": "ascol-2018",
+      "citationId": "cite-g3-year-2018-ascol-2018",
+      "researchLocator": "HIST-19 / G3-HIST-PUB-08",
+      "text": "Согласно рассказу Тома Аскола на сайте документа, 19 июня 2018 года в Далласе встретились четырнадцать евангельских деятелей. Организатором встречи назван Джош Бьюс; Аскол сообщает, что подготовил первоначальный текст.",
+      "family": "Ascol statement testimony",
+      "boundary": "Дата встречи по рассказу автора; его статья опубликована 4 сентября 2018. Не независимый протокол.",
+      "sourceRole": "Датированное свидетельство участника",
+      "sourcePeriod": "4 сентября 2018",
+      "sourceUrl": "https://founders.org/articles/the-statement-on-social-justice-and-the-gospel/",
+      "returnHref": "#g3-year-2018",
+      "href": "#history-source-ascol-2018",
+      "existingVisibleLabel": "Датированное свидетельство Тома Аскола"
+    },
+    {
+      "key": "statement",
+      "lane": "discussion",
+      "date": "2018-09-04",
+      "dateKind": "publication",
+      "heading": "Социальная справедливость и Евангелие",
+      "sourceId": "statement-2018",
+      "citationId": "cite-g3-year-2018-statement-2018",
+      "researchLocator": "HIST-19 / G3-HIST-PUB-08",
+      "text": "После обсуждений и правок заявление было опубликовано 4 сентября. Авторы представляли документ как защиту библейского учения о Писании, Евангелии, Церкви и справедливости перед лицом культурных вызовов.",
+      "family": "Ascol statement testimony (formation); statement text (positions)",
+      "boundary": "История подготовки — та же семья свидетельств Аскола. Позиции авторов не независимые факты.",
+      "sourceRole": "Текст заявления и рассказ составителя",
+      "sourcePeriod": "2018 · History and Formation; Introduction; Affirmations & Denials",
+      "sourceUrl": "https://socialjusticestatement.com/",
+      "returnHref": "#g3-year-2018",
+      "href": "#history-source-statement-2018",
+      "existingVisibleLabel": "Текст и история подготовки заявления"
+    },
+    {
+      "key": "reactions",
+      "lane": "discussion",
+      "date": "2018-09",
+      "dateKind": "publication_month",
+      "heading": "Разные позиции",
+      "sourceId": "responses-2018",
+      "citationId": "cite-g3-year-2018-responses-2018",
+      "researchLocator": "HIST-19",
+      "text": "Современные отклики показывают и поддержку, и возражения против его формулировок и подхода к социальным вопросам.",
+      "family": "contemporary reaction coverage",
+      "boundary": "Месяц освещения, не дата каждого отклика.",
+      "sourceRole": "Современное освещение дискуссии",
+      "sourcePeriod": "Сентябрь 2018",
+      "sourceUrl": "https://churchleaders.com/news/333017-the-statement-on-social-justice-and-the-gospel-stirs-up-controversy-and-conversation.html",
+      "returnHref": "#g3-year-2018",
+      "href": "#history-source-responses-2018",
+      "existingVisibleLabel": "Отклики современников"
+    },
+    {
+      "key": "retrospective",
+      "lane": "retrospective",
+      "date": "2025-05-23",
+      "dateKind": "publication",
+      "heading": "Позднейшее свидетельство",
+      "sourceId": "challies",
+      "citationId": "cite-g3-year-2018-challies",
+      "researchLocator": "HIST-02 / HIST-08 / HIST-14 / HIST-18",
+      "text": "Чаллис позднее писал, что участвовал в обсуждениях, но не подписал текст. В своих воспоминаниях он также описал изменение атмосферы конференции.",
+      "family": "Challies retrospective",
+      "boundary": "Вне обеих колонок 2018; воспоминания и личная оценка, не мотивы других.",
+      "sourceRole": "Воспоминания участника",
+      "sourcePeriod": "23 мая 2025",
+      "sourceUrl": "https://www.challies.com/articles/you-me-and-g3/",
+      "returnHref": "#g3-history",
+      "href": "#history-source-challies",
+      "existingVisibleLabel": "Позиция Чаллиса"
+    }
+  ],
+  "canonicalTextVerification": {
+    "paragraphs": 3,
+    "losslessReassembly": true,
+    "existingCitationIds": 7,
+    "allResolved": true,
+    "notes": "The exact prose is partitioned for mapping, not permission to relocate data-history-expansion-claim across rows. Keep canonical paragraph intact for first companion if required by guard."
+  },
+  "gates": [
+    "AGENT2 exact-head comparison 2x overflow fix and full engineering CI",
+    "ART compact visual approval",
+    "MAX0 exact path/overlap assignment",
+    "actual route build, citation and noJS/JS return, 3 engines, a11y and print",
+    "No production changes in this wave"
+  ],
+  "resources": {
+    "RDC": 0,
+    "CUDA": false,
+    "ownerWorkstation": false
+  }
+}
