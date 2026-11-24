@@ -3,12 +3,23 @@ export const TEEN_PERSONAL_LETTER_SLUG = 'poka-vse-dumayut-chto-u-tebya-vse-norm
 export const TEEN_PERSONAL_LETTER_HREF = `/articles/${TEEN_PERSONAL_LETTER_SLUG}/`;
 export const TEEN_PERSONAL_LETTER_SOURCE = `src/pages/articles/${TEEN_PERSONAL_LETTER_SLUG}/index.astro`;
 
+const LETTER_MEDIA_BASE = '/images/teen-series/personal-letter';
+const LETTER_OG_IMAGE = `${LETTER_MEDIA_BASE}-og.webp`;
+
+interface LetterMedia {
+  src: string;
+  srcset: string;
+  alt: string;
+}
+
 interface LetterArticleData {
   slug: string;
   title: string;
   h1?: string;
   description: string;
   readingTime?: number;
+  ogImage?: string;
+  ogImageAlt?: string;
   draft: boolean;
   noindex: boolean;
 }
@@ -23,6 +34,7 @@ interface LetterCardContent {
   title: string;
   description: string;
   readingTime?: number;
+  media?: LetterMedia;
 }
 
 export type TeenPersonalLetterCard = LetterCardContent & (
@@ -44,10 +56,19 @@ export function resolveTeenPersonalLetterCard(
   if (matches.length !== 1) return null;
 
   const article = matches[0];
-  const content = {
+  // W51: use the selected artwork only once its canonical MDX metadata
+  // points to the committed asset family. No fallback to the trilogy hero.
+  const alt = article.ogImageAlt?.trim();
+  const media = article.ogImage === LETTER_OG_IMAGE && alt ? {
+    src: `${LETTER_MEDIA_BASE}-cover.webp`,
+    srcset: `${LETTER_MEDIA_BASE}-cover-600w.webp 600w, ${LETTER_MEDIA_BASE}-cover-1200w.webp 1200w, ${LETTER_MEDIA_BASE}-cover.webp 1600w`,
+    alt,
+  } : undefined;
+  const content: LetterCardContent = {
     title: article.h1 || article.title,
     description: article.description,
     readingTime: article.readingTime,
+    ...(media ? { media } : {}),
   };
 
   if (
