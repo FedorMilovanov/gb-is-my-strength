@@ -61,13 +61,16 @@ async function waitFonts(page){for(let i=0;i<40;i++){const status=await deadline
     for(const c of components){const r=c.getBoundingClientRect();if(c.scrollWidth>c.clientWidth+1)fail.push(c.className+' overflow');
       for(const n of c.querySelectorAll('h3,h4,h5,summary,a,td,th')){const b=n.getBoundingClientRect();if(!b.width||!b.height)continue;if(b.right>r.right+1||b.left<r.left-1)fail.push('out: '+n.textContent.trim().slice(0,60));if(n.matches('a.g3g-source')&&b.height<43.5)fail.push('short link: '+n.id);}
       for(const a of c.querySelectorAll('a[data-journal-citation]')){if(!a.id||!a.textContent.trim()||!document.getElementById(decodeURIComponent(a.hash.slice(1))))fail.push('bad source: '+a.id);}
-      // Atlas crop: test every text node in SVG user coordinates, including clipped labels.
+      // Screen-space coordinates avoid Firefox getBBox/getCTM scaling mismatch.
       for(const svg of c.querySelectorAll('.g3g-atlas-map svg')){
-        const v=svg.viewBox.baseVal,s=svg.getCTM();
-        for(const e of svg.querySelectorAll('text')){
-          const b=e.getBBox(),t=s.inverse().multiply(e.getCTM());
-          const corners=[new DOMPoint(b.x,b.y),new DOMPoint(b.x+b.width,b.y),new DOMPoint(b.x,b.y+b.height),new DOMPoint(b.x+b.width,b.y+b.height)].map(p=>p.matrixTransform(t));
-          if(corners.some(p=>p.x<v.x-.5||p.x>v.x+v.width+.5||p.y<v.y-.5||p.y>v.y+v.height+.5))fail.push('atlas label outside viewBox: '+e.textContent);
+        const s=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,scale=Math.min(s.width/v.width,s.height/v.height);
+        const left=s.left+(s.width-v.width*scale)/2,top=s.top+(s.height-v.height*scale)/2;
+        const right=left+v.width*scale,bottom=top+v.height*scale;
+        const labels=[...svg.querySelectorAll('text')];
+        if(labels.length!==13+(svg.querySelector('[data-g3g-test-probe]')?1:0))fail.push('atlas unexpected text count: '+labels.length);
+        for(const e of labels){
+          const r=e.getBoundingClientRect();
+          if(!r.width||!r.height||r.left<left-1.5||r.right>right+1.5||r.top<top-1.5||r.bottom>bottom+1.5)fail.push('atlas label outside viewBox: '+e.textContent);
         }
       }
       for(const svg of c.querySelectorAll('svg')){const s=svg.getBoundingClientRect();if(!s.width||!s.height)continue;const labels=[...svg.querySelectorAll('text')].map(t=>({t:t.textContent,r:t.getBoundingClientRect()})).filter(x=>x.r.top>=s.top-1&&x.r.bottom<=s.bottom+1&&x.r.left>=s.left-1&&x.r.right<=s.right+1);
@@ -96,7 +99,7 @@ async function roundTrips(page,js,which){
 try{
 for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
   if(process.env.G3_GRAPHICS_ENGINE&&engine!==process.env.G3_GRAPHICS_ENGINE)continue;
-  let geometryPass=0,returnPass=0,hashPass=0,printPass=0,crossPass=0;
+  let geometryPass=0,returnPass=0,hashPass=0,printPass=0,crossPass=0,negativePass=0;
   const browser=await type.launch({headless:true});
   try{
   for(const width of widths)for(const dark of [false,true])for(const js of [false,true]){
@@ -107,6 +110,11 @@ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
           const url=base+(which==='history'?'history/':''); console.log('SCENARIO',engine,width,dark,js,which);
           await page.goto(url);await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
           console.log('GEOMETRY');const g=await deadline(geometry(page,which),'geometry');check(!g.fail.length,JSON.stringify(g));check(g.fonts.length>0,'no canonical fonts loaded');geometryPass++;
+          if(which==='history'&&width===widths[0]&&!dark&&js){
+            await page.locator('.g3g-atlas-map svg').evaluate(svg=>{const probe=document.createElementNS('http://www.w3.org/2000/svg','text');probe.setAttribute('x','8');probe.setAttribute('y','68');probe.setAttribute('data-g3g-test-probe','');probe.textContent='ATLAS-NEGATIVE-CONTROL';svg.append(probe)});
+            try{const probe=await deadline(geometry(page,which),'atlas negative control');check(probe.fail.includes('atlas label outside viewBox: ATLAS-NEGATIVE-CONTROL'),'clipped label not caught');negativePass++;}
+            finally{await page.locator('[data-g3g-test-probe]').evaluate(e=>e.remove());}
+          }
           if((width===390||width===850)&&!dark){
             if(which==='history'){
               await page.goto(url+'#cite-g3g-history-6');
@@ -137,7 +145,7 @@ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
     }finally{await ctx.close();}
   }
   }finally{await browser.close();}
-  const report={engine,geometryPass,returnPass,hashPass,printPass,crossPass};reports.push(report);console.log('ENGINE',JSON.stringify(report));
+  const report={engine,geometryPass,returnPass,hashPass,printPass,crossPass,negativePass};reports.push(report);console.log('ENGINE',JSON.stringify(report));
 }
 }finally{await new Promise(r=>server.close(r));}
 const report={node:process.version,astro,reports,failures};writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log('G3_GRAPHICS_REPORT',JSON.stringify(report));if(failures.length)process.exitCode=1;

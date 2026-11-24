@@ -1,0 +1,54 @@
+{
+  "testedComponentHead": "172a411222cdd2d3ec7562daa80077b8eea3a3b5",
+  "runnerBlob": "2149ca490a3785d54d587e881695d1f82ff241a2",
+  "environment": {
+    "os": "Windows",
+    "node": "22.23.4",
+    "astro": "7.4.12",
+    "playwright": "1.62.1"
+  },
+  "widths": [
+    320,
+    390,
+    740,
+    850
+  ],
+  "build": "PASS (G6 exact compiled archive reused, unchanged components)",
+  "chromium": {
+    "geometryPass": 32,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "negativePass": 1,
+    "total": 149
+  },
+  "firefox": {
+    "geometryPass": 32,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "negativePass": 1,
+    "total": 149
+  },
+  "webkit": {
+    "geometryPass": 32,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "negativePass": 1,
+    "total": 149
+  },
+  "failures": [],
+  "exit": 0,
+  "total": 447,
+  "priorRun": {
+    "chromium": "PASS",
+    "webkit": "PASS",
+    "firefox": "16 false geometry failures from SVG getCTM/getBBox coordinate mismatch"
+  },
+  "negativeControl": "One injected fully cropped SVG text per engine, detected by same geometry predicate, removed after assertion",
+  "scope": "compiled component witness; not integrated public articles"
+}
