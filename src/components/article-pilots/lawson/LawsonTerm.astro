@@ -18,7 +18,8 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
 </span>
 
 <style>
-  .lawson-term { position: relative; display: inline; }
+  .lawson-term { position: relative; display: inline; --lawson-term-gap: .55rem; }
+  .lawson-term[data-hover-placement] { --lawson-term-gap: 0px; }
   .lawson-term-label {
     display: inline;
     padding: 0;
@@ -35,7 +36,7 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
     position: absolute;
     z-index: 70;
     left: 0;
-    bottom: calc(100% + .55rem);
+    bottom: calc(100% + var(--lawson-term-gap));
     width: min(20rem, calc(100vw - 2rem));
     max-height: calc(100dvh - 2rem);
     overflow: auto;
@@ -80,6 +81,7 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
   function closeTerm(term: HTMLElement) {
     term.removeAttribute('data-open');
     term.removeAttribute('data-hover-open');
+    term.removeAttribute('data-hover-placement');
     const note = term.querySelector<HTMLElement>('.lawson-term-popover');
     if (note) note.hidden = true;
     term.querySelector('.lawson-term-label')?.setAttribute('aria-expanded', 'false');
@@ -92,13 +94,13 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
     const marker = term.getBoundingClientRect();
     const left = Math.max(16 - marker.left, Math.min(0, innerWidth - 16 - marker.left - note.offsetWidth));
     note.style.left = `${left}px`;
-    const gap = .55 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const gap = term.hasAttribute('data-hover-placement') ? 0 : .55 * parseFloat(getComputedStyle(document.documentElement).fontSize);
     const above = marker.top - 16 - gap;
     const below = innerHeight - marker.bottom - 16 - gap;
     const useBelow = note.offsetHeight > above && below > above;
     if (useBelow) {
       note.style.bottom = 'auto';
-      note.style.top = 'calc(100% + .55rem)';
+      note.style.top = 'calc(100% + var(--lawson-term-gap))';
     }
     note.style.maxHeight = `${Math.max(0, useBelow ? below : above)}px`;
   }
@@ -108,7 +110,10 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
     const note = term.querySelector<HTMLElement>('.lawson-term-popover');
     if (!note) return;
     term.setAttribute('data-open', '');
-    if (hover) term.setAttribute('data-hover-open', '');
+    if (hover) {
+      term.setAttribute('data-hover-open', '');
+      term.setAttribute('data-hover-placement', '');
+    }
     note.hidden = false;
     term.querySelector('.lawson-term-label')?.setAttribute('aria-expanded', 'true');
     placeTerm(term);
