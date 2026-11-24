@@ -23,8 +23,10 @@ interface Props {
 }
 
 const { config: _config = GILL_SERIES } = Astro.props as Props;
+// NEWS and the Sermon on the Mount retain their independent presentations.
+const polishSettings = !/^\/(?:nagornaya|journal|updates|news|novosti)(?:\/|$)/.test(Astro.url.pathname);
 ---
-<div id="gillSettingsOverlay" class="toc-overlay gill-settings-overlay" data-gill-overlay="settings" aria-hidden="true">
+<div id="gillSettingsOverlay" class="toc-overlay gill-settings-overlay" data-gill-overlay="settings" data-reader-settings-polish={polishSettings ? "1" : undefined} aria-hidden="true">
   <section class="toc-sheet gill-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="gillSettingsTitle">
     <button type="button" class="toc-sheet__handle" data-overlay-close aria-label="Закрыть настройки"></button>
     <div class="toc-sheet__head">
@@ -42,7 +44,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       </div>
       <div class="setting-group"><span class="setting-label" id="gillTypeLabel">Шрифт чтения</span><div class="setting-segment" role="group" aria-labelledby="gillTypeLabel"><button type="button" class="reader-setting-btn type-choice" data-gill-font="lora" style="font-family:Lora,Georgia,serif" aria-pressed="true"><small>Lora</small><span class="font-sample">Слово и мысль</span></button><button type="button" class="reader-setting-btn type-choice" data-gill-font="cormorant" style="font-family:Cormorant Garamond,Georgia,serif" aria-pressed="false"><small>Cormorant Garamond</small><span class="font-sample">Слово и мысль</span></button></div></div>
       <div class="setting-group">
-        <span class="setting-label">Размер текста</span>
+        <span class="setting-label">Размер текста{polishSettings && <output id="gillFontScaleValue" class="gill-font-scale-value" aria-live="polite" aria-atomic="true">100%</output>}</span>
         <div class="font-track">
           <button type="button" class="font-step font-step--sm" data-fc-action="font-down" aria-label="Уменьшить текст">A−</button>
           <div class="font-dots" id="gillFontDots" aria-hidden="true"></div>
@@ -83,7 +85,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
         </div>
       </div>
       <div class="gill-settings-footer">
-        <button type="button" id="gillSettingsReset" class="gill-settings-reset">Сбросить настройки</button>
+        <button type="button" id="gillSettingsReset" class="gill-settings-reset">{polishSettings && <svg class="gill-settings-reset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 1 2.65 6.36 M3 5v7h7"/></svg>}Сбросить настройки</button>
         <button type="button" class="gill-settings-done" data-overlay-close>Готово</button>
       </div>
     </div>
@@ -113,6 +115,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
     const textModeGroup = document.getElementById('gillTextModeGroup');
     const motionGroup = document.getElementById('gillMotionGroup');
     const dots = document.getElementById('gillFontDots');
+    const scaleValue = document.getElementById('gillFontScaleValue');
     document.getElementById('gillSettingsReset')?.addEventListener('click', () => {
       const store = api();
       if (store && typeof store.reset === 'function') sync(store.reset());
@@ -152,6 +155,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       setPressed(textModeGroup, 'data-text-mode', preferences.textMode || 'rich');
       setPressed(motionGroup, 'data-motion', preferences.motion || 'system');
       syncDots(preferences.fontScale || 1);
+      if (scaleValue) scaleValue.textContent = Math.round((preferences.fontScale || 1) * 100) + '%';
     }
 
     lineGroup?.addEventListener('click', (event) => {
@@ -287,5 +291,9 @@ html.dark #gillSettingsOverlay{--frame:rgba(210,181,141,.19);--selected-frame:rg
 #gillSettingsOverlay .setting-segment:has(.type-choice){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 #gillSettingsOverlay .setting-segment button.type-choice{align-items:center;justify-content:center;text-align:center;padding:10px 8px 11px!important;min-height:65px;gap:6px;width:100%}
 #gillSettingsOverlay .type-choice .font-sample{font-size:var(--gill-sample-size, 1rem);line-height:1.24;text-wrap:balance}
+#gillSettingsOverlay[data-reader-settings-polish="1"] .setting-label{font-size:12px;letter-spacing:.005em}
+#gillSettingsOverlay[data-reader-settings-polish="1"] .gill-font-scale-value{float:right;font:600 12px/1.2 'Source Sans 3',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+#gillSettingsOverlay[data-reader-settings-polish="1"] .gill-settings-reset{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500;min-height:44px;text-decoration:none}
+#gillSettingsOverlay[data-reader-settings-polish="1"] .gill-settings-reset-icon{width:13px;height:13px;flex:none}
 
 </style>

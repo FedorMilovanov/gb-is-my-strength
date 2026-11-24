@@ -48,7 +48,6 @@
         v.measure==='narrow'?'576px':v.measure==='wide'?'736px':'688px');
       const selection={
         font:v.fontFamily||'lora',
-        size:nearest(v.fontScale),
         spacing:choices.spacing[v.lineHeight]||'normal',
         theme:v.theme,
         text:v.textMode,
@@ -61,7 +60,22 @@
         }
       }
       body.dataset.npUWidth=selection.width;
-      body.dataset.npUSize=selection.size;
+      // Keep the archived CSS compatibility token; the controls show the exact canonical scale.
+      body.dataset.npUSize=nearest(v.fontScale);
+      const percent=Math.round(v.fontScale*100);
+      const value=fontPanel.querySelector('[data-np-u-scale-value]');
+      const range=fontPanel.querySelector('[data-np-u-scale-range]');
+      if(value&&value.textContent!==percent+'%')value.textContent=percent+'%';
+      if(range)range.value=String(percent);
+      for(const el of fontPanel.querySelectorAll('[data-np-u-scale-step]')){
+        el.setAttribute('aria-disabled',String(Number(el.dataset.npUScaleStep)<0?percent<=85:percent>=125));
+      }
+      const sample=fontPanel.querySelector('.np-w57-sample p');
+      if(sample){
+        sample.style.fontFamily=v.fontFamily==='cormorant'?'Cormorant Garamond, Georgia, serif':'Lora, Georgia, serif';
+        sample.style.maxWidth=({narrow:'78%',normal:'90%',wide:'100%'})[v.measure]||'90%';
+        sample.style.marginInline='auto';
+      }
       body.dataset.npUSpacing=selection.spacing;
     }
     // Input events are handled exclusively by the original left settings owner.

@@ -512,3 +512,68 @@ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontScrim[hidden]{display:no
  }
  body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
 }
+
+/* Owner-approved W154: compact reading settings and restrained visual refinement. */
+
+html body.np-u-preview #npUniversalDemo {--np-w57-settings-ink:#514a3e;--np-w57-settings-muted:#726659;--np-w57-settings-rule:#d4c9b6;--np-w57-settings-accent:#8b7049;--np-w57-settings-selected:#ece4d6;--np-w57-settings-panel:#f8f5ef;--np-w57-settings-card:#fffdf8}
+html.dark body.np-u-preview #npUniversalDemo {--np-w57-settings-ink:#e7dbca;--np-w57-settings-muted:#c1b19b;--np-w57-settings-rule:#51473b;--np-w57-settings-accent:#d1b582;--np-w57-settings-selected:#41372a;--np-w57-settings-panel:#25221e;--np-w57-settings-card:#2c2823}
+html[data-reader-theme=sepia] body.np-u-preview #npUniversalDemo {--np-w57-settings-ink:#483a28;--np-w57-settings-muted:#76654d;--np-w57-settings-rule:#d5c4a6;--np-w57-settings-accent:#8a6a3c;--np-w57-settings-selected:#e9d9bc;--np-w57-settings-panel:#f4ead6;--np-w57-settings-card:#faf3e5}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel {width:min(334px,calc(100vw - 24px));padding:14px 15px 13px;background:var(--np-w57-settings-panel);color:var(--np-w57-settings-ink);border-color:var(--np-w57-settings-rule);border-radius:12px;box-shadow:0 14px 36px #1a130e22,0 2px 8px #1a130e10;max-height:calc(100dvh - 24px)}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel header {margin-bottom:8px;padding-bottom:6px;border-color:var(--np-w57-settings-rule)}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group {margin-top:10px}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group>span {font-size:12px;color:var(--np-w57-settings-muted);font-weight:550;margin-bottom:5px;letter-spacing:.005em}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options {gap:5px}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button {min-height:40px;border:1px solid var(--np-w57-settings-rule);background:var(--np-w57-settings-card);color:var(--np-w57-settings-ink);font-size:12px;line-height:1.22;padding:5px 4px;border-radius:7px;box-shadow:none}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button[aria-pressed=true] {background:var(--np-w57-settings-selected);border-color:var(--np-w57-settings-accent);color:var(--np-w57-settings-ink);font-weight:650}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button:focus-visible {outline:2px solid var(--np-w57-settings-accent);outline-offset:2px}
+html #npUFontPanel button[data-np-u-type-theme] {display:flex;align-items:center;justify-content:center;gap:6px}
+html #npUFontPanel .np-w57-swatch {width:15px;height:15px;flex:0 0 15px;border:1px solid #8b7960;border-radius:50%;box-shadow:inset 0 0 0 2px #fff3}
+html #npUFontPanel button[data-np-u-type-font] {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:57px;white-space:normal}
+html #npUFontPanel .np-w57-fontname {font:500 10px/1.15 'Source Sans 3',system-ui,sans-serif;letter-spacing:.01em}
+html #npUFontPanel .np-w57-fontsample {font-size:15px;font-weight:400;line-height:1.2;white-space:nowrap}
+html #npUFontPanel button[data-np-u-type-font=lora] .np-w57-fontsample {font-family:Lora,Georgia,serif}
+html #npUFontPanel button[data-np-u-type-font=cormorant] .np-w57-fontsample {font-family:'Cormorant Garamond',Georgia,serif}
+html #npUFontPanel button:is([data-np-u-type-spacing],[data-np-u-type-width]) {display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:center;min-height:45px}
+html #npUFontPanel .np-w57-glyph {width:29px;height:16px;display:block;opacity:.75}
+html #npUFontPanel .np-w57-size-control {display:grid;grid-template-columns:38px minmax(0,1fr) 38px;align-items:center;gap:6px;border:1px solid var(--np-w57-settings-rule);background:var(--np-w57-settings-card);border-radius:8px;padding:3px}
+html #npUFontPanel .np-w57-size-control button {min-height:36px;border:0!important;background:transparent!important;color:var(--np-w57-settings-ink)!important;font:600 17px/1 Lora,Georgia,serif;border-radius:5px}
+html #npUFontPanel .np-w57-size-control button[aria-disabled=true] {opacity:.4;cursor:default}
+html #npUFontPanel .np-w57-size-center {display:grid;justify-items:center;gap:3px;min-width:0}
+html #npUFontPanel .np-w57-size-value {font:600 12px/1 'Source Sans 3',system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--np-w57-settings-ink)}
+html #npUFontPanel input.np-w57-size-range {width:100%;height:14px;min-width:0;margin:0;accent-color:var(--np-w57-settings-accent);cursor:pointer}
+html body.np-u-preview #npUFontPanel .np-w57-sample {background:var(--np-w57-settings-card);border:1px solid var(--np-w57-settings-rule);border-radius:7px;padding:8px 10px;margin-top:10px;overflow:hidden;color:var(--np-w57-settings-ink)}
+html #npUFontPanel .np-w57-sample-label {font:500 9px/1.2 'Source Sans 3',system-ui,sans-serif;letter-spacing:.07em;color:var(--np-w57-settings-muted);margin-bottom:4px}
+html #npUFontPanel .np-w57-sample p {margin:0;text-align:center;font-family:var(--gb-reader-font-family,Lora),Georgia,serif;font-weight:400;font-size:calc(14px * var(--gb-reader-font-scale,1));line-height:var(--gb-reader-line-height,1.6)}
+html #npUniversalDemo #npUResearch {--np-u-muted:var(--np-w57-settings-muted);--np-u-rule:var(--np-w57-settings-rule)}
+html[data-reader-theme=sepia] #npUniversalDemo #npUResearch {--np-u-paper:#f3e8d3;--np-u-white:#fbf4e7;--np-u-deep:#e9dbc0;--np-u-ink:#493720;--np-u-muted:#77634a;--np-u-rule:#d3c1a2;background:#f3e8d3;color:#493720}
+html[data-reader-theme=sepia] #npUniversalDemo #npUResearch .np-u-window-body {background:var(--np-u-white);color:var(--np-u-ink)}
+html #npUniversalDemo #npUResearch .np-u-research-module {border-radius:7px;border-color:var(--np-u-rule);box-shadow:none}
+html #npUniversalDemo #npUResearch .np-u-window-meta {font-size:11px;letter-spacing:.015em}
+html #npUniversalDemo #npUResearch #npUFollowToggle {font-size:11px}
+html #npUniversalDemo #npUResearch .np-u-window-body h3 {text-wrap:balance;line-height:1.23}
+html #npUniversalDemo #npUResearch .np-u-window-body .np-u-quotation {border-color:var(--np-w57-settings-accent)}
+html body.np-u-preview #gbs2Toc a {color:#c8bca9}
+html body.np-u-preview #gbs2Toc a[aria-current],html body.np-u-preview #gbs2Toc a:hover {color:#f4e7d1}
+html body.np-u-preview main h1 {text-wrap:balance}
+html body.np-u-preview :is(#npURightEdgeRail,.np-u-right-actions) button:focus-visible {outline:2px solid var(--np-w57-settings-accent);outline-offset:3px}
+@media(min-width:1121px) and (max-width:1359px){
+ html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel {width:264px;padding:11px 12px}
+ html #npUFontPanel .np-w57-fontsample {font-size:13px}
+ html #npUFontPanel .np-w57-fontname {font-size:9px}
+ html #npUFontPanel .np-w57-sample {padding:6px 7px}
+}
+
+html body.np-u-preview #npUFontPanel .np-w57-sample {padding:7px 9px;margin-top:8px} html #npUFontPanel .np-w57-sample summary{cursor:pointer;margin-bottom:0;font-size:10px;letter-spacing:.035em} html #npUFontPanel .np-w57-sample[open] summary{margin-bottom:5px} html #npUFontPanel .np-w57-sample summary:focus-visible{outline:2px solid var(--np-w57-settings-accent);outline-offset:2px} html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group{margin-top:8px} html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{max-height:calc(100dvh - 36px)}
+
+/* Compact secondary reset action */
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group:has(>button[data-np-u-type-reset]){
+ display:flex;justify-content:center;align-items:center;border-top:1px solid var(--np-w57-settings-rule);padding-top:7px;margin-top:9px
+}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button[data-np-u-type-reset]{
+ flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;width:auto;min-height:28px;padding:4px 9px;font-size:11px;font-weight:500;line-height:1.2;
+ color:var(--np-w57-settings-muted);background:transparent;border:1px solid transparent;border-radius:6px;text-decoration:none;box-shadow:none
+}
+html body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button[data-np-u-type-reset]:hover{
+ background:var(--np-w57-settings-selected);border-color:var(--np-w57-settings-rule);color:var(--np-w57-settings-ink)
+}
+html #npUFontPanel .np-w57-reset-icon{width:13px;height:13px;flex:none;display:inline-block;vertical-align:middle}

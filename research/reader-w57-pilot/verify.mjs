@@ -48,6 +48,10 @@ assert.match(css, /premium left reading settings/, 'left settings popup missing'
 assert.doesNotMatch(js, /npW57ReadingDetails|fontPanel\.addEventListener\('click'/, 'no second settings owner/right card');
 assert.doesNotMatch(preview, /fontPanel\.closest\('#npW57ReadingDetails'\)/, 'left Escape/outside close must be operative');
 assert.match(preview, /data-np-u-type-width="narrow"/, 'narrow width missing');
+assert.match(preview, /data-np-u-scale-range type="range" min="85" max="125" step="5"/, 'exact canonical font scale required');
+assert.doesNotMatch(preview, /data-np-u-type-size=/, 'no approximate four-step selector');
+assert.match(js, /Math.round\(v.fontScale\*100\)/, 'actual stored font scale must be displayed');
+assert.match(preview, /input:not\(\[disabled\]\),summary/, 'range and sample disclosure belong in settings keyboard focus loop');
 assert.match(js, /width:v\.measure==='narrow'\?'narrow'/, 'narrow persisted state mismatches');
 assert.match(preview, /one top-level right research card at a time/, 'exclusive right cards missing');
 assert.match(preview, /openResearchForAnnotation\(\)/,'right research owner must expose opening action');

@@ -178,25 +178,27 @@
  fontPanel.innerHTML='<header><strong id="npUFontPanelTitle">Настройки чтения</strong>'+
   '<button type="button" class="np-u-type-close" aria-label="Закрыть настройки чтения">×</button></header>'+
   '<div class="np-u-type-group"><span>Тема</span><div class="np-u-type-options">'+
-  '<button type="button" data-np-u-type-theme="light">День</button>'+
-  '<button type="button" data-np-u-type-theme="sepia">Сепия</button>'+
-  '<button type="button" data-np-u-type-theme="dark">Ночь</button></div></div>'+
+  '<button type="button" data-np-u-type-theme="light"><span class="np-w57-swatch" aria-hidden="true" style="background:#fbf9f3"></span>День</button>'+
+  '<button type="button" data-np-u-type-theme="sepia"><span class="np-w57-swatch" aria-hidden="true" style="background:#e5d2ad"></span>Сепия</button>'+
+  '<button type="button" data-np-u-type-theme="dark"><span class="np-w57-swatch" aria-hidden="true" style="background:#2a2724"></span>Ночь</button></div></div>'+
   '<div class="np-u-type-group"><span>Книжная гарнитура</span><div class="np-u-type-options">'+
-  '<button type="button" data-np-u-type-font="lora" class="np-u-type-lora">Lora</button>'+
-  '<button type="button" data-np-u-type-font="cormorant" class="np-u-type-cormorant">Cormorant</button></div></div>'+
-  '<div class="np-u-type-group"><span>Размер текста</span><div class="np-u-type-options np-u-type-sizes">'+
-  '<button type="button" data-np-u-type-size="sm">А−</button>'+
-  '<button type="button" data-np-u-type-size="md">А</button>'+
-  '<button type="button" data-np-u-type-size="lg">А+</button>'+
-  '<button type="button" data-np-u-type-size="xl">А++</button></div></div>'+
+  '<button type="button" data-np-u-type-font="lora" class="np-u-type-lora"><span class="np-w57-fontname">Lora</span><span class="np-w57-fontsample">Слово и мысль</span></button>'+
+  '<button type="button" data-np-u-type-font="cormorant" class="np-u-type-cormorant"><span class="np-w57-fontname">Cormorant Garamond</span><span class="np-w57-fontsample">Слово и мысль</span></button></div></div>'+
+  '<div class="np-u-type-group"><span>Размер текста</span><div class="np-w57-size-control">'+
+  '<button type="button" data-np-u-scale-step="-1" aria-label="Уменьшить размер текста">А−</button>'+
+  '<div class="np-w57-size-center"><output class="np-w57-size-value" data-np-u-scale-value aria-live="polite" aria-atomic="true">100%</output>'+
+  '<input class="np-w57-size-range" data-np-u-scale-range type="range" min="85" max="125" step="5" aria-label="Размер текста, проценты"></div>'+
+  '<button type="button" data-np-u-scale-step="1" aria-label="Увеличить размер текста">А+</button></div></div>'+
   '<div class="np-u-type-group"><span>Межстрочный интервал</span><div class="np-u-type-options">'+
-  '<button type="button" data-np-u-type-spacing="compact">Плотный</button>'+
-  '<button type="button" data-np-u-type-spacing="normal">Книжный</button>'+
-  '<button type="button" data-np-u-type-spacing="relaxed">Свободный</button></div></div>'+
+  '<button type="button" data-np-u-type-spacing="compact"><svg class="np-w57-glyph" viewBox="0 0 32 18" aria-hidden="true" fill="none"><line x1="5" x2="27" y1="6" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" x2="27" y1="9" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" x2="24" y1="12" y2="12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Плотный</span></button>'+
+  '<button type="button" data-np-u-type-spacing="normal"><svg class="np-w57-glyph" viewBox="0 0 32 18" aria-hidden="true" fill="none"><line x1="5" x2="27" y1="4" y2="4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" x2="27" y1="9" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" x2="24" y1="14" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Книжный</span></button>'+
+  '<button type="button" data-np-u-type-spacing="relaxed"><svg class="np-w57-glyph" viewBox="0 0 32 18" aria-hidden="true" fill="none"><line x1="5" x2="27" y1="2" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" x2="27" y1="9" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5" x2="24" y1="16" y2="16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Свободный</span></button></div></div>'+
   '<div class="np-u-type-group"><span>Ширина наборной полосы</span><div class="np-u-type-options">'+
-  '<button type="button" data-np-u-type-width="narrow">Узкая</button>'+
-  '<button type="button" data-np-u-type-width="normal">Книжная</button>'+
-  '<button type="button" data-np-u-type-width="wide">Широкая</button></div></div>'+
+  '<button type="button" data-np-u-type-width="narrow"><svg class="np-w57-glyph" viewBox="0 0 32 18" aria-hidden="true" fill="none"><rect x="1" y="1" width="30" height="16" rx="2" stroke="currentColor" opacity=".4"/><line x1="10" x2="22" y1="5" y2="5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="10" x2="22" y1="9" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="10" x2="19" y1="13" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Узкая</span></button>'+
+  '<button type="button" data-np-u-type-width="normal"><svg class="np-w57-glyph" viewBox="0 0 32 18" aria-hidden="true" fill="none"><rect x="1" y="1" width="30" height="16" rx="2" stroke="currentColor" opacity=".4"/><line x1="6" x2="26" y1="5" y2="5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" x2="26" y1="9" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="6" x2="23" y1="13" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Книжная</span></button>'+
+  '<button type="button" data-np-u-type-width="wide"><svg class="np-w57-glyph" viewBox="0 0 32 18" aria-hidden="true" fill="none"><rect x="1" y="1" width="30" height="16" rx="2" stroke="currentColor" opacity=".4"/><line x1="3" x2="29" y1="5" y2="5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="3" x2="29" y1="9" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="3" x2="26" y1="13" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Широкая</span></button></div></div>'+
+  '<details class="np-w57-sample"><summary class="np-w57-sample-label">ОБРАЗЕЦ ЧТЕНИЯ</summary>'+
+  '<p>Слово и мысль. Внимательное чтение открывает глубину текста.</p></details>'+
   '<div class="np-u-type-group"><span>Оформление текста</span><div class="np-u-type-options">'+
   '<button type="button" data-np-u-type-text="rich">Полное</button>'+
   '<button type="button" data-np-u-type-text="plain">Простое</button></div></div>'+
@@ -204,7 +206,7 @@
   '<button type="button" data-np-u-type-motion="system">Обычная</button>'+
   '<button type="button" data-np-u-type-motion="reduced">Спокойная</button></div></div>'+
   '<div class="np-u-type-group np-u-type-options">'+
-  '<button type="button" data-np-u-type-reset>Сбросить настройки</button></div>';
+  '<button type="button" data-np-u-type-reset><svg class="np-w57-reset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 1 2.65 6.36 M3 5v7h7"/></svg>Сбросить настройки</button></div>';
  const fullFontButton=document.createElement('button');
  fullFontButton.type='button';fullFontButton.className='np-u-type-open';
  fullFontButton.textContent='Аа · Настройки';fullFontButton.setAttribute('aria-label','Настройки чтения');
@@ -290,10 +292,21 @@
    if(b.dataset.npUTypeText)patch.textMode=b.dataset.npUTypeText;
    if(b.dataset.npUTypeMotion)patch.motion=b.dataset.npUTypeMotion;
    if(b.dataset.npUTypeFont)patch.fontFamily=b.dataset.npUTypeFont;
-   if(b.dataset.npUTypeSize)patch.fontScale=({sm:.9,md:1,lg:1.1,xl:1.2})[b.dataset.npUTypeSize];
+   if(b.hasAttribute('data-np-u-scale-step')){
+    const delta=Number(b.dataset.npUScaleStep);
+    if(b.getAttribute('aria-disabled')!=='true'&&(delta===-1||delta===1))
+      canon.set(v=>({fontScale:v.fontScale+delta/20}),{source:'argon-w57-left-settings'});
+    return;
+   }
    if(b.dataset.npUTypeSpacing)patch.lineHeight=b.dataset.npUTypeSpacing;
    if(b.dataset.npUTypeWidth)patch.measure=b.dataset.npUTypeWidth;
    if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
+ });
+ fontPanel.addEventListener('input',event=>{
+  if(event.target.matches('[data-np-u-scale-range]')){
+   const value=Number(event.target.value);
+   if(Number.isFinite(value))window.GBReaderPreferences?.set({fontScale:value/100},{source:'argon-w57-left-settings'});
+  }
  });
  document.addEventListener('pointerdown',event=>{
   if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target))){
@@ -314,7 +327,7 @@
   }
   if(event.key==='Tab'){
    // The settings popup is a descendant of the mobile TOC modal DOM.
-   const controls=[...fontPanel.querySelectorAll('button:not([disabled])')]
+   const controls=[...fontPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),summary')]
     .filter(el=>el.getClientRects().length&&!el.closest('[hidden],[inert]'));
    const first=controls[0],last=controls.at(-1),active=document.activeElement;
    if(first&&event.shiftKey&&(active===first||!fontPanel.contains(active))){

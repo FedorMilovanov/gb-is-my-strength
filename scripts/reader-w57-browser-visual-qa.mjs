@@ -120,6 +120,12 @@ async function nativeChecks(sample) {
  await page.locator('#mobSettingsBtn').click();
  await page.locator('#gillSettingsOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
  assert.ok(await page.locator('#gillSettingsOverlay .type-choice').count()>=2,'native font controls missing');
+ const value=page.locator('#gillFontScaleValue');
+ assert.equal(await value.innerText(),Math.round(await page.evaluate(()=>GBReaderPreferences.get().fontScale)*100)+'%');
+ const reset=page.locator('#gillSettingsReset');
+ assert.equal(await reset.evaluate(el=>getComputedStyle(el).textDecorationLine),'none');
+ assert.ok((await reset.boundingBox()).height>=44,'native reset tap target shrank');
+
  await page.keyboard.press('Escape');
  // Test an actual exposed portion of the clickable rate badge, not its
  // aria-hidden child span whose centre can sit beneath the painted Play disc.
@@ -544,6 +550,25 @@ try{
     assert.equal(await trigger.getAttribute('aria-expanded'),'true');
     const [r,h]=await Promise.all([panel.boundingBox(),p.locator('main h1').first().boundingBox()]);
     assert.ok(r.x+r.width<=h.x||r.y+r.height<=h.y||h.y+h.height<=r.y,'settings overlap H1');
+    const range=panel.locator('[data-np-u-scale-range]');
+    const scaleValue=panel.locator('[data-np-u-scale-value]');
+    await range.focus();
+    await range.press('Home');
+    for(let percent=85;percent<=125;percent+=5){
+     assert.equal(await scaleValue.innerText(),percent+'%');
+     assert.equal(Math.round(await p.evaluate(()=>GBReaderPreferences.get().fontScale)*100),percent);
+     if(percent<125)await range.press('ArrowRight');
+    }
+    assert.equal(await panel.locator('[data-np-u-scale-step="1"]').getAttribute('aria-disabled'),'true');
+    await panel.locator('[data-np-u-scale-step="-1"]').click();
+    assert.equal(await scaleValue.innerText(),'120%');
+    await panel.locator('.np-w57-sample summary').click();
+    assert.equal(await panel.locator('.np-w57-sample').evaluate(el=>el.open),true);
+    await panel.locator('.np-w57-sample summary').click();
+    const reset=panel.locator('[data-np-u-type-reset]');
+    assert.equal(await reset.evaluate(el=>getComputedStyle(el).textDecorationLine),'none');
+    await reset.click();
+    assert.equal(await scaleValue.innerText(),'100%');
     await panel.locator('[data-np-u-type-theme=sepia]').click();
     assert.equal(await p.evaluate(()=>window.GBReaderPreferences.get().theme),'sepia');
     await panel.locator('[data-np-u-type-font=cormorant]').click();
