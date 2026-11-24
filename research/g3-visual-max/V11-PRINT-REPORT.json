@@ -1,0 +1,62 @@
+{
+  "wave": "V11",
+  "tested": {
+    "visual": "8a95761fd9f39c85640329d4ff975636d4849049",
+    "graphics": "ce487ecaf251af443b3a39f9ebbbbd565a2c55fb",
+    "product": "9c7abe61b307e838505a8931998b4655508a30f6"
+  },
+  "typecheck": {
+    "errors": 0,
+    "warnings": 0,
+    "hints": 0
+  },
+  "browser": {
+    "engine": "Chromium 151.0.7922.34",
+    "geometry": 4,
+    "sourceReturns": 34,
+    "deepLinks": 2,
+    "printCases": 4,
+    "issues": 0,
+    "exit": 0
+  },
+  "pdfs": [
+    {
+      "file": "history-light.pdf",
+      "pages": 10,
+      "matrixPage": 4,
+      "names": 26,
+      "years": 9,
+      "headingTogether": true
+    },
+    {
+      "file": "history-dark.pdf",
+      "pages": 10,
+      "matrixPage": 4,
+      "names": 26,
+      "years": 9,
+      "headingTogether": true
+    },
+    {
+      "file": "finance-light.pdf",
+      "pages": 8,
+      "financePage": 1,
+      "completeRows": 7,
+      "values": 28
+    },
+    {
+      "file": "finance-dark.pdf",
+      "pages": 8,
+      "financePage": 1,
+      "completeRows": 7,
+      "values": 28
+    }
+  ],
+  "verification": "Actual PDF per-page text extraction through Desktop Commander; component print-media PNGs manually inspected. PyMuPDF-specific page-size/link-annotation checks not run.",
+  "scope": "Disposable compiled component witness; not actual public article. No route imports. Screen CSS unchanged.",
+  "open": [
+    "Full integrated article visual and print QA",
+    "Graphics ecosystem date wrapping under separate owner",
+    "Hosted CI and MAX0 adoption",
+    "Media rights"
+  ]
+}
