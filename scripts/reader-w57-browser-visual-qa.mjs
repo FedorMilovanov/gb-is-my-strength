@@ -249,6 +249,37 @@ try{
  chrome=await chromium.launch({headless:true});
  for(const engine of [chrome,await webkit.launch({headless:true})]){
   try{
+   // Real network failure must never leave a partially reparented ARGON page.
+   for(const fault of ['css','js','timeout']){
+    const ctx=await engine.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+    try{
+     const path='/articles/dzhon-gill-chast-1-chelovek/';
+     const file=fault==='css'?'reader_w57.css':'reader_w57.js';
+     let requests=0, navigations=0;
+     await ctx.route(url=>url.pathname==='/reader-desktop/'+file,async route=>{
+      requests++;
+      if(fault==='timeout'){await delay(14000);await route.abort().catch(()=>{});}
+      else await route.fulfill({status:503,body:''});
+     });
+     const page=await ctx.newPage();
+     page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});
+     const target=BASE+path+'?reader-pilot=1&paper=space&panel=open#top';
+     await page.goto(target,{waitUntil:'domcontentloaded'});
+     await page.waitForURL(url=>url.searchParams.get('reader-pilot')==='0',{timeout:22000,waitUntil:'domcontentloaded'});
+     const state=await page.evaluate(()=>({ready:document.body.classList.contains('np-w57-ready'),
+      partial:document.body.classList.contains('np-u-preview')||!!document.querySelector('#npUResearch'),
+      active:[...document.querySelectorAll('link[data-gb-reader-desktop-css]')].some(l=>matchMedia(l.media).matches),
+      runtime:[...document.scripts].some(s=>s.src.includes('/reader-desktop/reader_')),
+      native:!!window.ReaderState?.getSnapshot,overflow:document.documentElement.scrollWidth-innerWidth}));
+     const url=new URL(page.url());
+     assert.equal(url.pathname,path);assert.equal(url.hash,'#top');assert.equal(url.searchParams.get('paper'),'space');assert.equal(url.searchParams.get('panel'),'open');
+     assert.deepEqual(state,{ready:false,partial:false,active:false,runtime:false,native:true,overflow:0});
+     await page.waitForTimeout(500);
+     assert.equal(navigations,2,'exactly one Classic replacement, no loop');
+     assert.ok(requests>=1,'fault must actually intercept a required resource');
+     REPORT.scenes.push({name:'desktop-fallback-'+fault,engine:engine.browserType().name(),state,requests,navigations});
+    }finally{await ctx.close()}
+   }
    for(const [width,search,javaScriptEnabled] of [[1440,'?reader-pilot=0',true],[1440,'',false],[1120,'',true]]){
     const ctx=await engine.newContext({viewport:{width,height:900},javaScriptEnabled});
     try{
