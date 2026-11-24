@@ -16,6 +16,18 @@
   .journal-edition .journal-landing .news-side-column { min-width: 0; padding: 18px 0 0; border-block-start: 1px solid var(--je-rule); }
   .journal-edition .journal-landing .news-side-column > .news-story-card { margin: 0; padding: 0; border: 0; }
   .journal-edition .journal-landing .news-story-card--companion .news-story-title { font-size: clamp(1.45rem, 2.2vw, 2rem); }
+  .journal-edition .journal-landing .news-investigations { padding-block: 18px 32px; border-top: 1px solid var(--je-rule); }
+  .journal-edition .journal-landing .news-investigations .section-heading { margin: 0 0 18px; padding: 0 0 12px; border-bottom: 1px solid var(--je-rule); }
+  .journal-edition .journal-landing .news-investigations .section-heading h2 { color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-transform: uppercase; letter-spacing: .065em; margin: 0; }
+  .journal-edition .journal-landing .news-investigations .news-story-card { padding: 0; border: 0; }
+  .journal-edition .journal-landing .news-investigations .news-story-title { font-size: clamp(1.45rem, 2.5vw, 2.25rem); }
+  @media (min-width: 851px) {
+    .journal-edition .journal-landing .news-investigations .news-story-card { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: auto auto 1fr; column-gap: 34px; align-items: start; }
+    .journal-edition .journal-landing .news-investigations .news-story-head { grid-column: 1; grid-row: 1; }
+    .journal-edition .journal-landing .news-investigations .news-story-deck { grid-column: 1; grid-row: 2; }
+    .journal-edition .journal-landing .news-investigations .news-story-meta { grid-column: 1; grid-row: 3; }
+    .journal-edition .journal-landing .news-investigations .news-story-media { grid-column: 2; grid-row: 1 / 4; }
+  }
   .journal-edition .journal-landing .news-method-row {
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 48px; padding-top: 26px;
   }
@@ -59,6 +71,10 @@
   .journal-edition .journal-landing .journal-featured { display: block; padding: 12pt 0; }
   .journal-edition .journal-landing .section-heading { margin: 0 0 10pt; }
   .journal-edition .journal-landing .section-heading h2 { font-size: 20pt; }
+  .journal-edition .journal-landing .news-investigations { padding-block: 10pt; }
+  .journal-edition .journal-landing .news-investigations .section-heading { break-after: avoid; }
+  .journal-edition .journal-landing .news-investigations .news-story-card { break-inside: avoid; }
+  .journal-edition .journal-landing .news-investigations .news-story-media { max-width: 180pt; }
   .journal-edition .journal-landing .news-method-row { break-before: page; padding-top: 12pt; }
   .journal-edition .journal-landing .news-mission { margin-bottom: 16pt; padding-bottom: 12pt; border-bottom: 1px solid var(--je-rule); }
   .journal-edition .journal-landing .news-mission .journal-lead { font-size: 11pt; line-height: 1.5; margin: 0; }

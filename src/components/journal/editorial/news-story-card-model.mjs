@@ -1,6 +1,6 @@
 /** Presentation-only validation. This component never grants publication or media rights. */
 const text = (value) => typeof value === 'string' && value.trim().length > 0;
-const route = /^\/journal\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)+$/;
+const route = /^\/(?:journal\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)+|articles\/[a-z0-9]+(?:-[a-z0-9]+)*\/)$/;
 const image = /^\/images\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:avif|webp|png|jpe?g)$/i;
 function date(value) {
   const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/);

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { assertNewsStoryCard as check } from '../../src/components/journal/editorial/news-story-card-model.mjs';
+import { projectPublishedInvestigation as project } from '../../src/components/journal/editorial/published-investigation.mjs';
 const valid = { title:'Test article', label:'Research', href:'/journal/dossiers/g3/history/' };
 const media={src:'/images/journal/example.webp',alt:'Illustration',caption:'Editorial illustration',width:1200,height:675,sizes:'100vw',webpSrcset:'/images/journal/example.webp 1200w'};
 for (const variant of ['feature','analysis','brief']) test(variant,()=>assert.doesNotThrow(()=>check({...valid,variant})));
@@ -35,3 +36,9 @@ test('explicit intrinsic',()=>assert.doesNotThrow(()=>check({...valid,media:{...
 test('single legacy hook on illustrated feature',()=>assert.doesNotThrow(()=>check({...valid,variant:'feature',landingLead:true,media})));
 for(const bad of [{mode:'crop'},{mode:'crop',ratio:'4:3',focalX:-1,focalY:50},{mode:'crop',ratio:'4:3',focalX:50,focalY:101},{mode:'crop',ratio:'7:9',focalX:50,focalY:50},{mode:'crop',ratio:'4:3',focalX:'50',focalY:50},{mode:'intrinsic',ratio:'4:3'},{mode:'auto'},null])test('reject media presentation '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,media:{...media,presentation:bad}})));
 for(const bad of [{landingLead:true},{landingLead:'true'},{variant:'feature',landingLead:true}])test('reject legacy hook '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));
+
+// W4.6 canonical existing article projection, not a duplicated publication.
+const article={section:'articles',draft:false,noindex:false,slug:'existing-dossier',h1:'Existing dossier',description:'Existing description',publishedAt:new Date('2026-09-29T21:00:00Z'),readingTime:87,ogImage:'/images/articles/existing.webp',ogImageAlt:'Editorial illustration'};
+test('project original published metadata',()=>{const {image,...card}=project(article);assert.equal(card.href,'/articles/existing-dossier/');assert.equal(card.title,article.h1);assert.equal(card.deck,article.description);assert.equal(card.publishedAt,article.publishedAt.toISOString());assert.equal(card.publishedLabel,'30 сентября 2026 г.');assert.equal(card.readingLabel,'87 мин чтения');assert.deepEqual(image,{src:article.ogImage,alt:article.ogImageAlt});check({...card,label:'Investigation',media:{...image,width:1200,height:630,sizes:'100vw',caption:'Illustration'}})});
+for(const bad of [{draft:true},{noindex:true},{section:'biografii'},{canonicalOverride:'https://example.org/'},{slug:'../other'},{h1:''},{ogImageAlt:''},{publishedAt:new Date(NaN)},{readingTime:0}])test('reject unadmitted projection '+JSON.stringify(bad),()=>assert.throws(()=>project({...article,...bad})));
+for(const href of ['/articles/','/articles/a/b/','/articles/../a/','/articles/a?x=1/','/articles/a','/biografii/a/'])test('reject noncanonical article route '+href,()=>assert.throws(()=>check({...valid,href})));

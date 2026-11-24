@@ -1,4 +1,6 @@
 ---
+import { getCollection } from 'astro:content';
+import { projectPublishedInvestigation } from './editorial/published-investigation.mjs';
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import NewsStoryCard from './editorial/NewsStoryCard.astro';
 import './newsLanding.css';
@@ -6,6 +8,10 @@ import { G3_HISTORY_METADATA as history } from '@/data/journal/g3HistoryMetadata
 import { G3_PRODUCT_METADATA as g3 } from '@/data/journal/g3ProductMetadata';
 import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
 import { G3_SOURCE_BIBLIOGRAPHY } from '@/data/journal/g3SourceBibliography';
+const investigations = await getCollection('articles', ({ data }) => data.slug === 'steven-lawson-samoobman-i-publichnyy-golos');
+if (investigations.length !== 1) throw new Error('Expected one canonical Lawson investigation');
+const { image: lawsonImage, ...lawson } = projectPublishedInvestigation(investigations[0].data);
+// Intrinsic dimensions and caption match the existing article figure, not a new image or rights grant.
 const sizes = '(min-width: 1280px) 681px, (min-width: 1024px) calc(58.33vw - 66.5px), (min-width: 851px) calc(58.33vw - 52.5px), (min-width: 691px) calc(100vw - 56px), calc(100vw - 40px)';
 ---
 <JournalEditorialShell kind="journal" backHref="/">
@@ -33,6 +39,15 @@ const sizes = '(min-width: 1280px) 681px, (min-width: 1024px) calc(58.33vw - 66.
           label={`История G3 · 2011–2024 · ${history.readingTimeMinutes} минут чтения`}
           deck={history.description} actionLabel="Читать исследование" />
       </div>
+    </section>
+
+    <section class="journal-section news-investigations" aria-labelledby="news-investigations-title">
+      <div class="section-heading">
+        <h2 id="news-investigations-title">Документальные исследования</h2>
+      </div>
+      <NewsStoryCard {...lawson} variant="analysis" label="Пасторство · церковная дисциплина"
+        actionLabel="Читать исследование"
+        media={{ ...lawsonImage, width: 1200, height: 630, sizes: '(min-width: 851px) 36vw, calc(100vw - 40px)', caption: 'Редакционная иллюстрация к статье; не документальная фотография.' }} />
     </section>
 
     <div class="journal-editorial-grid news-method-row">
