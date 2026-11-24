@@ -136,9 +136,6 @@
       text-align: start;
       font-size: 12px;
     }
-    .journal-edition .journal-landing .journal-featured .section-heading > p br {
-      display: none;
-    }
   }
 }
 @media print {
