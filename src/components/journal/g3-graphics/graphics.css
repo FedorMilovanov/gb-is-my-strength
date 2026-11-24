@@ -1,0 +1,160 @@
+/* Component-only art layer; canonical Journal tokens; no global selector or runtime. */
+.g3g{--paper:var(--je-paper,#faf7f0);--ink:var(--je-ink,#142536);--muted:var(--je-muted,#5e5b54);--line:var(--je-rule,#d5cbb9);--panel:var(--je-paper-raised,#f2ece0);--accent:#14675f;--rust:#a6402d;color:var(--ink);container-type:inline-size;min-width:0;margin:2rem 0;padding:1.1rem 0;border-block:1px solid var(--line);font:400 15px/1.5 var(--je-ui,Arial,sans-serif);overflow-wrap:anywhere}
+html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
+.g3g,.g3g *{box-sizing:border-box}
+.g3g :is(h3,h4,h5,p,figure,ol,ul){margin:0}
+.g3g h3{font:600 clamp(25px,5cqi,39px)/1.15 var(--je-serif,Georgia,serif);letter-spacing:-.025em}
+.g3g h4{font:600 23px/1.2 var(--je-serif,Georgia,serif)}
+.g3g h5{font:600 17px/1.3 var(--je-serif,Georgia,serif)}
+.g3g .g3g-kicker{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.g3g .g3g-deck{margin-top:8px;color:var(--muted);font:400 16px/1.5 var(--je-body,Georgia,serif)}
+.g3g svg{display:block;width:100%;height:auto;max-width:100%;color:var(--ink)}
+.g3g :is(figcaption,.g3g-note,.g3g-ordinal,.g3g-kind){font-size:12px;color:var(--muted);line-height:1.5}
+.g3g .g3g-sectionhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 12px;border-top:1px solid var(--line);padding:12px 0;margin-top:16px}
+.g3g .g3g-sectionhead>*{min-width:0}
+.g3g .g3g-source{display:inline-flex;align-items:center;min-height:44px;max-width:100%;padding:5px 1px;color:var(--je-gold,var(--ink));font:600 13px/1.4 var(--je-ui,Arial,sans-serif);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.g3g :is(.g3g-source,summary):focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.g3g .g3g-source+.g3g-source{margin-inline-start:8px}
+/* Map: actual geometry, leader lines only, no invented internal boundaries. */
+.g3g .g3g-atlas{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.g3g .g3g-atlas-map{margin-top:12px}
+.g3g .g3g-atlas-map svg{background:var(--paper);border:1px solid var(--line)}
+.g3g .g3g-atlas-map figcaption{margin-top:7px}
+.g3g .g3g-atlas-land{fill:var(--panel);stroke:var(--muted);stroke-width:1.2}
+.g3g .g3g-atlas-neighbour{fill:var(--paper);stroke:var(--muted)}
+.g3g .g3g-atlas-grid{stroke:var(--line);stroke-dasharray:3 5;fill:none}
+.g3g .g3g-atlas-coordinate{fill:var(--muted);font:14px var(--je-ui,Arial,sans-serif)}
+.g3g .g3g-atlas-water{fill:var(--muted);font:18px var(--je-ui,Arial,sans-serif)}
+.g3g .g3g-atlas-leader{stroke:var(--ink);fill:none;stroke-width:1.5}
+.g3g .g3g-atlas-marker{fill:var(--paper);stroke:var(--accent);stroke-width:2}
+.g3g .g3g-meeting-marker{stroke:var(--rust)}
+.g3g .g3g-atlas-number{fill:var(--ink);font:bold 20px Arial,sans-serif;text-anchor:middle;dominant-baseline:central}
+.g3g .g3g-map-key{display:flex;gap:4px 16px;flex-wrap:wrap;margin:8px 0;color:var(--muted);font-size:12px}
+.g3g .g3g-map-key span{display:inline-flex;align-items:center;gap:6px}
+.g3g :is(.g3g-key-circle,.g3g-key-box){display:inline-block;flex:none;width:11px;height:11px;border:1.5px solid var(--accent);border-radius:50%}
+.g3g .g3g-key-box{border-color:var(--rust);border-radius:0}
+.g3g .g3g-atlas-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;list-style:none;padding:0}
+.g3g .g3g-atlas-list li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;padding:8px 0 3px;border-top:1px solid var(--line);break-inside:avoid}
+.g3g .g3g-atlas-list b{display:grid;place-items:center;border:1px solid var(--accent);width:23px;height:23px;border-radius:50%;color:var(--accent);font-size:13px}
+.g3g .g3g-atlas-list li:nth-child(2) b{border-color:var(--rust);color:var(--rust);border-radius:0}
+.g3g .g3g-atlas-list p{font-size:13px;margin-top:3px}
+/* Essential narrative is visible; details exposes all source links with native HTML. */
+.g3g .g3g-era-ribbon{list-style:none;display:grid;grid-template-columns:1fr 1.25fr 1fr;padding:0;gap:0}
+.g3g .g3g-era-ribbon li{border-top:2px solid var(--ink);padding:9px 12px 8px 0;min-width:0}
+.g3g .g3g-era-ribbon li+li{padding-left:12px;border-left:1px solid var(--line)}
+.g3g .g3g-era-years{display:block;font:600 19px/1.3 var(--je-serif,Georgia,serif);font-variant-numeric:lining-nums tabular-nums;margin-bottom:4px}
+.g3g .g3g-era-ribbon p{font-size:13px;margin-top:4px;color:var(--muted)}
+.g3g .g3g-chron-details{border-block:1px solid var(--line);margin-top:8px}
+.g3g .g3g-chron-details summary{cursor:pointer;min-height:44px;padding:12px 2px;font-weight:600;color:var(--ink)}
+.g3g .g3g-chron-details>.g3g-note{margin:2px 0 8px}
+.g3g .g3g-timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;padding:0;list-style:none}
+.g3g .g3g-timeline li{display:grid;grid-template-columns:50px minmax(0,1fr);gap:8px;min-width:0;border-top:1px solid var(--line);padding:8px 0;break-inside:avoid}
+.g3g .g3g-timeline time{font:600 17px/1.5 var(--je-serif,Georgia,serif);font-variant-numeric:lining-nums tabular-nums}
+.g3g .g3g-event-kind{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;margin:3px 0}
+.g3g .g3g-dot{display:inline-block;flex:none;width:9px;height:9px;border:1px solid currentColor;border-radius:50%;color:var(--accent)}
+.g3g .g3g-dot.g3g-square{border-radius:0;transform:rotate(45deg)}
+.g3g .g3g-dot.g3g-full{background:currentColor}
+.g3g .g3g-dot.g3g-document{border-radius:0;border:3px double currentColor;width:11px;height:11px}
+/* Institutional evidence sequence: no causal/ownership arrows. */
+.g3g .g3g-institution-rail{list-style:none;padding:0;margin:18px 0 0}
+.g3g .g3g-institution-rail>li{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:0 0 5px;break-inside:avoid}
+.g3g .g3g-institution-rail>li>time{position:relative;font:600 24px/1.3 var(--je-serif,Georgia,serif);font-variant-numeric:lining-nums tabular-nums;white-space:nowrap;overflow-wrap:normal;word-break:normal;hyphens:none;border-right:1px solid var(--line);padding-right:10px}
+.g3g .g3g-institution-rail>li>time::after{content:'';position:absolute;top:11px;right:-4px;width:7px;height:7px;background:var(--paper);border:1px solid var(--ink);border-radius:50%}
+.g3g .g3g-institution-rail>li>div{padding:0 0 4px;border-bottom:1px solid var(--line);min-width:0}
+.g3g .g3g-kind{display:block;margin-bottom:3px}
+.g3g .g3g-institution-rail h4{font:600 17px/1.3 var(--je-serif,Georgia,serif)}
+.g3g .g3g-institution-rail p{font-size:14px;margin-top:3px}
+.g3g .g3g-plan-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;list-style:none;padding:0;margin:9px 0 5px}
+.g3g .g3g-plan-branches li{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 0;font-size:13px;font-weight:600}
+.g3g .g3g-snapshot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 14px}
+.g3g .g3g-snapshot article{border-top:2px solid var(--ink);padding:8px 0;min-width:0;break-inside:avoid}
+.g3g .g3g-specimen{margin-bottom:6px}
+.g3g .g3g-specimen svg{max-height:74px;margin-bottom:7px}
+.g3g .g3g-snapshot article p{font-size:14px;margin-top:4px}
+.g3g .g3g-snapshot .g3g-source+.g3g-source{margin-inline-start:0}
+.g3g .g3g-boundary{border-top:1px solid var(--line);padding-top:10px;color:var(--muted);font-size:13px}
+/* Waterfall: one exact table, dynamic scale and exact numeric labels. */
+.g3g-finance .g3g-chart{margin:12px 0}
+.g3g-finance .g3g-chart svg{max-height:330px}
+.g3g-finance .g3g-gridline{stroke:var(--line);stroke-width:1}
+.g3g-finance .g3g-connector{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3}
+.g3g-finance .g3g-positive{fill:var(--accent)}
+.g3g-finance .g3g-negative{fill:var(--rust);stroke:none}
+.g3g-finance .g3g-total{fill:var(--ink)}
+.g3g-finance svg text{fill:var(--ink);font:16px var(--je-ui,Arial,sans-serif)}
+.g3g-finance svg .g3g-tick{fill:var(--muted);font-size:13px}
+.g3g-finance svg .g3g-value-label{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.g3g-finance .g3g-annotation{stroke:var(--rust);fill:none;stroke-width:1}
+.g3g-finance svg .g3g-annotation-label{fill:var(--rust);font-size:15px;font-weight:600}
+.g3g-finance .g3g-finance-table{width:100%;border-collapse:collapse;margin:.7rem 0;font-size:14px;table-layout:fixed}
+.g3g-finance .g3g-finance-table :is(th,td){text-align:left;padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.g3g-finance .g3g-finance-table th{font-weight:500}
+.g3g-finance .g3g-finance-table td{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;width:42%}
+.g3g-finance .g3g-finance-table tr:last-child{font-weight:bold}
+.g3g-finance .g3g-percent{display:block;color:var(--muted);font-size:12px}
+.g3g-finance .g3g-table-track{display:none;position:relative;height:7px;background:var(--panel);margin-top:5px}
+.g3g-finance .g3g-table-track i{position:absolute;top:0;height:100%;background:var(--accent)}
+.g3g-finance .g3g-table-track i.g3g-negative{background:var(--rust)}
+.g3g-finance .g3g-table-track i.g3g-total{background:var(--ink)}
+@container(max-width:660px){
+ .g3g .g3g-atlas-list{gap:0 12px}
+ .g3g .g3g-era-ribbon{grid-template-columns:1fr}
+ .g3g .g3g-era-ribbon li{display:grid;grid-template-columns:94px minmax(0,1fr);gap:0 10px;padding:8px 0;border-top:1px solid var(--line)}
+ .g3g .g3g-era-ribbon li+li{padding-left:0;border-left:0}
+ .g3g .g3g-era-ribbon .g3g-era-years{grid-row:1/3;font-size:16px}
+ .g3g .g3g-era-ribbon p{grid-column:2}
+ .g3g .g3g-timeline{grid-template-columns:1fr}
+ .g3g .g3g-snapshot{grid-template-columns:1fr}
+ .g3g .g3g-snapshot article{display:grid;grid-template-columns:82px minmax(0,1fr);gap:0 12px}
+ .g3g .g3g-snapshot article .g3g-specimen{grid-row:1/5}
+ .g3g .g3g-snapshot article :is(h5,p,a){grid-column:2}
+ .g3g .g3g-snapshot article .g3g-source{justify-self:start}
+ .g3g-finance .g3g-chart{display:none}
+ .g3g-finance .g3g-table-track{display:block}
+ .g3g-finance .g3g-finance-table{font-size:13px}
+}
+@container(max-width:440px){
+ .g3g .g3g-atlas-list{grid-template-columns:1fr}
+ .g3g .g3g-source+.g3g-source{margin-inline-start:0}
+ .g3g .g3g-institution-rail>li{grid-template-columns:64px minmax(0,1fr);gap:10px}
+ .g3g .g3g-institution-rail>li>time{font-size:20px}
+ .g3g .g3g-plan-branches{grid-template-columns:1fr;gap:0}
+ .g3g .g3g-plan-branches li{border-bottom:0;padding:4px 0}
+}
+@media(forced-colors:active){
+ .g3g{--accent:CanvasText;--rust:CanvasText;--ink:CanvasText;--paper:Canvas;--panel:Canvas;--muted:CanvasText;--line:CanvasText}
+ .g3g .g3g-dot.g3g-full{forced-color-adjust:none;background:CanvasText}
+ .g3g-finance svg rect{stroke:CanvasText;stroke-width:1}
+ .g3g-finance .g3g-table-track{border:1px solid CanvasText}
+ .g3g-finance .g3g-table-track i{forced-color-adjust:none;background:CanvasText}
+}
+@media print{
+ .g3g,html.dark .g3g{--paper:#fff;--ink:#191919;--muted:#333;--line:#888;--panel:#f3f3f3;--accent:#14675f;--rust:#a6402d;margin:8pt 0;padding:4pt 0;color:#191919;font-size:10pt}
+ .g3g h3{font-size:20pt}.g3g h4{font-size:14pt}.g3g h5{font-size:11pt}
+ .g3g .g3g-deck{font-size:10pt;margin-top:4pt}
+ .g3g .g3g-atlas-map svg{max-height:190pt}
+ .g3g .g3g-source{min-height:0;padding:2pt 0;font-size:8.5pt;color:#191919}
+ .g3g :is(.g3g-atlas-list li,.g3g-timeline li,.g3g-institution-rail>li,.g3g-snapshot article,.g3g-era-ribbon li){break-inside:avoid}
+ .g3g .g3g-atlas-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .g3g .g3g-era-ribbon{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .g3g .g3g-era-ribbon li{display:block;padding:6pt}
+ .g3g .g3g-timeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .g3g .g3g-chron-details summary{min-height:0;padding:4pt 0}
+ /* Chromium print can expose closed native details content; exact print witness verifies each link. */
+ .g3g .g3g-chron-details::details-content{content-visibility:visible;display:block}
+ .g3g .g3g-institution-rail>li{grid-template-columns:66px minmax(0,1fr);gap:8px;padding-bottom:2px}
+ .g3g .g3g-institution-rail>li>time{font-size:15pt;padding-right:6px}
+ .g3g-ecosystem>header{break-inside:avoid;break-after:avoid}
+ .g3g-ecosystem>.g3g-institution-rail{break-before:avoid}
+ .g3g .g3g-institution-rail h4{font-size:11pt}
+ .g3g .g3g-plan-branches{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .g3g .g3g-snapshot{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .g3g .g3g-snapshot article{display:block}
+ .g3g .g3g-specimen svg{max-height:36pt}
+ .g3g .g3g-sectionhead{margin-top:8px;padding:6px 0}
+ /* Keep only heading, explanatory deck and initial plot together; table may follow on next sheet. */
+ .g3g-finance .g3g-finance-lead{break-inside:avoid;page-break-inside:avoid}
+ .g3g-finance .g3g-chart{display:block;break-inside:avoid}
+ .g3g-finance .g3g-table-track{display:none}
+ .g3g-finance .g3g-finance-table{break-inside:avoid}
+}

@@ -26,6 +26,7 @@ function bindG3Matrix(root) {
   function restoreTarget(hash) {
     let id;
     try { id = decodeURIComponent(hash.slice(1)); } catch { return; }
+    if (!id) return;
     const target = document.getElementById(id);
     const row = target?.closest('.gm-row');
     if (!row || !root.contains(row) || !row.hidden) return;

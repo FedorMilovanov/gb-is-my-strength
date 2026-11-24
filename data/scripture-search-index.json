@@ -13,11 +13,11 @@
   "stats": {
     "manifestItems": 105,
     "indexedRoutes": 104,
-    "scannedSourceFiles": 554,
-    "references": 1377,
-    "occurrences": 3515,
+    "scannedSourceFiles": 558,
+    "references": 1379,
+    "occurrences": 3517,
     "canonicalTextRecords": 149,
-    "referencesWithoutCanonicalText": 1228,
+    "referencesWithoutCanonicalText": 1230,
     "chapterRanges": 45,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1,
@@ -54444,6 +54444,30 @@
       ]
     },
     {
+      "id": "filippiytsam:2:17–18",
+      "bookId": "filippiytsam",
+      "testament": "NT",
+      "key": "2:17–18",
+      "kind": "verse-range",
+      "label": "Филиппийцам 2:17–18",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/journal/dossiers/g3/history/",
+          "title": "G3 Ministries: от конференции к служению (2011–2024)",
+          "context": "вых общин, Пол Вошер — обсуждением определения миссии. 17 января 2019 года Джон Пайпер проповедовал на G3 в Атланте по Флп. 2:17–18. В опубликованном им тексте проповеди речь идёт о страхе, ненасытном потреблении и привычке к обеспеченной жизни как о препятствиях для всемирной миссии. Он призывал к радости, готовой на жертву ради других, и отдельно",
+          "anchor": "g3-year-2019",
+          "raw": "Флп. 2:17–18",
+          "topics": [
+            "Журнал"
+          ],
+          "sourceOwner": "src/components/journal/G3HistoryFeature.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "filippiytsam:3:8–9",
       "bookId": "filippiytsam",
       "testament": "NT",
@@ -71350,6 +71374,30 @@
             "Чау"
           ],
           "sourceOwner": "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "otkrovenie:5",
+      "bookId": "otkrovenie",
+      "testament": "NT",
+      "key": "5",
+      "kind": "chapter",
+      "label": "Откровение 5",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/journal/dossiers/g3/history/",
+          "title": "G3 Ministries: от конференции к служению (2011–2024)",
+          "context": "вясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках. В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства. В те же дни миссия FirstLove впервые участвовала в выставке…",
+          "anchor": null,
+          "raw": "Откровение 5",
+          "topics": [
+            "Журнал"
+          ],
+          "sourceOwner": "src/components/journal/G3HistoryFeature.astro",
           "sourceKind": "astro-source"
         }
       ]
