@@ -34,3 +34,18 @@ html.dark .g3-annual-finance{--gaf-revenue:#8fd4bd;--gaf-negative:#f1a38d}
 @container(max-width:320px){.g3-annual-finance .gaf-years{font-size:.59rem}.g3-annual-finance .gaf-plot{grid-template-columns:1.85rem minmax(0,1fr)}}
 @media(forced-colors:active){.g3-annual-finance svg{forced-color-adjust:none;--gaf-revenue:CanvasText;--gaf-expense:CanvasText;--gaf-negative:CanvasText;--je-rule:GrayText;--je-ink:CanvasText}.g3-annual-finance .gaf-key::before{forced-color-adjust:none;background:CanvasText;border-color:CanvasText}.g3-annual-finance .gaf-key.gaf-expense::before{background:Canvas}}
 @media print{.g3-annual-finance,html.dark .g3-annual-finance{container-type:normal;--gaf-expense:#111;--gaf-revenue:#14675f;--gaf-negative:#a6402d;--je-ink:#111;--je-muted:#444;--je-rule:#ccc;--je-gold:#694913;color:#111;margin:0}.g3-annual-finance .gaf-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.g3-annual-finance figure{break-inside:avoid;print-color-adjust:exact}.g3-annual-finance table caption{break-after:avoid}.g3-annual-finance tr{break-inside:avoid}.g3-annual-finance .gaf-source a{color:#111}}
+
+/* Compact paper-specific rhythm: Letter is shorter than A4. Preserve readable
+   table values and let the browser paginate if the available space is smaller. */
+@media print {
+  .journal-edition .prose .g3-annual-finance h2, .g3-annual-finance h2 {font-size:18pt;margin:0 0 5pt;break-after:avoid}
+  .journal-edition .prose .g3-annual-finance h3, .g3-annual-finance h3 {font-size:13pt;margin:0 0 4pt;break-after:avoid}
+  .g3-annual-finance .gaf-meta {margin:0 0 5pt}
+  .g3-annual-finance figure {padding:5pt 0}
+  .g3-annual-finance .gaf-primary .gaf-plot {--gaf-height:112px}
+  .g3-annual-finance .gaf-plot {--gaf-height:96px;padding-block:3pt 0}
+  .g3-annual-finance .gaf-legend {margin:0 0 4pt}
+  .g3-annual-finance figcaption,.g3-annual-finance .gaf-source {margin-top:4pt}
+  .g3-annual-finance :is(th,td) {padding:3pt 2pt}
+  .g3-annual-finance table caption {padding:4pt 0}
+}
