@@ -136,7 +136,7 @@ if(historyMode){
       }
       for(const group of expectedGroups)assert.ok(text.includes(words(group.label)),'group heading retained');
       if(compareMode)for(const source of history.sources){const display=source.recordDate.value===null?'Не установлена':new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeZone:'UTC'}).format(new Date(source.recordDate.value+'T00:00:00Z'));assert.ok(pages.some(p=>words(p).includes(words(source.label))&&words(p).includes(words(display))),'record date stays with source');}
-      const count=physicalWordCount(file,pages.length);
+      const count=physicalWordCount(file,pages.length,format);
       paperAcceptance.push({format,dark,js,pages:pages.length,words:count});
       await writeFile(join(evidence,'history-paper.json'),JSON.stringify(paperAcceptance,null,2));
       console.log('HISTORY_PAPER_PASS '+JSON.stringify(paperAcceptance.at(-1)));
@@ -246,7 +246,7 @@ try{
        const notePages=pages.filter(p=>p.includes('Значение')||p.includes('Предел доказательства'));
        assert.equal(notePages.length,1,'compact annotation pair on one sheet');
        assert.ok(notePages[0].includes('Значение')&&notePages[0].includes('Предел доказательства'));
-       const count=physicalWordCount(file,pages.length);
+       const count=physicalWordCount(file,pages.length,format);
        paperAcceptance.push({format,dark,pages:pages.length,words:count,file});console.log('PAPER_PASS '+format+' '+dark+' '+pages.length+' words='+count);
       }
      }

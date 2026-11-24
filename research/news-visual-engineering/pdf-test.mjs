@@ -19,7 +19,7 @@ for(const fixture of ['short','long'])for(const format of ['A4','Letter'])for(co
   assert.equal(run.status,0,run.error?.message??run.stderr);
   const pages=run.stdout.split('\f').map(p=>p.trim()).filter(Boolean);
   const text=pages.join(' ').replace(/\s+/gu,' ');
-  const count=physicalWordCount(join(root,name),pages.length);
+  const count=physicalWordCount(join(root,name),pages.length,format);
   if(fixture==='short'){
     for(const value of [...shortHeadings,...shortText,'Анатомия документа','Техническая фикстура','Технический образец источника','Второй образец источника'])assert.equal(words(text).split(words(value)).length-1,1,name+' missing or duplicate '+value);
     for(const label of ['Значение','Предел доказательства','Источник:'])assert.equal(text.split(label).length-1,3,name+' '+label);
