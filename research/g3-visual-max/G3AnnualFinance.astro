@@ -7,40 +7,58 @@ if (Astro.props.reviewOnly !== true || proposal.state !== 'PUBLICATION_HOLD') {
   throw new Error('G3 annual finance requires explicit review-only rendering; no publication authority');
 }
 const rows = proposal.rows;
-const nf = new Intl.NumberFormat('ru-RU');
-const fmt = (n: number) => nf.format(n);
-const signed = (n: number) => n > 0 ? '+' + fmt(n) : fmt(n);
+if (rows.length !== 7 || rows.some((r,i) => r.fy !== 2019+i ||
+    ![r.revenue,r.expenses,r.result,r.netAssets].every(Number.isSafeInteger) ||
+    r.revenue < 0 || r.expenses < 0 || r.netAssets < 0 || r.revenue-r.expenses !== r.result ||
+    Math.max(r.revenue,r.expenses) > 2200000 || Math.abs(r.result)>800000 || r.netAssets>1400000)) {
+  throw new Error('G3 finance data outside validated scale or inconsistent');
+}
+const fmt = (n: number) => new Intl.NumberFormat('ru-RU').format(n).replace('-', '−');
 const labels = ['Год','Доходы','Расходы','Результат','Чистые активы'];
-const pt = (a: number,i: number) => [i*100+50,150-a/1400000*150];
-const points = rows.map((r,i) => pt(r.netAssets,i).join(',')).join(' ');
+const grid = 'M0 0H700 M0 40H700 M0 80H700 M0 120H700 M0 160H700';
+const points = rows.map((r,i) => [i*100+50,160-r.netAssets/1400000*160].join(',')).join(' ');
 ---
 <section class="g3-annual-finance" aria-label="Годовая финансовая отчётность">
-  <p class="gaf-hold">Внутренняя приёмка · Research #632 · публикация не разрешена</p>
+  <p class="gaf-hold">Внутренняя приёмка · публикация не разрешена</p>
   <h2>Доходы, расходы и активы</h2>
-  <p>Финансовые годы 2019–2025, доллары США.</p>
-  <figure>
+  <p class="gaf-meta">Финансовые годы, заканчивающиеся в декабре · USD</p>
+  <figure class="gaf-primary">
     <h3>Доходы и расходы</h3>
-    <div class="gaf-legend"><span class="gaf-key gaf-revenue">Доходы</span><span class="gaf-key gaf-expense">Расходы</span><span>млн долл.</span></div>
+    <div class="gaf-legend"><span class="gaf-key gaf-revenue">Доходы</span><span class="gaf-key gaf-expense">Расходы</span><span>млн $</span></div>
     <div class="gaf-plot" aria-hidden="true">
-      <div class="gaf-ticks"><span>2,2</span><span>1,65</span><span>1,1</span><span>0,55</span><span>0</span></div>
-      <div class="gaf-cols">
-        {rows.map(r => <div><svg viewBox="0 0 40 180" preserveAspectRatio="none"><rect class="gaf-revenue" x="3" y={180-r.revenue/2200000*180} width="15" height={r.revenue/2200000*180}/><rect class="gaf-expense" x="22" y={180-r.expenses/2200000*180} width="15" height={r.expenses/2200000*180}/></svg><span>{r.fy}</span></div>)}
+      <div class="gaf-ticks">{['2,2','1,65','1,1','0,55','0'].map((l,i) => <span style={`top:${i*25}%`}>{l}</span>)}</div>
+      <div><svg viewBox="0 0 700 160" preserveAspectRatio="none"><path class="gaf-grid" d={grid}/>
+        {rows.map((r,i) => <><rect class="gaf-revenue" x={i*100+12} y={160-r.revenue/2200000*160} width="32" height={r.revenue/2200000*160}/><rect class="gaf-expense" x={i*100+56} y={160-r.expenses/2200000*160} width="32" height={r.expenses/2200000*160}/></>)}
+        <path class="gaf-axis" d="M0 160H700"/></svg>
+        <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
       </div>
     </div>
-    <figcaption>Обе серии имеют общую нулевую шкалу. В 2019 году доходы составили 100 долларов, поэтому столбец практически не виден.</figcaption>
+    <figcaption>Общая нулевая шкала. Доходы 2019 года — 100 долларов.</figcaption>
   </figure>
-  <figure>
-    <h3>Годовой результат</h3>
-    <div class="gaf-signed-axis" aria-hidden="true"><span></span><div><span>−800 тыс.</span><span>0</span><span>+800 тыс.</span></div><span></span></div>
-    {rows.map(r => <div class="gaf-signed"><span>{r.fy}</span><svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M100 0V20" class="gaf-axis"/><rect class={r.result < 0 ? 'gaf-negative' : 'gaf-revenue'} x={r.result < 0 ? 100-Math.abs(r.result)/800000*100 : 100} y="3" width={Math.abs(r.result)/800000*100} height="14"/></svg><strong>{signed(r.result)}</strong></div>)}
-    <figcaption>Доходы минус расходы. Не изменение чистых активов.</figcaption>
-  </figure>
-  <figure>
-    <h3>Чистые активы</h3>
-    <div class="gaf-plot gaf-assets" aria-hidden="true"><div class="gaf-ticks"><span>1,4</span><span>1,05</span><span>0,7</span><span>0,35</span><span>0</span></div><div><svg viewBox="0 0 700 150" preserveAspectRatio="none"><path d="M0 0H700 M0 37.5H700 M0 75H700 M0 112.5H700 M0 150H700" class="gaf-grid"/><polyline points={points} class="gaf-line"/>{rows.map((r,i) => <circle cx={pt(r.netAssets,i)[0]} cy={pt(r.netAssets,i)[1]} r="4" class="gaf-dot"/>)}</svg><div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div></div></div>
-    <figcaption>На конец финансового года, млн долларов. Чистые активы не равны остаткам денежных средств.</figcaption>
-  </figure>
-  <h3>Годовые значения</h3>
-  <table role="table"><caption>Данные финансовой отчётности · USD</caption><thead role="rowgroup"><tr role="row">{labels.map(l => <th scope="col" role="columnheader">{l}</th>)}</tr></thead><tbody role="rowgroup">{rows.map(r => <tr role="row"><th scope="row" role="rowheader">{r.fy}</th>{[r.revenue,r.expenses,r.result,r.netAssets].map((n,i) => <td role="cell" data-label={labels[i+1]}>{fmt(n)}</td>)}</tr>)}</tbody></table>
-  <p class="gaf-source">Источник: IRS Form 990 (2019 — 990-EZ), Research proposal C-E, повторная сверка с <a href="https://projects.propublica.org/nonprofits/organizations/842403597">представлением деклараций</a>. Не внешний аудит.</p>
+  <div class="gaf-pair">
+    <figure>
+      <h3>Годовой результат · млн $</h3>
+      <div class="gaf-plot" aria-hidden="true">
+        <div class="gaf-ticks">{['+0,8','+0,4','0','−0,4','−0,8'].map((l,i) => <span style={`top:${i*25}%`}>{l}</span>)}</div>
+        <div><svg viewBox="0 0 700 160" preserveAspectRatio="none"><path class="gaf-grid" d={grid}/>
+          {rows.map((r,i) => <rect class={r.result<0?'gaf-negative':'gaf-revenue'} x={i*100+24} y={80-Math.max(0,r.result)/800000*80} width="52" height={Math.abs(r.result)/800000*80}/>)}
+          <path class="gaf-axis" d="M0 80H700"/></svg>
+          <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
+        </div>
+      </div>
+      <figcaption>Доходы минус расходы.</figcaption>
+    </figure>
+    <figure>
+      <h3>Чистые активы · млн $</h3>
+      <div class="gaf-plot" aria-hidden="true">
+        <div class="gaf-ticks">{['1,4','1,05','0,7','0,35','0'].map((l,i) => <span style={`top:${i*25}%`}>{l}</span>)}</div>
+        <div><svg viewBox="0 0 700 160" preserveAspectRatio="none"><path class="gaf-grid" d={grid}/><polyline class="gaf-line" points={points}/><path class="gaf-axis" d="M0 160H700"/></svg>
+          <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
+        </div>
+      </div>
+      <figcaption>На конец года, не остаток денежных средств.</figcaption>
+    </figure>
+  </div>
+  <table role="table"><caption>Точные значения · USD</caption><thead role="rowgroup"><tr role="row">{labels.map(l => <th scope="col" role="columnheader">{l}</th>)}</tr></thead><tbody role="rowgroup">{rows.map(r => <tr role="row"><th scope="row" role="rowheader">{r.fy}</th>{[r.revenue,r.expenses,r.result,r.netAssets].map((n,i) => <td role="cell" data-label={labels[i+1]}>{fmt(n)}</td>)}</tr>)}</tbody></table>
+  <p class="gaf-source">IRS Form 990 (2019 — 990-EZ), <a href="https://projects.propublica.org/nonprofits/organizations/842403597">годовые декларации</a>. Не внешний аудит.</p>
 </section>
