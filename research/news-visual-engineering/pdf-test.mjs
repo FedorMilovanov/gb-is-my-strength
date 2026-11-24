@@ -22,7 +22,12 @@ for(const format of ['A4','Letter'])for(const theme of ['light','dark']){
   assert.equal(text.split('Дополнительный локатор').length-1,1,name+' additional evidence locator');
   assert.equal(text.split('Повторный источник, иной локатор').length-1,1,name+' distinct same-source locator');
   assert.equal(text.split('Не установлена').length-1,2,name+' unknown dates');
+  // These fixture annotations are short enough to fit together on one sheet.
+  // Do not impose this fixture rule on an arbitrarily long real annotation.
   for(const page of pages){
+    const labels=[...page.matchAll(/Значение|Предел доказательства/gu)].map(match=>match[0]);
+    for(let i=0;i<labels.length;i++)assert.equal(labels[i],i%2===0?'Значение':'Предел доказательства',name+' annotation order on page');
+    assert.equal(labels.length%2,0,name+' split annotation pair across pages');
     assert.ok(!/^Источник:/u.test(page),name+' orphan citation at top');
     assert.ok(!/(?:Значение|Предел доказательства|Технический образец)\s*$/u.test(page),name+' orphan label at bottom');
   }

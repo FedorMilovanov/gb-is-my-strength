@@ -113,6 +113,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     .jdx-citation-locator { color: #111; }
     .jdx-passage a { display: block; min-height: 0; break-before: avoid; }
     .jdx-commentary { margin-block-start: .5rem; }
-    .jdx-commentary div { break-inside: avoid; }
+    /* Keep meaning and evidence limits together when the pair fits a sheet. */
+    .jdx-commentary dl, .jdx-commentary div { break-inside: avoid; }
   }
 </style>
