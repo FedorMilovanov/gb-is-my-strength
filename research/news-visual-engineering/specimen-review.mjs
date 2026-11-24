@@ -46,6 +46,17 @@ const url='http://127.0.0.1:'+server.address().port;
 const evidence=join(root,'evidence');await mkdir(evidence);
 const specimen=JSON.parse(await readFile(join(root,'src/specimen.json'),'utf8'));
 const results=[];
+const verifyCompactLinkNames=async page=>{
+ const links=page.locator('.jdc-links a');
+ const expected=['Архив заявления','Воспроизведение заявления'];
+ assert.equal(await links.count(),2);
+ for(let i=0;i<expected.length;i++){
+  const link=links.nth(i), label=expected[i];
+  assert.equal((await link.innerText()).trim(),label);
+  assert.ok((await link.getAttribute('aria-label')).startsWith(label+' · '));
+  assert.equal(await page.getByRole('link',{name:new RegExp('^'+label+' · ')}).count(),1);
+ }
+};
 const compactAcceptance=[];
 const paperAcceptance=[];
 try{
@@ -62,6 +73,7 @@ try{
      const witness=await page.evaluate(()=>({text:document.querySelector('#buice').textContent,summary:document.querySelector('.jdx-passage p:not(.jdx-locator)')?.textContent??document.querySelector('[data-publication-claims]').textContent,over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),opening:Math.round(document.querySelector('#buice').getBoundingClientRect().height),textStart:Math.round((document.querySelector('.jdx-passage p:not(.jdx-locator),[data-publication-claims]')).getBoundingClientRect().top+scrollY),links:[...document.querySelectorAll('#buice a[data-journal-citation]')].map(a=>({id:a.id,href:a.getAttribute('href')}))}));
      assert.equal(witness.summary,specimen.readerSafeText);assert.equal(witness.text.split(specimen.readerSafeText).length-1,1);assert.equal(witness.over,false);assert.equal(new Set(witness.ids).size,witness.ids.length);
      assert.equal(witness.links.length,variant==='before'?1:2);
+     if(variant==='compact')await verifyCompactLinkNames(page);
      assert.ok(witness.links.every(l=>l.href==='#src-G3-S008'));
      assert.equal(await page.locator('#src-G3-S008 a[href^="https://"]').count(),2);
      for(const link of witness.links){
@@ -103,6 +115,7 @@ try{
      assert.equal(base.over,false);assert.equal(new Set(base.ids).size,base.ids.length);
      assert.ok(base.targetSizes.length===2&&base.targetSizes.every(h=>h>=44));
      for(const font of ['Lora','Playfair Display','Source Sans 3'])assert.ok(base.family.includes(font),'missing font '+font);
+     await verifyCompactLinkNames(page);
      const links=page.locator('.jdc-links a');const primary=await links.first().getAttribute('id');
      for(let i=0;i<2;i++){
       await links.nth(i).focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#src-G3-S008');
