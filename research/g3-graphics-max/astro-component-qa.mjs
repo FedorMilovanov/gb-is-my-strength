@@ -61,6 +61,15 @@ async function waitFonts(page){for(let i=0;i<40;i++){const status=await deadline
     for(const c of components){const r=c.getBoundingClientRect();if(c.scrollWidth>c.clientWidth+1)fail.push(c.className+' overflow');
       for(const n of c.querySelectorAll('h3,h4,h5,summary,a,td,th')){const b=n.getBoundingClientRect();if(!b.width||!b.height)continue;if(b.right>r.right+1||b.left<r.left-1)fail.push('out: '+n.textContent.trim().slice(0,60));if(n.matches('a.g3g-source')&&b.height<43.5)fail.push('short link: '+n.id);}
       for(const a of c.querySelectorAll('a[data-journal-citation]')){if(!a.id||!a.textContent.trim()||!document.getElementById(decodeURIComponent(a.hash.slice(1))))fail.push('bad source: '+a.id);}
+      // Atlas crop: test every text node in SVG user coordinates, including clipped labels.
+      for(const svg of c.querySelectorAll('.g3g-atlas-map svg')){
+        const v=svg.viewBox.baseVal,s=svg.getCTM();
+        for(const e of svg.querySelectorAll('text')){
+          const b=e.getBBox(),t=s.inverse().multiply(e.getCTM());
+          const corners=[new DOMPoint(b.x,b.y),new DOMPoint(b.x+b.width,b.y),new DOMPoint(b.x,b.y+b.height),new DOMPoint(b.x+b.width,b.y+b.height)].map(p=>p.matrixTransform(t));
+          if(corners.some(p=>p.x<v.x-.5||p.x>v.x+v.width+.5||p.y<v.y-.5||p.y>v.y+v.height+.5))fail.push('atlas label outside viewBox: '+e.textContent);
+        }
+      }
       for(const svg of c.querySelectorAll('svg')){const s=svg.getBoundingClientRect();if(!s.width||!s.height)continue;const labels=[...svg.querySelectorAll('text')].map(t=>({t:t.textContent,r:t.getBoundingClientRect()})).filter(x=>x.r.top>=s.top-1&&x.r.bottom<=s.bottom+1&&x.r.left>=s.left-1&&x.r.right<=s.right+1);
         for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++){const a=labels[i],b=labels[j];if(Math.min(a.r.right,b.r.right)-Math.max(a.r.left,b.r.left)>2&&Math.min(a.r.bottom,b.r.bottom)-Math.max(a.r.top,b.r.top)>2)fail.push('SVG text overlap: '+a.t+' / '+b.t);}
       }
