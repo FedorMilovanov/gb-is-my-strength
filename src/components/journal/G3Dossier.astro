@@ -115,6 +115,7 @@ const readerSourceLinks: Record<string, { href: string; label: string }> = {
   'G3-S008': { href: 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/', label: 'Архив заявления от 12 мая 2025 года (доступ может быть ограничен)' },
   'G3-S012': { href: 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html', label: 'Авторская статья Фила Джонсона (доступ может быть ограничен)' },
   'G3-S015': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Сообщение Christian Post с фрагментами заявления от 25 августа' },
+  'G3-S017': { href: 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/', label: 'MinistryWatch · публикация от 27 августа 2026 года' },
   'G3-S042': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Christian Post · публикация от 26 августа 2026 года' },
 };
 // Reader display only: pinned source objects, provenance and evidence stay intact.
@@ -132,6 +133,14 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     case 'G3-S011':
       title = title.replace(' / event backend', '');
       locator = 'Снимок страницы отмены конференции на официальном сайте, 2026 год.';
+      break;
+    case 'G3-S015':
+      title = 'Заявление четырёх пасторов Pray’s Mill: Скотт Аниол, Джон Нортон, Дилан Джойнер и Мэтт Сайкс';
+      locator = 'Заявление от 25 августа 2026 года известно по опубликованным воспроизведениям. Здесь приведён его пересказ.';
+      break;
+    case 'G3-S017':
+      period = '2026-08-27';
+      locator = 'Дата публикации материала Джессики Этюрралд в MinistryWatch, а не установленная дата первого объявления G3.';
       break;
     case 'G3-S028':
       title = title.replace(' + exact-head acquisition', '');

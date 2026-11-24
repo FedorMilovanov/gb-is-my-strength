@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { G3_HISTORY_METADATA as history } from '../src/data/journal/g3HistoryMetadata.ts';
 import { G3_HISTORY_SOURCES as sources } from '../src/data/journal/g3HistorySources.ts';
 
+import { G3_EXPANSION_HANDOFF as expansion } from '../src/data/journal/g3ExpansionHandoff.ts';
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const json = p => JSON.parse(read(p));
@@ -31,6 +33,29 @@ test('Research #628 handoff is pinned, and the 2025–26 crisis seal is independ
   const oldCrisis = read('src/data/journal/g3PublicationHandoff.ts');
   assert.match(oldCrisis, /G3-PUB-001/);
   assert.ok(!oldCrisis.includes('G3-HIST-PUB-'), 'do not silently inflate old historical seal');
+});
+
+test('Adopted #632 text intake has exact source anchors without activating pending component claims', () => {
+  assert.ok(expansion.researchHandoffUrl.includes('f49d20d31931ec389690b3033cefbb66cda67522'));
+  assert.deepEqual([...expansion.activeTextClaimIds], ['G3-HIST-PUB-10','G3-HIST-PUB-11']);
+  assert.deepEqual([...expansion.pendingComponentClaimIds], ['G3-HIST-PUB-12','G3-PUB-017']);
+  assert.deepEqual([...expansion.adoptedClaimIds], [...expansion.activeTextClaimIds,...expansion.pendingComponentClaimIds]);
+  assert.equal(expansion.rights, 'TEXTUAL_PARAPHRASE_LINK_AND_ORIGINAL_DATA_GRAPHICS_ONLY');
+  const expected = [
+    ['piper-2019','G3-HIST-PUB-10','https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions','#g3-year-2019'],
+    ['316-2024','G3-HIST-PUB-11','https://316publishing.com/blogs/blog/june-2024-the-lsb-ppr-conferences-a-new-susan-heck-bible-study-more','#g3-year-2024'],
+  ];
+  for (const [id,claim,url,returnHref] of expected) {
+    const source = bibliography.get(id);
+    assert.equal(source?.url,url);
+    assert.equal(source?.returnHref,returnHref);
+    assert.equal(source?.researchLocator,claim);
+    assert.ok(historicalText.includes(`cite('${id}')`));
+    assert.ok(historicalText.includes(`data-history-expansion-claim="${claim}"`));
+  }
+  assert.equal(sources.length,24);
+  assert.doesNotMatch(historicalText,/G3-HIST-PUB-12|G3-PUB-017|PENDING_ADOPTION/);
+  assert.doesNotMatch(article,/PENDING_ADOPTION/);
 });
 
 test('Reader copy has no draft overlays, forged audio access or hidden route', () => {

@@ -162,6 +162,20 @@ export const G3_HISTORY_SOURCES = [
     boundary: 'Аудио в этой редакционной волне не прослушано. Точный фрагмент о переезде требует сверки со звуком; дословные цитаты не приводятся.',
     returnHref: '#g3-evidence', researchLocator: 'HIST-15 / HIST-16',
   },
+  {
+    id: 'piper-2019', title: 'Джон Пайпер. The Invincible Power of Joy for World Missions',
+    period: '17 января 2019', role: 'Авторский текст проповеди',
+    url: 'https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions',
+    boundary: 'Письменный текст проповеди по Флп. 2:17–18, опубликованный автором. Приведён пересказ, а не дословная цитата из аудиозаписи.',
+    returnHref: '#g3-year-2019', researchLocator: 'G3-HIST-PUB-10',
+  },
+  {
+    id: '316-2024', title: 'Three Sixteen Publishing — отчёт за июнь 2024 года',
+    period: '5 июня 2024', role: 'Свидетельство издательства — участника',
+    url: 'https://316publishing.com/blogs/blog/june-2024-the-lsb-ppr-conferences-a-new-susan-heck-bible-study-more',
+    boundary: 'Абзац о майской встрече в Countryside Bible Church. Участие издательства не подтверждает весь состав докладчиков или посещаемость.',
+    returnHref: '#g3-year-2024', researchLocator: 'G3-HIST-PUB-11',
+  },
 ] as const;
 
 export type G3HistorySourceId = (typeof G3_HISTORY_SOURCES)[number]['id'];

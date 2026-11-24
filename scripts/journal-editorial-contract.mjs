@@ -118,6 +118,7 @@ const readerLinks = new Map([
   ['G3-S008', 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/'],
   ['G3-S012', 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html'],
   ['G3-S015', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+  ['G3-S017', 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/'],
   ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
 ]);
 for (const [id, href] of readerLinks) {
@@ -280,6 +281,14 @@ if (!process.argv.includes('--source-only')) {
       for (const source of sources) {
         const entry = byId(doc, `src-${source.id}`);
         assert.ok(entry);
+        if (source.id === 'G3-S015') {
+          assert.match(text(entry), /Скотт Аниол, Джон Нортон, Дилан Джойнер и Мэтт Сайкс/);
+          assert.doesNotMatch(text(entry), /четвёртый пастор/);
+        }
+        if (source.id === 'G3-S017') {
+          assert.match(text(entry), /2026-08-27/);
+          assert.doesNotMatch(text(entry), /2026-09-04/);
+        }
         const summaries = all(entry, node => node.tagName === 'summary');
         assert.equal(summaries.length, 1);
         assert.ok(attr(summaries[0], 'aria-label')?.includes('Локатор и доступ: '), 'contextual disclosure name');
