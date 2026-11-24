@@ -1,0 +1,179 @@
+{
+  "wave": "V18",
+  "testedParent": "56392c0205b5bae279913c08ffd87fe9e7295987",
+  "runner": "1ff02e05dc64822679c6c7d20832a43f7ce8c538",
+  "scope": "Fresh exact-parent two-route Astro archive, local original legacy assets and native theme runtime served by witness; not complete postbuild/site audit. Chromium Firefox WebKit, 320/390, light/dark JS. axe-core 4.10.3 target-size rule only. No global axe acceptance.",
+  "buildExit": 0,
+  "qaExit": 0,
+  "reports": [
+    {
+      "engine": "chromium",
+      "width": 320,
+      "theme": "light",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 280,
+        "height": 50.875,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "chromium",
+      "width": 320,
+      "theme": "dark",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 280,
+        "height": 50.875,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "theme": "light",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 295.25,
+        "height": 44,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "chromium",
+      "width": 390,
+      "theme": "dark",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 295.25,
+        "height": 44,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "firefox",
+      "width": 320,
+      "theme": "light",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 280,
+        "height": 50.899993896484375,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "firefox",
+      "width": 320,
+      "theme": "dark",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 280,
+        "height": 50.899993896484375,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "firefox",
+      "width": 390,
+      "theme": "light",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 295.33331298828125,
+        "height": 44,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "firefox",
+      "width": 390,
+      "theme": "dark",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 295.33331298828125,
+        "height": 44,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "webkit",
+      "width": 320,
+      "theme": "light",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 280,
+        "height": 50.875,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "webkit",
+      "width": 320,
+      "theme": "dark",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 280,
+        "height": 50.875,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "theme": "light",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 295.25,
+        "height": 44,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "theme": "dark",
+      "emptyLookups": 0,
+      "negative": 1,
+      "financeTarget": {
+        "width": 295.25,
+        "height": 44,
+        "display": "inline-flex",
+        "minHeight": "44px"
+      },
+      "otherTargetViolations": []
+    }
+  ],
+  "issues": []
+}
