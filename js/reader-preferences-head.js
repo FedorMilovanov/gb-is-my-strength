@@ -195,7 +195,32 @@
   var TAIL_SELECTOR = '[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue';
   var STYLE_ID = 'gb-print-pagination-contract';
   var closingGroups = [];
+  var printDisclosures = new Map();
+  var EDITORIAL_DISCLOSURES = 'details.shelf-about,details[data-print-disclosure="editorial"]';
   var report = null;
+
+  // Only admitted authorial disclosures may be expanded. Preserve the
+  // original attribute, including its exact value, across repeated prepare
+  // calls and restore after native cancellation / media exit.
+  function expandEditorialDisclosures(root) {
+    if (!root) return;
+    var nodes = root.querySelectorAll(EDITORIAL_DISCLOSURES);
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (node.closest(CHROME_SELECTOR) || node.closest('[data-print-disclosure="ui"]')) continue;
+      // Named details are mutually exclusive; never mutate the group owner.
+      if (node.hasAttribute('name')) continue;
+      if (!printDisclosures.has(node)) printDisclosures.set(node, node.getAttribute('open'));
+      if (!node.open) node.open = true;
+    }
+  }
+  function restoreEditorialDisclosures() {
+    printDisclosures.forEach(function (value, node) {
+      if (value === null) node.removeAttribute('open');
+      else node.setAttribute('open', value);
+    });
+    printDisclosures.clear();
+  }
 
   function installStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -580,7 +605,7 @@
     return stats;
   }
 
-  function prepare() {
+  function prepare(event) {
     installStyle();
     clearGenerated();
     var root = resolveRoot();
@@ -588,6 +613,9 @@
       report = { version: VERSION, prepared: false, reason: 'reader root not found' };
       return report;
     }
+    // A native beforeprint callback can precede the print media query.
+    // Do not expand during the engine's ordinary screen preflight.
+    if (isPrintMedia() || event && event.type === 'beforeprint') expandEditorialDisclosures(root);
     var pageHeight = measureMm(269);
     var stats = classifyCandidates(root, pageHeight);
     report = {
@@ -603,6 +631,7 @@
 
   function reset() {
     clearGenerated();
+    restoreEditorialDisclosures();
     document.documentElement.removeAttribute('data-gb-print-pagination');
   }
 

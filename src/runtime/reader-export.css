@@ -41,6 +41,8 @@
  }
  html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"])::details-content{
   content-visibility:visible;
+  display:block;
+  block-size:auto;
  }
  html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary{
   display:block;list-style:none;cursor:auto;min-height:0;
