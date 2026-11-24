@@ -192,5 +192,293 @@
     "RDC": 0,
     "CUDA": false,
     "ownerWorkstation": false
+  },
+  "revisionW31": {
+    "status": "PROPOSED_FOR_ART_E36_ENGINEERING_REVIEW",
+    "sourceMain": "3ce78622de90705a11c37648cdef98021ff64b83",
+    "sourceBlob": "d0063bece78e953e607d48b7e98956ede3cb64f7",
+    "offsetConvention": "Zero-based UTF-16 code unit offsets in normalized canonical paragraph text, end exclusive; remove em tags only for matching and collapse whitespace. Original Astro paragraph and markup unchanged.",
+    "canonicalParagraphs": [
+      {
+        "id": "P1",
+        "text": "Отдельная линия истории — The Statement on Social Justice and the Gospel. Согласно рассказу Тома Аскола на сайте документа, 19 июня 2018 года в Далласе встретились четырнадцать евангельских деятелей. Организатором встречи назван Джош Бьюс; Аскол сообщает, что подготовил первоначальный текст. После обсуждений и правок заявление было опубликовано 4 сентября.",
+        "immutable": true,
+        "claimMarker": null,
+        "sourceOrder": [
+          "intro",
+          "dallas",
+          "statement"
+        ]
+      },
+      {
+        "id": "P2",
+        "text": "Авторы представляли документ как защиту библейского учения о Писании, Евангелии, Церкви и справедливости перед лицом культурных вызовов. Современные отклики показывают и поддержку, и возражения против его формулировок и подхода к социальным вопросам. Чаллис позднее писал, что участвовал в обсуждениях, но не подписал текст. В своих воспоминаниях он также описал изменение атмосферы конференции.",
+        "immutable": true,
+        "claimMarker": null,
+        "sourceOrder": [
+          "statement",
+          "reactions",
+          "retrospective"
+        ]
+      },
+      {
+        "id": "P3-PUB13",
+        "text": "В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках. В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства. В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы.",
+        "immutable": true,
+        "claimMarker": "G3-HIST-PUB-13",
+        "sourceOrder": [
+          "challies-video",
+          "hospitality",
+          "firstlove"
+        ]
+      }
+    ],
+    "sentenceSpans": [
+      {
+        "key": "intro",
+        "paragraph": "P1",
+        "start": 0,
+        "endExclusive": 73,
+        "exactText": "Отдельная линия истории — The Statement on Social Justice and the Gospel."
+      },
+      {
+        "key": "dallas",
+        "paragraph": "P1",
+        "start": 74,
+        "endExclusive": 292,
+        "exactText": "Согласно рассказу Тома Аскола на сайте документа, 19 июня 2018 года в Далласе встретились четырнадцать евангельских деятелей. Организатором встречи назван Джош Бьюс; Аскол сообщает, что подготовил первоначальный текст."
+      },
+      {
+        "key": "statement",
+        "paragraph": "P1",
+        "start": 293,
+        "endExclusive": 358,
+        "exactText": "После обсуждений и правок заявление было опубликовано 4 сентября."
+      },
+      {
+        "key": "statement",
+        "paragraph": "P2",
+        "start": 0,
+        "endExclusive": 136,
+        "exactText": "Авторы представляли документ как защиту библейского учения о Писании, Евангелии, Церкви и справедливости перед лицом культурных вызовов."
+      },
+      {
+        "key": "reactions",
+        "paragraph": "P2",
+        "start": 137,
+        "endExclusive": 250,
+        "exactText": "Современные отклики показывают и поддержку, и возражения против его формулировок и подхода к социальным вопросам."
+      },
+      {
+        "key": "retrospective",
+        "paragraph": "P2",
+        "start": 251,
+        "endExclusive": 395,
+        "exactText": "Чаллис позднее писал, что участвовал в обсуждениях, но не подписал текст. В своих воспоминаниях он также описал изменение атмосферы конференции."
+      },
+      {
+        "key": "challies-video",
+        "paragraph": "P3-PUB13",
+        "start": 0,
+        "endExclusive": 351,
+        "exactText": "В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках."
+      },
+      {
+        "key": "hospitality",
+        "paragraph": "P3-PUB13",
+        "start": 352,
+        "endExclusive": 437,
+        "exactText": "В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства."
+      },
+      {
+        "key": "firstlove",
+        "paragraph": "P3-PUB13",
+        "start": 438,
+        "endExclusive": 610,
+        "exactText": "В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы."
+      }
+    ],
+    "verification": {
+      "paragraphsReassembled": 3,
+      "spans": 9,
+      "citationOccurrences": 7,
+      "coverage": "100% normalized canonical text, including introductory sentence; no missing or overlapping non-whitespace spans",
+      "displayVsSourceOrder": "P3: video → hospitality → FirstLove; companion: video → FirstLove → hospitality. Statement spans P1 last sentence and P2 first sentence. Do not reorder source paragraphs or split P3 claim marker."
+    },
+    "displayRows": [
+      {
+        "key": "challies-video",
+        "label": "Тим Чаллис: опыт общины",
+        "dateLabel": "23 января 2018 · публикация сообщения",
+        "sourceName": "Сообщение Тима Чаллиса о выступлении",
+        "description": "Авторское сообщение о выступлении и видеозаписи; не подтверждение просмотра.",
+        "date": "2018-01-23",
+        "dateKind": "publication",
+        "citationId": "cite-r6-challies-2018-video",
+        "sourceId": "challies-2018-video",
+        "href": "#history-source-challies-2018-video",
+        "returnHref": "#g3-year-2018",
+        "existingVisibleLabel": "Тим Чаллис. From Every Tribe and Language and People and Nation",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P3-PUB13",
+            "start": 0,
+            "endExclusive": 351
+          }
+        ]
+      },
+      {
+        "key": "firstlove",
+        "label": "FirstLove: отчёт о выставке",
+        "dateLabel": "30 января 2018 · публикация отчёта",
+        "sourceName": "Отчёт FirstLove о выставке G3",
+        "description": "Отчёт участника выставки; число экземпляров не равно числу посетителей.",
+        "date": "2018-01-30",
+        "dateKind": "publication",
+        "citationId": "cite-r6-firstlove-2018",
+        "sourceId": "firstlove-2018",
+        "href": "#history-source-firstlove-2018",
+        "returnHref": "#g3-year-2018",
+        "existingVisibleLabel": "FirstLove Missions. G3 Conference in Atlanta, Georgia",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P3-PUB13",
+            "start": 438,
+            "endExclusive": 610
+          }
+        ]
+      },
+      {
+        "key": "hospitality",
+        "label": "Тим Чаллис: гостеприимство",
+        "dateLabel": "2 февраля 2018 · публикация статьи",
+        "sourceName": "Статья Тима Чаллиса о гостеприимстве",
+        "description": "Авторская статья об опыте Grace Fellowship Church.",
+        "date": "2018-02-02",
+        "dateKind": "publication",
+        "citationId": "cite-r6-challies-2018-lessons",
+        "sourceId": "challies-2018-lessons",
+        "href": "#history-source-challies-2018-lessons",
+        "returnHref": "#g3-year-2018",
+        "existingVisibleLabel": "Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P3-PUB13",
+            "start": 352,
+            "endExclusive": 437
+          }
+        ]
+      },
+      {
+        "key": "dallas",
+        "label": "Встреча в Далласе",
+        "dateLabel": "19 июня 2018 · дата встречи по рассказу Аскола",
+        "sourceName": "Датированное свидетельство Тома Аскола",
+        "description": "Рассказ участника о встрече; его публикация датирована 4 сентября 2018.",
+        "date": "2018-06-19",
+        "dateKind": "attributed_event",
+        "citationId": "cite-g3-year-2018-ascol-2018",
+        "sourceId": "ascol-2018",
+        "href": "#history-source-ascol-2018",
+        "returnHref": "#g3-year-2018",
+        "existingVisibleLabel": "Датированное свидетельство Тома Аскола",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P1",
+            "start": 74,
+            "endExclusive": 292
+          }
+        ]
+      },
+      {
+        "key": "statement",
+        "label": "Заявление о социальной справедливости и Евангелии",
+        "dateLabel": "4 сентября 2018 · публикация заявления",
+        "sourceName": "Текст и история подготовки заявления",
+        "description": "Текст документа и рассказ составителя; не второе независимое подтверждение встречи.",
+        "date": "2018-09-04",
+        "dateKind": "publication",
+        "citationId": "cite-g3-year-2018-statement-2018",
+        "sourceId": "statement-2018",
+        "href": "#history-source-statement-2018",
+        "returnHref": "#g3-year-2018",
+        "existingVisibleLabel": "Текст и история подготовки заявления",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P1",
+            "start": 293,
+            "endExclusive": 358
+          },
+          {
+            "paragraph": "P2",
+            "start": 0,
+            "endExclusive": 136
+          }
+        ]
+      },
+      {
+        "key": "reactions",
+        "label": "Отклики на заявление",
+        "dateLabel": "Сентябрь 2018 · месяц освещения",
+        "sourceName": "Отклики современников на заявление",
+        "description": "Месяц освещения, не установленный день каждой реакции.",
+        "date": "2018-09",
+        "dateKind": "publication_month",
+        "citationId": "cite-g3-year-2018-responses-2018",
+        "sourceId": "responses-2018",
+        "href": "#history-source-responses-2018",
+        "returnHref": "#g3-year-2018",
+        "existingVisibleLabel": "Отклики современников",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P2",
+            "start": 137,
+            "endExclusive": 250
+          }
+        ]
+      },
+      {
+        "key": "retrospective",
+        "label": "Тим Чаллис: позднейшие воспоминания",
+        "dateLabel": "23 мая 2025 · публикация воспоминаний",
+        "sourceName": "Позиция Чаллиса в воспоминаниях 2025 года",
+        "description": "Позднейшее свидетельство вне хронологии 2018 года.",
+        "date": "2025-05-23",
+        "dateKind": "publication",
+        "citationId": "cite-g3-year-2018-challies",
+        "sourceId": "challies",
+        "href": "#history-source-challies",
+        "returnHref": "#g3-history",
+        "existingVisibleLabel": "Позиция Чаллиса",
+        "wordingStatus": "PROPOSED; ART/E36 approval required",
+        "spans": [
+          {
+            "paragraph": "P2",
+            "start": 251,
+            "endExclusive": 395
+          }
+        ]
+      }
+    ],
+    "layout": {
+      "decision": "Compact document/source index, not second full narrative. Keep all three paragraphs exactly where they are, including the intact P3 claim marker and emphasis in P1. Show only self-contained heading, explicit date role, and the existing citation link once per row; no re-render of exactText, no separate duplicated claim prose. Descriptions are editorial review notes, not required row body; one concise shared evidence boundary if approved. Relocate original citation occurrences only with MAX0/Engineering approval; if not approved, do not ship a duplicate link list.",
+      "placement": "After P3 before original footnotes, only if the seven existing links move into the compact companion atomically; remove emptied footnote wrappers without changing canonical prose. Otherwise HOLD.",
+      "dom": "Outer section labelled by visible h3 'Две линии одного года' under existing h2; two groups with h4 visible titles and native ordered lists, each row date <time datetime> and explicit date role + heading/label + one source link; retrospective separate h4/list or paragraph below both groups, not nested in 2018 lists. DOM conference chronological, discussion chronological, then retrospective; no CSS order or aria-flowto. Preserve link visible text verbatim and native ID/href/data-journal-citation; if aria-label needed, begin with exact visible link text and append role/date, never generic replacement. No repeated IDs, no nested interactive content, no new JS.",
+      "screen": "Existing NEWS tokens and owned component/slot; container-width responsive two lanes only when content comfortably fits, otherwise stack in DOM order. No fixed height, no clipping, use wrap and focus-safe scroll owned by ENGINEERING. Publication month remains datetime=2018-09; attributed meeting date distinct; separate 2025 label.",
+      "print": "Same DOM and same seven references; compact single column unless actual paper shows safe two columns. Keep each row date/label/citation together when it fits; heading with first row, allow group breaks between rows. Retrospective heading and row together if fits. Do not force entire spread or group onto one sheet, reduce type, hide links, or add blank sheets. Verify actual A4/Letter JS/noJS with no orphan heading, clipped outline/text, missing annotations, duplicate prose, or detached retrospective date."
+    },
+    "engineering": "Use existing citation attributes and source return; documentExhibitView's claim-wide reference expansion and generated IDs are incompatible with splitting PUB-13 into three rows unless an existing compatible slot/projection is chosen. Do not coerce month or event roles to documentRecordDate full publication dates. Engineering owns API decision; no new component by GRAPHICS.",
+    "gates": [
+      "ART + E36 approve proposed self-contained labels/wording and compact layout",
+      "ENGINEERING confirms existing API/slot and date precision, exact IDs/claim preservation",
+      "MAX0 approves citation relocation and exact production path after real CI",
+      "real route visual and print acceptance"
+    ]
   }
 }
