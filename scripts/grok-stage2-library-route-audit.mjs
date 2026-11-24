@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium, firefox, webkit } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const ROOT=path.resolve('.');
 const DIST=path.join(ROOT,'dist');
@@ -65,7 +66,7 @@ try {
     return {key:selected?.[0]??null,state:selected?.[1]?.state??null,anchor:selected?.[1]?.anchor??null};
    });
    try{
-    await page.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+    await gotoNativeReader(page,origin+ROUTE,{waitUntil:'domcontentloaded'});
     await page.locator('.hrail--grok.grok-ready').waitFor();
     await page.locator('#gb-hl-fab').click();
     await action('start-current').waitFor();

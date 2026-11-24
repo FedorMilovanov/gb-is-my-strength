@@ -8,6 +8,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const DIST=path.join(ROOT,'dist');
@@ -65,7 +66,7 @@ try{
         const page=await ctx.newPage(),errors=[];
         page.on('pageerror',error=>errors.push(error.message));
         try{
-          const response=await page.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+          const response=await gotoNativeReader(page,origin+ROUTE,{waitUntil:'domcontentloaded'});
           check(name,width,'HTTP',response.status()===200);
           await page.locator('.hrail--grok.grok-ready').waitFor({state:'visible',timeout:15000});
           await page.waitForFunction(()=>document.getElementById('hMobileMenuBtn')?.dataset.gbSiteMenuOwner==='canonical-runtime');

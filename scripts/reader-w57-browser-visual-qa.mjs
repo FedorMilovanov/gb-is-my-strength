@@ -249,6 +249,30 @@ try{
  chrome=await chromium.launch({headless:true});
  for(const engine of [chrome,await webkit.launch({headless:true})]){
   try{
+   // The native Grok rail can be docked by ARGON on this registered route.
+   // Prove both owners have an operative settings control; do not substitute
+   // native comparison results for the default ARGON acceptance.
+   for(const width of [1200,1440])for(const native of [false,true]){
+    const ctx=await engine.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
+    try{
+     await ctx.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,route=>route.fulfill({status:200,body:''}));
+     const page=await ctx.newPage(),errors=[];
+     page.on('pageerror',error=>errors.push(String(error)));
+     await page.goto(BASE+'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'+(native?'?reader-pilot=0':''),{waitUntil:'domcontentloaded'});
+     await page.waitForFunction(()=>!!window.ReaderState&&
+       (document.body.classList.contains('np-w57-ready')||new URL(location.href).searchParams.get('reader-pilot')==='0'),null,{timeout:15000});
+     const state=await page.evaluate(()=>({argon:document.body.classList.contains('np-w57-ready'),
+      demo:document.querySelectorAll('#npUniversalDemo').length,
+      nativeTrigger:!!document.getElementById('hrailSettingsBtn')?.getClientRects().length,
+      overflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth)}));
+     assert.deepEqual(state,{argon:!native,demo:native?0:1,nativeTrigger:native,overflow:0});
+     await page.locator(native?'#hrailSettingsBtn:visible':'[aria-controls="npUFontPanel"]:visible').first().click();
+     const settings=page.locator(native?'#hmSettings':'#npUFontPanel');
+     await settings.waitFor({state:'visible'});await page.keyboard.press('Escape');await settings.waitFor({state:'hidden'});
+     assert.deepEqual(errors,[]);
+     REPORT.scenes.push({name:'hermenevtika-owner-'+(native?'native':'argon'),engine:engine.browserType().name(),width,state,settingsOpenClose:true});
+    }finally{await ctx.close()}
+   }
    // Real network failure must never leave a partially reparented ARGON page.
    for(const fault of ['css','js','timeout']){
     const ctx=await engine.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
