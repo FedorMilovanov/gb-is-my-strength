@@ -130,5 +130,12 @@ try{
   }finally{await browser.close()}
  }
 }finally{await new Promise(r=>server.close(r))}
-console.log('JOINT_RESULT',JSON.stringify({typecheck:typecheck.status,reports,issues}));
+const byKind={};
+for(const issue of issues){
+ const key=issue.where.engine+':'+issue.kind;
+ (byKind[key]??={count:0,first:issue}).count++;
+}
+writeFileSync(at('joint-qa-result.json'),JSON.stringify({typecheck:typecheck.status,reports,issues},null,2));
+console.log('JOINT_RESULT',JSON.stringify({typecheck:typecheck.status,reports,issueCount:issues.length}));
+for(const [key,value] of Object.entries(byKind))console.log('ISSUE',key,value.count,JSON.stringify(value.first).slice(0,900));
 if(issues.length||typecheck.status!==0)process.exitCode=1;
