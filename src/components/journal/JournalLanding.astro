@@ -6,15 +6,13 @@ import { G3_HISTORY_METADATA as history } from '@/data/journal/g3HistoryMetadata
 import { G3_PRODUCT_METADATA as g3 } from '@/data/journal/g3ProductMetadata';
 import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
 import { G3_SOURCE_BIBLIOGRAPHY } from '@/data/journal/g3SourceBibliography';
-const sizes = '(min-width: 1280px) 790px, (min-width: 1024px) calc(67.74vw - 78.58px), (min-width: 851px) calc(67.74vw - 62.32px), (min-width: 691px) calc(100vw - 56px), calc(100vw - 40px)';
+const sizes = '(min-width: 1280px) 681px, (min-width: 1024px) calc(58.33vw - 66.5px), (min-width: 851px) calc(58.33vw - 52.5px), (min-width: 691px) calc(100vw - 56px), calc(100vw - 40px)';
 ---
 <JournalEditorialShell kind="journal" backHref="/">
   <main class="journal-landing" id="main-content" tabindex="-1">
     <section class="journal-hero" aria-labelledby="journal-title">
       <p class="journal-kicker">Церковная жизнь · история · документы</p>
       <h1 id="journal-title">Журнал</h1>
-      <p class="journal-lead">За новостью всегда есть история. Мы восстанавливаем контекст,
-        читаем документы и отделяем <span class="journal-lead-phrase">то, что</span> можно установить, <span class="journal-lead-phrase">от того, что</span> пока <span class="journal-lead-phrase">остаётся вопросом.</span></p>
     </section>
 
     <section class="journal-section journal-featured" aria-labelledby="lead-dossier">
@@ -38,6 +36,10 @@ const sizes = '(min-width: 1280px) 790px, (min-width: 1024px) calc(67.74vw - 78.
     </section>
 
     <div class="journal-editorial-grid news-method-row">
+      <div class="news-mission">
+        <p class="journal-lead">За новостью всегда есть история. Мы восстанавливаем контекст,
+          читаем документы и отделяем <span class="journal-lead-phrase">то, что</span> можно установить, <span class="journal-lead-phrase">от того, что</span> пока <span class="journal-lead-phrase">остаётся вопросом.</span></p>
+      </div>
       <section aria-labelledby="directions">
       <p class="eyebrow">О чём мы пишем</p>
       <h2 id="directions">Событие нуждается в контексте</h2>
