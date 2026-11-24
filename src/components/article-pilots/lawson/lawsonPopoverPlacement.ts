@@ -17,11 +17,17 @@ export function resolveLawsonPopover(anchor: Box, viewport: Box, size: Size, gap
 export function placeLawsonPopover(anchor: HTMLElement, card: HTMLElement, gap: number) {
   const scrollTop = card.scrollTop;
   for (const key of ['left', 'top', 'bottom', 'max-height', 'max-width']) card.style.removeProperty(key);
-  if (card.hidden || !matchMedia('(min-width: 1200px)').matches) return;
+  if (card.hidden || !matchMedia('(min-width: 1200px)').matches) return true;
   // Measure the actual absolute-position containing block, rather than assuming
   // the anchor and its inline wrapper share an origin (wrapped text may not).
   const inset = 16;
   const viewport = {left: inset, top: inset, right: document.documentElement.clientWidth - inset, bottom: document.documentElement.clientHeight - inset};
+  // Inline terms can wrap: their bounding box alone includes empty space
+  // between fragments. A detached card must not survive an offscreen anchor.
+  const intersects = (r: DOMRect) => r.width > 0 && r.height > 0 &&
+    r.left < viewport.right && r.right > viewport.left &&
+    r.top < viewport.bottom && r.bottom > viewport.top;
+  if (!Array.from(anchor.getClientRects()).some(intersects)) return false;
   const anchorBox = anchor.getBoundingClientRect();
   card.style.left = '0px';
   card.style.top = '0px';
@@ -36,4 +42,5 @@ export function placeLawsonPopover(anchor: HTMLElement, card: HTMLElement, gap: 
   card.style.left = `${result.left - constrained.left}px`;
   card.style.top = `${targetTop - constrained.top}px`;
   card.scrollTop = scrollTop;
+  return true;
 }

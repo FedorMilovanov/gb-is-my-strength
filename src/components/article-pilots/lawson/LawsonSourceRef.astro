@@ -130,7 +130,11 @@ const source = lawsonSource(id);
     if (!ref.hasAttribute('data-open')) return;
     const card = ref.querySelector<HTMLElement>('.lawson-source-popover');
     if (!card) return;
-    placeLawsonPopover(ref, card, .55 * parseFloat(getComputedStyle(document.documentElement).fontSize));
+    if (!placeLawsonPopover(ref, card, .55 * parseFloat(getComputedStyle(document.documentElement).fontSize))) {
+      const restore = card.contains(document.activeElement);
+      closeSource(ref);
+      if (restore) ref.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
+    }
   }
   function closeSource(ref: HTMLElement) {
     ref.removeAttribute('data-open');
