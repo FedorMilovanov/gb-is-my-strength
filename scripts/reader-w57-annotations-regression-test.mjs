@@ -2,6 +2,7 @@
 // W57 annotation data-integrity tests: run against actual pilot source.
 // No browser storage, published article or user record is modified.
 import assert from 'node:assert/strict';
+import {createRecordTransactions} from '../js/reader-library-record-transactions.js';
 import {readFileSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -19,7 +20,7 @@ const excerpt=(start,end)=>{
 const noteSource=excerpt('    // The Product Library owns the same note list','    function locate(id){');
 const sharedStorage=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
 const ownerSource=sharedStorage.slice(sharedStorage.indexOf('  function libraryFailure('),sharedStorage.indexOf('  window.GBLibraryStorage ='))+
-  highlights.slice(highlights.indexOf('  function commit('),highlights.indexOf('  function quotes() {'));
+  highlights.slice(highlights.indexOf('  function commit('),highlights.indexOf('  // Restore only the deleted version'));
 assert.ok(ownerSource.includes('function mutateLibrary('),'canonical Product writer must exist');
 const makeFixture=(options={})=>{
  let notes=(options.notes||[]).map(x=>({...x}));
@@ -62,9 +63,11 @@ const makeFixture=(options={})=>{
  const cancel=token=>{token.active=false};
  const makeOwner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',
   'localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',
-  ownerSource+'return {mutateLibrary,commit,restoreDeleted};');
+  ownerSource+'return {mutateLibrary,commit,libraryFailure};');
  windowFixture.GBHighlights=makeOwner(nKey,qKey,500,200,localStorageFixture,navigatorFixture,
   windowFixture,CustomEventFixture,AbortControllerFixture,timer,cancel,x=>x?.text||'');
+ const domain=createRecordTransactions({mutateLibrary:windowFixture.GBHighlights.mutateLibrary,libraryFailure:windowFixture.GBHighlights.libraryFailure,gbHighlightKey:x=>x?.text||'',NOTES_KEY:nKey,QUOTES_KEY:qKey,LIMIT_NOTES:500,LIMIT_QUOTES:200});
+ Object.assign(windowFixture.GBHighlights,domain);
  const factory=new Function('read','qKey','nKey','Date','Math','window',
   noteSource+'return {linkedNote,captureNoteSnapshot,saveLinkedNote};');
  const api=factory(read,qKey,nKey,Date,Math,windowFixture);
@@ -245,9 +248,9 @@ const deleteStart=highlights.indexOf('  async function deleteItem(item) {');
 const deleteEnd=highlights.indexOf('    render(); sync();\n    const u = pendingUndo;',deleteStart);
 assert.ok(deleteStart>=0&&deleteEnd>deleteStart,'Product delete source boundaries');
 const deleteSource=highlights.slice(deleteStart,deleteEnd)+'return pendingUndo;\n}';
-const removeProduct=(f,item)=>new Function('mutateLibrary','NOTES_KEY','QUOTES_KEY',
+const removeProduct=(f,item)=>new Function('transactionCall',
  'statusMessage','clearUndo','let pendingUndo;\n'+deleteSource+'\nreturn deleteItem;')(
- f.owner.mutateLibrary,nKey,qKey,()=>{},()=>{})(item);
+ (method,...args)=>f.owner[method](...args),()=>{},()=>{})(item);
 const rawA={id:'A',text:'original',quoteId:'quote-1',legacy:{keep:true}};
 const rawB={id:'B',text:'other'};
 const rawQ=()=>({id:'quote-1',text:'Quote',annotation:{version:1,noteId:'A',color:'blue',anchor:{keep:true}}});
@@ -282,10 +285,9 @@ const saveSource=highlights.slice(saveStart,saveEnd);
 const saveProduct=async(f,opened,context=null)=>{
  let applied=false;const textArea={value:'edited'};
  const draft={context,editing:opened?{id:String(opened.id),text:opened.text,recordSnapshot:JSON.stringify(opened)}:null};
- const run=new Function('textArea','draft','uid','currentTitle','location','mutateLibrary','NOTES_KEY','QUOTES_KEY',
-  'LIMIT_NOTES','statusMessage','applySavedNote',saveSource+'\nreturn saveNote;')(
+ const run=new Function('textArea','draft','uid','currentTitle','location','transactionCall','statusMessage','applySavedNote',saveSource+'\nreturn saveNote;')(
   textArea,draft,()=>'fresh-id',()=>'Article',{origin:'https://example.test',pathname:'/a'},
-  f.owner.mutateLibrary,nKey,qKey,500,()=>{},()=>{applied=true});
+  (method,...args)=>f.owner[method](...args),()=>{},()=>{applied=true});
  await run({preventDefault(){}});
  return{applied,draftText:textArea.value};
 };
@@ -293,10 +295,10 @@ const saveProduct=async(f,opened,context=null)=>{
 let releaseDraft,submitted=0,closedDrafts=0;
 const draftGate=new Promise(resolve=>{releaseDraft=resolve});
 const area={value:'first',readOnly:false};
-const handler=new Function('textArea','uid','currentTitle','location','mutateLibrary','NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','statusMessage','applySavedNote',
+const handler=new Function('textArea','uid','currentTitle','location','transactionCall','statusMessage','applySavedNote',
  'let draft=null;'+saveSource+'return {saveNote,setDraft:x=>{draft=x;textArea.readOnly=false;},getDraft:()=>draft};')(
  area,()=> 'race-id',()=> 'Article',{origin:'https://example.test',pathname:'/a'},
- async()=>{submitted++;await draftGate;return {ok:true};},nKey,qKey,500,()=>{},()=>{closedDrafts++;});
+ (method,...args)=>createRecordTransactions({mutateLibrary:async()=>{submitted++;await draftGate;return {ok:true};},libraryFailure:reason=>({ok:false,reason}),gbHighlightKey:x=>x?.text||'',NOTES_KEY:nKey,QUOTES_KEY:qKey,LIMIT_NOTES:500,LIMIT_QUOTES:200})[method](...args),()=>{},()=>{closedDrafts++;});
 const firstDraft={context:null,editing:null},secondDraft={context:null,editing:null};
 handler.setDraft(firstDraft);
 const inFlight=handler.saveNote({preventDefault(){}});

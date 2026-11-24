@@ -18,6 +18,7 @@ for(const name of ['articles','hardTexts']){
 }
 const crypto = require('crypto');
 const storagePath = path.join(root, 'js/reader-library-storage.js');
+const transactionsPath = path.join(root, 'js/reader-library-record-transactions.js');
 const presenterPath = path.join(root, 'js/reader-library-presenter.js');
 const researchPath = path.join(root, 'js/reader-library-v3.js');
 const dockPath = path.join(root, 'js/reader-library-dock.js');
@@ -32,6 +33,12 @@ assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-storage.
   'lazy owner must reference exact published storage authority bytes');
 assert(fs.readFileSync(swPath, 'utf8').includes('reader-library-storage.js?v=' + storageVersion),
   'offline service worker must precache exact storage authority revision');
+assert(fs.existsSync(transactionsPath), 'record domain must be published in dist');
+const transactionsVersion = crypto.createHash('md5').update(fs.readFileSync(transactionsPath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath,'utf8').includes('js/reader-library-record-transactions.js?v=' + transactionsVersion),
+  'bootstrap must import exact record domain revision');
+assert(fs.readFileSync(swPath,'utf8').includes('js/reader-library-record-transactions.js?v=' + transactionsVersion),
+  'SW must precache exact record domain revision');
 const version = crypto.createHash('md5').update(fs.readFileSync(presenterPath)).digest('hex').slice(0,8);
 assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-presenter.js?v=' + version),
   'lazy importer must reference exact published presenter bytes');

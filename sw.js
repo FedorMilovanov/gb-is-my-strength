@@ -38,6 +38,7 @@ const PRECACHE_ASSETS = [
   '/js/enhancements.js?v=15476429',
   '/js/highlights.js?v=779e1ce2',
   '/js/reader-library-storage.js?v=bb6b34c9',
+  '/js/reader-library-record-transactions.js?v=1ba18bb9',
   '/js/reader-library-presenter.js?v=95532247',
   '/js/reader-library-v3.js?v=7b71e298',
   '/js/reader-library-dock.js?v=706a54b0',
