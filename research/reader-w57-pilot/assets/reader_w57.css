@@ -249,7 +249,38 @@ html.dark #npW57SelectionToolbar button:hover{background:rgba(215,177,121,.13)}
 }
 html[data-reader-theme="dark"] .np-w57-frayed-end,
 html.dark .np-w57-frayed-end{mix-blend-mode:screen;opacity:.30}
-@media print{#npW57EdgeLayer{display:none!important}}
+/* The native print engine owns article content and pagination. ARGON's
+   sibling shell, source-derived duplicate projections and personal workspace
+   are screen UI only. Never hide the authored summary or article root. */
+@media print{
+ html body.np-u-preview > #npUniversalDemo,
+ html body.np-u-preview #npW57SelectionToolbar,
+ html body.np-u-preview #npW57EdgeLayer,
+ html body.np-u-preview .np-u-central-overview[data-np-u-central-overview="true"],
+ html body.np-u-preview .np-u-central-contents,
+ html body.np-u-preview.np-u-native-product-actions > #gbFloatingControls.np-u-native-legacy-float,
+ html body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner.np-u-product-native-floating{
+  display:none!important;
+ }
+ /* Screen rail reserves must never shrink or offset the physical paper. */
+ html body.np-u-preview.np-u-argon-shell :is(.page-wrap,main.np-u-reader-main,.wave12-publication-boundary){
+  display:block!important;position:static!important;
+  width:auto!important;min-width:0!important;max-width:none!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;overflow:visible!important;
+  contain:none!important;transform:none!important;
+ }
+ html body.np-u-preview.np-u-argon-shell main.np-u-reader-main article[data-reader-projection]{
+  width:auto!important;max-width:none!important;margin-inline:0!important;padding-inline:0!important;
+ }
+ body.np-u-preview ::highlight(np-w57-marker-amber),
+ body.np-u-preview ::highlight(np-w57-marker-sage),
+ body.np-u-preview ::highlight(np-w57-marker-lime),
+ body.np-u-preview ::highlight(np-w57-marker-rose),
+ body.np-u-preview ::highlight(np-w57-marker-blue){
+  background-color:transparent!important;
+ }
+}
 
 /* Product controls: fixed, viewport-derived axis shared across series
    and ordinary articles. Never derive toolbar position from its own geometry:
