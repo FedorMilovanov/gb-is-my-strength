@@ -44,7 +44,7 @@ const history=[
 "import Panorama from '@/components/journal/g3-graphics/G3HistoricalPanorama.astro';",
 "import {G3_HISTORY_SOURCES as sources} from '@/data/journal/g3HistorySources';",
 "const returns=[...new Set(sources.map(s=>s.returnHref))];",
-...(adopted?["import {adoptedMatrixData, adoptedMatrixClaim} from '@/components/journal/g3-visual/adopted-visual-inputs';","import type {G3HistorySourceId} from '@/data/journal/g3HistorySources';","const ids={2013:'gnl-2013',2014:'gnl-2014',2015:'gnl-2015',2016:'gnl-2016',2017:'gnl-2017',2018:'gnl-2018',2019:'gnl-2019',2020:'gnl-2020',2021:'gnl-2021'} satisfies Record<number,G3HistorySourceId>;"]:[]),
+...(adopted?["import {adoptedMatrixData, adoptedMatrixClaim, assertAdoptedMatrix, adoptedAnnualFinance, assertAdoptedAnnualFinance} from '@/components/journal/g3-visual/adopted-visual-inputs';","import type {G3HistorySourceId} from '@/data/journal/g3HistorySources';","const ids={2013:'gnl-2013',2014:'gnl-2014',2015:'gnl-2015',2016:'gnl-2016',2017:'gnl-2017',2018:'gnl-2018',2019:'gnl-2019',2020:'gnl-2020',2021:'gnl-2021'} satisfies Record<number,G3HistorySourceId>;","const reject=(fn:()=>void)=>{let rejected=false;try{fn()}catch{rejected=true}if(!rejected)throw new Error('unauthorized visual input accepted')};","const base=adoptedMatrixData();assertAdoptedMatrix(base);assertAdoptedAnnualFinance(adoptedAnnualFinance());","reject(()=>{const d=adoptedMatrixData();d.rows[0].name+=' altered';assertAdoptedMatrix(d)});reject(()=>{const d=adoptedMatrixData();d.rows[0].years.pop();assertAdoptedMatrix(d)});reject(()=>{const d=adoptedMatrixData();d.years.reverse();assertAdoptedMatrix(d)});","reject(()=>{const d=adoptedAnnualFinance();assertAdoptedAnnualFinance({...d,rows:d.rows.map((r,i)=>i===0?{...r,revenue:r.revenue+1}:r)})});reject(()=>{const d=adoptedAnnualFinance();assertAdoptedAnnualFinance({...d,researchMerge:'invalid' as typeof d.researchMerge})});reject(()=>{const d=adoptedAnnualFinance();assertAdoptedAnnualFinance({...d,rows:d.rows.slice(1)})});"]:[]),
 '---',shellStart,
 '{returns.map(h=><p id={h.slice(1)}>Раздел источника</p>)}',
 adopted?'<Panorama/><Matrix data={adoptedMatrixData()} sourceIds={ids} claimId={adoptedMatrixClaim}/>':'<Panorama/><Matrix/>',
@@ -112,7 +112,10 @@ try{
        if(c!=='G3-PUB-017'||cells!==28||banners)note(where,'adopted-finance',{c,cells,banners});
       }
       geometry++;
-      if(route===routes[0] && width===740 && !dark && js){
+      if(adopted&&route===routes[0]&&js&&width===390&&!dark){
+       for(const year of [2018,2021]){const link=page.locator('.gm-row a[href="#history-source-gnl-'+year+'"]').first();await link.click();const back=page.locator('#history-source-gnl-'+year+' [data-journal-source-return]');const id=await link.getAttribute('id');await page.locator('.gm-filter input').fill('zz-no-match');await back.click();await link.waitFor({state:'visible'});if(await page.evaluate(()=>location.hash)!=='#'+id||await page.locator('.gm-filter input').inputValue()!=='')note(where,'expanded-filter-return',year);}
+      }
+      if(route===routes[0]){
        const map=await page.locator('.g3g-atlas-map svg').evaluate(svg=>{
          const b=svg.getBoundingClientRect();
          const box={left:b.left,top:b.top,right:b.right,bottom:b.bottom};
@@ -124,22 +127,26 @@ try{
        });
        const v=map.box;
        const offCrop=map.entries.filter(x=>x.right<=v.left||x.left>=v.right||x.bottom<=v.top||x.top>=v.bottom);
-       const intendedOffCrop=offCrop.filter(x=>x.text==='40° с. ш.');
-       const unexpectedOffCrop=offCrop.filter(x=>!intendedOffCrop.includes(x));
+       const unexpectedOffCrop=offCrop;
        const clipped=map.entries.filter(x=>!offCrop.includes(x)&&(x.left<v.left-1||x.right>v.right+1||x.top<v.top-1||x.bottom>v.bottom+1));
-       console.log('MAP_SCREEN_RECTS',JSON.stringify({engine,labels:map.entries.length,intendedOffCrop:intendedOffCrop.map(x=>x.text),unexpectedOffCrop:unexpectedOffCrop.map(x=>x.text),clipped:clipped.map(x=>x.text)}));
+       console.log('MAP_SCREEN_RECTS',JSON.stringify({engine,labels:map.entries.length,unexpectedOffCrop:unexpectedOffCrop.map(x=>x.text),clipped:clipped.map(x=>x.text)}));
        if(unexpectedOffCrop.length||clipped.length)note(where,'map-screen-clipping',{unexpectedOffCrop,clipped});
       }
       if(!mapOnly&&(width===390||width===740)){
        if(route===routes[0])await page.locator('.g3g-chron-details summary').click();
        const links=await page.locator('.g3g a[data-journal-citation],.g3-annual-finance a[data-journal-citation],.gm-row a[data-journal-citation]').evaluateAll(es=>es.map(a=>({id:a.id,hash:a.hash})));
-       const selected=width===740&&!dark&&js&&process.env.G3_VISUAL_FOCUSED!=='1'?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002');
+       const selected=width===740&&!dark&&js?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002'||a.id==='cite-finance-annual-G3-S028'||(!dark&&adopted&&/cite-g3-matrix-.*-(2018|2021)$/.test(a.id)));
+       const expectedPairs=route===routes[0]&&adopted&&!dark;
+       if(expectedPairs&&selected.filter(a=>/cite-g3-matrix-.*-(2018|2021)$/.test(a.id)).length!==23)note(where,'expanded-year-selection',selected.length);
        for(const a of selected){
-        await page.locator('#'+a.id).click();
+        const citation=page.locator('#'+a.id);await citation.focus();await page.keyboard.press('Enter');
+        if(await page.evaluate(()=>location.hash)!==a.hash)note(where,'citation-hash',a);
         const back=page.locator(a.hash+' [data-journal-source-return]');
         const got=await back.getAttribute('href');
         if(js&&got!=='#'+a.id)note(where,'source-return',{id:a.id,expected:'#'+a.id,got});
-        await back.click();roundTrips++;
+        await back.focus();await page.keyboard.press('Enter');
+        if(await page.evaluate(()=>location.hash)!==got)note(where,'return-hash',{id:a.id,got});
+        roundTrips++;
        }
        if(route===routes[0]){
         const hidden=page.locator('.g3g-chron-details a[data-journal-citation]').first();
@@ -155,11 +162,17 @@ try{
         await page.emulateMedia({media:'print'});
         const pr=await hidden.evaluate(e=>({visibility:e.checkVisibility?e.checkVisibility({contentVisibilityAuto:true,visibilityProperty:true}):e.getBoundingClientRect().height>0,rect:e.getBoundingClientRect().height,content:getComputedStyle(e.closest('details'),'::details-content').contentVisibility}));
         if(!pr.visibility||pr.rect===0)note(where,'closed-details-print',pr);
+        if(adopted&&js){await page.emulateMedia({media:'screen'});await page.locator('.gm-filter input').fill('Вошер');await page.emulateMedia({media:'print'});const count=await page.locator('.gm-row:visible').count();if(count!==26)note(where,'filtered-print-matrix',count);}
         printCases++;
        }else{
         const numbers=await page.locator('.g3g-finance-table td').allTextContents();
         if(numbers.length!==4)note(where,'waterfall-values',numbers);
         await page.emulateMedia({media:'print'});printCases++;
+       }
+       if(adopted&&engine==='chromium'&&width===740&&js){
+        const dir=at('pdf-evidence');mkdirSync(dir,{recursive:true});
+        const filename=(route===routes[0]?'history':'finance')+'-'+(dark?'dark':'light')+'.pdf';
+        await page.pdf({path:path.join(dir,filename),format:'A4',printBackground:true,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'}});
        }
        if(errors.length)note(where,'pageerror',errors);
       }
@@ -167,7 +180,7 @@ try{
     finally{await ctx.close()}
    }
    reports.push({engine,version:browser.version(),geometry,roundTrips,deepLinks,printCases});
-   console.log('ENGINE',JSON.stringify(reports.at(-1)));
+   console.log('ENGINE',JSON.stringify({...reports.at(-1),issues:issues.filter(x=>x.where.engine===engine).length}));
   }finally{await browser.close()}
  }
 }finally{await new Promise(r=>server.close(r))}
