@@ -37,7 +37,7 @@ async function scene(browser,name,path,width,height){
   noteCards:document.querySelectorAll('#npW57NotesDetails').length,
   researchCards:document.querySelectorAll('#npUResearch details').length,
   title:document.querySelector('main h1')?.textContent?.trim().slice(0,100)||'',
-  w57RuntimeScripts:[...document.scripts].filter(s=>/\/__reader_w57__\/(?:reader_w57|reader_universal_preview)\.js/.test(s.src)).length,
+  w57RuntimeScripts:[...document.scripts].filter(s=>/\/reader-desktop\/(?:reader_w57|reader_universal_preview)\.js/.test(s.src)).length,
   nativeToc:!!document.querySelector('#mobPartTocBtn')?.getClientRects().length,
   nativeSettings:!!document.querySelector('#mobSettingsBtn')?.getClientRects().length,
   nativePlay:!!document.querySelector('.reader-mobile-play')?.getClientRects().length,
@@ -107,7 +107,7 @@ async function nativeChecks(sample) {
   return {barHeight:r?.height,playWidth:p?.width,playHeight:p?.height,
    overflow:document.documentElement.scrollWidth-innerWidth,
    pilot:document.body.classList.contains('np-w57-ready'),
-   w57Scripts:[...document.scripts].some(s=>/\/__reader_w57__\/reader_w57\.js/.test(s.src))};
+   w57Scripts:[...document.scripts].some(s=>/\/reader-desktop\/reader_w57\.js/.test(s.src))};
  });
  assert.equal(state.pilot,false,'W57 mounted on native mobile/tablet');
  assert.equal(state.w57Scripts,false,'W57 JavaScript leaked below 1121px');
@@ -213,7 +213,7 @@ try{
  const hardPaths=desktopContract.routes.filter(route=>route.startsWith('/hard-texts/'));
  assert.equal(hardPaths.length,7,'hard-texts reading coverage drift');
  const manifest={files:[...desktopContract.styles,...desktopContract.scripts]};
- const prefix='/__reader_w57__/';
+ const prefix='/reader-desktop/';
  let bootstrapUrl;
  for(const {route} of eligible){
   const response=await fetch(BASE+route);
@@ -222,12 +222,12 @@ try{
   for(const file of manifest.files.filter(f=>f.name.endsWith('.css'))){
    assert.ok(html.includes(prefix+file.name+'?v='+file.sha256),route+' missing revised '+file.name);
   }
-  const found=html.match(/\/__reader_w57__\/preview-bootstrap\.js\?v=[a-f0-9]{64}/)?.[0];
+  const found=html.match(/\/reader-desktop\/bootstrap\.js\?v=[a-f0-9]{64}/)?.[0];
   assert.ok(found,route+' missing revisioned bootstrap');
   if(bootstrapUrl)assert.equal(found,bootstrapUrl);else bootstrapUrl=found;
   const native=await fetch(BASE+route+'?reader-pilot=0');
   assert.equal(native.status,200,route+' native comparison');
-  assert.ok(!(await native.text()).includes(prefix),route+' opt-out must be native');
+  assert.equal(await native.text(),html,route+' comparison must serve identical static bytes');
  }
  for(const path of ['/hard-texts/','/hard-texts/genesis-6/','/articles/','/baptisty-rossii/','/nagornaya/seriya/','/nagornaya/chast-1/','/updates/','/journal/dossiers/g3/']){
   const response=await fetch(BASE+path+'?reader-pilot=1');
@@ -247,6 +247,18 @@ try{
  }
  REPORT.routeEligibility={eligible:eligible.length,hard:hardPaths.length,manifestAssets:manifest.files.length};
  chrome=await chromium.launch({headless:true});
+ for(const engine of [chrome,await webkit.launch({headless:true})]){
+  try{
+   for(const [width,search,javaScriptEnabled] of [[1440,'?reader-pilot=0',true],[1440,'',false],[1120,'',true]]){
+    const ctx=await engine.newContext({viewport:{width,height:900},javaScriptEnabled});
+    try{
+     const page=await ctx.newPage();await page.goto(BASE+eligible[0].route+search,{waitUntil:'load'});
+     const state=await page.evaluate(()=>({ready:document.body.classList.contains('np-w57-ready'),active:[...document.querySelectorAll('link[data-gb-reader-desktop-css]')].some(l=>matchMedia(l.media).matches),runtime:[...document.scripts].some(s=>s.src.includes('/reader-desktop/reader_'))}));
+     assert.deepEqual(state,{ready:false,active:false,runtime:false},'Classic/mobile/no-JS must stay native');
+    }finally{await ctx.close()}
+   }
+  }finally{if(engine!==chrome)await engine.close()}
+ }
  const d=await scene(chrome,'gill-desktop','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',1440,900);
  await snap(d.page,'desktop-folded');
  const readingGeometry=()=>({

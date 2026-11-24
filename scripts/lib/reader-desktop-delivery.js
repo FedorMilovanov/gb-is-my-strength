@@ -20,7 +20,7 @@ function createDesktopDelivery(contract) {
         !/^[a-f0-9]{64}$/.test(asset.sha256))) {
     throw new Error('Invalid canonical desktop delivery contract');
   }
-  const links = contract.styles.map(asset => ({ href: assetUrl(asset), media: MEDIA }));
+  const links = contract.styles.map(asset => ({ href: assetUrl(asset), media: 'not all' }));
   const code = `(function(){
   'use strict';
   if (window.__gbReaderDesktopDelivery) return;
@@ -32,6 +32,9 @@ function createDesktopDelivery(contract) {
   var desktop = window.matchMedia('${MEDIA}');
   desktop.addEventListener('change', function(){ window.location.reload(); });
   if (!desktop.matches) return;
+  // Links are inert in the original HTML (including no-JS and Classic).
+  // The external head-tail bootstrap activates them before body parsing.
+  links.forEach(function(link){ link.media = '${MEDIA}'; });
   function mount() {
     if (!desktop.matches) return;
     var state = window.ReaderState;
@@ -51,6 +54,7 @@ function createDesktopDelivery(contract) {
   else mount();
 })();`;
   const bootstrap = { code, sha256: sha256(code) };
+  bootstrap.href = `${PREFIX}bootstrap.js?v=${bootstrap.sha256}`;
   return {
     // A non-reading route emits neither styles nor bootstrap, even with ?reader-pilot=1.
     headFor(route) { return routes.has(route) ? { links, bootstrap } : null; },
@@ -66,6 +70,7 @@ function createDesktopDelivery(contract) {
       const target = path.join(distDir, PREFIX.slice(1));
       fs.mkdirSync(target, { recursive: true });
       for (const { asset, bytes } of verified) fs.writeFileSync(path.join(target, asset.name), bytes);
+      fs.writeFileSync(path.join(target, 'bootstrap.js'), bootstrap.code, 'utf8');
       return verified.map(({ asset }) => assetUrl(asset));
     },
   };

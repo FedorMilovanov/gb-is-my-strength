@@ -119,10 +119,11 @@ assert.match(css, /#gb-hl-fab:is\(:hover,:active,:focus-visible\)/,
   'no moving or painted library hover');
 assert.match(css, /#npUEdgeToggle:is\(:hover,:focus-visible,:active\)/,
   'no giant circular hover on panel fold control');
-assert.match(shell, /reader-pilot/, 'preview must be explicit opt-in');
-assert.ok(shell.includes('preview-bootstrap.js'), 'W57 must load through one reversible viewport-mode bootstrap');
-assert.ok(shell.includes('media="(min-width:1121px)"'), 'W57 styles must never replace canonical native mobile styles');
-assert.ok(shell.includes('window.location.reload()'), 'desktop/mobile pilot mode crossing must rebuild the original Product DOM');
+const deliverySource=readFileSync(join(root,'../../scripts/lib/reader-desktop-delivery.js'),'utf8');
+assert.doesNotMatch(shell,/def do_GET|html\.replace|__reader_w57__/, 'preview must serve static Astro bytes');
+assert.match(deliverySource,/reader-pilot/, 'Classic comparison is client gated');
+assert.ok(deliverySource.includes('(min-width:1121px)'), 'W57 styles must never replace canonical native mobile styles');
+assert.ok(deliverySource.includes('window.location.reload()'), 'desktop/mobile mode crossing must rebuild the original Product DOM');
 assert.match(shell, /127\.0\.0\.1/, 'preview must bind to localhost');
 assert.match(shell, /No production mutation/, 'draft-only safety banner required');
 await import(new URL('../../scripts/reader-w57-annotations-regression-test.mjs', import.meta.url));

@@ -1,4 +1,4 @@
-# Reader — W57 integration candidate (draft only)
+# Reader — canonical Astro W57 integration candidate (draft only)
 
 ## SINGLE LOCAL PREVIEW — W136 operator contract (2026-11-23)
 
@@ -7,7 +7,7 @@ working copy on `DESKTOP-O3FDOA4` is `E:\\GB_READER_W107_PREVIEW_20261123`
 and the stable local address is `http://127.0.0.1:19181`. This location is
 machine-specific; never create another dated Reader clone for visual review.
 
-1. Connect Remote Desktop Commander through `viktori.milovanova@gmail.com`;
+1. Connect Remote Desktop Commander through the currently authorized account;
    confirm `DESKTOP-O3FDOA4` online. Check `git status --porcelain` in
    the existing preview repo: **do not switch commits if dirty**. Fetch the
    latest PR #2352 head, verify its exact SHA, then switch/detach **only the
@@ -33,8 +33,8 @@ machine-specific; never create another dated Reader clone for visual review.
    $env:READER_W57_PORT = "19181"
    python research/reader-w57-pilot/preview.py
    ```
-   **Do not use `python -m http.server`**. A generic static server silently
-   shows the **old native desktop**, not the W57 ARGON-first pilot.
+   The server now serves canonical static Astro HTML and never injects the
+   W57 presentation. A plain static server serves the same built page.
 5. Browser-verify the actual compiled page at
    `/articles/dzhon-gill-chast-1-chelovek/?reader-pilot=1&paper=space&panel=open`:
    desktop width >=1121px has `body.np-w57-ready` and a visible
@@ -55,12 +55,13 @@ comment `#issuecomment-7113946035`.
 
 ---
 
-**Status: research/QA preview. Not published and not merged.**
+**Status: canonical Astro integration candidate. Not released or merged.**
 
 This folder records the **last visually accepted local W57 source chain** and makes it
 reproducible against an Astro `dist/` built from this repository. It is not another
-Reader product and does **not** load into production unless the opt-in preview server
-is explicitly run. Canonical production Reader remains the existing Astro components.
+Reader product. The Astro build hook projects the approved head-tail resources
+only into registered reading routes. Existing Reader components remain the
+canonical native controls and state owners; Python serves the result without mutation.
 
 ## Run
 
@@ -91,7 +92,8 @@ Environment overrides: `READER_W57_DIST` (absolute Astro dist path) and
 W57 preview on desktop, even with `utm_source`; it no longer silently falls
 back to the old desktop design. Add `?reader-pilot=0` to deliberately compare
 the native desktop. All mobile widths remain native (CSS and JS desktop-gated).
-These defaults apply **only** to this localhost preview server, not production.
+These defaults are owned by the built document, not the localhost server.
+With JavaScript disabled, or `?reader-pilot=0`, desktop presentation styles stay inactive.
 
 ## Scrollbar-safe single-axis positioning
 
@@ -127,11 +129,11 @@ missed a major feature-parity regression in PR #2346.
 ## Source and release gates
 
 - `assets/` contains the 12 real W57 CSS/JS files, with SHA-256 checksums in
-  `MANIFEST.json`; injection order matches the working local W57 pilot.
-- Running the preview is opt-in and does not modify `main`, generated pages,
+  `MANIFEST.json`; canonical head and runtime order match the accepted W57 reference.
+- Running the static preview does not modify `main`, generated pages,
   canonical styles, or the site service worker.
-- To promote: port the *behavior and design* into the existing canonical Reader
-  owner, remove duplicate controllers/legacy-specific overrides, complete
+- Before release: verify the canonical build integration, remove duplicate
+  controllers/legacy-specific overrides only after parity, complete
   Chromium + WebKit screenshot/interaction tests on 320, 390, 768, 1121,
   1360, 1440 and 1920 widths, run project checks, and obtain visual sign-off.
 - **Do not merge PR #2346** until the canonical article contains the genuine
