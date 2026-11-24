@@ -32,6 +32,15 @@ function bindG3Matrix(root) {
     query.value = ''; year.value = ''; update();
     target.focus({preventScroll:true}); target.scrollIntoView({block:'center'});
   }
+  const article = root.closest('[data-journal-source-navigation]');
+  article?.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey ||
+        event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
+    const link = event.target.closest('a[href]');
+    if (!link || link.origin !== location.origin || link.pathname !== location.pathname ||
+        link.search !== location.search || !link.hash || link.hash !== location.hash) return;
+    restoreTarget();
+  });
   window.addEventListener('hashchange', restoreTarget);
   restoreTarget();
 }

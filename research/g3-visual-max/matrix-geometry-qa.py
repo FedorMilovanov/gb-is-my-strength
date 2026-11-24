@@ -26,6 +26,14 @@ with sync_playwright() as pw:
                         assert back.get_attribute('href')=='#cite-g3-matrix-lawson-2013'
                         back.click(); link.wait_for(state='visible')
                         assert query.input_value()=='' and link.evaluate('(e)=>document.activeElement===e')
+                        # The target hash is already current: no hashchange will fire.
+                        query.fill('Вошер'); assert not link.is_visible()
+                        back.focus(); page.keyboard.press('Enter')
+                        link.wait_for(state='visible')
+                        assert query.input_value()=='' and link.evaluate('(e)=>document.activeElement===e')
+                        query.fill('Вошер'); assert not link.is_visible()
+                        back.click(); link.wait_for(state='visible')
+                        assert query.input_value()=='' and link.evaluate('(e)=>document.activeElement===e')
                         page.go_back(); query.fill('Вошер'); assert not link.is_visible()
                         page.go_forward(); link.wait_for(state='visible'); assert query.input_value()==''
                     if width==740 and js and not dark:

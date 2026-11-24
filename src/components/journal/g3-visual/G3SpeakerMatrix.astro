@@ -1,5 +1,5 @@
 ---
-// Donor: place alongside matrix-data.json, matrix.css and matrix.js after MAX 0 integration.
+// Component candidate; no route import until MAX 0 integration.
 import matrix from './matrix-data.json';
 import { G3_HISTORY_SOURCES, historyCitation, type G3HistorySourceId } from '@/data/journal/g3HistorySources';
 import './matrix.css';
@@ -52,7 +52,7 @@ if (new Set(data.rows.map(row => row.id)).size !== data.rows.length ||
         </a></span> : <span class="gm-cell gm-empty" aria-hidden="true"><span class="gm-none">—</span></span>)}
     </li>)}
   </ul>
-  <p class="gm-foot">Каталоги GNL. Выборка ограничена именами из исторической статьи; не является полным списком участников.</p>
+  <p class="gm-foot">Выборка из каталогов GNL; не полный список участников.</p>
 </section>
 <script>
   import './matrix.js';

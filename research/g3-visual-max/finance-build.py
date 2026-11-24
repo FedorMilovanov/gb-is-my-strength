@@ -5,7 +5,7 @@ proposal=json.loads((p/'finance-proposal.json').read_text())
 assert proposal['state']=='PUBLICATION_HOLD'
 D=proposal['rows']
 assert len(D)==7 and all(r['revenue']-r['expenses']==r['result'] for r in D)
-css=(p/'finance.css').read_text()
+css=(p.parent.parent/'src/components/journal/g3-visual/finance.css').read_text()
 base='''html{color-scheme:light;--je-paper:#faf7f0;--je-ink:#142536;--je-gold:#896020;--je-rule:#d5cbb9;--je-muted:#5e5b54;--je-serif:Georgia,serif;--je-ui:system-ui,sans-serif}html.dark{color-scheme:dark;--je-paper:#111c27;--je-ink:#f2eadd;--je-gold:#e2bb79;--je-rule:#354554;--je-muted:#bcb8af}body{margin:0;background:var(--je-paper);color:var(--je-ink)}main{width:min(100%,850px);margin:auto;padding:12px;box-sizing:border-box}@media print{html,html.dark{color-scheme:light;background:white}body{background:white}main{padding:0;width:100%}}'''
 def ticks(labels):
     return '<div class="gaf-ticks">'+''.join(f'<span style="top:{i*100/(len(labels)-1)}%">{l}</span>' for i,l in enumerate(labels))+'</div>'

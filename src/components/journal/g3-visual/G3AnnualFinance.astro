@@ -1,9 +1,13 @@
 ---
 // REVIEW ONLY; do not import from a production route. Requires new adopted Research projection.
-import proposal from './finance-proposal.json';
 import './finance.css';
-interface Props { reviewOnly: true }
-if (Astro.props.reviewOnly !== true || proposal.state !== 'PUBLICATION_HOLD') {
+type FinanceRow = { fy: number; revenue: number; expenses: number; result: number; netAssets: number };
+interface Props {
+  reviewOnly: true;
+  proposal: { state: string; currency: string; rows: FinanceRow[] };
+}
+const { proposal } = Astro.props;
+if (Astro.props.reviewOnly !== true || proposal?.state !== 'PUBLICATION_HOLD' || proposal.currency !== 'USD') {
   throw new Error('G3 annual finance requires explicit review-only rendering; no publication authority');
 }
 const rows = proposal.rows;
@@ -60,5 +64,5 @@ const points = rows.map((r,i) => [i*100+50,160-r.netAssets/1400000*160].join(','
     </figure>
   </div>
   <table role="table"><caption>Точные значения · USD</caption><thead role="rowgroup"><tr role="row">{labels.map(l => <th scope="col" role="columnheader">{l}</th>)}</tr></thead><tbody role="rowgroup">{rows.map(r => <tr role="row"><th scope="row" role="rowheader">{r.fy}</th>{[r.revenue,r.expenses,r.result,r.netAssets].map((n,i) => <td role="cell" data-label={labels[i+1]}>{fmt(n)}</td>)}</tr>)}</tbody></table>
-  <p class="gaf-source">IRS Form 990 (2019 — 990-EZ), <a href="https://projects.propublica.org/nonprofits/organizations/842403597">годовые декларации</a>. Не внешний аудит.</p>
+  <p class="gaf-source">IRS Form 990 (2019 — 990-EZ), <a id="cite-finance-annual-G3-S002" data-journal-citation href="#src-G3-S002">годовые декларации IRS</a>. Не внешний аудит.</p>
 </section>
