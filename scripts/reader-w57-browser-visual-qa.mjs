@@ -253,6 +253,8 @@ try{
    for(const fault of ['css','js','timeout']){
     const ctx=await engine.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
     try{
+     // Match the W121 isolation of third-party analytics; keep all Reader errors fatal.
+     await ctx.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,route=>route.fulfill({status:200,body:''}));
      const path='/articles/dzhon-gill-chast-1-chelovek/';
      const file=fault==='css'?'reader_w57.css':'reader_w57.js';
      let requests=0, navigations=0;
@@ -261,7 +263,8 @@ try{
       if(fault==='timeout'){await delay(14000);await route.abort().catch(()=>{});}
       else await route.fulfill({status:503,body:''});
      });
-     const page=await ctx.newPage();
+     const page=await ctx.newPage(),errors=[];
+     page.on('pageerror',error=>errors.push(String(error)));
      page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});
      const target=BASE+path+'?reader-pilot=1&paper=space&panel=open#top';
      await page.goto(target,{waitUntil:'domcontentloaded'});
@@ -276,6 +279,7 @@ try{
      assert.deepEqual(state,{ready:false,partial:false,active:false,runtime:false,native:true,overflow:0});
      await page.waitForTimeout(500);
      assert.equal(navigations,2,'exactly one Classic replacement, no loop');
+     assert.deepEqual(errors,[],'no Reader page errors');
      assert.ok(requests>=1,'fault must actually intercept a required resource');
      REPORT.scenes.push({name:'desktop-fallback-'+fault,engine:engine.browserType().name(),state,requests,navigations});
     }finally{await ctx.close()}
