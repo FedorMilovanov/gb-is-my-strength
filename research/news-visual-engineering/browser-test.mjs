@@ -7,6 +7,10 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const engines = {chromium,firefox,webkit};
+const requested = process.argv.slice(2);
+const selected = requested.length ? requested : Object.keys(engines);
+assert.ok(selected.every(name=>Object.hasOwn(engines,name)) && new Set(selected).size===selected.length,'Pass unique engine names: chromium firefox webkit');
 const repo = fileURLToPath(new URL('../../', import.meta.url));
 const root = await mkdtemp(join(tmpdir(), 'news-document-exhibit-'));
 const copy = async (from, to=from) => {
@@ -48,6 +52,8 @@ const textScaleCheck=async page=>{
 };
 const results=[];
 const longResults=[];
+const persist=()=>writeFile(join(evidence,'results.json'),JSON.stringify({selected,short:results,long:longResults},null,2)+'\n');
+await persist();
 const borderCheck=async page=>{
   const v=await page.locator('.jdx').first().evaluate(el=>{
     const css=getComputedStyle(el);const probe=document.createElement('span');el.append(probe);
@@ -60,13 +66,15 @@ const borderCheck=async page=>{
   assert.equal(v.start,'2px');assert.equal(v.end,'1px');assert.equal(v.top,v.gold);assert.equal(v.bottom,v.rule);
 };
 try {
-  for (const [name,engine] of Object.entries({chromium,firefox,webkit})) {
-    const browser=await engine.launch({headless:true});
+  for (const name of selected) {
+    const engine=engines[name];
+    console.log('ENGINE_START='+name);
+    const browser=await engine.launch({headless:true,timeout:30000});
     try {
       for(const width of [320,390,768,1100])for(const dark of [false,true])for(const js of [false,true]){
         const context=await browser.newContext({viewport:{width,height:950},javaScriptEnabled:js});
         try {
-          const page=await context.newPage();
+          const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
           const response=await page.goto(url);assert.equal(response.status(),200);
           if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
           const data=await page.evaluate(async()=>{
@@ -99,13 +107,14 @@ try {
             await page.screenshot({path:join(evidence,name+'-'+width+'-'+(dark?'dark':'light')+'.png'),fullPage:true});
             if(name==='chromium'&&width===1100)for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
           }
-          results.push({engine:name,width,dark,js,citations:3,textScale:2});
+          results.push({engine:name,width,dark,js,citations:3,textScale:2});await persist();
+          console.log('CASE_PASS '+JSON.stringify({fixture:'short',engine:name,width,dark,js}));
         } finally {await context.close();}
       }
       for(const width of [320,1100])for(const dark of [false,true])for(const js of [false,true]){
         const context=await browser.newContext({viewport:{width,height:950},javaScriptEnabled:js});
         try{
-          const page=await context.newPage();assert.equal((await page.goto(url+'/long/')).status(),200);
+          const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);assert.equal((await page.goto(url+'/long/')).status(),200);
           if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
           await page.evaluate(()=>document.fonts.ready);
           await borderCheck(page);
@@ -134,16 +143,17 @@ try {
               for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,'long-'+format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
             }
           }
-          longResults.push({engine:name,width,dark,js,citations:10});
+          longResults.push({engine:name,width,dark,js,citations:10});await persist();
+          console.log('CASE_PASS '+JSON.stringify({fixture:'long',engine:name,width,dark,js}));
         }finally{await context.close();}
       }
     } finally {await browser.close();}
     console.log(name+' PASS');
   }
 } finally {
-  await writeFile(join(evidence,'results.json'),JSON.stringify({short:results,long:longResults},null,2)+'\n');server.close();
+  await persist();server.close();
 }
 console.log('SCENARIOS='+results.length);
-assert.equal(results.length,48);
+assert.equal(results.length,16*selected.length);
 console.log('LONG_SCENARIOS='+longResults.length);
-assert.equal(longResults.length,24);
+assert.equal(longResults.length,8*selected.length);
