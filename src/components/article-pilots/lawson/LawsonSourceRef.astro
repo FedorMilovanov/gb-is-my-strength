@@ -8,14 +8,16 @@ interface Props {
 const { id } = Astro.props as Props;
 const source = lawsonSource(id);
 ---
-<span class="lawson-source-ref">
-  <button type="button" aria-expanded="false" aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</button>
+<span class="lawson-source-ref" data-reader-exclude data-pagefind-ignore>
+  <a class="lawson-source-fallback" href={`#source-${source.id}`} aria-label={`Источник ${source.n}: ${source.label}`}>[{source.n}]</a>
+  <button type="button" hidden aria-expanded="false" aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</button>
   <span class="lawson-source-popover" role="note" hidden>
     <span class="lawson-source-meta">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
     <strong>{source.label}</strong>
     <span>{source.proves}</span>
     {source.boundary && <span class="lawson-source-boundary"><b>Предел вывода:</b> {source.boundary}</span>}
     <a href={source.href} rel="noopener noreferrer">Открыть источник ↗</a>
+    <a class="lawson-source-bibliography" href={`#source-${source.id}`}>К записи в библиографии</a>
   </span>
 </span>
 
@@ -29,7 +31,7 @@ const source = lawsonSource(id);
     vertical-align: super;
     line-height: 1;
   }
-  .lawson-source-ref > button {
+  .lawson-source-ref > :is(button, .lawson-source-fallback) {
     display: inline-grid;
     place-items: center;
     min-width: 1.42rem;
@@ -41,8 +43,11 @@ const source = lawsonSource(id);
     color: var(--accent, #7a2e2e);
     font: 700 .67rem/1 var(--font-body, Inter, system-ui, sans-serif);
     cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
   }
-  .lawson-source-ref > button:focus-visible {
+  .lawson-source-ref > :is(button, .lawson-source-fallback)[hidden] { display: none; }
+  .lawson-source-ref > :is(button, .lawson-source-fallback):focus-visible {
     outline: 2px solid var(--accent, #7a2e2e);
     outline-offset: 2px;
   }
@@ -81,9 +86,8 @@ const source = lawsonSource(id);
     color: var(--muted, #6b6862);
   }
   .lawson-source-popover a {
-    position: sticky;
-    bottom: 0;
     width: fit-content;
+    max-width: 100%;
     padding: .35rem .55rem;
     border-radius: .4rem;
     background: var(--bg, #fff);
@@ -104,9 +108,15 @@ const source = lawsonSource(id);
   }
   @media print {
     .lawson-source-ref { vertical-align: baseline; }
-    .lawson-source-ref > button { border: 0; background: transparent; min-width: 0; height: auto; padding: 0; color: inherit; }
-    .lawson-source-ref > button::before { content: '['; }
-    .lawson-source-ref > button::after { content: ']'; }
+    /* A single literal bracketed anchor preserves the PDF destination.
+       The explicit override is needed for the enhanced fallback's hidden state. */
+    .lawson-source-ref > button { display: none !important; }
+    .lawson-source-ref > .lawson-source-fallback,
+    .lawson-source-ref > .lawson-source-fallback[hidden] {
+      display: inline !important;
+      border: 0; background: transparent; min-width: 0; height: auto;
+      padding: 0; color: inherit; font: inherit; text-decoration: none;
+    }
     .lawson-source-popover { display: none !important; }
   }
 </style>
@@ -138,6 +148,12 @@ const source = lawsonSource(id);
     if (!(event.target instanceof Element)) return;
     const marker = event.target.closest<HTMLElement>('.lawson-source-ref');
     const trigger = event.target.closest<HTMLButtonElement>('.lawson-source-ref > button');
+    const bibliography = event.target.closest<HTMLAnchorElement>('.lawson-source-bibliography');
+    if (bibliography && marker && !event.defaultPrevented && event.button === 0 &&
+        !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+      closeSource(marker);
+      return;
+    }
     const wasOpen = marker?.hasAttribute('data-open');
     document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach((ref) => {
       if (ref !== marker || trigger) closeSource(ref);
@@ -160,4 +176,14 @@ const source = lawsonSource(id);
   window.addEventListener('resize', () => {
     document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach(placeSourceCard);
   }, { passive: true });
+  // Keep the native link until all delegated handlers are installed.
+  document.querySelectorAll<HTMLElement>('.lawson-source-ref').forEach((ref) => {
+    const fallback = ref.querySelector<HTMLAnchorElement>('.lawson-source-fallback');
+    const button = ref.querySelector<HTMLButtonElement>('button');
+    if (!fallback || !button || !ref.querySelector('.lawson-source-popover')) return;
+    const focused = document.activeElement === fallback;
+    button.hidden = false;
+    fallback.hidden = true;
+    if (focused) button.focus();
+  });
 </script>
