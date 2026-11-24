@@ -1,0 +1,72 @@
+---
+// Parent selects review-only witness or exact adopted Research projection. No public route import here.
+import './finance.css';
+import { assertAdoptedAnnualFinance, type AdoptedFinance, type FinanceRow } from './adopted-visual-inputs';
+type Props = { reviewOnly: true; proposal: {state:string;currency:string;rows:FinanceRow[]}; projection?: never }
+  | { reviewOnly?: false; proposal?: never; projection: AdoptedFinance };
+const props = Astro.props;
+const review = props.reviewOnly === true;
+let rows: readonly FinanceRow[];
+if (review) {
+  if(props.proposal?.state!=='PUBLICATION_HOLD'||props.proposal.currency!=='USD') throw new Error('Invalid review-only finance data');
+  rows=props.proposal.rows;
+} else {
+  if(!props.projection) throw new Error('G3 annual finance requires adopted projection');
+  assertAdoptedAnnualFinance(props.projection);
+  rows=props.projection.rows;
+}
+if (rows.length !== 7 || rows.some((r,i) => r.fy !== 2019+i ||
+    ![r.revenue,r.expenses,r.result,r.netAssets].every(Number.isSafeInteger) ||
+    r.revenue < 0 || r.expenses < 0 || r.netAssets < 0 || r.revenue-r.expenses !== r.result ||
+    Math.max(r.revenue,r.expenses) > 2200000 || Math.abs(r.result)>800000 || r.netAssets>1400000)) {
+  throw new Error('G3 finance data outside validated scale or inconsistent');
+}
+const fmt = (n: number) => new Intl.NumberFormat('ru-RU').format(n).replace('-', '−');
+const labels = ['Год','Доходы','Расходы','Результат','Чистые активы'];
+const grid = 'M0 0H700 M0 40H700 M0 80H700 M0 120H700 M0 160H700';
+const points = rows.map((r,i) => [i*100+50,160-r.netAssets/1400000*160].join(',')).join(' ');
+---
+<section class="g3-annual-finance" data-publication-claims={review ? undefined : "G3-PUB-017"} aria-label="Годовая финансовая отчётность">
+  {review && <p class="gaf-hold">Внутренняя приёмка · публикация не разрешена</p>}
+  <h2>Доходы, расходы и активы</h2>
+  <p class="gaf-meta">Финансовые годы, заканчивающиеся в декабре · USD</p>
+  <figure class="gaf-primary">
+    <h3>Доходы и расходы</h3>
+    <div class="gaf-legend"><span class="gaf-key gaf-revenue">Доходы</span><span class="gaf-key gaf-expense">Расходы</span><span>млн $</span></div>
+    <div class="gaf-plot" aria-hidden="true">
+      <div class="gaf-ticks">{['2,2','1,65','1,1','0,55','0'].map((l,i) => <span style={`top:${i*25}%`}>{l}</span>)}</div>
+      <div><svg viewBox="0 0 700 160" preserveAspectRatio="none"><path class="gaf-grid" d={grid}/>
+        {rows.map((r,i) => <><rect class="gaf-revenue" x={i*100+12} y={160-r.revenue/2200000*160} width="32" height={r.revenue/2200000*160}/><rect class="gaf-expense" x={i*100+56} y={160-r.expenses/2200000*160} width="32" height={r.expenses/2200000*160}/></>)}
+        <path class="gaf-axis" d="M0 160H700"/></svg>
+        <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
+      </div>
+    </div>
+    <figcaption>Общая нулевая шкала. Доходы 2019 года — 100 долларов.</figcaption>
+  </figure>
+  <div class="gaf-pair">
+    <figure>
+      <h3>Годовой результат · млн $</h3>
+      <div class="gaf-plot" aria-hidden="true">
+        <div class="gaf-ticks">{['+0,8','+0,4','0','−0,4','−0,8'].map((l,i) => <span style={`top:${i*25}%`}>{l}</span>)}</div>
+        <div><svg viewBox="0 0 700 160" preserveAspectRatio="none"><path class="gaf-grid" d={grid}/>
+          {rows.map((r,i) => <rect class={r.result<0?'gaf-negative':'gaf-revenue'} x={i*100+24} y={80-Math.max(0,r.result)/800000*80} width="52" height={Math.abs(r.result)/800000*80}/>)}
+          <path class="gaf-axis" d="M0 80H700"/></svg>
+          <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
+        </div>
+      </div>
+      <figcaption>Доходы минус расходы; не изменение чистых активов.</figcaption>
+    </figure>
+    <figure>
+      <h3>Чистые активы · млн $</h3>
+      <div class="gaf-plot" aria-hidden="true">
+        <div class="gaf-ticks">{['1,4','1,05','0,7','0,35','0'].map((l,i) => <span style={`top:${i*25}%`}>{l}</span>)}</div>
+        <div><svg viewBox="0 0 700 160" preserveAspectRatio="none"><path class="gaf-grid" d={grid}/><polyline class="gaf-line" points={points}/><path class="gaf-axis" d="M0 160H700"/></svg>
+          <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
+        </div>
+      </div>
+      <figcaption>На конец года, не остаток денежных средств.</figcaption>
+    </figure>
+  </div>
+  <table role="table"><caption>Точные значения · USD</caption><thead role="rowgroup"><tr role="row">{labels.map(l => <th scope="col" role="columnheader">{l}</th>)}</tr></thead><tbody role="rowgroup">{rows.map(r => <tr role="row"><th scope="row" role="rowheader">{r.fy}</th>{[r.revenue,r.expenses,r.result,r.netAssets].map((n,i) => <td role="cell" data-label={labels[i+1]}>{fmt(n)}</td>)}</tr>)}</tbody></table>
+  <p class="gaf-source">IRS Form 990 (2019 — 990-EZ), <a id="cite-finance-annual-G3-S002" data-journal-citation href="#src-G3-S002">годовые декларации IRS</a>{!review && <> · <a id="cite-finance-annual-G3-S028" data-journal-citation href="#src-G3-S028">Архив налоговых документов</a></>}. Не внешний аудит.</p>
+</section>

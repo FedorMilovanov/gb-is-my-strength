@@ -1,0 +1,67 @@
+{
+  "researchMerge": "efecb12fea0fcc481cf4930154dcae53d4e033f6",
+  "projections": [
+    {
+      "id": "G3-HIST-PUB-13",
+      "route": "/journal/dossiers/g3/history/",
+      "targetExistingAnchor": "g3-year-2018",
+      "sources": [
+        "challies-2018-video",
+        "challies-2018-lessons",
+        "firstlove-2018"
+      ],
+      "readerSafeText": "В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках. В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства. В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы."
+    },
+    {
+      "id": "G3-HIST-PUB-14",
+      "route": "/journal/dossiers/g3/history/",
+      "targetExistingAnchor": "g3-growth",
+      "sources": [
+        "crotts-2021"
+      ],
+      "readerSafeText": "Пастор Джефф Кроттс, впервые посетивший G3 осенью 2021 года, в отчёте от 6 октября описал конференцию, посвящённую Христу. По его воспоминаниям, на предварительной встрече Джон МакАртур призывал проповедовать о Божьем суде, а в четверг обращался к Исайе 52–53, к образу страдающего Раба Господа. Кроттс также отметил, что общее пение вели Боб Кофлин и его сын Девон, а среди слушателей были семьи с детьми."
+    },
+    {
+      "id": "G3-HIST-PUB-15",
+      "route": "/journal/dossiers/g3/history/",
+      "targetExistingAnchor": "g3-growth",
+      "sources": [
+        "benson-2022"
+      ],
+      "readerSafeText": "В начале 2022 года The Garden Church в Нью-Браунфелсе решила присоединиться к церковной сети G3. Пастор Рэнди Бенсон объяснил это доступом к полезным ресурсам и общением с близкими по убеждениям пасторами и общинами. Сотрудничество он понимал как помощь, не предполагающую передачи власти над своей поместной церковью."
+    },
+    {
+      "id": "G3-HIST-PUB-16",
+      "route": "/journal/dossiers/g3/history/",
+      "targetExistingAnchor": "g3-later-conferences",
+      "sources": [
+        "white-manuscripts-2022",
+        "white-bible-2022"
+      ],
+      "readerSafeText": "В сентябре 2022 года региональная встреча G3 о Писании проходила в Immanuel Bible Church в Спрингфилде, штат Виргиния. На сайте служения Джеймса Уайта появились материалы о двух выступлениях — об изучении библейских рукописей и о происхождении Библии."
+    },
+    {
+      "id": "G3-PUB-018",
+      "route": "/journal/dossiers/g3/",
+      "targetExistingAnchor": "buice",
+      "sources": [
+        "G3-S008",
+        "buice-board-2025-reproduction"
+      ],
+      "readerSafeText": "Согласно заявлению совета G3 от 12 мая 2025 года, 4 мая пресвитеры Pray’s Mill предъявили Джошу Бьюсу доказательства связи с анонимными аккаунтами. После первоначального отрицания он признал своё участие. 8 мая совет единогласно принял его отставку с должности президента. В опубликованном 12 мая заявлении G3 объявила об отмене ближайшей национальной конференции и всех практикумов 2025 года и пообещала полностью вернуть регистрационные взносы."
+    }
+  ],
+  "sources": {
+    "challies-2018-video": "https://www.challies.com/vlog/from-every-tribe-and-language-and-people-and-nation/",
+    "challies-2018-lessons": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/",
+    "firstlove-2018": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia",
+    "crotts-2021": "https://anchoragegrace.org/gospel-grace-and-glory/",
+    "benson-2022": "https://gardenchurchnb.com/the-g3-church-network/",
+    "white-manuscripts-2022": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-making-sense-of-manuscripts-immanuel-bible-church-springfield-virginia-9-15-2022/",
+    "white-bible-2022": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-how-we-got-our-bible-immanuel-bible-church-springfield-virginia-9-15-2022/",
+    "G3-S008": "https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/",
+    "buice-board-2025-reproduction": "https://the-end-time.org/2025/05/13/g3-president-josh-buice-resigns-amid-scandal/"
+  },
+  "rights": "ORIGINAL_PARAPHRASE_AND_LINK_ONLY",
+  "deferred": "C-B"
+}

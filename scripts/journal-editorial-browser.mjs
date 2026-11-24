@@ -19,6 +19,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { chromium, firefox, webkit } from 'playwright';
+import { reviewAtlasContrast } from './lib/journal-atlas-contrast-review.mjs';
 const require = createRequire(import.meta.url);
 const { monitorRuntime } = require('./lib/browser-runtime-noise.js');
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -60,9 +61,11 @@ const report = { engine, suite, version: null, head: execFileSync('git', ['rev-p
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
-  ...['g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  ...['g3R6Adopted.json', 'g3ExpansionHandoff.ts', 'g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
+  ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
-  'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
+  'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-atlas-contrast-review.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
 for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
 const browser = await ({ chromium, firefox, webkit })[engine].launch({
@@ -193,11 +196,33 @@ const assertPublishedHistory = async (page, response) => {
   assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /index,\s*follow/);
   assert.equal(await page.locator('body[data-journal-id="g3-history"]').count(), 1);
   assert.equal(await page.locator('.je-review-note, [data-research-publication-status="PUBLICATION_HOLD"]').count(), 0);
-  assert.equal(await page.locator('.bibliography-item').count(), 22, 'Research bibliography must contain all 22 sources');
+  assert.equal(await page.locator('.bibliography-item').count(), 33, 'Research bibliography must contain all 33 adopted sources');
+  for (const id of ['13','14','15','16']) assert.equal(await page.locator('[data-history-expansion-claim="G3-HIST-PUB-'+id+'"]').count(),1);
+  assert.equal(await page.locator('.g3-matrix[data-publication-claims="G3-HIST-PUB-12"]').count(),1);
+  assert.equal(await page.locator('.g3-matrix .gm-row').count(),26);
+  assert.equal(await page.locator('.g3-matrix [data-journal-citation]').count(),60);
+  assert.equal(await page.locator('.g3g-history').count(),1);
+  assert.equal(await page.locator('.g3g-history [data-journal-citation]').count(),18);
+};
+const assertAdoptedFinance = async (page) => {
+  const annual=page.locator('.g3-annual-finance[data-publication-claims="G3-PUB-017"]');
+  assert.equal(await annual.count(),1);
+  assert.equal(await annual.locator('tbody tr').count(),7);
+  const rows=await annual.locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('th,td')].map(cell=>Number(cell.textContent.replace(/\s+/gu,'').replace('−','-')))));
+  assert.deepEqual(rows,[[2019,100,0,100,100],[2020,204510,29901,174609,174709],[2021,1471335,1054265,417070,591779],[2022,1735978,1010186,725792,1318931],[2023,1705689,2071986,-366297,1043850],[2024,1212253,1401429,-189176,854674],[2025,399645,950642,-550997,304459]]);
+  assert.equal(await annual.locator('[data-journal-citation]').count(),2);
+  assert.equal(await annual.locator('.gaf-hold').count(),0);
+  const waterfall=page.locator('.g3g-finance');
+  assert.equal(await waterfall.count(),1);
+  assert.equal(await waterfall.locator('#cite-finance-G3-S002-2').count(),1);
+  const deltas=await waterfall.locator('tbody td').evaluateAll(cells=>cells.map(cell=>Number(cell.textContent.replace(/\s+/gu,'').replace('−','-'))));
+  assert.deepEqual(deltas,[817283,246511,-1994,1061800]);
+  assert.equal(await page.locator('.g3g-ecosystem').count(),1);
+  assert.equal(await page.locator('.g3g-ecosystem [data-journal-citation]').count(),7);
 };
 const citationFor = (page, kind, second = false) => page.locator(kind === 'dossier'
-  ? second ? '#finance .je-data-figure [data-journal-citation]' : '#finance .source-note[data-journal-citation]'
-  : second ? '#g3-history [data-journal-citation]' : '#g3-growth [data-journal-citation][href="#history-source-challies"]');
+  ? second ? '#cite-finance-G3-S002-2' : '#finance .source-note[data-journal-citation]'
+  : second ? '#cite-g3-history-challies' : '#g3-growth [data-journal-citation][href="#history-source-challies"]');
 const sourceRoundTrip = async (page, citation, keyboard, onSource) => {
   const id = await citation.getAttribute('id');
   const hash = await citation.getAttribute('href');
@@ -231,7 +256,7 @@ const reviewClippedContrast = async (page, reviews) => {
   for (const review of reviews) {
     assert.equal(review.id, 'color-contrast', 'unexpected compact-TOC accessibility review');
     for (const node of review.nodes) {
-      assert.ok(node.summary?.includes("Element's background color could not be determined because it's partially obscured by another element"));
+      assert.ok(node.summary?.includes("Element's background color could not be determined because it's partially obscured by another element"), 'unresolved axe review: '+JSON.stringify(node));
       assert.equal(node.target.length, 1);
       const state = await page.evaluate((selector) => {
         const matches = document.querySelectorAll(selector), el = matches[0];
@@ -284,6 +309,7 @@ try {
     try {
       const response = await ready(page, route.url);
       if (route.kind === 'history') await assertPublishedHistory(page, response);
+      else if (route.kind === 'dossier') await assertAdoptedFinance(page);
       item.layout = await inspect(page);
       await shot(page, `${route.kind}-${width}-${theme}`);
       assert.equal(item.layout.documentOverflow, 0);
@@ -501,7 +527,7 @@ try {
         assert.equal(new URL(bookmark.url()).hash, sourceHash);
         assert.equal(await back.getAttribute('href'), expected);
         result.nativeCitationBackForward = true;
-        const fallback = route.kind === 'dossier' ? '#documents' : '#g3-history';
+        const fallback = route.kind === 'dossier' ? '#finance' : '#g3-history';
         await bookmark.reload({ waitUntil: 'networkidle' }); await settle(bookmark);
         assert.equal(await back.getAttribute('href'), fallback, 'reload must use its honest SSR fallback, not stale cross-load state');
         const direct = await context.newPage();
@@ -610,7 +636,7 @@ try {
         const sourceHash = await citation.getAttribute('href');
         await citation.click(); await settleWithoutScripts(p);
         const back = p.locator(`${sourceHash} [data-journal-source-return]`);
-        const fallback = route.kind === 'dossier' ? '#documents' : '#g3-history';
+        const fallback = route.kind === 'dossier' ? '#finance' : '#g3-history';
         assert.equal(await back.getAttribute('href'), fallback);
         assert.equal(await back.getAttribute('aria-label'), null, 'no-JS must not promise a remembered exact citation');
         await back.click(); await settleWithoutScripts(p);
@@ -713,7 +739,10 @@ try {
             await shot(page, name);
             if (javaScriptEnabled) {
               item.axe = await audit(page);
-              assert.deepEqual(item.axe.violations, []); assert.deepEqual(item.axe.incomplete, []);
+              assert.deepEqual(item.axe.violations, []);
+              const reviewed = await reviewAtlasContrast(page, item.axe.incomplete, { short: true });
+              item.graphicsReview = reviewed;
+              assert.deepEqual(reviewed.remaining, []);
             }
           }
           item.keyboardBackward = [];
@@ -903,6 +932,7 @@ try {
           item.phase = 'navigation/ready';
           const response = await ready(page, route.url, (phase) => { item.phase = phase; });
           if (route.kind === 'history') await assertPublishedHistory(page, response);
+          else if (route.kind === 'dossier') await assertAdoptedFinance(page);
           // The shared dark-theme anchor color must not override Journal's
           // inverse skip-navigation foreground. Check the *focused* control
           // in every real mobile engine/theme and JS/no-JS mode.
@@ -970,7 +1000,13 @@ try {
           if (selected && javaScriptEnabled) {
             item.axe = await audit(page);
             assert.deepEqual(item.axe.violations, []);
-            item.clippedContrastReview = await reviewClippedContrast(page, item.axe.incomplete);
+            // A narrowly measured review of exact map text, never an axe rule exclusion.
+            // Non-history routes and all remaining nodes retain the previous strict TOC review.
+            const atlas = route.kind === 'history'
+              ? await reviewAtlasContrast(page, item.axe.incomplete)
+              : { witnesses: [], remaining: item.axe.incomplete };
+            item.atlasContrastReview = atlas.witnesses;
+            item.clippedContrastReview = await reviewClippedContrast(page, atlas.remaining);
           }
           if (nativeReturn) await page.keyboard.press('Tab');
           for (const href of links) {
@@ -1099,6 +1135,7 @@ try {
         try {
           const response = await ready(page, route.url);
           if (route.kind === 'history') await assertPublishedHistory(page, response);
+          else if (route.kind === 'dossier') await assertAdoptedFinance(page);
           await page.emulateMedia({ media: 'print' });
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');

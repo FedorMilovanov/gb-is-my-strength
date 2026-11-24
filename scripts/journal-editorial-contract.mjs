@@ -35,8 +35,35 @@ const { JOURNAL_PRODUCT_METADATA: journal } = await load('src/data/journal/journ
 const { G3_HISTORY_METADATA: history } = await load('src/data/journal/g3HistoryMetadata.ts');
 const { G3_HISTORY_SOURCES: historySources } = await load('src/data/journal/g3HistorySources.ts');
 const { G3_SOURCE_BIBLIOGRAPHY: sources } = await load('src/data/journal/g3SourceBibliography.ts');
+const { G3_EXPANSION_HANDOFF: expansion } = await load('src/data/journal/g3ExpansionHandoff.ts');
+const annual = JSON.parse(read('src/components/journal/g3-visual/adopted-visual-data.json')).finance;
+// Independent exact fixture from merged Research #632; the frozen crisis handoff is untouched.
+const annualRows = [[2019,100,0,100,100],[2020,204510,29901,174609,174709],[2021,1471335,1054265,417070,591779],[2022,1735978,1010186,725792,1318931],[2023,1705689,2071986,-366297,1043850],[2024,1212253,1401429,-189176,854674],[2025,399645,950642,-550997,304459]];
+assert.equal(annual.claimId, 'G3-PUB-017');
+assert.equal(annual.currency, 'USD');
+assert.equal(annual.fiscalYearEnd, 'December');
+assert.deepEqual(annual.rows.map(r => [r.fy,r.revenue,r.expenses,r.result,r.netAssets]), annualRows);
+assert.ok(annualRows.every(r => r[1]-r[2]===r[3]));
+assert.ok(expansion.activeComponentClaimIds.includes('G3-PUB-017'));
+const r6=JSON.parse(read('src/data/journal/g3R6Adopted.json'));
+assert.equal(r6.researchMerge,'efecb12fea0fcc481cf4930154dcae53d4e033f6');
+assert.deepEqual(r6.projections.map(p=>p.id),['G3-HIST-PUB-13','G3-HIST-PUB-14','G3-HIST-PUB-15','G3-HIST-PUB-16','G3-PUB-018']);
+const r6Crisis=r6.projections[4];
 const current = read('src/components/journal/G3Dossier.astro');
 const old = previous('src/components/journal/G3Dossier.astro');
+assert.match(current,/<G3ExpenseWaterfall total=\{financeDeltas\[0\].value\} conferences=\{financeDeltas\[1\].value\} advertising=\{financeDeltas\[2\].value\} \/>/);
+assert.match(current,/<G3EcosystemSpread \/>/);
+assert.doesNotMatch(current,/<JournalDataFigure\b/);
+const { financeModel } = await load('src/components/journal/g3-graphics/finance-model.mjs');
+assert.deepEqual(financeModel({total:1061800,conferences:817283,advertising:246511}).rows.map(r=>r.value),[817283,246511,-1994,1061800]);
+assert.match(current, /<G3AnnualFinance projection=\{adoptedAnnualFinance\(\)\} \/>/);
+const annualSource=read('src/components/journal/g3-visual/G3AnnualFinance.astro');
+assert.match(annualSource,/data-publication-claims=\{review \? undefined : "G3-PUB-017"\}/);
+assert.match(annualSource,/assertAdoptedAnnualFinance\(props.projection\)/);
+for (const id of ['G3-S002','G3-S028']) {
+  assert.ok(sources.some(s=>s.id===id));
+  assert.ok(annualSource.includes('href="#src-'+id+'"'));
+}
 const values = [...current.match(/const financeDeltas = \[([\s\S]*?)\];/)[1].matchAll(/value:\s*(\d+)/g)].map((match) => Number(match[1]));
 assert.deepEqual(values, [1061800, 817283, 246511], 'the comparison must retain the exact pinned G3-PUB-002 deltas');
 function sourceDoc(value) {
@@ -59,7 +86,11 @@ for (const id of factualModules) {
     return all(section, (node) => node.tagName === 'p' && !hasClass(node, 'source-note-paragraph')).map((node) => normalize(text(node)));
   };
   const a = paragraphs(before), b = paragraphs(after);
-  assert.deepEqual(b, a, `factual narrative changed in #${id}`);
+  if(id==='buice') {
+    assert.ok(a[0].includes(normalize('В мае 2025 года G3 опубликовала заявление')));
+    assert.deepEqual(b,[normalize(r6Crisis.readerSafeText),...a.slice(1)],'only approved R6 replacement in crisis narrative');
+    assert.equal(all(byId(after,id),node=>attr(node,'data-publication-claims')===r6Crisis.id).length,1);
+  } else assert.deepEqual(b, a, `factual narrative changed in #${id}`);
   paragraphCount += a.length;
   proseHashes[id] = digest(b.join('\n'));
 }
@@ -68,15 +99,73 @@ for (const name of ['g3ProductMetadata', 'g3PublicationHandoff', 'g3SourceBiblio
   assert.equal(read(file), previous(file), `${file} is an unchanged authority owner in this lane`);
 }
 assert.equal(sources.length, 21);
+// Reader link routes are not a new claim or alteration of the sealed ledger.
+// Independent expected grouping: every sealed source has an honest SSR destination.
+const expectedSourceSections = new Map(Object.entries({
+  "timeline": [
+    "G3-S001"
+  ],
+  "finance": [
+    "G3-S002",
+    "G3-S028"
+  ],
+  "buice": [
+    "G3-S008",
+    "G3-S009",
+    "G3-S010",
+    "G3-S023",
+    "G3-S024"
+  ],
+  "buck": [
+    "G3-S012",
+    "G3-S015",
+    "G3-S035",
+    "G3-S042"
+  ],
+  "wind-down": [
+    "G3-S011",
+    "G3-S017",
+    "G3-S033",
+    "G3-S050",
+    "G3-S053"
+  ],
+  "governance": [
+    "G3-S046",
+    "G3-S047",
+    "G3-S096"
+  ],
+  "documents": [
+    "G3-S054"
+  ]
+}).flatMap(([section, ids]) => ids.map(id => [id, '#'+section])));
+assert.equal(expectedSourceSections.size, sources.length);
+for (const source of sources) {
+  const target = expectedSourceSections.get(source.id);
+  assert.ok(target && byId(after, target.slice(1)), `Missing section fallback: ${source.id}`);
+  assert.ok(current.includes(`'${source.id}': '${target}'`), `Wrong source section: ${source.id}`);
+}
+const readerLinks = new Map([
+  ['G3-S002', 'https://projects.propublica.org/nonprofits/organizations/842403597'],
+  ['G3-S008', 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/'],
+  ['G3-S012', 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html'],
+  ['G3-S015', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+  ['G3-S017', 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/'],
+  ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+]);
+for (const [id, href] of readerLinks) {
+  assert.ok(sources.some(source => source.id === id), `Unknown source: ${id}`);
+  assert.ok(current.includes(`'${id}': { href: '${href}'`), `Reader link missing: ${id}`);
+}
 const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g) || [])].sort();
 const frozenClaimIds = [...new Set(old.match(/G3-PUB-\d{3}/g) || [])].sort();
-assert.deepEqual(claimIds, frozenClaimIds, 'historical route must not alter the frozen crisis claim projection');
+assert.deepEqual(claimIds, [...frozenClaimIds,r6Crisis.id].sort(), 'only adopted R6 crisis ID expands the frozen projection');
 // Research Q020 (2026-11-21) withdrew G3-PUB-015 from reader-visible prose.
 // The immutable 16-ID Research handoff remains preserved; do not reinstate its
 // disproven Jenkins reissue inference merely to satisfy an obsolete test count.
 const readerSafeClaims = Array.from({ length: 16 }, (_, i) => `G3-PUB-${String(i + 1).padStart(3, '0')}`)
   .filter(id => id !== 'G3-PUB-015');
-assert.deepEqual(claimIds, readerSafeClaims, 'Q020-corrected crisis projection: exactly 15 approved reader-visible claim IDs');
+assert.deepEqual(frozenClaimIds,readerSafeClaims,'Q020-corrected frozen crisis projection remains exactly 15 IDs');
+assert.deepEqual(claimIds,[...readerSafeClaims,r6Crisis.id].sort());
 assert.ok(!current.includes('G3-PUB-015'), 'withdrawn G3-PUB-015 cannot return in crisis reader prose');
 assert.ok(!current.includes('G3-HIST-PUB-'), 'historical candidates must not enter the crisis claim projection');
 assert.deepEqual([...history.approvedClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
@@ -143,7 +232,20 @@ if (!process.argv.includes('--source-only')) {
       assert.ok(ids.includes(hash), `broken anchor #${hash} at ${route}`);
     }
     assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('/_review/'), 'draft history must not enter public HTML');
-    if (route !== historyRoute) assert.ok(!html.includes('history-source-'), 'history bibliography must remain separate');
+    if (route !== historyRoute) {
+      // The ecosystem deliberately links to two sources on the companion route.
+      // Forbid duplicated local bibliography ownership, not valid cross-route links.
+      assert.ok(!ids.some(id=>id.startsWith('history-source-')), 'history bibliography IDs must remain separate');
+      assert.ok(!nodes.some(node=>node.tagName==='a'&&attr(node,'href')?.startsWith('#history-source-')), 'no local history bibliography links on other routes');
+      const cross=nodes.filter(node=>node.tagName==='a'&&attr(node,'href')?.includes('/history/#history-source-')).map(node=>attr(node,'href'));
+      const expected=route==='/journal/dossiers/g3/'?['challies','aniol-2021'].map(id=>historyRoute+'#history-source-'+id):[];
+      assert.deepEqual(cross.sort(),expected.sort(),'only the adopted companion-source links');
+      for(const href of cross) {
+        const id=href.split('#history-source-')[1];
+        assert.ok(historySources.some(source=>source.id===id),'cross-route source must be in history registry');
+        assert.ok(byId(parse(read('dist'+historyRoute+'index.html')),'history-source-'+id),'cross-route source must exist in built history');
+      }
+    }
     const covers = nodes.filter((node) => node.tagName === 'source' && attr(node, 'type') === 'image/avif');
     assert.equal(covers.length, 1, `exactly one responsive AVIF cover at ${route}`);
     const fontHints = nodes.filter((node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'font');
@@ -190,6 +292,30 @@ if (!process.argv.includes('--source-only')) {
       // branch is emitted: when dated correction records exist, the
       // "no material corrections" placeholder must NOT appear in dist.
       // Compare its real source-owned date and replacement text instead.
+      const waterfallSections=nodes.filter(node=>hasClass(node,'g3g-finance'));
+      assert.equal(waterfallSections.length,1,'one waterfall instead of duplicate comparison figures');
+      const waterfall=waterfallSections[0];
+      assert.equal(attr(waterfall,'data-publication-claims'),'G3-PUB-002');
+      assert.deepEqual(all(waterfall,node=>node.tagName==='td').map(cell=>Number(normalize(text(cell)).replace('−','-'))),[817283,246511,-1994,1061800]);
+      assert.equal(all(waterfall,node=>attr(node,'id')==='cite-finance-G3-S002-2').length,1,'preserve existing citation deep link');
+      const ecosystem=nodes.filter(node=>hasClass(node,'g3g-ecosystem'));
+      assert.equal(ecosystem.length,1);
+      assert.equal(all(ecosystem[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined).length,7);
+      const annualSections=nodes.filter(node=>hasClass(node,'g3-annual-finance'));
+      assert.equal(annualSections.length,1,'single adopted annual finance module');
+      const annualSection=annualSections[0];
+      assert.equal(attr(annualSection,'data-publication-claims'),'G3-PUB-017');
+      assert.equal(all(annualSection,node=>hasClass(node,'gaf-hold')).length,0);
+      const annualTable=all(annualSection,node=>node.tagName==='table');
+      assert.equal(annualTable.length,1);
+      const actualRows=all(annualTable[0],node=>node.tagName==='tbody').flatMap(body=>all(body,node=>node.tagName==='tr')).map(row=>all(row,node=>['th','td'].includes(node.tagName)).map(cell=>Number(normalize(text(cell)).replace('−','-'))));
+      assert.deepEqual(actualRows,annualRows,'all 28 annual values and year labels must render exactly');
+      for (const id of ['G3-S002','G3-S028']) {
+        const links=all(annualSection,node=>node.tagName==='a'&&attr(node,'href')==='#src-'+id);
+        assert.equal(links.length,1);
+        assert.equal(attr(links[0],'id'),'cite-finance-annual-'+id);
+        assert.notEqual(attr(links[0],'data-journal-citation'),undefined);
+      }
       const correctionDeclaration = current.match(/const corrections:[\s\S]*?=\s*\[([\s\S]*?)\];\s*const contents/);
       assert.ok(correctionDeclaration, 'correction record declaration must remain inspectable');
       const expectedCorrections = [...correctionDeclaration[1].matchAll(/correctedAt:\s*'([^']+)'[\s\S]*?newMeaning:\s*'([^']+)'/g)];
@@ -224,11 +350,31 @@ if (!process.argv.includes('--source-only')) {
       for (const source of sources) {
         const entry = byId(doc, `src-${source.id}`);
         assert.ok(entry);
+        if (source.id === 'G3-S008') {
+          assert.equal(all(entry,node=>node.tagName==='a'&&attr(node,'href')===r6.sources['buice-board-2025-reproduction']).length,1,'same statement reproduction, separate from archive');
+        }
+        if (source.id === 'G3-S015') {
+          assert.match(text(entry), /Скотт Аниол, Джон Нортон, Дилан Джойнер и Мэтт Сайкс/);
+          assert.doesNotMatch(text(entry), /четвёртый пастор/);
+        }
+        if (source.id === 'G3-S017') {
+          assert.match(text(entry), /2026-08-27/);
+          assert.doesNotMatch(text(entry), /2026-09-04/);
+        }
+        const summaries = all(entry, node => node.tagName === 'summary');
+        assert.equal(summaries.length, 1);
+        assert.ok(attr(summaries[0], 'aria-label')?.includes('Локатор и доступ: '), 'contextual disclosure name');
+        if (readerLinks.has(source.id)) {
+          const links = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));
+          assert.equal(links.length, 1, `reader link ${source.id}`);
+          assert.ok(text(links[0]).trim(), 'external link must have a meaningful name');
+        }
         const returns = all(entry, (node) => node.tagName === 'a' && attr(node, 'data-journal-source-return') !== undefined);
         assert.equal(returns.length, 1, `one honest SSR return at ${source.id}`);
-        assert.equal(attr(returns[0], 'href'), '#documents');
+        assert.equal(attr(returns[0], 'href'), expectedSourceSections.get(source.id));
+        assert.ok(byId(doc, expectedSourceSections.get(source.id).slice(1)), `Missing rendered source context ${source.id}`);
         assert.notEqual(attr(returns[0], 'data-pagefind-ignore'), undefined, 'navigation-only fallback text must not pollute search');
-        assert.match(text(returns[0]), /К методике проверки/);
+        assert.match(text(returns[0]), expectedSourceSections.get(source.id) === '#documents' ? /К методике проверки/ : /К связанному разделу статьи/);
       }
       assert.equal(nodes.filter((node) => attr(node, 'data-journal-source-navigation') !== undefined).length, 1);
       const citations = nodes.filter((node) => node.tagName === 'a' && attr(node, 'href')?.startsWith('#src-'));
@@ -239,14 +385,30 @@ if (!process.argv.includes('--source-only')) {
       }
     }
     if (route === historyRoute) {
-      // Browser and printed text must preserve spaces around the provenance
-      // link. Astro drops indentation-only text at adjacent element edges.
-      const disclosures = nodes.filter((node) => hasClass(node, 'research-disclosure'));
-      assert.equal(disclosures.length, 1, 'one bounded historical provenance disclosure');
-      const disclosureProse = text(disclosures[0]).replace(/\s+/gu, ' ').trim();
-      assert.match(disclosureProse,
-        /свидетельствами\.\s+Принятый редакционный пакет Research\s+ограничивает/u,
-        'history provenance anchor must preserve source word boundaries');
+      // Internal handoff is checked against the canonical metadata above;
+      // it is editorial provenance, not a public bibliographic source.
+      assert.ok(!nodes.some(node => node.tagName === 'a' &&
+        /github\.com\/FedorMilovanov\/Research(?:\/|$)/i.test(attr(node, 'href') || '')),
+        'internal Research links must not appear in public history');
+      assert.equal(nodes.filter(node => hasClass(node, 'research-disclosure')).length, 0);
+      assert.doesNotMatch(text(doc), /Принятый редакционный пакет Research|Основание источниковой сверки/u);
+      for(const projection of r6.projections.slice(0,4)) {
+        const paragraphs=nodes.filter(node=>node.tagName==='p'&&attr(node,'data-history-expansion-claim')===projection.id);
+        assert.equal(paragraphs.length,1);
+        assert.equal(normalize(text(paragraphs[0])),normalize(projection.readerSafeText));
+        for(const id of projection.sources) {
+          const entry=byId(doc,'history-source-'+id);
+          assert.ok(entry);
+          assert.equal(all(entry,node=>node.tagName==='a'&&attr(node,'href')===r6.sources[id]).length,1);
+          assert.ok(byId(doc,'cite-r6-'+id));
+        }
+      }
+      const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
+      assert.equal(atlas.length,1);
+      const atlasCitations=all(atlas[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined);
+      assert.equal(atlasCitations.length,18);
+      assert.equal(new Set(atlasCitations.map(node=>attr(node,'id'))).size,18);
+      for (const link of atlasCitations) assert.ok(byId(doc,attr(link,'href').slice(1)),'atlas citation has exact rendered destination');
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
       assert.equal(nodes.filter((node) => hasClass(node, 'article-header')).length, 1);
@@ -255,6 +417,12 @@ if (!process.argv.includes('--source-only')) {
       for (const source of historySources) {
         const entry = byId(doc, `history-source-${source.id}`);
         assert.ok(entry, `Missing history citation bibliography ${source.id}`);
+        const disclosure = all(entry, node => node.tagName === 'summary');
+        assert.equal(disclosure.length, 1);
+        assert.equal(attr(disclosure[0], 'aria-label'), `О документе: ${source.title}`);
+        assert.equal(all(entry, node => node.tagName === 'a' && attr(node, 'href') === source.url).length, 1, 'original source link preserved');
+        assert.equal(all(entry, node => node.tagName === 'details' && hasClass(node, 'biblio-details')).length, 1, 'one native source disclosure');
+        assert.ok(normalize(text(entry)).includes(normalize(source.boundary)), 'source context preserved in disclosure');
         const returns = all(entry, node => node.tagName === 'a' && attr(node,'data-journal-source-return') !== undefined);
         assert.equal(returns.length, 1, `${source.id}: exactly one bibliography return`);
         assert.equal(attr(returns[0],'href'), source.returnHref, `${source.id}: return must target its source context`);
