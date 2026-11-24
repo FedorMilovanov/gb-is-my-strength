@@ -3,7 +3,10 @@ import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
 import JournalArticleHeader from './JournalArticleHeader.astro';
 import JournalContents from './JournalContents.astro';
-import JournalDataFigure from './JournalDataFigure.astro';
+import G3ExpenseWaterfall from './g3-graphics/G3ExpenseWaterfall.astro';
+import G3EcosystemSpread from './g3-graphics/G3EcosystemSpread.astro';
+import G3AnnualFinance from './g3-visual/G3AnnualFinance.astro';
+import { adoptedAnnualFinance } from './g3-visual/adopted-visual-inputs';
 import JournalSourceReturn from './JournalSourceReturn.astro';
 import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
 import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
@@ -76,10 +79,47 @@ const sourceRoles: Record<string, string> = {
   'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Издательские страницы',
   'G3-S096': 'Архивная страница организации',
 };
+// Honest native fallback for a fresh source visit. The shared adapter can
+// still replace it with the exact citation actually activated in this tab.
+const sourceSection: Record<string, `#${string}`> = {
+  'G3-S001': '#timeline',
+  'G3-S002': '#finance',
+  'G3-S028': '#finance',
+  'G3-S008': '#buice',
+  'G3-S009': '#buice',
+  'G3-S010': '#buice',
+  'G3-S023': '#buice',
+  'G3-S024': '#buice',
+  'G3-S012': '#buck',
+  'G3-S015': '#buck',
+  'G3-S035': '#buck',
+  'G3-S042': '#buck',
+  'G3-S011': '#wind-down',
+  'G3-S017': '#wind-down',
+  'G3-S033': '#wind-down',
+  'G3-S050': '#wind-down',
+  'G3-S053': '#wind-down',
+  'G3-S046': '#governance',
+  'G3-S047': '#governance',
+  'G3-S096': '#governance',
+  'G3-S054': '#documents',
+};
 const sourcePortalLabels: Record<string, string> = {
   'G3-S001': 'Реестр штата Джорджия: поиск организаций',
   'G3-S002': 'IRS: архив электронных деклараций Form 990',
   'G3-S028': 'IRS: архив электронных деклараций Form 990',
+};
+// Reader navigation projection only; these links do not change evidence eligibility.
+// S015 and S042 are renderings of one statement, not independent witnesses.
+// The original blog and archived statement were acquired in Research; their
+// current transport was unavailable in the 24 November link recheck.
+const readerSourceLinks: Record<string, { href: string; label: string }> = {
+  'G3-S002': { href: 'https://projects.propublica.org/nonprofits/organizations/842403597', label: 'Декларации этой организации · ProPublica (данные IRS)' },
+  'G3-S008': { href: 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/', label: 'Архив заявления от 12 мая 2025 года (доступ может быть ограничен)' },
+  'G3-S012': { href: 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html', label: 'Авторская статья Фила Джонсона (доступ может быть ограничен)' },
+  'G3-S015': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Сообщение Christian Post с фрагментами заявления от 25 августа' },
+  'G3-S017': { href: 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/', label: 'MinistryWatch · публикация от 27 августа 2026 года' },
+  'G3-S042': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Christian Post · публикация от 26 августа 2026 года' },
 };
 // Reader display only: pinned source objects, provenance and evidence stay intact.
 // Keep document identifiers; omit internal acquisition/storage workflow prose.
@@ -96,6 +136,14 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     case 'G3-S011':
       title = title.replace(' / event backend', '');
       locator = 'Снимок страницы отмены конференции на официальном сайте, 2026 год.';
+      break;
+    case 'G3-S015':
+      title = 'Заявление четырёх пасторов Pray’s Mill: Скотт Аниол, Джон Нортон, Дилан Джойнер и Мэтт Сайкс';
+      locator = 'Заявление от 25 августа 2026 года известно по опубликованным воспроизведениям. Здесь приведён его пересказ.';
+      break;
+    case 'G3-S017':
+      period = '2026-08-27';
+      locator = 'Дата публикации материала Джессики Этюрралд в MinistryWatch, а не установленная дата первого объявления G3.';
       break;
     case 'G3-S028':
       title = title.replace(' + exact-head acquisition', '');
@@ -178,8 +226,8 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <JournalEditorialRail label="Содержание документального досье G3">
       <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed returnHref="#overview" />
       <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
-        <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
-        <a href="#corrections">Журнал исправлений</a>.</p>
+        <a href="#bibliography" tabindex="0">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a>.{' '}
+        <a href="#corrections" tabindex="0">Журнал исправлений</a>.</p>
     </JournalEditorialRail>
     <div class="journal-story-column">
   <section id="timeline" class="module" tabindex="-1">
@@ -250,11 +298,8 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       </p>
       <p class="source-note-paragraph" data-publication-claims="G3-PUB-002 G3-PUB-003 G3-PUB-004"><a id="cite-finance-G3-S002" data-journal-citation class="source-note" href="#src-G3-S002">Налоговые формы IRS, финансовые годы 2022–2025</a></p>
     </div>
-    <JournalDataFigure title="Рост расходов до кризисов руководства" unit="Изменение FY2022 → FY2023 · доллары США" rows={financeDeltas}>
-      Два крупнейших увеличения сопоставлены с общим изменением расходов, а не сложены в его состав.
-      Это данные поданной декларации, не заключение внешнего аудитора.{' '}
-      <a id="cite-finance-G3-S002-2" data-journal-citation href="#src-G3-S002">Источник: IRS Form 990, часть IX</a>.
-    </JournalDataFigure>
+    <G3AnnualFinance projection={adoptedAnnualFinance()} />
+    <G3ExpenseWaterfall total={financeDeltas[0].value} conferences={financeDeltas[1].value} advertising={financeDeltas[2].value} />
   </section>
 
   <section id="governance" class="module" tabindex="-1">
@@ -285,13 +330,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <div class="module-label">05 · Кризис 2025</div>
     <div class="prose">
       <h2>Уход Джоша Бьюса и попытка продолжить работу</h2>
-      <p>
-        В мае 2025 года G3 опубликовала заявление о деятельности своего президента
-        Джоша Бьюса под анонимными именами в интернете. По версии организации,
-        после разговора с ним последовало признание, и совет принял его отставку
-        с должности президента <strong>8 мая 2025 года</strong>.
-        Об этом публично сообщили 12 мая. Тогда же была отменена конференция 2025 года.
-      </p>
+      <p data-publication-claims="G3-PUB-018">Согласно заявлению совета G3 от 12 мая 2025 года, 4 мая пресвитеры Pray’s Mill предъявили Джошу Бьюсу доказательства связи с анонимными аккаунтами. После первоначального отрицания он признал своё участие. 8 мая совет единогласно принял его отставку с должности президента. В опубликованном 12 мая заявлении G3 объявила об отмене ближайшей национальной конференции и всех практикумов 2025 года и пообещала полностью вернуть регистрационные взносы.</p>
       <p>
         Важно сохранить источник утверждения: сведения о признании и обстоятельствах
         отставки в этой части исходят из заявления самой G3. Нельзя выдавать его
@@ -372,6 +411,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       </p>
       <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-016"><a class="source-note" href="#bibliography">Решения организаций, реестры и цифровые записи</a></p>
     </div>
+    <G3EcosystemSpread />
   </section>
 
   <section id="unknowns" class="module unknown-module" tabindex="-1">
@@ -443,28 +483,29 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <div class="prose">
       <h2>Источники и материалы для проверки</h2>
       <p>
-        Мы сохранили привязку фактов к оригинальным документам. Ниже можно
-        найти 21 источник этого документального досье: официальные записи,
-        налоговые формы, сообщения организаций и архивные материалы.
-        Для части источников приведены библиографические сведения без прямой
-        ссылки на документ. Наличие ссылки само по себе не разрешает
-        воспроизводить документ.
+        Официальные записи, налоговые формы, сообщения организаций и архивные материалы.
+        Сведения о документе и доступные ссылки раскрываются по нажатию.
       </p>
       <ol class="bibliography-list">
         {G3_SOURCE_BIBLIOGRAPHY.map((entry) => {
           const reader = sourceReaderView(entry);
+          const readerLink = readerSourceLinks[entry.id];
           return (
             <li id={`src-${entry.id}`} class="bibliography-item" tabindex="-1" data-source-id={entry.id} data-evidence-class={entry.tier} data-source-eligibility={entry.eligibility}>
               <p class="biblio-meta">{reader.period && <>{reader.period} · </>}{sourceRoles[entry.id] || 'Библиографическая запись'}</p>
               <h3>{reader.title}</h3>
               <details class="biblio-details">
-                <summary>Локатор и доступ к документу</summary>
+                <summary aria-label={`Локатор и доступ: ${reader.title}`}>Локатор и доступ к документу</summary>
                 <p>{reader.locator}</p>
                 <p class="biblio-links">
-                  {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">{sourcePortalLabels[entry.id]}</a> : <span>Ссылка на полный оригинал в этой версии не предоставлена.</span>}
+                  {entry.publicUrl && <a href={entry.publicUrl} rel="noopener">{sourcePortalLabels[entry.id] || reader.title}</a>}
+                  {entry.publicUrl && readerLink && <> · </>}
+                  {readerLink && <a href={readerLink.href} rel="noopener">{readerLink.label}</a>}
+                  {entry.id === 'G3-S008' && <> · <a href="https://the-end-time.org/2025/05/13/g3-president-josh-buice-resigns-amid-scandal/" rel="noopener">Перепечатка заявления совета от 12 мая 2025 года</a></>}
+                  {!entry.publicUrl && !readerLink && <span>Ссылка на полный оригинал в этой версии не предоставлена.</span>}
                 </p>
               </details>
-              <JournalSourceReturn href="#documents" label="К методике проверки" />
+              <JournalSourceReturn href={sourceSection[entry.id] || "#documents"} label={sourceSection[entry.id] === "#documents" ? "К методике проверки" : "К связанному разделу статьи"} />
             </li>
           );
         })}

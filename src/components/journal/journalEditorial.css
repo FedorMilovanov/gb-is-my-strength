@@ -66,7 +66,9 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .je-contents li { border-bottom: 1px solid var(--je-rule); }
 .journal-edition .je-contents a { display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: baseline; gap: 10px; min-height: 38px; padding: 9px 0; color: var(--je-ink); text-decoration: none; font: 400 14px/1.4 var(--je-ui); }
 .journal-edition .je-contents a span { color: var(--je-gold); font-size: 10px; font-variant-numeric: tabular-nums; }
-.journal-edition .je-contents a:hover { color: var(--je-gold); text-decoration: underline; }
+.journal-edition .je-contents a:hover { color: var(--je-gold); background: var(--je-paper-raised); text-decoration: none; }
+.journal-edition .je-contents nav a { border-radius: 5px; }
+.journal-edition .je-contents nav a span { display: inline-grid; place-items: center; min-height: 20px; border: 1px solid var(--je-rule); border-radius: 4px; }
 .journal-edition .je-rail-note { margin: 16px 0 0; padding-top: 17px; border-top: 1px solid var(--je-rule); color: var(--je-muted); font: 13px/1.65 var(--je-ui); }
 .journal-edition .je-rail-note a { color: var(--je-gold); }
 
@@ -82,6 +84,10 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .intro-module .standfirst::first-letter { float: left; font: 600 68px/.9 var(--je-serif); margin: 7px 10px 0 0; color: var(--je-gold); }
 .journal-edition .prose > p.source-note-paragraph { margin-top: 25px; padding-top: 12px; border-top: 1px solid var(--je-rule); color: var(--je-muted); font: 13px/1.65 var(--je-ui); }
 .journal-edition .source-note, .journal-edition .claim-ref a, .journal-edition a.claim-ref { color: var(--je-gold); text-decoration: underline; text-decoration-style: dotted; }
+/* Standalone source notes are controls, not inline prose links. Keep a real touch target before figures. */
+@media screen and (max-width: 1023px) {
+  .journal-edition .source-note-paragraph > a.source-note { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding-block: 4px; }
+}
 .journal-edition .claim-ref { color: var(--je-muted); font: 12px/1.55 var(--je-ui); }
 .journal-edition .timeline { list-style: none; padding: 0; margin: 27px 0 0; }
 .journal-edition .timeline > li { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 26px; padding: 23px 0; border-top: 1px solid var(--je-rule); }
@@ -122,6 +128,31 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .biblio-links { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin: 7px 0 0; }
 .journal-edition .biblio-links a { display: inline-block; padding-block: 8px; color: var(--je-gold); }
 .journal-edition .je-source-return { display: inline-block; max-width: 100%; padding-block: 8px; color: var(--je-gold); font: 12px/1.5 var(--je-ui); }
+/* Compact screen bibliography: the title and native hash destination stay
+   visible, while secondary document information uses one native disclosure. */
+@media screen {
+  .journal-edition [data-g3-article="history"] .bibliography-item,
+  .journal-edition [data-journal-dossier="g3"] .bibliography-item {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 12px; align-items: start; padding-block: 10px;
+  }
+  .journal-edition .bibliography-item::before { top: 13px; }
+  .journal-edition .bibliography-item :is(.biblio-meta, h3) { grid-column: 1 / -1; }
+  .journal-edition .bibliography-item h3 { margin: 0; font: 600 16px/1.4 var(--je-ui); overflow-wrap: anywhere; }
+  .journal-edition .bibliography-item h3 a { color: var(--je-ink); text-decoration: none; }
+  .journal-edition .bibliography-item h3 a::after { content: ' ↗'; color: var(--je-gold); font-size: .85em; }
+  .journal-edition .bibliography-item h3 a:hover { color: var(--je-gold); text-decoration: none; }
+  .journal-edition .bibliography-item .biblio-details { min-width: 0; }
+  .journal-edition .bibliography-item .biblio-details summary { font-weight: 500; }
+  .journal-edition .bibliography-item .je-source-return { justify-self: end; align-self: start; text-align: end; text-decoration: none; }
+  .journal-edition .bibliography-item .je-source-return:hover { color: var(--je-ink); text-decoration: none; }
+  .journal-edition .bibliography-item:has(.biblio-details[open]) .biblio-details { grid-column: 1 / -1; }
+  .journal-edition .bibliography-item:has(.biblio-details[open]) .je-source-return { grid-column: 1 / -1; }
+  @media (max-width: 359px) {
+    .journal-edition .bibliography-item { column-gap: 6px; }
+    .journal-edition .bibliography-item .je-source-return { max-width: 130px; }
+  }
+}
 /* The native destination stays visible on both legs of a source round trip. */
 .journal-edition :is([data-journal-citation], .bibliography-item):target { outline: 2px solid var(--je-gold); outline-offset: 4px; }
 /* Curated onward reading, clearly separate from the dossier's evidence. */
