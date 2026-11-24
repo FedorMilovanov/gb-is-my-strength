@@ -2,6 +2,24 @@
 
 Статус: **EDITORIAL DRAFT / НЕ ПУБЛИКОВАТЬ**. Авторский PR: #2377. Системная интеграция: #2368 (3+4). Дата: 2026-11-23.
 
+## W54 — окончательный выбор владельца: фотореалистичный кадр и AVIF (24.11.2026)
+
+**Supersedes W51 artwork selection and hashes.** Владелец окончательно выбрал именно приложенный кадр: подросток в чёрной толстовке смотрит в тёмный телефон, сидя на диване, тёплый рассеянный фон справа. Без Библии, двери, дополнительных символов, изменения лица, перегенерации. Прежняя картина с большой тенью и все её W51 производные больше не являются утверждёнными. Не импортировать прежний ZIP. Остальные обложки серии не изменять.
+
+**Mode LANE / existing author PR #2377; rollback `2bda52f064830a1217a3f6ac59e479a0dab3e010`.** Исходник 1672×941, SHA-256 `e69ef3e9b3b8e04787c33d256339b5613d328ddafc7c9c9caede62bdfed815de`. Оптимизация из выбранных пикселей: три полноформатных адаптивных размера, AVIF с WebP fallback, отдельный OG WebP с минимальным вертикальным кадрированием (лицо и телефон сохранены). Все семь декодированы и проверены по размеру, без дополнительных графических элементов. Архив `teen-personal-letter-final-avif-webp.zip` содержит структуру `public/images/teen-series/` и manifest.json; передан владельцу в чате. Архив не добавлять в репозиторий целиком, только семь медиафайлов после проверки manifest.
+
+| Имя | Размер | Байт | SHA-256 |
+|---|---:|---:|---|
+| personal-letter-cover.avif | 1600×900 | 33756 | fe0c7b460656f8f27178e7d47a91ea2dd859cca78dbbae5bb0fae175bb59bf7a |
+| personal-letter-cover.webp | 1600×900 | 50494 | 122ce5ab889ea2d31d7f2d504278c4ea2673b74a16e6dccf75ddaf72f941900f |
+| personal-letter-cover-1200w.avif | 1200×675 | 24100 | 912c032e99b66b606d1e1177a01ba2632e0ebb5ed274fa2464852cd2a0e94cc0 |
+| personal-letter-cover-1200w.webp | 1200×675 | 35496 | 823085f8004b7649290c7541946c93a397cfde0412ab5120e9fec36b95f19de5 |
+| personal-letter-cover-600w.avif | 600×338 | 10293 | 4e330d5510264670e6982e22c6a9952e16079a6964b6003ccddb69cc96955984 |
+| personal-letter-cover-600w.webp | 600×338 | 12766 | 2ba20b76a32d8f2360c74f938f5357b411753b29a3ae60aa243887c0fffa8c38 |
+| personal-letter-og.webp | 1200×630 | 32328 | 4ac445b6ca7bb34c928b93e7850738319a2bd7687f43d855fce952f742304b29 |
+
+**Code:** resolver `94ded268` exports all seven required asset paths and AVIF srcset; Astro component `a1d99488` uses native picture/source type=image/avif, existing WebP img fallback, consistent sizes and intrinsic aspect ratio. W53 fail-closed guard now covers seven files. No new browser JS. Canonical MDX remains unchanged until actual verified binary import; only then switch ogImage to `/images/teen-series/personal-letter-og.webp` and alt to «Подросток в тёмной толстовке смотрит в телефон, сидя на диване в полутёмной комнате». No old painting alt. Article hero and card must use the same selected image. Final integration must validate image response, srcset selection and AVIF/WebP fallback on Chromium/WebKit, W54 hashes, release contract and draft no-leak. No new branch, route or publication. Binary transfer from container to GitHub remains uncompleted; do not report new assets as committed or change MDX metadata prematurely.
+
 ## W53 — fail-closed media guard and source-link recheck (24.11.2026)
 
 **Mode LANE / existing author PR #2377; rollback `42ee4d1f57c15c5b69cacb2d3599c15d8a2f1374`, main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** Four existing author files remain the scope; MDX untouched in W53. #2368 family HEAD observed `6a52784da6f21bb9d65822a611d93211925d8f47`: exact Teen Series Release success, full matrix not yet complete at preflight.
