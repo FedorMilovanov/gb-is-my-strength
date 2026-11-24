@@ -8,3 +8,5 @@ Browser witness: `node research/news-visual-engineering/browser-test.mjs` (exist
 Before route intake: compile actual Astro; validate links and noJS; actual Chromium/Firefox/WebKit 320–1440 light/dark, keyboard, zoom and A4/Letter print. Confirm art direction with AGENT 1 and independent QA with AGENT 3. No release claim.
 
 W3.2: long fixture has eight rows plus a second exhibit with two rows; both are synthetic. Runner adds 24 scenarios, verifies two exhibits have unique IDs, all ten citation round trips, computed border colors/widths and print border overrides. Inspect long PNGs and PDF page breaks separately before admission; no historical or media content is authorized.
+
+Print text regression: `node research/news-visual-engineering/pdf-test.mjs <browser evidence directory>` with existing Poppler. Validates all ten rows and citation/annotation labels in four actual long PDFs, plus page-edge orphan checks. Visual page review remains a separate gate. Print links remove screen touch-target height and stay with their preceding paragraph.

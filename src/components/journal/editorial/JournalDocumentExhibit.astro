@@ -85,6 +85,8 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     .jdx-section { display: block; }
     .jdx-passage h3, .jdx-locator, .jdx-commentary dt { break-after: avoid; }
     .jdx-passage p, .jdx-commentary dd { orphans: 3; widows: 3; }
+    .jdx-passage p:not(.jdx-locator) { break-after: avoid; }
+    .jdx-passage a { display: block; min-height: 0; break-before: avoid; }
     .jdx-commentary { margin-block-start: .5rem; }
     .jdx-commentary div { break-inside: avoid; }
   }
