@@ -1,0 +1,156 @@
+{
+  "wave": "V24",
+  "checkedOn": "2026-11-24",
+  "authority": "Research G3_HISTORY/MEDIA_LEDGER.md and AV_SESSION_INVENTORY_2026-11-24.md at 473fbff0e472e0ec85461aba3445995d459920bd",
+  "summary": {
+    "previousDiscoveryRecords": 41,
+    "newDiscoveryRecords": 2,
+    "combined": 43,
+    "newViewedDerivatives": 1,
+    "newAssetUnavailable": 1,
+    "actualVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "rows": [
+    {
+      "id": "V-G3-042",
+      "kind": "historical-announcement",
+      "eventYear": 2017,
+      "publicationDate": "2016-08-15",
+      "source": "https://www.challies.com/sponsored/the-reformation-at-500/",
+      "assetUrl": "https://www.challies.com/media/2016/08/Challies-In-Post-Graphic-1.jpg",
+      "observed": "Visually inspected 512x512 search preview of grid of circular portraits, G3 logo and website strip; direct original asset fetch cache miss. No person identified from image. Source body names advertised speakers separately.",
+      "advertisedDates": "2017-01-19–21",
+      "advertisedLocation": "Georgia International Convention Center, Atlanta",
+      "placement": "H04 Reformation 500; contemporary promotional artifact",
+      "rights": "PERMISSION_REQUIRED",
+      "creator": null,
+      "originalDimensions": null,
+      "publicationEligible": false,
+      "localBinary": null,
+      "caption": "Рекламный материал G3 к конференции «Реформация — 500». Опубликован на сайте Тима Чаллиса 15 августа 2016 года. Состав объявленной программы, не свидетельство присутствия каждого участника."
+    },
+    {
+      "id": "V-G3-043",
+      "kind": "historical-announcement",
+      "eventYear": 2018,
+      "publicationDate": "2017-08-18",
+      "source": "https://www.challies.com/giveaways/free-stuff-fridays-conference-tickets/",
+      "assetUrl": "https://www.challies.com/media/2017/08/Challies-G3-Social-Media-1024x538.jpg",
+      "observed": "Source body and direct image link read; image fetch cache miss. Do not infer dimensions from filename.",
+      "advertisedDates": "January 18–20; Spanish preconference January 17 per announcement",
+      "placement": "H05 preconference programming; medium priority after original acquired",
+      "rights": "PERMISSION_REQUIRED",
+      "creator": null,
+      "originalDimensions": null,
+      "publicationEligible": false,
+      "localBinary": null
+    }
+  ],
+  "quarantine": [
+    {
+      "canonicalMediaId": "G3-M001",
+      "source": "https://blogs.crossmap.com/stories/home-from-g3-conference-some-photos-YVj89bcNU2omkipCSKsSQ",
+      "assetUrl": "https://d3tfn18lzrilkz.cloudfront.net/blogs.crossmap.com/app/uploads/2023/04/27010510/pexels-luis-quintero-14303316-uVpCDREc-scaled.jpg",
+      "observed": "Search image visually depicts generic stage/crowd; CDN filename identifies apparent Pexels stock provenance. Original Pexels item inaccessible in current web check; no G3-specific attribution in image established.",
+      "decision": "REJECT_AS_DOCUMENTARY_EVIDENCE unless exact original provenance later proves G3; no positive identification of event or person. Do not alter canonical ledger without Research acceptance.",
+      "alternative": "Original dated 2021-10-02 Prata post V-G3-001..005; permission needed."
+    }
+  ],
+  "dedup": [
+    {
+      "source": "https://the-end-time.org/2021/10/01/scenes-and-quotes-from-g3-2021/",
+      "assetUrl": "https://the-end-time.org/wp-content/uploads/2021/10/g3-audience.jpg?w=1000",
+      "sameAs": "V-G3-001",
+      "observation": "Same path confirmed by clicked image link; direct fetch cache miss. Author says camera forgotten and describes city photos; no new independent audience image counted."
+    }
+  ],
+  "otherLeads": [
+    {
+      "source": "https://equip.sbts.edu/article/g3-conference-on-the-church/",
+      "video": "https://vimeo.com/74079746",
+      "observation": "Institutional announcement of January 23–25 church-themed event, embedded Vimeo link inaccessible. Metadata only, no frame or additional session count."
+    },
+    {
+      "source": "https://g3min.org/2015-g3-conference-review/",
+      "observation": "Original dated report read, image alt Faces only, no verified original image identity; previous V23 lead not recounted."
+    }
+  ],
+  "avReview": [
+    {
+      "session": "G3-AV-2014-QA-WKeqskrPKfo",
+      "edition": "original YouTube WKeqskrPKfo",
+      "source": "https://www.youtube.com/watch?v=WKeqskrPKfo",
+      "access": "Current page fetch failed; prior caption acquisition from Research, no playback or frame verified",
+      "windowsMs": [
+        [
+          12000,
+          50000
+        ],
+        [
+          195000,
+          250000
+        ],
+        [
+          1995000,
+          2070000
+        ],
+        [
+          3070000,
+          3135000
+        ]
+      ],
+      "priorities": [
+        "Opening panel context",
+        "Expository preaching discussion",
+        "Mission discussion",
+        "Pastoral question"
+      ],
+      "rights": "HOLD; no speaker identity or exact shot established",
+      "next": "Authorized source playback or organizer-provided stills, no private access bypass"
+    },
+    {
+      "session": "G3-AV-2019-PIPER-XBdXKAKwb1g",
+      "edition": "author page / original XBdXKAKwb1g, not mirror MP3",
+      "source": "https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions",
+      "rightsSource": "https://www.desiringgod.org/permissions",
+      "access": "Author page body and offered MP4/MP3 read; no actual playback; previous local transfer failed, no duplicate acquisition.",
+      "windowsMs": [
+        [
+          2990000,
+          3050000
+        ]
+      ],
+      "priorities": [
+        "Family sacrifice discussion; locate actual speaker/stage only by permitted playback"
+      ],
+      "rights": "Whole unaltered AV embed under policy; no standalone frame republication permission established; public translation permission required.",
+      "next": "Ask Desiring God for approved stills or written license, coordinate existing audio/video custody."
+    },
+    {
+      "session": "G3-AV-2021-WASHER-BJxgRAV5Ki8",
+      "edition": "FTG-2023-99iITVHibdE later podcast, separate clock",
+      "source": "https://www.forthegospel.org/watch/5-life-changing-messages-paul-washer-2",
+      "rightsSource": "https://www.forthegospel.org/permissions",
+      "permissionContact": "permissions@forthegospel.org",
+      "access": "Publisher body read; confirms 2021 sermon in later episode. Original G3 upload private per Research; no retry. No playback/frames.",
+      "windowsMs": [
+        [
+          150000,
+          450000
+        ],
+        [
+          1975000,
+          2050000
+        ]
+      ],
+      "priorities": [
+        "Opening sermon context",
+        "Curse-bearing context"
+      ],
+      "rights": "Link-only under policy, no derivative/reupload without permission; no assumption FTG controls underlying G3 images.",
+      "next": "Request permitted original G3 stills, exact frame rights and confirmation that podcast footage belongs to same session."
+    }
+  ],
+  "limits": "Windows imported from Research as navigation only; not new media, not selected frame timecodes. No new video download, binaries, contact sheet or outreach. Two genuine poster leads only, no inflated quota. Canonical publication/rights state unchanged."
+}

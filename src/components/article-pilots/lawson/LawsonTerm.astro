@@ -129,8 +129,8 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
   const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
   document.addEventListener('pointerover', (event) => {
     if (!canHover.matches || event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
-    // A hover preview must not cover an explicitly opened source card.
-    if (document.querySelector('.lawson-source-ref[data-open]')) return;
+    // Passive hover must not replace a pinned source or glossary card.
+    if (document.querySelector('.lawson-source-ref[data-open], .lawson-term[data-open]:not([data-hover-open])')) return;
     const trigger = event.target.closest('.lawson-term-label');
     const term = termFor(trigger);
     if (term && !term.hasAttribute('data-open') && !term.hasAttribute('data-suppress-hover')) openTerm(term, true);
@@ -159,6 +159,7 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
     const target = event.target;
     document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
       if (!open.contains(target)) closeTerm(open);
+      else if (target.closest('.lawson-term-popover')) open.removeAttribute('data-hover-open');
     });
   });
   document.addEventListener('keydown', (event) => {
