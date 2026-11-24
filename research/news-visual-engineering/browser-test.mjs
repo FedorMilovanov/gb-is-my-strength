@@ -1,0 +1,88 @@
+import { build } from 'astro';
+import { chromium, firefox, webkit } from 'playwright';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { cp, readFile, writeFile, mkdir, mkdtemp, symlink } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve, dirname, extname, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const repo = fileURLToPath(new URL('../../', import.meta.url));
+const root = await mkdtemp(join(tmpdir(), 'news-document-exhibit-'));
+const copy = async (from, to=from) => {
+  await mkdir(dirname(join(root,to)),{recursive:true});
+  await cp(join(repo,from),join(root,to),{recursive:true});
+};
+console.log('EVIDENCE_DIR='+root);
+await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
+for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/styles/editorial-edition.css','fonts']) await copy(path);
+await copy('research/news-visual-engineering/exhibit-fixture.astro.txt','src/pages/index.astro');
+await writeFile(join(root,'package.json'),'{"type":"module","private":true}');
+await build({root,cacheDir:join(root,'.astro-cache'),vite:{cacheDir:join(root,'.vite-cache')},telemetry:false});
+const dist=resolve(root,'dist');
+const mime={'.css':'text/css','.js':'text/javascript','.woff2':'font/woff2','.ttf':'font/ttf'};
+const server=createServer(async(req,res)=>{
+  try {
+    const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+    const file=resolve(dist,'.'+(path==='/'?'/index.html':path));
+    if (!file.startsWith(dist+sep)) throw Error('outside dist');
+    const bytes=await readFile(file);
+    res.setHeader('Content-Type',mime[extname(file)]??'text/html; charset=utf-8');res.end(bytes);
+  } catch {res.statusCode=404;res.end();}
+});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const url='http://127.0.0.1:'+server.address().port;
+const evidence=join(root,'evidence');await mkdir(evidence);
+const results=[];
+try {
+  for (const [name,engine] of Object.entries({chromium,firefox,webkit})) {
+    const browser=await engine.launch({headless:true});
+    try {
+      for(const width of [320,390,768,1100])for(const dark of [false,true])for(const js of [false,true]){
+        const context=await browser.newContext({viewport:{width,height:950},javaScriptEnabled:js});
+        try {
+          const page=await context.newPage();
+          const response=await page.goto(url);assert.equal(response.status(),200);
+          if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
+          const data=await page.evaluate(async()=>{
+            await document.fonts.ready;
+            return {over:document.documentElement.scrollWidth>innerWidth,rows:document.querySelectorAll('.jdx-section').length,
+              links:[...document.querySelectorAll('.jdx a')].every(a=>document.getElementById(a.hash.slice(1))),
+              ids:[...document.querySelectorAll('[id]')].map(el=>el.id),
+              unknown:document.querySelector('.jdx-meta').textContent.includes('Не установлена'),
+              grid:getComputedStyle(document.querySelector('.jdx-section')).gridTemplateColumns,
+              fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family.replace(/['"]/g,''))};
+          });
+          assert.equal(data.over,false);assert.equal(data.rows,3);assert.equal(data.links,true);assert.equal(data.unknown,true);
+          assert.equal(data.grid.split(' ').length,width>=768?2:1);assert.equal(new Set(data.ids).size,data.ids.length);
+          for(const font of ['Lora','Playfair Display','Source Sans 3'])assert.ok(data.fonts.includes(font),'font not loaded: '+font);
+          if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
+          const links=page.locator('.jdx a');
+          for(let i=0;i<3;i++){
+            const link=links.nth(i),id=await link.getAttribute('id'),target=await link.getAttribute('href');
+            await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,target);
+            const back=page.locator(target+' [data-journal-source-return]');
+            const expected=js?'#'+id:i===2?'#cite-13-test-document-document-three':'#cite-13-test-document-document-one';
+            assert.equal(await back.getAttribute('href'),expected);
+            await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,expected);
+          }
+          await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'200% body text scale overflow');
+          await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
+          if(!js&&[320,1100].includes(width)){
+            await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
+            await page.evaluate(()=>document.fonts.ready);
+            await page.screenshot({path:join(evidence,name+'-'+width+'-'+(dark?'dark':'light')+'.png'),fullPage:true});
+            if(name==='chromium'&&width===1100)for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
+          }
+          results.push({engine:name,width,dark,js,citations:3,textScale:2});
+        } finally {await context.close();}
+      }
+    } finally {await browser.close();}
+    console.log(name+' PASS');
+  }
+} finally {
+  await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2)+'\n');server.close();
+}
+console.log('SCENARIOS='+results.length);
+assert.equal(results.length,48);

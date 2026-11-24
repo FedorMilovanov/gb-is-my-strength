@@ -19,9 +19,13 @@ function text(v, name) {
  * IDs resolve against caller-supplied canonical admitted registries. This does
  * not grant publication authority; route-level evidence gates remain mandatory.
  */
+export function documentCitationId(exhibitId, rowId) {
+  // Length prefix makes the concatenation injective even with hyphenated IDs.
+  return 'cite-' + exhibitId.length + '-' + exhibitId + '-document-' + rowId;
+}
 export function documentExhibitView(input, authority) {
   if (!input || !token(input.id) || input.mode !== 'editorial-paraphrase') fail('unsupported exhibit');
-  if (!authority || !Array.isArray(authority.claimIds) || !Array.isArray(authority.sources)) fail('missing authority');
+  if (!authority || !Array.isArray(authority.claims) || !Array.isArray(authority.sources)) fail('missing authority');
   const sourceMap = new Map();
   const targets = new Set();
   for (const s of authority.sources) {
@@ -29,8 +33,18 @@ export function documentExhibitView(input, authority) {
     sourceMap.set(s.id, s);
     targets.add(s.href);
   }
-  const claims = new Set(authority.claimIds);
-  if (claims.size !== authority.claimIds.length || [...claims].some(c => !clean(c))) fail('invalid claim registry');
+  const claims = new Map();
+  for (const claim of authority.claims) {
+    if (!clean(claim?.id) || claims.has(claim.id) || !Array.isArray(claim.references) || !claim.references.length) fail('invalid claim registry');
+    const refs = new Set();
+    for (const ref of claim.references) {
+      if (!sourceMap.has(ref?.sourceId) || !clean(ref.locator)) fail('invalid claim reference');
+      const key = JSON.stringify([ref.sourceId, ref.locator]);
+      if (refs.has(key)) fail('duplicate claim reference');
+      refs.add(key);
+    }
+    claims.set(claim.id, refs);
+  }
   if (!Array.isArray(input.sections) || !input.sections.length) fail('empty document');
   const ids = new Set();
   const sections = input.sections.map((row, index) => {
@@ -39,11 +53,12 @@ export function documentExhibitView(input, authority) {
     if (!claims.has(row.claimId)) fail('claim outside admitted projection');
     const source = sourceMap.get(row.sourceId);
     if (!source) fail('unknown source');
+    if (!claims.get(row.claimId).has(JSON.stringify([row.sourceId, row.locator]))) fail('source or locator outside admitted claim');
     return { id: row.id, number: String(index + 1).padStart(2, '0'),
       heading: text(row.heading, 'heading'), locator: text(row.locator, 'locator'),
       summary: text(row.summary, 'summary'), significance: text(row.significance, 'significance'),
       limitation: text(row.limitation, 'limitation'), claimId: row.claimId,
-      source, citationId: 'cite-' + input.id + '-document-' + row.id };
+      source, citationId: documentCitationId(input.id, row.id) };
   });
   const documentDate = date(input.documentDate);
   const publicationDate = date(input.publicationDate);

@@ -5,7 +5,7 @@ interface Section { id: string; heading: string; locator: string; summary: strin
 interface Props {
   input: { id: string; mode: 'editorial-paraphrase'; title: string; issuer: string; deck: string;
     documentDate: string | null; publicationDate: string | null; captureDate: string | null; sections: Section[] };
-  authority: { claimIds: readonly string[]; sources: readonly Source[] };
+  authority: { claims: readonly { id: string; references: readonly { sourceId: string; locator: string }[] }[]; sources: readonly Source[] };
 }
 const { input, authority } = Astro.props;
 const view = documentExhibitView(input, authority);
@@ -25,15 +25,15 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
       <div><dt>Составитель / издатель</dt><dd>{view.issuer}</dd></div>
       {dates.map(([label, value]) => <div><dt>{label}</dt><dd>{value ? <time datetime={value}>{fmt(value)}</time> : 'Не установлена'}</dd></div>)}
     </dl>
-    <p class="jdx-note">Ниже — редакционный пересказ, не факсимиле и не дословная цитата.</p>
+    <p class="jdx-note">Редакционный пересказ документа.</p>
   </header>
-  <ol class="jdx-sections">
+  <ol class="jdx-sections" role="list">
     {view.sections.map(row => <li class="jdx-section" data-journal-document-claim={row.claimId}>
       <div class="jdx-passage">
         <p class="jdx-locator"><span aria-hidden="true">{row.number} / </span>{row.locator}</p>
         <h3>{row.heading}</h3>
         <p>{row.summary}</p>
-        <a id={row.citationId} data-journal-citation href={row.source.href}>Источник: {row.source.label}</a>
+        <a id={row.citationId} data-journal-citation href={row.source.href} aria-label={`Источник: ${row.source.label} · ${row.heading}`}>Источник: {row.source.label}</a>
       </div>
       <div class="jdx-commentary">
         <dl>
@@ -49,7 +49,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-lead { padding: clamp(1rem, 4cqi, 2rem); background: var(--je-paper-raised); }
   .jdx-kicker, .jdx-locator { margin: 0 0 .65rem; color: var(--je-gold); font: 600 .8rem/1.5 var(--je-ui); letter-spacing: .065em; }
   .jdx h2 { margin: 0 0 .75rem; font: 600 clamp(1.65rem, 5cqi, 2.5rem)/1.14 var(--je-serif); }
-  .jdx-deck { margin: 0 0 1.35rem; font: 400 1rem/1.7 var(--je-body); }
+  .jdx-deck { margin: 0 0 1.35rem; font: 400 calc(1rem * var(--gb-reader-font-scale, 1))/1.7 var(--je-body); }
   .jdx-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 1rem; margin: 0; border-block-start: 1px solid var(--je-rule); padding-block-start: 1rem; }
   .jdx-meta div, .jdx-passage, .jdx-commentary { min-width: 0; overflow-wrap: anywhere; }
   .jdx-meta dt { color: var(--je-muted); font: .8rem/1.4 var(--je-ui); }
@@ -65,10 +65,14 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-commentary dl { margin: 0; }
   .jdx-commentary div + div { border-block-start: 1px solid var(--je-rule); padding-block-start: .8rem; margin-block-start: .8rem; }
   .jdx-commentary dt { font: 600 .85rem/1.5 var(--je-ui); color: var(--je-gold); }
-  .jdx-commentary dd { margin: .35rem 0 0; font: .95rem/1.65 var(--je-body); }
+  .jdx-commentary dd { margin: .35rem 0 0; font: calc(.95rem * var(--gb-reader-font-scale, 1))/1.65 var(--je-body); }
   @container (min-width: 44rem) {
     .jdx-section { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 0; }
     .jdx-commentary { margin-inline-start: 0; }
+  }
+  @media (forced-colors: active) {
+    .jdx, .jdx-commentary { border-color: CanvasText; }
+    .jdx-passage a { color: LinkText; }
   }
   @media print {
     .jdx { container-type: normal; color: #111; border-color: #555; }
