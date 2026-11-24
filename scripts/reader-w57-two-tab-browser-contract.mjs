@@ -79,7 +79,7 @@ async function openW57(page, draft) {
   await page.locator('#npW57NotesList li[data-id="' + QID + '"] [data-action="edit"]').click();
   await page.locator('#npW57NoteText').fill(draft);
 }
-async function openProduct(page) {
+async function openProduct(page, type = 'note', id = NID) {
   // When ARGON's Analytics panel is open, the genuine Product Library FAB
   // stays in the DOM but is intentionally not visible. A real reader opens
   // Library via the visible Analytics header action (#npULibraryButton).
@@ -93,7 +93,7 @@ async function openProduct(page) {
   await page.locator('#gb-hl-panel[role="dialog"]').waitFor({state:'visible'});
   assert.equal(await page.locator('#gb-hl-fab').getAttribute('aria-expanded'),'true',
     'visible Reader action must open the canonical Product dialog');
-  await page.locator('#gb-hl-list .gb-hl-item[data-type="note"][data-id="' + NID + '"]').waitFor();
+  await page.locator('#gb-hl-list .gb-hl-item[data-type="' + type + '"][data-id="' + id + '"]').waitFor();
 }
 async function editProduct(page, draft) {
   await page.locator('#gb-hl-list .gb-hl-item[data-type="note"][data-id="' + NID + '"] [data-library-action="edit-note"]').click();
@@ -234,8 +234,43 @@ async function run(engine, name) {
     await waitNoteState(B, {text:'Изменено через W57'},
       'refused Product write must leave the W57 edit intact');
     await B.screenshot({path:resolve(OUT,name+'-reverse-conflict.png'),animations:'disabled'});
+    // W39: the Product card opens a NEW linked draft. A genuine W57
+    // switch mutates the same saved source quote before Product saves.
+    await A.evaluate(() => {
+      const q = JSON.parse(localStorage.getItem('gb-highlights-v1'))[0];
+      q.annotation = {...q.annotation, noteId:null, kind:'quote'};
+      localStorage.setItem('gb-highlights-v1',JSON.stringify([q]));
+      localStorage.setItem('gb-reader-notes-v1','[]');
+    });
+    await A.reload({waitUntil:'domcontentloaded'}); await ready(A);
+    await B.reload({waitUntil:'domcontentloaded'}); await ready(B);
+    await openProduct(B,'quote',QID);
+    const linkedCard = B.locator('#gb-hl-list .gb-hl-item[data-type="quote"][data-id="' + QID + '"]');
+    await linkedCard.locator('[data-library-action="note-for-quote"]').click();
+    await B.locator('#gb-hl-note-text').fill('Черновик к исходной цитате W39');
+    const w39section = A.locator('#npW57NotesDetails');
+    if (!(await w39section.evaluate(x => x.open))) await w39section.locator('summary').click();
+    await A.locator('#npW57NotesList li[data-id="' + QID + '"] [data-action="switch"]').click();
+    await A.waitForFunction(qid => JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').some(q=>q.id===qid&&q.annotation.kind==='marker'),QID);
+    const afterSwitch = await A.evaluate(() => [localStorage.getItem('gb-highlights-v1'),localStorage.getItem('gb-reader-notes-v1')]);
+    await B.locator('#gb-hl-editor button[type="submit"]').click();
+    await waitStatus(B,'#gb-hl-status',/Цитата или её связь изменилась/,'W39 stale source must refuse');
+    assert.deepEqual(await B.evaluate(() => [localStorage.getItem('gb-highlights-v1'),localStorage.getItem('gb-reader-notes-v1')]),afterSwitch);
+    assert.equal(await B.locator('#gb-hl-editor').isVisible(),true);
+    assert.equal(await B.locator('#gb-hl-note-text').inputValue(),'Черновик к исходной цитате W39');
+    assert.equal(await B.locator('#gb-hl-note-text').evaluate(x=>x.readOnly),false);
+    await B.screenshot({path:resolve(OUT,name+'-linked-source-conflict.png'),animations:'disabled'});
+    // Positive control: reopen after source change; preserve the valid association.
+    await B.locator('#gb-hl-close').click();
+    await openProduct(B,'quote',QID);
+    await linkedCard.locator('[data-library-action="note-for-quote"]').click();
+    await B.locator('#gb-hl-note-text').fill('Актуальная заметка W39');
+    await B.locator('#gb-hl-editor button[type="submit"]').click();
+    await waitNoteState(A,{text:'Актуальная заметка W39'},'fresh source linked save must succeed');
+    assert.equal((await noteState(A))[0].quoteId,QID);
+    assert.equal(await B.locator('#gb-hl-editor').isVisible(),false);
     assert.equal(errors.length,0,'uncaught browser errors: '+errors.slice(0,3).join('; '));
-    results.push({engine:name,status:'PASS',checks:16,seeded});
+    results.push({engine:name,status:'PASS',checks:16,seeded,linkedSourceConflict:true,linkedSourceFreshSave:true});
   }catch(e) {
     failures.push({engine:name,error:String(e),stack:String(e.stack||'').slice(0,1700),
       errors:errors.slice(0,5)});
