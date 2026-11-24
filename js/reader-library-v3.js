@@ -10,6 +10,7 @@ const KEYS = Object.freeze({
   revisit: 'gb-library-revisit-v1',
 });
 const FORMAT = 'gospod-bog-reader-library';
+const RECOVERY_FORMAT = 'gospod-bog-reader-library-recovery';
 const MAX = { quotes: 200, notes: 500, favorites: 50, tags: 800, tagsPerItem: 20, reading: 1000 };
 const cap = (v, n) => String(v == null ? '' : v).slice(0, n);
 const node = (tag, className, text) => {
@@ -216,6 +217,30 @@ function validateBackup(payload) {
       hiddenDate: cap(revisit.hiddenDate, 10) },
   };
 }
+function validateRecovery(payload) {
+  const raw=payload?.raw,keys=Object.values(KEYS);
+  if(payload?.format!==RECOVERY_FORMAT||payload.version!==1||!raw||typeof raw!=='object'||Array.isArray(raw)||
+    Object.keys(raw).length!==keys.length||keys.some(k=>!Object.hasOwn(raw,k)||(raw[k]!==null&&typeof raw[k]!=='string')))
+    throw new Error('Некорректная аварийная копия.');
+  return {...raw};
+}
+async function serializeRecovery() {
+  const result=await window.GBHighlights?.snapshotRaw?.();
+  if(!result?.ok)throw new Error('Не удалось прочитать исходные данные. Аварийная копия не создана.');
+  return {format:RECOVERY_FORMAT,version:1,exportedAt:new Date().toISOString(),raw:result.raw};
+}
+async function atomicRecovery(raw,shouldContinue=()=>true) {
+  const result=await window.GBHighlights?.restoreRaw?.(raw,shouldContinue);
+  if(!result?.ok)throw new Error(result?.reason==='conflict'
+    ? 'Аварийная копия отличается от существующих данных. Восстановление без замены невозможно.'
+    : result?.reason==='invalid-recovery'
+      ? 'В копии есть повреждённый раздел. Сохраните файл для ручного восстановления.'
+      : result?.reason==='partial-write'
+        ? 'Ошибка восстановления и отката. Сохраните обе копии и проверьте данные.'
+        : 'Аварийное восстановление не завершено.');
+  try{window.GBFavoriteStore?.notifyImport?.();}catch{}
+  return result.restored;
+}
 async function serializeCurrent() {
   const owner=window.GBHighlights;
   if(typeof owner?.mutateLibrary!=='function') throw new Error('Безопасный экспорт недоступен. Обновите страницу.');
@@ -364,10 +389,11 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   const manageHead = node('strong', '', 'Данные библиотеки');
   const caption = node('p', '', 'Сохранения хранятся только в этом браузере. Скачайте резервную копию.');
   const jsonExport = btn('↓ Копия JSON', 'export-json');
+  const rawExport = btn('↓ Точная копия', 'export-recovery');
   const jsonImport = btn('↑ Восстановить', 'import-json');
-  const offline = node('p', 'gb-hl-info', 'При смене браузера или очистке данных копия поможет сохранить ваши записи.');
+  const offline = node('p', 'gb-hl-info', 'Обычная копия объединяет записи. Точная копия хранит исходные разделы, включая устаревшие данные; восстановление возможно только без замены отличающихся данных.');
   const readingManager = node('div', 'gb-hl-reading-manager');
-  menu.append(manageHead, caption, jsonExport, jsonImport, offline, readingManager);
+  menu.append(manageHead, caption, jsonExport, rawExport, jsonImport, offline, readingManager);
   header.after(menu);
   const file = document.createElement('input');
   file.type = 'file'; file.id = 'gb-hl-json-file'; file.accept = 'application/json,.json'; file.hidden = true;
@@ -678,15 +704,16 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       if (!menu.hidden) { fillManager(); jsonExport.focus({ preventScroll: true }); }
       return;
     }
-    if (action === 'export-json') {
-      let data;
-      try { data=await serializeCurrent(); }
+    if (action === 'export-json' || action==='export-recovery') {
+      let payload;
+      const raw=action==='export-recovery';
+      try { payload=raw?await serializeRecovery():{format:FORMAT,version:3,exportedAt:new Date().toISOString(),data:await serializeCurrent()}; }
       catch(error) { notify(error.message,true);return; }
-      const blob = new Blob([JSON.stringify({ format: FORMAT, version: 3, exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json;charset=utf-8' });
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = 'gb-library-backup.json'; document.body.append(a); a.click(); a.remove();
+      a.href = url; a.download = raw?'gb-library-recovery.json':'gb-library-backup.json'; document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      notify('Полная резервная копия сохранена.'); return;
+      notify(raw?'Точная аварийная копия сохранена.':'Копия для объединения сохранена.'); return;
     }
     if (action === 'import-json') { file.click(); return; }
     if (action === 'cancel-import') { invalidateImport(); return; }
@@ -695,11 +722,17 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       const generation=importGeneration, next=pendingImport;
       importInFlight=true; confirm.disabled=true;
       try {
-        const merged=await atomicImport(next,()=>generation===importGeneration && pendingImport===next);
-        tags=merged.tags; reading=merged.reading; revisit=merged.revisit;
+        const current=()=>generation===importGeneration && pendingImport===next;
+        if(next.recovery) {
+          await atomicRecovery(next.raw,current);
+          tags=objectMap(parse(KEYS.tags,{}));reading=objectMap(parse(KEYS.reading,{}));revisit=objectMap(parse(KEYS.revisit,{}));
+        } else {
+          const merged=await atomicImport(next.data,current);
+          tags=merged.tags;reading=merged.reading;revisit=merged.revisit;
+        }
         if(generation===importGeneration) {
           pendingImport=null; confirmation.hidden=true;
-          notify('Импорт завершён без замены существующих записей.');
+          notify(next.recovery?'Точное восстановление завершено без замены данных.':'Импорт завершён без замены существующих записей.');
         }
         refresh();
       } catch(error) { if(generation===importGeneration) notify(error.message,true); }
@@ -763,15 +796,22 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     invalidateImport();
     const generation = importGeneration;
     if (!input) return;
-    if (input.size > 4 * 1024 * 1024) { notify('Файл больше 4 МБ.', true); return; }
+    if (input.size > 32 * 1024 * 1024) { notify('Файл больше 32 МБ.', true); return; }
     try {
       const contents = await input.text();
       if (generation !== importGeneration) return;
       const json = JSON.parse(contents);
-      pendingImport = validateBackup(json);
-      prompt.textContent = 'В копии ' + pendingImport.quotes.length + ' цитат, '
-        + pendingImport.notes.length + ' заметок, ' + pendingImport.favorites.length
-        + ' статей. Существующие записи сохранятся; одинаковые записи не добавятся повторно, при конфликте импорт будет отменён.';
+      if(json?.format===RECOVERY_FORMAT) {
+        pendingImport={recovery:true,raw:validateRecovery(json)};
+        prompt.textContent='Точная копия: будут восстановлены только отсутствующие разделы. Если хотя бы один существующий раздел отличается, операция будет отменена. Повреждённый JSON автоматически не восстанавливается.';
+      } else {
+        if(input.size>4*1024*1024)throw new Error('Обычная копия больше 4 МБ.');
+        const data=validateBackup(json);
+        pendingImport={recovery:false,data};
+        prompt.textContent = 'В копии ' + data.quotes.length + ' цитат, '
+          + data.notes.length + ' заметок, ' + data.favorites.length
+          + ' статей. Существующие записи сохранятся; одинаковые записи не добавятся повторно, при конфликте импорт будет отменён.';
+      }
       confirmation.hidden = false;
       requestAnimationFrame(() => {
         if (generation !== importGeneration || confirmation.hidden) return;
@@ -801,4 +841,4 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
 }
 
 // Pure fail-closed backup contract functions (Node regression tests).
-export { safeTags, boundedTags, safeMerge, validateBackup, atomicImport, serializeCurrent, mutateResearch, appendTag, changeReading, updateProgress, updateRevisit };
+export { safeTags, boundedTags, safeMerge, validateBackup, atomicImport, serializeCurrent, mutateResearch, appendTag, changeReading, updateProgress, updateRevisit, validateRecovery, serializeRecovery, atomicRecovery };

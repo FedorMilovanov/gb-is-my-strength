@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 globalThis.location={origin:'https://gospod-bog.ru'};
 const source=fs.readFileSync(path.join(root,'js/reader-library-v3.js'),'utf8');
-const {safeTags,boundedTags,safeMerge,validateBackup,atomicImport,serializeCurrent,mutateResearch,appendTag,changeReading,updateProgress,updateRevisit}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {safeTags,boundedTags,safeMerge,validateBackup,atomicImport,serializeCurrent,mutateResearch,appendTag,changeReading,updateProgress,updateRevisit,validateRecovery,serializeRecovery,atomicRecovery}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const labels=Array.from({length:20},(_,i)=>'Тема '+(i+1));
 assert.deepEqual(boundedTags(['Тема 1',...labels]),labels);
 assert.deepEqual(safeTags(['Новая','НОВАЯ']),['Новая']);
@@ -66,7 +66,7 @@ const fixture=(seed={},options={})=>{
   assert.equal(name,'gb-library:'+keys.notes);
   const run=queue.then(()=>fn({name}));queue=run.catch(()=>{});return run;
  }}};
- const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary};')(keys.notes,keys.quotes,500,200,storage,nav,{dispatchEvent:()=>{}},class{},AbortController,()=>1,()=>{},x=>x?.text);
+ const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary,snapshotRaw,restoreRaw};')(keys.notes,keys.quotes,500,200,storage,nav,{dispatchEvent:()=>{}},class{},AbortController,()=>1,()=>{},x=>x?.text);
  const install=()=>{globalThis.window={GBHighlights:owner}};
  const snapshot=()=>Object.fromEntries(Object.values(keys).map(k=>[k,storage.getItem(k)]));
  return {owner,install,raw,writes,snapshot};
@@ -145,4 +145,46 @@ refused.install();await assert.rejects(serializeCurrent(),/Экспорт отм
 assert.equal((await mutateResearch('tags',map=>appendTag(map,'note:42','refused'))).ok,false);
 assert.deepEqual(refused.snapshot(),refusedBefore);
 assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)\s*\(/,'v3 has no raw storage writer');
-console.log('READER LIBRARY TAG, RECORD, IMPORT AND METADATA INTEGRITY: PASS');
+
+// Exact recovery is separate from merge import. Preserve even invalid legacy
+// rows and envelope metadata; refuse different existing sections or bad JSON.
+const rawSeed=fixture({quotes:'[ {"id":"Q","text":"old"}, null ]',notes:[numeric],
+ favorites:{version:1,custom:'preserve',items:[{path:'/a/',extra:'raw'},null]},tags:{'note:42':[' raw ',' raw ']}});
+rawSeed.install();
+const archive=await serializeRecovery();
+assert.deepEqual(archive.raw,rawSeed.snapshot());
+assert.deepEqual(validateRecovery(JSON.parse(JSON.stringify(archive))),archive.raw);
+assert.throws(()=>validateRecovery({...archive,raw:{...archive.raw,other:'x'}}),/Некорректная аварийная/);
+assert.throws(()=>validateRecovery({...archive,raw:{...archive.raw,[keys.notes]:42}}),/Некорректная аварийная/);
+const target=fixture();target.install();
+assert.equal(await atomicRecovery(archive.raw),4);
+assert.deepEqual(target.snapshot(),archive.raw);
+const writesBefore=target.writes.length;
+assert.equal(await atomicRecovery(archive.raw),0);
+assert.equal(target.writes.length,writesBefore);
+const occupied=fixture({notes:[{id:'other',text:'newer'}]});occupied.install();
+const occupiedBefore=occupied.snapshot();
+await assert.rejects(atomicRecovery(archive.raw),/отличается/);
+assert.deepEqual(occupied.snapshot(),occupiedBefore);assert.deepEqual(occupied.writes,[]);
+const cancelled=fixture();cancelled.install();
+await assert.rejects(atomicRecovery(archive.raw,()=>false),/не завершено/);
+assert.deepEqual(cancelled.writes,[]);
+const broken=fixture({quotes:'{bad'});broken.install();
+const brokenArchive=await serializeRecovery();assert.equal(brokenArchive.raw[keys.quotes],'{bad');
+target.install();
+const blankTarget=fixture();blankTarget.install();
+await assert.rejects(atomicRecovery(brokenArchive.raw),/повреждённый раздел/);
+assert.deepEqual(blankTarget.writes,[]);
+const recoveryQuota=fixture({},{failKey:keys.tags});recoveryQuota.install();
+const recoveryBefore=recoveryQuota.snapshot();
+await assert.rejects(atomicRecovery(archive.raw),/не завершено/);
+assert.deepEqual(recoveryQuota.snapshot(),recoveryBefore);
+const projection=hsrc.slice(hsrc.indexOf('  function visibleRecord('),hsrc.indexOf('  function currentTitle('));
+const rawRows=[{id:42,text:'legacy',url:'/a/'},null,{unknown:true},'invalid',{id:'ok',text:'new'}];
+const beforeRows=JSON.stringify(rawRows);
+const projected=new Function('read','QUOTES_KEY','NOTES_KEY','FAVORITES_KEY','window','location','MARK_COLORS',projection+'return {quotes,notes,favorites,all};')(()=>rawRows,keys.quotes,keys.notes,keys.favorites,{},location,['amber']);
+assert.deepEqual(projected.quotes().map(x=>x.id),[42,'ok']);
+assert.deepEqual(projected.notes().map(x=>x.id),[42,'ok']);
+assert.equal(projected.all().length,5);
+assert.equal(JSON.stringify(rawRows),beforeRows,'read projection never rewrites legacy rows');
+console.log('READER LIBRARY TAG, RECORD, IMPORT, METADATA AND EXACT RECOVERY INTEGRITY: PASS');

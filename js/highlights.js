@@ -226,14 +226,18 @@
   function libraryFailure(reason, current = []) {
     return {ok:false,conflict:reason==='conflict',reason,current};
   }
-  async function mutateLibrary(keys, prepare) {
+  async function storageCall(method,...args) {
     try {
       if(window.GBLibraryStorage?.version!==1)
-        await import('/js/reader-library-storage.js?v=ebe36b5b');
-      if(window.GBLibraryStorage?.version!==1) return libraryFailure('lock-unavailable');
-      return await window.GBLibraryStorage.mutateLibrary(keys,prepare);
+        await import('/js/reader-library-storage.js?v=bb6b34c9');
+      const owner=window.GBLibraryStorage;
+      if(owner?.version!==1||typeof owner[method]!=='function')return libraryFailure('lock-unavailable');
+      return await owner[method](...args);
     } catch { return libraryFailure('lock-unavailable'); }
   }
+  function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
+  function snapshotRaw() {return storageCall('snapshotRaw');}
+  function restoreRaw(raw,shouldContinue) {return storageCall('restoreRaw',raw,shouldContinue);}
   function commit(key, guard, mutate) {
     return mutateLibrary([key], stores => {
       const current = stores[key], outcome = mutate(current, guard);
@@ -301,13 +305,22 @@
       return { changes, result: { restored } };
     });
   }
-  function quotes() {
-    return read(QUOTES_KEY);
+  // Invalid historical rows remain recoverable in the exact backup, but
+  // cannot be rendered or offered for identity-based edits in the library.
+  function visibleRecord(row) {
+    return row && typeof row==='object' && !Array.isArray(row) &&
+      typeof row.text==='string' &&
+      ((typeof row.id==='string' && row.id.length>0) || Number.isSafeInteger(row.id));
   }
-  function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
+  function quotes() {
+    return read(QUOTES_KEY).filter(visibleRecord);
+  }
+  function notes() { return read(NOTES_KEY).filter(visibleRecord); }
   function favorites() {
     const store = window.GBFavoriteStore;
-    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) : read(FAVORITES_KEY);
+    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) :
+      read(FAVORITES_KEY).filter(x=>x && typeof x==='object' && !Array.isArray(x) &&
+        typeof (x.path||x.url)==='string' && Boolean(x.path||x.url) && Boolean(localUrl(x.path||x.url)));
   }
   function localUrl(value) {
     try {
@@ -401,7 +414,7 @@
       presenterPromise = import('/js/reader-library-presenter.js?v=95532247')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=0d92b26e');
+          const researchModule = await import('/js/reader-library-v3.js?v=7b71e298');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -1344,7 +1357,7 @@
   });
 
   const api = Object.freeze({
-    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted,
+    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted, snapshotRaw, restoreRaw,
     getNotes: notes, getLibrary: all,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,

@@ -79,38 +79,81 @@
       } catch {
         return libraryFailure('storage-read-or-prepare');
       }
-      const completed = [];
-      const notify = key => {
-        try { window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } })); }
-        catch { /* notification cannot turn a successful write into a failed save */ }
-      };
-      try {
-        for (const key of keys) {
-          if (localStorage.getItem(key) !== state[key].raw) return libraryFailure('storage-changed');
-        }
-        for (const change of staged) {
-          if (localStorage.getItem(change.key) !== change.before) throw new Error('Library changed');
-          localStorage.setItem(change.key, change.raw);
-          completed.push(change);
-          if (localStorage.getItem(change.key) !== change.raw)
-            throw new Error('Library bytes changed during write');
-        }
-      } catch {
-        let partial = false;
-        for (const change of completed.reverse()) {
-          try {
-            if (localStorage.getItem(change.key) !== change.raw) { partial = true; continue; }
-            if (change.before === null) localStorage.removeItem(change.key);
-            else localStorage.setItem(change.key, change.before);
-            if (localStorage.getItem(change.key) !== change.before) partial = true;
-          } catch { partial = true; }
-        }
-        if (partial) for (const change of completed) notify(change.key);
-        return libraryFailure(partial ? 'partial-write' : 'storage-write');
-      }
-      for (const change of completed) notify(change.key);
-      return { ok: true, conflict: false, ...outcome.result };
+      return applyStaged(Object.fromEntries(keys.map(key=>[key,state[key].raw])),staged,outcome.result);
     });
   }
-  window.GBLibraryStorage = Object.freeze({version:1,mutateLibrary});
+  function applyStaged(before, staged, result) {
+    const completed = [];
+    const notify = key => {
+      try { window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } })); }
+      catch { /* notification cannot turn a successful write into a failed save */ }
+    };
+    try {
+      for (const key of Object.keys(before)) {
+        if (localStorage.getItem(key) !== before[key]) return libraryFailure('storage-changed');
+      }
+      for (const change of staged) {
+        if (localStorage.getItem(change.key) !== change.before) throw new Error('Library changed');
+        localStorage.setItem(change.key, change.raw);
+        completed.push(change);
+        if (localStorage.getItem(change.key) !== change.raw)
+          throw new Error('Library bytes changed during write');
+      }
+    } catch {
+      let partial = false;
+      for (const change of completed.reverse()) {
+        try {
+          if (localStorage.getItem(change.key) !== change.raw) { partial = true; continue; }
+          if (change.before === null) localStorage.removeItem(change.key);
+          else localStorage.setItem(change.key, change.before);
+          if (localStorage.getItem(change.key) !== change.before) partial = true;
+        } catch { partial = true; }
+      }
+      if (partial) for (const change of completed) notify(change.key);
+      return libraryFailure(partial ? 'partial-write' : 'storage-write');
+    }
+    for (const change of completed) notify(change.key);
+    return { ok: true, conflict: false, ...result };
+
+  }
+  const recoveryKeys=()=>[QUOTES_KEY,NOTES_KEY,'gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
+  function rawRecoveryShape(raw) {
+    const keys=recoveryKeys();
+    return raw!==null&&typeof raw==='object'&&!Array.isArray(raw)&&
+      Object.keys(raw).length===keys.length&&keys.every(key=>Object.hasOwn(raw,key)&&
+        (raw[key]===null||typeof raw[key]==='string'));
+  }
+  // Archival export can preserve even unparseable legacy data. No normalization.
+  function snapshotRaw() {
+    return withLibraryLock(()=>{
+      const keys=recoveryKeys(),raw=Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)]));
+      if(keys.some(key=>localStorage.getItem(key)!==raw[key])) return libraryFailure('storage-changed');
+      return {ok:true,raw};
+    });
+  }
+  // Exact recovery is intentionally NOT a merge or a replacement. Only absent
+  // keys may be filled; any different existing key refuses the entire operation.
+  // Corrupt JSON can be archived, but must not be injected by automatic restore.
+  function restoreRaw(raw, shouldContinue=()=>true) {
+    if(!rawRecoveryShape(raw))return Promise.resolve(libraryFailure('invalid-recovery'));
+    const requested={...raw};
+    return withLibraryLock(()=>{
+      if(!shouldContinue())return libraryFailure('cancelled');
+      const keys=recoveryKeys(), before=Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)]));
+      const staged=[];
+      for(const key of keys) {
+        const value=requested[key],current=before[key];
+        if(current!==null&&current!==value)return libraryFailure('conflict');
+        if(value===null||value===current)continue;
+        let parsed;
+        try{parsed=JSON.parse(value);}catch{return libraryFailure('invalid-recovery');}
+        const spec=libraryStoreSpec(key);
+        const items=spec.envelope&&parsed&&!Array.isArray(parsed)&&Array.isArray(parsed.items)?parsed.items:parsed;
+        if(!validLibraryShape(items,spec))return libraryFailure('invalid-recovery');
+        staged.push({key,raw:value,before:current});
+      }
+      return applyStaged(before,staged,{restored:staged.length});
+    });
+  }
+  window.GBLibraryStorage = Object.freeze({version:1,mutateLibrary,snapshotRaw,restoreRaw});
 })();
