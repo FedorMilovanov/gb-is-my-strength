@@ -408,6 +408,17 @@ check('OFL content cannot be arbitrary text even with matching hash', async () =
   assert.throws(()=>verifyFontAssets({root,...state}),/copyright notice missing/);
 }));
 
+check('OFL changed legal wording fails even when the file hash is repinned', async () => withFixture(async (root) => {
+  const state=writeFixture(root,[['fonts/Fixture/fixture-latin-400.woff2',makeWoff2(29)]]);
+  const {licensePath,entry,bytes}=addOflFixture(root,state);
+  const original=bytes.toString('utf8');
+  const changed=Buffer.from(original.replace('may be sold by itself','may be sold freely by itself'),'utf8');
+  assert.notDeepEqual(changed,bytes);
+  fs.writeFileSync(path.join(root,licensePath),changed);
+  entry.bytes=changed.length;entry.sha256=sha256(changed);
+  assert.throws(()=>verifyFontAssets({root,...state}),/OFL legal wording mismatch/);
+}));
+
 check('OFL kind cannot admit unrelated support paths', async () => withFixture(async (root) => {
   const state=writeFixture(root,[['fonts/Fixture/fixture-latin-400.woff2',makeWoff2(27)]]);
   const {entry}=addOflFixture(root,state);

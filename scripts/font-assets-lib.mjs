@@ -313,6 +313,8 @@ function validateOflSupport(bytes, label) {
     assert.ok(body.includes(heading), `${label}: OFL section missing: ${heading}`);
   }
   assert.ok(body.endsWith('OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.'), `${label}: OFL ending missing`);
+  // Whitespace varies across upstream packaging; the legal wording must not.
+  assert.equal(sha256(Buffer.from(body, 'utf8')), '0339f4642e8741dea4841c236d258f360ffbe6e2cd3d032fbd0c10d1de8f58d1', `${label}: OFL legal wording mismatch`);
   return { bytes: bytes.length, sha256: sha256(bytes) };
 }
 
