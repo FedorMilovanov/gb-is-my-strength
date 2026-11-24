@@ -2,13 +2,28 @@
 import { documentExhibitView } from './document-exhibit-model.mjs';
 interface Source { id: string; href: string; label: string }
 interface Section { id: string; heading: string; locator: string; summary: string; significance: string; limitation: string; claimId: string; sourceId: string }
+interface ExhibitViewRow extends Omit<Section, 'sourceId'> {
+  number: string;
+  source: Source;
+  citationId: string;
+}
+interface ExhibitView {
+  id: string;
+  title: string;
+  issuer: string;
+  deck: string;
+  documentDate: string | null;
+  publicationDate: string | null;
+  captureDate: string | null;
+  sections: ExhibitViewRow[];
+}
 interface Props {
   input: { id: string; mode: 'editorial-paraphrase'; title: string; issuer: string; deck: string;
     documentDate: string | null; publicationDate: string | null; captureDate: string | null; sections: Section[] };
   authority: { claims: readonly { id: string; references: readonly { sourceId: string; locator: string }[] }[]; sources: readonly Source[] };
 }
 const { input, authority } = Astro.props;
-const view = documentExhibitView(input, authority);
+const view: ExhibitView = documentExhibitView(input, authority);
 const dates = [
   ['Дата документа', view.documentDate],
   ['Дата публикации', view.publicationDate],
