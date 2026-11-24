@@ -31,7 +31,9 @@ if(adopted){
     writeFileSync(registry,updated);
   }
 }
+const paperGate=process.env.G3_VISUAL_PAPER_GATE==='1';
 const common = [
+...(paperGate?["import '/fonts/fonts.css';"]:[]),
 "import SourceReturn from '@/components/journal/JournalSourceReturn.astro';",
 "import '@/components/journal/journalEditorial.css';",
 "import '@/components/journal/g3History.css';"
@@ -72,7 +74,7 @@ const typecheck=mapOnly?{status:0,diagnosticOnly:true}:cli('check');
 console.log('TYPECHECK_EXIT',mapOnly?'not run: map diagnostic only':typecheck.status);
 assert.equal(cli('build').status,0,'joint Astro build failed');
 const dist=at('dist');
-const mime={'.html':'text/html; charset=utf-8','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml'};
+const mime={'.html':'text/html; charset=utf-8','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.woff2':'font/woff2','.woff':'font/woff'};
 const server=createServer((req,res)=>{
   let p=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   if(p.endsWith('/'))p+='index.html';
@@ -85,17 +87,18 @@ const origin='http://127.0.0.1:'+server.address().port;
 const routes=['/journal/dossiers/g3/history/','/journal/dossiers/g3/'];
 const issues=[],reports=[];
 const note=(where,kind,detail)=>issues.push({where,kind,detail});
-const widths=(mapOnly||printOnly)?[740]:process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
+const widths=paperGate?[320,740]:(mapOnly||printOnly)?[740]:process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
 try{
  for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
-  if(printOnly&&engine!=='chromium')continue;
+  if(printOnly&&!paperGate&&engine!=='chromium')continue;
   if(process.env.G3_VISUAL_ENGINE&&process.env.G3_VISUAL_ENGINE!==engine)continue;
   const browser=await browserType.launch();
   let geometry=0,roundTrips=0,deepLinks=0,printCases=0;
   try{
    for(const route of routes)for(const width of widths)for(const dark of [false,true])for(const js of [false,true]){
     if(mapOnly&&(route!==routes[0]||dark||!js))continue;
-    if(printOnly&&!js)continue;
+    if(printOnly&&!paperGate&&!js)continue;
+    if(paperGate&&((width===320&&js)||(width===740&&engine!=='chromium')))continue;
     const where={engine,route,width,dark,js};
     const ctx=await browser.newContext({viewport:{width,height:900},javaScriptEnabled:js});
     const page=await ctx.newPage(), errors=[];page.setDefaultTimeout(6000);
@@ -103,6 +106,12 @@ try{
     try{
       await page.goto(origin+route);
       await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
+      if(paperGate){
+        for(let retry=0;retry<50;retry++){if(await page.evaluate(()=>document.fonts.status==='loaded'))break;await page.waitForTimeout(100)}
+        const fonts=await page.evaluate(()=>[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family.replaceAll('"','')));
+        if(!['Playfair Display','Lora','Source Sans 3'].every(f=>fonts.includes(f)))note(where,'canonical-fonts',fonts);
+        if(route===routes[0]&&width===320){const count=await page.locator('.gm-row:visible').count();const controls=await page.locator('.gm-filter').isVisible();if(count!==26||controls)note(where,'mobile-nojs-matrix',{count,controls})}
+      }
       const idCheck=await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);return {unique:new Set(ids).size===ids.length,missing:[...document.querySelectorAll('a[data-journal-citation]')].filter(a=>!document.getElementById(a.hash.slice(1))).map(a=>a.id),overflow:document.documentElement.scrollWidth-innerWidth}});
       if(!idCheck.unique||idCheck.missing.length||idCheck.overflow>0)note(where,'id/overflow',idCheck);
       if(adopted&&route===routes[0]){
@@ -173,11 +182,14 @@ try{
         if(numbers.length!==4)note(where,'waterfall-values',numbers);
         await page.emulateMedia({media:'print'});printCases++;
        }
-       if(adopted&&engine==='chromium'&&width===740&&js){
+       if(adopted&&engine==='chromium'&&width===740&&(js||paperGate)){
         const dir=at('pdf-evidence');mkdirSync(dir,{recursive:true});
         const filename=(route===routes[0]?'history':'finance')+'-'+(dark?'dark':'light')+'.pdf';
-        await page.pdf({path:path.join(dir,filename),format:'A4',printBackground:true,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'}});
-        if(printOnly){const component=page.locator(route===routes[0]?'.g3-matrix':'.g3-annual-finance');await component.screenshot({path:path.join(dir,filename.replace('.pdf','.png'))});}
+        for(const format of (paperGate?['A4','Letter']:['A4'])){
+          const output=paperGate?filename.replace('.pdf','-'+format+'-'+(js?'js':'nojs')+'.pdf'):filename;
+          await page.pdf({path:path.join(dir,output),format,printBackground:true,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'}});
+        }
+        if(printOnly&&!paperGate){const component=page.locator(route===routes[0]?'.g3-matrix':'.g3-annual-finance');await component.screenshot({path:path.join(dir,filename.replace('.pdf','.png'))});}
        }
        if(errors.length)note(where,'pageerror',errors);
       }
