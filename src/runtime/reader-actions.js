@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const READER_ACTIONS_VERSION = 1;
+  const READER_ACTIONS_VERSION = 2;
   const PRINT_ENGINE_VERSION = 2.1;
   if (window.GBReaderActions?.version === READER_ACTIONS_VERSION && window.GBPrintEngine?.version === PRINT_ENGINE_VERSION) {
     document.documentElement.dataset.gbReaderActionsReady = '1';
@@ -211,6 +211,126 @@
     event.stopPropagation();
   }
 
+  // One export surface. Download is deliberately unavailable until an
+  // approved, versioned artifact is supplied by the publication pipeline.
+  let exportMenu = null;
+  let exportOpener = null;
+  const exportIcons = {
+    download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>',
+    print: '<path d="M6 9V3h12v6M6 17H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v7H6zM17 12h2"/>',
+  };
+  const exportCommands = Object.freeze([
+    Object.freeze({ id: 'download', label: 'Скачать PDF', description: 'Файл пока не опубликован', available: false }),
+    Object.freeze({ id: 'print', label: 'Распечатать', description: 'Открыть настройки печати', available: true }),
+  ]);
+  function closeExport(restoreFocus = false) {
+    if (!exportMenu || exportMenu.hidden) return;
+    const opener = exportOpener;
+    exportMenu.hidden = true;
+    exportMenu.remove();
+    exportOpener = null;
+    opener?.setAttribute('aria-expanded', 'false');
+    if (restoreFocus && opener?.isConnected && opener.getClientRects().length) opener.focus({ preventScroll: true });
+  }
+  function invokeExport(id, source = 'export-menu') {
+    if (id === 'print') return print(source);
+    // No navigation or pretend download when the artifact is unavailable.
+    return { status: 'unavailable', reason: 'pdf-not-published' };
+  }
+  function makeExportOption(command, onInvoke) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'reader-export-option';
+    button.dataset.readerExportCommand = command.id;
+    button.setAttribute('role', 'menuitem');
+    button.setAttribute('aria-disabled', String(!command.available));
+    button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + exportIcons[command.id] + '</svg><span><strong></strong><small></small></span>';
+    button.querySelector('strong').textContent = command.label;
+    button.querySelector('small').textContent = command.description;
+    button.addEventListener('click', () => { if (command.available) onInvoke(command.id); });
+    return button;
+  }
+  function positionExport() {
+    if (!exportOpener || !exportMenu || exportMenu.hidden) return;
+    if (!exportOpener.getClientRects().length) { closeExport(); return; }
+    // Stay inside the current visual viewport, including short mobile screens.
+    const viewport = window.visualViewport;
+    const left = viewport?.offsetLeft || 0, top = viewport?.offsetTop || 0;
+    const width = viewport?.width || innerWidth, height = viewport?.height || innerHeight;
+    const anchor = exportOpener.getBoundingClientRect();
+    const box = exportMenu.getBoundingClientRect();
+    const clamp = (n, lo, hi) => Math.max(lo, Math.min(n, hi));
+    const roomRight = left + width - anchor.right;
+    const roomLeft = anchor.left - left;
+    let x, y;
+    if (roomRight >= box.width + 12 || roomLeft >= box.width + 12) {
+      x = roomRight >= box.width + 12 ? anchor.right + 8 : anchor.left - box.width - 8;
+      y = anchor.bottom - box.height;
+    } else {
+      x = anchor.right - box.width;
+      y = anchor.top - box.height - 8 >= top + 8 ? anchor.top - box.height - 8 : anchor.bottom + 8;
+    }
+    exportMenu.style.left = clamp(x, left + 8, left + width - box.width - 8) + 'px';
+    exportMenu.style.top = clamp(y, top + 8, top + height - box.height - 8) + 'px';
+  }
+  function initializeExportTriggers() {
+    document.querySelectorAll('[data-action="print"]').forEach(trigger => {
+      trigger.setAttribute('aria-label', 'Скачать или распечатать');
+      trigger.setAttribute('aria-haspopup', 'menu');
+      trigger.setAttribute('aria-controls', 'gbReaderExportMenu');
+      if (trigger !== exportOpener) trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('title', 'Скачать или распечатать');
+    });
+  }
+  function openExport(trigger) {
+    if (exportOpener === trigger) { closeExport(true); return; }
+    closeExport();
+    exportOpener = trigger;
+    if (!exportMenu) {
+      exportMenu = document.createElement('div');
+      exportMenu.id = 'gbReaderExportMenu';
+      exportMenu.className = 'reader-export-menu';
+      exportMenu.setAttribute('role', 'menu');
+      exportMenu.setAttribute('aria-label', 'Скачать или распечатать');
+      exportMenu.dataset.printPolicy = 'exclude';
+      for (const command of exportCommands) exportMenu.append(makeExportOption(command, id => {
+        closeExport(true);
+        invokeExport(id);
+      }));
+      exportMenu.addEventListener('keydown', event => {
+        const buttons = [...exportMenu.querySelectorAll('button')];
+        const index = buttons.indexOf(document.activeElement);
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeExport(true); }
+        else if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Home' || event.key === 'End') {
+          event.preventDefault();
+          const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
+            : (index + (event.key === 'ArrowDown' ? 1 : buttons.length - 1)) % buttons.length;
+          buttons[next]?.focus();
+        } else if (event.key === 'Tab') { closeExport(true); }
+      });
+    }
+    // A native sheet may trap focus: keep its inline commands inside the
+    // existing owner rather than registering a competing overlay.
+    const sheet = trigger.closest('[role="dialog"],[aria-modal="true"]');
+    exportMenu.classList.toggle('reader-export-menu--inline', Boolean(sheet));
+    (sheet || document.body).append(exportMenu);
+    exportMenu.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    if (!sheet) positionExport();
+    exportMenu.querySelector('[data-reader-export-command="print"]')?.focus({ preventScroll: false });
+  }
+  const exportApi = Object.freeze({ commands: exportCommands, invoke: invokeExport, makeOption: makeExportOption, close: closeExport });
+  document.addEventListener('pointerdown', event => {
+    if (exportOpener && !exportOpener.contains(event.target) && !exportMenu?.contains(event.target)) closeExport();
+  }, true);
+  document.addEventListener('focusin', event => {
+    if (exportOpener && !exportOpener.contains(event.target) && !exportMenu?.contains(event.target)) closeExport();
+  });
+  window.addEventListener('resize', () => closeExport());
+  window.addEventListener('pagehide', () => closeExport());
+  window.addEventListener('beforeprint', () => closeExport());
+  window.visualViewport?.addEventListener('resize', () => closeExport());
+
   function onClick(event) {
     const trigger = event.target instanceof Element
       ? event.target.closest('[data-action="print"],[data-action="share"],[data-home-href]')
@@ -219,7 +339,7 @@
 
     if (trigger.matches('[data-action="print"]')) {
       claimAction(event);
-      print('button');
+      openExport(trigger);
       return;
     }
     if (trigger.matches('[data-action="share"]')) {
@@ -245,10 +365,13 @@
   window.GBReaderActions = Object.freeze({
     version: READER_ACTIONS_VERSION,
     print: printEngine,
+    export: exportApi,
     share,
     goBack,
   });
 
+  initializeExportTriggers();
+  document.addEventListener('astro:page-load', initializeExportTriggers);
   document.addEventListener('click', onClick, true);
   window.addEventListener('beforeprint', () => preparePrint('native'));
   window.addEventListener('afterprint', resetPrint);
