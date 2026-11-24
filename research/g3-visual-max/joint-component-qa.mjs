@@ -62,7 +62,7 @@ const origin='http://127.0.0.1:'+server.address().port;
 const routes=['/journal/dossiers/g3/history/','/journal/dossiers/g3/'];
 const issues=[],reports=[];
 const note=(where,kind,detail)=>issues.push({where,kind,detail});
-const widths=[320,390,580,660,680,740,850,1440,1920];
+const widths=process.env.G3_VISUAL_FOCUSED==='1'?[390,740]:[320,390,580,660,680,740,850,1440,1920];
 try{
  for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
   if(process.env.G3_VISUAL_ENGINE&&process.env.G3_VISUAL_ENGINE!==engine)continue;
@@ -92,7 +92,7 @@ try{
       if(width===390||width===740){
        if(route===routes[0])await page.locator('.g3g-chron-details summary').click();
        const links=await page.locator('.g3g a[data-journal-citation],.g3-annual-finance a[data-journal-citation],.gm-row a[data-journal-citation]').evaluateAll(es=>es.map(a=>({id:a.id,hash:a.hash})));
-       const selected=width===740&&!dark&&js?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002');
+       const selected=width===740&&!dark&&js&&process.env.G3_VISUAL_FOCUSED!=='1'?links:links.filter((a,i)=>i===0||i===links.length-1||a.id==='cite-g3g-finance-irs'||a.id==='cite-finance-annual-G3-S002');
        for(const a of selected){
         await page.locator('#'+a.id).click();
         const back=page.locator(a.hash+' [data-journal-source-return]');
@@ -103,7 +103,8 @@ try{
        if(route===routes[0]){
         const hidden=page.locator('.g3g-chron-details a[data-journal-citation]').first();
         const id=await hidden.getAttribute('id');
-        await page.goto(origin+route+'#'+id);
+        // A new document, initially closed: never accept a previous open state.
+        await page.goto(origin+route+'?deep-link=1#'+id);
         await page.waitForTimeout(50);
         const revealed=await page.locator('.g3g-chron-details').evaluate(e=>e.open);
         if(!revealed)note(where,'closed-details-direct-hash',id);
