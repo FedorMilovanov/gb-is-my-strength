@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v238-reader-export-print-candidate-20261124';
+const CACHE_VERSION = 'gb-v239-reader-atlas-print-candidate-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -44,7 +44,7 @@ const PRECACHE_ASSETS = [
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
   '/js/floating-cluster-controller.js?v=2eda7d85',
-  '/js/reader-preferences-head.js?v=bd4355e3',
+  '/js/reader-preferences-head.js?v=027bab72',
   '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=af589b59',
   '/pagefind/pagefind.js',
