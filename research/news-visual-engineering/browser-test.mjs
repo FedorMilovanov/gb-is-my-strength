@@ -1,6 +1,7 @@
 import { build } from 'astro';
 import { chromium, firefox, webkit } from 'playwright';
 import assert from 'node:assert/strict';
+import {waitForCanonicalFonts} from './wait-for-canonical-fonts.mjs';
 import { createServer } from 'node:http';
 import { cp, readFile, writeFile, mkdir, mkdtemp, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -77,8 +78,8 @@ try {
           const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
           const response=await page.goto(url);assert.equal(response.status(),200);
           if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
-          const data=await page.evaluate(async()=>{
-            await document.fonts.ready;
+          await waitForCanonicalFonts(page);
+          const data=await page.evaluate(()=>{
             return {over:document.documentElement.scrollWidth>innerWidth,rows:document.querySelectorAll('.jdx-section').length,
               links:[...document.querySelectorAll('.jdx a')].every(a=>document.getElementById(a.hash.slice(1))),
               ids:[...document.querySelectorAll('[id]')].map(el=>el.id),
@@ -103,7 +104,7 @@ try {
           await textScaleCheck(page);
           if(!js&&[320,1100].includes(width)){
             await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
-            await page.evaluate(()=>document.fonts.ready);
+            await waitForCanonicalFonts(page);
             await page.screenshot({path:join(evidence,name+'-'+width+'-'+(dark?'dark':'light')+'.png'),fullPage:true});
             if(name==='chromium'&&width===1100)for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
           }
@@ -116,7 +117,7 @@ try {
         try{
           const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);assert.equal((await page.goto(url+'/long/')).status(),200);
           if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
-          await page.evaluate(()=>document.fonts.ready);
+          await waitForCanonicalFonts(page);
           await borderCheck(page);
           const data=await page.evaluate(()=>({over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),rows:document.querySelectorAll('.jdx-section').length,exhibits:document.querySelectorAll('.jdx').length}));
           assert.equal(data.over,false);assert.equal(data.rows,10);assert.equal(data.exhibits,2);assert.equal(new Set(data.ids).size,data.ids.length);
@@ -140,7 +141,7 @@ try {
           await textScaleCheck(page);
           if(!js){
             await page.goto(url+'/long/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
-            await page.evaluate(()=>document.fonts.ready);
+            await waitForCanonicalFonts(page);
             await page.screenshot({path:join(evidence,'long-'+name+'-'+width+'-'+(dark?'dark':'light')+'.png'),fullPage:true});
             if(name==='chromium'&&width===1100){
               await page.emulateMedia({media:'print'});

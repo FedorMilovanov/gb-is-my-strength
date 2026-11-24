@@ -1,6 +1,7 @@
 import { build } from 'astro';
 import { chromium, firefox, webkit } from 'playwright';
 import assert from 'node:assert/strict';
+import {waitForCanonicalFonts} from './wait-for-canonical-fonts.mjs';
 import { createServer } from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { cp, readFile, writeFile, mkdir, mkdtemp, symlink } from 'node:fs/promises';
@@ -69,7 +70,7 @@ try{
      page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
      assert.equal((await page.goto(url+'/'+variant+'/')).status(),200);
      if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
-     await page.evaluate(()=>document.fonts.ready);
+     await waitForCanonicalFonts(page);
      const witness=await page.evaluate(()=>({text:document.querySelector('#buice').textContent,summary:document.querySelector('.jdx-passage p:not(.jdx-locator)')?.textContent??document.querySelector('[data-publication-claims]').textContent,over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),opening:Math.round(document.querySelector('#buice').getBoundingClientRect().height),textStart:Math.round((document.querySelector('.jdx-passage p:not(.jdx-locator),[data-publication-claims]')).getBoundingClientRect().top+scrollY),links:[...document.querySelectorAll('#buice a[data-journal-citation]')].map(a=>({id:a.id,href:a.getAttribute('href')}))}));
      assert.equal(witness.summary,specimen.readerSafeText);assert.equal(witness.text.split(specimen.readerSafeText).length-1,1);assert.equal(witness.over,false);assert.equal(new Set(witness.ids).size,witness.ids.length);
      assert.equal(witness.links.length,variant==='before'?1:2);
@@ -82,7 +83,7 @@ try{
       const back=page.locator('#src-G3-S008 [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+link.id);
       await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,'#'+link.id);
      }
-     await page.goto(url+'/'+variant+'/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.evaluate(()=>document.fonts.ready);
+     await page.goto(url+'/'+variant+'/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
      const stem=[name,width,dark?'dark':'light',variant].join('-');
      await page.screenshot({path:join(evidence,stem+'-full.png'),fullPage:true});await page.screenshot({path:join(evidence,stem+'-viewport.png')});
      results.push({name,width,dark,variant,opening:witness.opening,textStart:witness.textStart,links:witness.links.length});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
@@ -96,7 +97,7 @@ try{
      page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(15000);
      assert.equal((await page.goto(url+'/compact/')).status(),200);
      if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
-     await page.evaluate(()=>document.fonts.ready);
+     await waitForCanonicalFonts(page);
      const snapshot=()=>page.evaluate(()=>({
       summary:document.querySelector('.jdc-summary').textContent,
       annotation:document.querySelector('.jdc-note div:first-child dd').textContent,
@@ -129,7 +130,7 @@ try{
      assert.ok(enlarged.fontSizes.every((size,i)=>Math.abs(size/base.fontSizes[i]-2)<.01),'Reader text scale ratio');
      await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
      assert.deepEqual((await snapshot()).fontSizes,base.fontSizes);
-     await page.goto(url+'/compact/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.evaluate(()=>document.fonts.ready);
+     await page.goto(url+'/compact/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
      const stem=[name,width,dark?'dark':'light','compact-nojs'].join('-');
      await page.screenshot({path:join(evidence,stem+'-full.png'),fullPage:true});
      if(name==='chromium'&&width===1440){
