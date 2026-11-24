@@ -138,6 +138,7 @@ for(const value of [{role:'event',value:'2022-09-15'},{role:'publication',value:
 for(const [label,role] of [['array',['publication']],['coercible object',{toString:()=> 'publication'}]])test('record date rejects non-string '+label,()=>assert.throws(()=>documentRecordDate({role,value:null}),/Journal document exhibit/));
 
 import {validateWordBounds} from './pdf-word-bounds.mjs';
+import {assertFocusWitness} from './keyboard-scale-witness.mjs';
 const sheet=(words,width=595.28,height=841.89)=>'<page width="'+width+'" height="'+height+'">'+words+'</page>';
 const word=(x1=1,y1=2,x2=30,y2=40)=>'<word xMin="'+x1+'" yMin="'+y1+'" xMax="'+x2+'" yMax="'+y2+'">text</word>';
 test('paper bounds accepts all physical words across two sheets',()=>assert.equal(validateWordBounds(sheet(word())+sheet(word()+word()),2,'A4'),3));
@@ -168,3 +169,17 @@ for(const [label,xml,pages,format] of [
  ['non-string format',sheet(word()),1,['A4']],
  ['invalid format',sheet(word()),1,'toString']
 ])test('paper bounds rejects '+label,()=>assert.throws(()=>validateWordBounds(xml,pages,format)));
+
+const validFocus={active:true,keyboard:true,targetInside:true,boundsInside:true,indicatorVisible:true,unobscured:true,visible:true,scale:2,viewport:{width:320,height:640}};
+test('focus witness accepts fully painted and unobscured 2x target',()=>assert.equal(assertFocusWitness(validFocus),validFocus));
+for(const [label,change] of [
+ ['not native focus',s=>s.active=false],
+ ['not keyboard focus',s=>s.keyboard=false],
+ ['missing painted indicator',s=>s.indicatorVisible=false],
+ ['clipped focus bounds',s=>s.boundsInside=false],
+ ['overlay obstruction',s=>s.unobscured=false],
+ ['partially visible target',s=>s.visible=false]
+])test('focus witness rejects '+label,()=>{
+ const invalid={...validFocus};change(invalid);
+ assert.throws(()=>assertFocusWitness(invalid),/keyboard focus/);
+});

@@ -23,9 +23,9 @@ async function interactionEvidence(row,fixture,js,desktop,citations,external,ret
  const stem=['qa-'+fixture,engine,row.width,row.dark?'dark':'light',js?'js':'nojs'].join('-');
  assert.ok(i,'missing targeted interaction '+stem);assert.equal(i.stem,stem);
  assert.equal(i.tabs,citations+external+returns);assert.equal(i.citations,citations);assert.equal(i.external,external);assert.equal(i.returns,returns);
- assert.equal(i.reverse,true);assert.equal(i.scale,2);assert.ok(Number.isInteger(i.scaledElements)&&i.scaledElements>0);
+ assert.equal(i.reverse,true);assert.equal(i.scale,2);assert.deepEqual(i.viewport,{width:row.width,height:row.width<=430?640:768});assert.ok(Number.isInteger(i.scaledElements)&&i.scaledElements>0);
  assert.equal(i.focus.length,i.tabs);
- for(const state of i.focus)assert.ok(state.active===true&&state.keyboard===true&&state.visible===true);
+ for(const state of i.focus){assert.ok(state.active===true&&state.keyboard===true&&state.visible===true&&state.targetInside===true&&state.boundsInside===true&&state.indicatorVisible===true&&state.unobscured===true&&state.scale===2);assert.deepEqual(state.viewport,i.viewport);}
  for(const suffix of ['citation-focus','return-focus','scale2-full','scale2-viewport'])await png(stem+'-'+suffix+'.png');
 }
 if(mode!=='generic'){
