@@ -3,6 +3,26 @@
   "policy": "offline-pinned-support",
   "fontFaceOverrides": [
     {
+      "path": "fonts/CormorantGaramond/cormorantgaramond-cyrillic-400.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorantgaramond-cyrillic-500.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/Inter/inter-cyrillic-400.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-cyrillic-500.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-cyrillic-600.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
       "path": "fonts/NotoSansGreek/notosansgreek-400.woff2",
       "family": "Noto Sans Greek"
     },
