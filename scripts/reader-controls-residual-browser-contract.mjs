@@ -9,6 +9,7 @@ import { chromium, webkit } from 'playwright';
 
 const require = createRequire(import.meta.url);
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry.js');
+const { isDesktopReaderRoute } = require('./lib/reader-desktop-contract.js');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
 const REPORTS = path.join(ROOT, 'reports');
@@ -29,6 +30,7 @@ const registry = buildPublicSurfaceRegistry();
 assert.deepEqual(registry.errors, [], `public surface registry must be green: ${registry.errors.join('; ')}`);
 const reading = registry.entries.filter((entry) => entry.routeRole === 'reading');
 const articleRoutes = reading.filter((entry) => entry.surface === 'article').map((entry) => entry.route);
+const desktopReaderRoutes = new Set(reading.filter(isDesktopReaderRoute).map(entry => entry.route));
 const flatSeries = reading.find((entry) => entry.surface === 'series' && entry.seriesShape === 'flat');
 const bookSeries = reading.find((entry) => entry.surface === 'series' && entry.seriesShape === 'book');
 assert.ok(articleRoutes.length > 0, 'public authority must expose standalone reading articles');
@@ -234,9 +236,21 @@ async function auditNoJsFallback(browser, engine, origin, routes) {
   }
 }
 
-async function auditStandaloneDesktop(page, engine, origin, route) {
-  await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+async function gotoClassic(page, engine, origin, route){
+  const url=new URL(route,origin);
+  url.searchParams.set('reader-pilot','0');
+  const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});
   await waitForReader(page);
+  const owner=await page.evaluate(()=>({
+    explicit:new URLSearchParams(location.search).get('reader-pilot')==='0',
+    ready:document.body.classList.contains('np-w57-ready'),
+    runtime:!!window.__NP_UNIVERSAL_PREVIEW__||!!window.__NP_W57_ANNOTATIONS__
+  }));
+  check(engine,'desktop-classic',route,'explicit Classic comparison, no W57 owner',response?.status()===200&&owner.explicit&&!owner.ready&&!owner.runtime,owner);
+}
+
+async function auditStandaloneClassic(page, engine, origin, route) {
+  await gotoClassic(page,engine,origin,route);
   const snap = await page.evaluate(() => {
     const visible = (node) => {
       if (!node) return false;
@@ -266,22 +280,92 @@ async function auditStandaloneDesktop(page, engine, origin, route) {
   const missing = await relationAudit(page);
   check(engine, 'desktop', route, 'ARIA references resolve', missing.length === 0, missing.slice(0, 10));
 
+  await auditDesktopMenu(page,engine,route,'desktop-classic');
+}
+
+async function auditStandaloneDesktop(page,engine,origin,route){
+  // Retain all Classic assertions as a separate explicitly selected comparison.
+  await auditStandaloneClassic(page,engine,origin,route);
+  const response=await page.goto(origin+route,{waitUntil:'domcontentloaded'});
+  await waitForReader(page);
+  if(!desktopReaderRoutes.has(route)){
+    const owner=await page.evaluate(()=>({
+      explicit:new URLSearchParams(location.search).has('reader-pilot'),
+      ready:document.body.classList.contains('np-w57-ready'),
+      visible:!!document.querySelector('.hrail')?.getClientRects().length
+    }));
+    check(engine,'desktop',route,'ineligible default route retains native rail',
+      response?.status()===200&&!owner.explicit&&!owner.ready&&owner.visible,owner);
+    await auditDesktopMenu(page,engine,route,'desktop');
+    return;
+  }
+  await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&
+    window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true,
+    null,{timeout:15000});
+  const snap=await page.evaluate(()=>{
+    const visible=node=>{
+      if(!node||node.closest('[inert],[hidden],[aria-hidden="true"]'))return false;
+      const s=getComputedStyle(node),r=node.getBoundingClientRect();
+      return s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity||1)>0.01&&r.width>0&&r.height>0;
+    };
+    const outline=document.querySelector('#npUOutline');
+    const native=document.querySelector('.hrail');
+    const menu=document.getElementById('hMobileMenuBtn'),nav=document.getElementById('hMobileNav');
+    const settings=[...document.querySelectorAll('[aria-controls="npUFontPanel"]')].filter(visible);
+    const search=[...document.querySelectorAll('[data-fc-action="search"],#gbSearchBtn,[data-gbs2-search]')].filter(visible);
+    const links=[...outline?.querySelectorAll('.np-u-major-link,.np-u-child')||[]];
+    const article=document.querySelector('article[data-reader-projection]');
+    const groups=window.__NP_UNIVERSAL_PREVIEW__.groups;
+    const invalid=links.filter(a=>{
+      const id=a.dataset.npUGoto,target=document.getElementById(id);
+      return !id||!target||!article?.contains(target)||a.getAttribute('href')!=='#'+id;
+    }).map(a=>a.dataset.npUGoto);
+    return {explicit:new URLSearchParams(location.search).has('reader-pilot'),outline:visible(outline),
+      nativeHidden:!visible(native),nativeInert:!native||(native.inert&&native.getAttribute('aria-hidden')==='true'),
+      menuExists:!!menu,navExists:!!nav,menuVisible:visible(menu),menuAction:menu?.getAttribute('data-fc-action'),
+      menuLabel:menu?.getAttribute('aria-label'),menuControls:menu?.getAttribute('aria-controls'),
+      searchCount:search.length,settingsCount:settings.length,groups:groups.map(g=>g.id),
+      major:[...outline?.querySelectorAll('.np-u-major-link')||[]].map(a=>a.dataset.npUGoto),links:links.length,invalid};
+  });
+  check(engine,'desktop',route,'default W57 standalone outline is sole visible owner',
+    response?.status()===200&&!snap.explicit&&snap.outline&&snap.nativeHidden&&snap.nativeInert,snap);
+  check(engine,'desktop',route,'hamburger is truthful Menu action with real target',
+    snap.menuExists&&snap.navExists&&snap.menuVisible&&snap.menuAction!=='search'&&/меню/i.test(snap.menuLabel||'')&&snap.menuControls==='hMobileNav',snap);
+  check(engine,'desktop',route,'Search remains a separate action',snap.searchCount===1,snap);
+  check(engine,'desktop',route,'exactly one standalone desktop Settings action',snap.settingsCount===1,snap);
+  check(engine,'desktop',route,'W57 outline uses actual authored group and child anchors',
+    snap.groups.length>0&&JSON.stringify(snap.major)===JSON.stringify(snap.groups)&&snap.links>=snap.groups.length&&!snap.invalid.length,snap);
+  const missing=await relationAudit(page);
+  check(engine,'desktop',route,'ARIA references resolve',missing.length===0,missing.slice(0,10));
+  const trigger=page.locator('[aria-controls="npUFontPanel"]:visible');
+  await trigger.click();
+  await page.locator('#npUFontPanel').waitFor({state:'visible'});
+  check(engine,'desktop',route,'default Settings opens its actual panel',await trigger.getAttribute('aria-expanded')==='true');
+  await page.keyboard.press('Escape');
+  await page.locator('#npUFontPanel').waitFor({state:'hidden'});
+  check(engine,'desktop',route,'default Settings Escape restores opener',await trigger.evaluate(el=>document.activeElement===el));
+  await auditDesktopMenu(page,engine,route,'desktop');
+}
+
+async function auditDesktopMenu(page,engine,route,viewport){
   await page.locator('#hMobileMenuBtn').click();
-  await page.waitForTimeout(120);
+  await page.waitForFunction(()=>document.getElementById('hMobileMenuBtn')?.getAttribute('aria-expanded')==='true'&&
+    document.getElementById('hMobileNav')?.classList.contains('open'),null,{timeout:5000});
   const opened = await page.evaluate(() => ({
     expanded: document.getElementById('hMobileMenuBtn')?.getAttribute('aria-expanded'),
     hidden: document.getElementById('hMobileNav')?.getAttribute('aria-hidden'),
     open: document.getElementById('hMobileNav')?.classList.contains('open'),
   }));
-  check(engine, 'desktop', route, 'Menu opens exact site-sections surface', opened.expanded === 'true' && opened.hidden !== 'true' && opened.open, opened);
+  check(engine, viewport, route, 'Menu opens exact site-sections surface', opened.expanded === 'true' && opened.hidden !== 'true' && opened.open, opened);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(120);
+  await page.waitForFunction(()=>document.getElementById('hMobileMenuBtn')?.getAttribute('aria-expanded')==='false'&&
+    !document.getElementById('hMobileNav')?.classList.contains('open'),null,{timeout:5000});
   const closed = await page.evaluate(() => ({
     expanded: document.getElementById('hMobileMenuBtn')?.getAttribute('aria-expanded'),
     hidden: document.getElementById('hMobileNav')?.getAttribute('aria-hidden'),
     open: document.getElementById('hMobileNav')?.classList.contains('open'),
   }));
-  check(engine, 'desktop', route, 'Escape closes Menu and synchronizes trigger', closed.expanded === 'false' && closed.hidden === 'true' && !closed.open, closed);
+  check(engine, viewport, route, 'Escape closes Menu and synchronizes trigger', closed.expanded === 'false' && closed.hidden === 'true' && !closed.open, closed);
 }
 
 async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reducedMotion }) {
@@ -464,8 +548,9 @@ async function auditReaderMeasureCapacity(page, engine, origin, route) {
 
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
-    await waitForReader(page);
+    // This native capacity contract measures the Classic shell and controls.
+    // Default W57 geometry is separately mandatory in reader-w57-browser-visual-qa.
+    await gotoClassic(page,engine,origin,route);
 
     const mode = width < 1360 ? 'compact/tablet' : 'full rail';
     const triggerSelector = width < 1360 ? '#mobSettingsBtn' : '#railSettingsBtn';

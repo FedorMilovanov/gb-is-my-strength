@@ -1296,9 +1296,14 @@
    // projection root. Place the adjacent TOC after that same original node.
    source.after(full);
   }else if(inArticleHeader){
+   // The compact study companion is authored immediately after the masthead.
+   // Reader-owned summaries/TOC must never split that product boundary.
+   // Use the existing semantic CTA attributes, not the route or CSS geometry.
+   const companion=inArticleHeader.nextElementSibling;
    const rights=inArticleHeader.querySelector(':scope > .notice');
-   if(rights)rights.after(...(hasOverview?[short,full]:[full]));
-   else inArticleHeader.after(...(hasOverview?[short,full]:[full]));
+   const insertion=companion?.matches('[data-bible-app-chapter][data-bible-app-variant="compact"]')
+    ?companion:(rights||inArticleHeader);
+   insertion.after(...(hasOverview?[short,full]:[full]));
   }else{host.before(...(hasOverview?[short,full]:[full]));}
  }
 
