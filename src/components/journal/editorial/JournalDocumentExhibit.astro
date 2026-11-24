@@ -1,5 +1,5 @@
 ---
-import { documentExhibitView } from './document-exhibit-model.mjs';
+import { documentExhibitView, documentCitationAttributes } from './document-exhibit-model.mjs';
 interface Source { id: string; href: string; label: string }
 interface Section { id: string; heading: string; locator: string; summary: string; significance: string; limitation: string; claimId: string; sourceId: string }
 interface ExhibitViewRow extends Omit<Section, 'sourceId'> {
@@ -50,7 +50,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
         <h3>{row.heading}</h3>
         <p>{row.summary}</p>
         <div class="jdx-citations" role="group" aria-label={`Источники: ${row.heading}`}>
-          {row.citations.map(citation => <a id={citation.citationId} data-journal-citation href={citation.source.href} aria-label={`Источник: ${citation.source.label} · ${citation.locator} · ${row.heading}`}>
+          {row.citations.map(citation => <a {...documentCitationAttributes(citation, `Источник: ${citation.source.label}`, row.heading)}>
             <span>Источник: {citation.source.label}{row.citations.length > 1 && <span class="jdx-citation-locator"> · {citation.locator}</span>}</span>
           </a>)}
         </div>

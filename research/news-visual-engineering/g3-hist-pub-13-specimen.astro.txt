@@ -1,6 +1,6 @@
 ---
 import SourceReturn from '../components/journal/JournalSourceReturn.astro';
-import {documentExhibitView} from '../components/journal/editorial/document-exhibit-model.mjs';
+import {documentExhibitView, documentCitationAttributes} from '../components/journal/editorial/document-exhibit-model.mjs';
 import specimen from '../history-evidence.json';
 import {groupEvidenceFamilies} from '../group-evidence-families.mjs';
 import '../components/journal/journalEditorial.css';
@@ -15,7 +15,7 @@ const entries=groupEvidenceFamilies(specimen.sources,row.citations,specimen.grou
 <section class="jhe" aria-labelledby="jhe-title"><header><p class="jhe-kicker">2018 · Свидетельства участников</p><h2 id="jhe-title">Два взгляда на конференцию</h2></header>
 <div class="jhe-grid"><div class="jhe-main"><p class="jhe-summary" data-history-expansion-claim={specimen.claimId}>{row.summary}</p><aside class="jhe-boundary"><h3>Предел доказательства</h3><p>{row.limitation}</p></aside></div>
 <aside class="jhe-rail" aria-label="Группы свидетельств"><p class="jhe-kicker">{row.citations.length} документа · {entries.length} семьи свидетельств</p>
-{entries.map(group=><section class="jhe-group"><h3>{group.label}</h3><ul role="list">{group.rows.map(({source,citation})=><li data-source-id={source.id}><a id={citation.citationId} data-journal-citation href={citation.source.href} aria-label={source.label+' · '+source.locator}>{source.label}</a><p>{source.role}</p></li>)}</ul></section>)}
+{entries.map(group=><section class="jhe-group"><h3>{group.label}</h3><ul role="list">{group.rows.map(({source,citation})=><li data-source-id={source.id}><a {...documentCitationAttributes(citation,source.label)}>{source.label}</a><p>{source.role}</p></li>)}</ul></section>)}
 </aside></div></section>
 <section class="jhe-bib" aria-label="Источники">{specimen.sources.map(source=><section id={'private-src-'+source.id} class="bibliography-item"><h3>{source.label}</h3><p lang="en">{source.locator}</p><a href={source.url} rel="noopener noreferrer">Открыть источник</a> <SourceReturn href={'#'+row.citations.find(c=>c.source.id===source.id).citationId}/></section>)}</section>
 </article></main></body></html>

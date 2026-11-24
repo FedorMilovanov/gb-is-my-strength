@@ -1,0 +1,35 @@
+---
+import SourceReturn from '../components/journal/JournalSourceReturn.astro';
+import {documentExhibitView, documentCitationAttributes} from '../components/journal/editorial/document-exhibit-model.mjs';
+import specimen from '../history-evidence.json';
+import '../components/journal/journalEditorial.css';
+import '../../fonts/fonts.css';
+const sourceMap=specimen.sources.map(s=>({id:s.id,href:'#private-src-'+s.id,label:s.label}));
+const authority={claims:[{id:specimen.claimId,references:specimen.sources.map(s=>({sourceId:s.id,locator:s.locator}))}],sources:sourceMap};
+const row=documentExhibitView({id:'history-compare-2022',mode:'editorial-paraphrase',title:'Два материала о Писании',issuer:'Редакция',deck:'Сопоставление тем публикаций',documentDate:null,publicationDate:null,captureDate:null,sections:[{id:'topics',heading:'Два материала',locator:specimen.sources[0].locator,summary:specimen.readerSafeText,significance:'Различные темы',limitation:specimen.boundary,claimId:specimen.claimId,sourceId:specimen.sources[0].id}]},authority).sections[0];
+const entries=specimen.groups.map(group=>({label:group.label,source:specimen.sources.find(s=>s.id===group.sourceIds[0]),citation:row.citations.find(c=>c.source.id===group.sourceIds[0])}));
+if(entries.length!==row.citations.length||new Set(entries.map(e=>e.source?.id)).size!==row.citations.length||entries.some(e=>!e.source||!e.citation)||new Set(specimen.sources.map(s=>s.family)).size!==1)throw Error('Comparison requires distinct records from the stated single family');
+---
+<html lang="ru"><head><meta charset="utf-8"/><meta name="robots" content="noindex,nofollow"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>PRIVATE_REVIEW · G3-HIST-PUB-16</title></head><body style="margin:0"><main class="journal-edition"><article data-journal-source-navigation style="max-width:1100px;margin:auto;padding:16px">
+<p class="jhc-kicker">PRIVATE_REVIEW · не для публикации</p>
+<section class="jhc" aria-labelledby="jhc-title"><header><p class="jhc-kicker">2022 · Документальное сопоставление</p><h2 id="jhc-title">Два материала о Писании</h2><p class="jhc-summary jhe-summary" data-history-expansion-claim={specimen.claimId}>{row.summary}</p></header>
+<p class="jhc-kicker">{row.citations.length} публикации · одна семья свидетельств</p>
+<div class="jhc-compare" aria-label="Темы публикаций, не противоположные позиции">{entries.map((entry,i)=><section class="jhc-record jhe-group"><p class="jhc-kicker">0{i+1} · <time datetime="2022-09-15">15 сентября 2022</time> · дата публикации</p><h3>{entry.label}</h3><div data-source-id={entry.source.id}><a {...documentCitationAttributes(entry.citation,entry.source.label)}>{entry.source.label}</a><p class="jhc-role">{entry.source.role}</p></div></section>)}</div>
+<aside class="jhc-boundary jhe-boundary"><h3>Предел доказательства</h3><p>{row.limitation}</p></aside></section>
+<section aria-label="Источники">{specimen.sources.map(source=><section id={'private-src-'+source.id} class="bibliography-item"><h3>{source.label}</h3><p lang="en">{source.locator}</p><a href={source.url} rel="noopener noreferrer">Открыть источник</a> <SourceReturn href={'#'+row.citations.find(c=>c.source.id===source.id).citationId}/></section>)}</section>
+</article></main></body></html>
+<style>
+.jhc{container-type:inline-size;border-block:1px solid var(--je-rule);border-block-start:2px solid var(--je-gold);padding-block:1rem;color:var(--je-ink)}
+.jhc-kicker{font:600 .78rem/1.5 var(--je-ui);color:var(--je-muted);margin:0 0 .6rem}
+.jhc h2{font:600 clamp(1.6rem,4cqi,2.5rem)/1.2 var(--je-serif);margin:0 0 .8rem;text-wrap:balance;hyphens:none}
+.jhc-summary,.jhc-boundary p{font:400 calc(1rem * var(--gb-reader-font-scale,1))/1.7 var(--je-body);margin:0}
+.jhc header{margin-block-end:1.2rem}
+.jhc-compare{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem}
+.jhc-record{min-width:0;overflow-wrap:anywhere;border-block-start:1px solid var(--je-rule);padding-block:1rem}
+.jhc h3{font:600 1.2rem/1.35 var(--je-serif);margin:0 0 .5rem;hyphens:none}
+.jhc-record a{display:inline-flex;align-items:center;min-height:44px;font:600 .9rem/1.4 var(--je-ui);color:var(--je-gold);text-decoration:underline}
+.jhc-role{font:400 calc(.9rem * var(--gb-reader-font-scale,1))/1.6 var(--je-body);margin:0}
+.jhc-boundary{border-inline-start:2px solid var(--je-rule);padding-inline-start:1rem;margin-block:1rem}
+@container(min-width:44rem){.jhc-compare{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem}.jhc-record+ .jhc-record{border-inline-start:1px solid var(--je-rule);padding-inline-start:1.5rem}}
+@media print{.jhc{container-type:normal;color:#111;border-color:#555}.jhc-compare{display:block}.jhc-record,.jhc-boundary{break-inside:avoid}.jhc-record a{display:block;min-height:0}.jhc :is(p,a,h3){color:#111}}
+</style>

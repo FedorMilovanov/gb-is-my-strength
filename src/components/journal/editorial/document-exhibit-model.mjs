@@ -77,3 +77,17 @@ export function documentExhibitView(input, authority) {
   return { id: input.id, title: text(input.title, 'title'), issuer: text(input.issuer, 'issuer'),
     deck: text(input.deck, 'deck'), documentDate, publicationDate, captureDate, sections };
 }
+
+/** Display only: consume the citation projected by documentExhibitView.
+ * The visible label is always the accessible name prefix; the admitted
+ * locator remains explicit even if the layout abbreviates the visual label.
+ * No source or claim admission is performed here.
+ */
+export function documentCitationAttributes(citation, visibleLabel, context = '') {
+  if (!citation || !anchor('#'+citation.citationId) || !anchor(citation.source?.href)) fail('invalid display citation');
+  const label=text(visibleLabel,'visible citation label');
+  const locator=text(citation.locator,'display locator');
+  if(context!==''&&!clean(context))fail('invalid citation context');
+  return {id:citation.citationId,'data-journal-citation':true,href:citation.source.href,
+    'aria-label':label+' · '+locator+(context?' · '+context:'')};
+}

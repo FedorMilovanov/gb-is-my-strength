@@ -1,0 +1,53 @@
+{
+  "status": "PRIVATE_REVIEW",
+  "productCommit": "8f9130a97a916e58c5dbac7ce169ee1b8b93d98f",
+  "productBlob": "ecae799c6be9ae6ad66cc905afd8a8372fb9f699",
+  "historyFeatureBlob": "d0063bece78e953e607d48b7e98956ede3cb64f7",
+  "researchCommit": "efecb12fea0fcc481cf4930154dcae53d4e033f6",
+  "researchBlob": "d7512eeb35591eea4ee3dc73c8046ca7eb23872f",
+  "claimId": "G3-HIST-PUB-16",
+  "readerSafeText": "В сентябре 2022 года региональная встреча G3 о Писании проходила в Immanuel Bible Church в Спрингфилде, штат Виргиния. На сайте служения Джеймса Уайта появились материалы о двух выступлениях — об изучении библейских рукописей и о происхождении Библии.",
+  "rights": "ORIGINAL_PARAPHRASE_AND_LINK_ONLY",
+  "exclusion": "Two author metadata posts only. No exact session day, Q&A, Massena, museum, stream realization or speech content.",
+  "sources": [
+    {
+      "id": "white-manuscripts-2022",
+      "url": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-making-sense-of-manuscripts-immanuel-bible-church-springfield-virginia-9-15-2022/",
+      "locator": "Sept 15 2022 post header/title/byline/venue tags; Oct 18 modification metadata",
+      "type": "A1",
+      "family": "White participant-controlled metadata",
+      "access": "PARTIAL_OBJECT",
+      "locatorState": "EXACT_LOCATOR_VERIFIED",
+      "rights": "RIGHTS_UNKNOWN",
+      "label": "Джеймс Уайт. Making Sense of Manuscripts",
+      "role": "Материал о библейских рукописях: известна тема публикации, не установлен полный текст выступления."
+    },
+    {
+      "id": "white-bible-2022",
+      "url": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-how-we-got-our-bible-immanuel-bible-church-springfield-virginia-9-15-2022/",
+      "locator": "Sept 15 2022 post header/title/byline/venue tags; Oct 18 modification metadata",
+      "type": "A1",
+      "family": "White participant-controlled metadata",
+      "access": "PARTIAL_OBJECT",
+      "locatorState": "EXACT_LOCATOR_VERIFIED",
+      "rights": "RIGHTS_UNKNOWN",
+      "label": "Джеймс Уайт. How We Got Our Bible",
+      "role": "Материал о происхождении Библии: известна тема публикации, не установлен полный текст выступления."
+    }
+  ],
+  "groups": [
+    {
+      "label": "Рукописи",
+      "sourceIds": [
+        "white-manuscripts-2022"
+      ]
+    },
+    {
+      "label": "Происхождение Библии",
+      "sourceIds": [
+        "white-bible-2022"
+      ]
+    }
+  ],
+  "boundary": "Обе публикации принадлежат одной семье свидетельств — метаданным, контролируемым участником. Это разные темы, а не противоположные позиции или независимое подтверждение. Дата публикации не устанавливает точный день выступления; содержание выступлений здесь не восстанавливается."
+}

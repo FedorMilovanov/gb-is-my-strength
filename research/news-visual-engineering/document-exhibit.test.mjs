@@ -112,3 +112,16 @@ for(const [name,change] of [
  ['missing family',f=>f.sources[0].family=''],
  ['duplicate source',f=>f.sources.push(f.sources[0])]
 ])test('evidence partition rejects '+name,()=>{const f=evidenceFixture();change(f);assert.throws(()=>partition(f),/Evidence family partition/);});
+
+import {documentCitationAttributes} from '../../src/components/journal/editorial/document-exhibit-model.mjs';
+test('display primitive preserves id, destination, locator and label-in-name',()=>{
+ const citation=view(multiple()).sections[0].citations[2];
+ assert.deepEqual(documentCitationAttributes(citation,'Воспроизведение','Контекст'),{id:citation.citationId,'data-journal-citation':true,href:citation.source.href,'aria-label':'Воспроизведение · § 3 · Контекст'});
+});
+for(const [label,mutate] of [
+ ['empty label',c=>[c,'']],
+ ['invalid destination',c=>[{...c,source:{...c.source,href:'javascript:alert(1)'}},'Источник']],
+ ['missing locator',c=>[{...c,locator:''},'Источник']],
+ ['invalid citation ID',c=>[{...c,citationId:'bad id'},'Источник']],
+ ['invalid context',c=>[c,'Источник',' ']]
+])test('display rejects '+label,()=>assert.throws(()=>documentCitationAttributes(...mutate(view(fixture()).sections[0].citations[0])),/Journal document exhibit/));
