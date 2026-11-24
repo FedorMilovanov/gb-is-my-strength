@@ -363,6 +363,8 @@ try{
  await snap(d.page,'desktop-folded');
  const readingGeometry=selector=>({
   viewport:innerWidth,
+  leftRail:[...document.querySelectorAll('.gbs2-world > .gbs-rail,#npUOutline')].filter(el=>{const r=el.getBoundingClientRect(),style=getComputedStyle(el);return r.width>0&&r.right>0&&style.display!=='none'&&style.visibility!=='hidden';}).map(el=>el.getBoundingClientRect().toJSON()),
+  rightRail:document.querySelector('#npUResearch')?.getBoundingClientRect().toJSON(),
   boxes:Object.fromEntries([
    ['main',document.querySelector('main.np-u-reader-main')],
    ['article',document.querySelector('article.article-body')],
@@ -385,6 +387,11 @@ try{
    bounds:document.querySelector('#npUResearch').getBoundingClientRect().toJSON()
   }));
   assert.ok(d.item.panel.open&&d.item.panel.noteOpen);
+  // Wait for the existing right-panel transform to finish, not a fixed delay.
+  await d.page.waitForFunction(()=>{
+   const r=document.querySelector('#npUResearch')?.getBoundingClientRect();
+   return r&&r.width>0&&Math.abs(r.right-document.documentElement.clientWidth)<=2;
+  },null,{timeout:5000});
   d.item.geometryOpen=await d.page.evaluate(readingGeometry,SALTERS_PARAGRAPH);
   const folded=d.item.geometryFolded.boxes.hero,opened=d.item.geometryOpen.boxes.hero;
   d.item.heroCenterShift=folded&&opened?+(opened.center-folded.center).toFixed(1):null;
@@ -392,6 +399,24 @@ try{
    REPORT.findings.push({severity:'visual-review',problem:'hero moves between folded and open research',
     deltaPx:d.item.heroCenterShift,folded:d.item.geometryFolded,opened:d.item.geometryOpen});
   await snap(d.page,'desktop-annotations');
+  // Stable centered reading is a mandatory contract, not merely a review note.
+  for(const geometry of [d.item.geometryFolded,d.item.geometryOpen]){
+   for(const key of ['main','article','hero']){
+    const box=geometry.boxes[key];
+    assert.ok(box&&box.width>0,'missing real '+key+' geometry');
+    assert.ok(Math.abs(box.center-geometry.viewport/2)<=2,key+' must be viewport-centered');
+   }
+   for(const rail of geometry.leftRail)
+    assert.ok(rail.right<=geometry.boxes.main.left+1,'left rail overlaps reading surface');
+  }
+  for(const key of ['main','article','hero']){
+   const a=d.item.geometryFolded.boxes[key],b=d.item.geometryOpen.boxes[key];
+   assert.ok(Math.abs(a.center-b.center)<=2&&Math.abs(a.width-b.width)<=2,
+    key+' shifts or resizes when research opens');
+  }
+  assert.ok(d.item.geometryOpen.rightRail&&
+   d.item.geometryOpen.boxes.main.right<=d.item.geometryOpen.rightRail.left+1,
+   'open research overlaps reading surface');
  });
  // W44: a click dispatch does not await a Web Locks mutation.
   const waitW57Store=async(page,key,expected)=>{

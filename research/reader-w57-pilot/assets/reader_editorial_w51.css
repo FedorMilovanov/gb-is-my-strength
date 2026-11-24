@@ -11,8 +11,8 @@
  }
  body.np-u-preview.np-u-w40-space #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
   box-sizing:border-box!important;
-  flex:0 0 74px!important;min-height:74px!important;height:74px!important;
-  padding-top:26px!important;padding-bottom:8px!important;
+  flex:0 0 var(--np-u-research-head-height,74px)!important;min-height:var(--np-u-research-head-height,74px)!important;height:var(--np-u-research-head-height,74px)!important;
+  padding-top:var(--np-u-research-head-top,26px)!important;padding-bottom:8px!important;
  }
  body.np-u-preview.np-u-w40-space #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
   flex:0 0 auto!important;
@@ -135,6 +135,25 @@ body.np-u-preview .np-u-central-overview .np-u-central-points li{
 
 
 
+/* Responsive research header: preserve the real action row and move the
+   heading below it when the rail cannot fit both inline. */
+@media screen and (min-width:1121px) and (max-width:1635px){
+ body.np-u-preview.np-u-inline-header-actions{
+  --np-u-research-head-height:96px;
+  --np-u-research-head-top:68px;
+  --np-u-research-title-inset:0px;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
+  align-items:flex-end!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions:not(.np-u-w40-space) #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
+  flex:0 0 var(--np-u-research-head-height)!important;
+  min-height:var(--np-u-research-head-height)!important;
+  height:var(--np-u-research-head-height)!important;
+  padding-top:var(--np-u-research-head-top)!important;padding-bottom:8px!important;
+ }
+}
+
 /* W52 mobile research toolbar pilot: preserve genuine native Product buttons.
    No DOM cloning, no replacement event handlers, no additional toolbar row. */
 @media (max-width:1120px){
@@ -221,7 +240,7 @@ body.np-u-preview .np-u-central-overview .np-u-central-points li{
  }
  body.np-u-preview.np-u-inline-header-actions
  #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading{
-  margin-left:45px!important;
+  margin-left:var(--np-u-research-title-inset,45px)!important;
  }
  body.np-u-preview.np-u-inline-header-actions
  > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)

@@ -519,23 +519,17 @@ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-narrow-series-a
   body.np-u-preview.np-u-argon-shell:not(.np-u-compact){
     --np-u-left:clamp(207px,16vw,246px)!important;
   }
-  body.np-u-preview.np-u-argon-shell:not(.np-u-hide-right){
-    --np-u-right:clamp(305px,25vw,390px)!important;
-  }
-  body.np-u-preview.np-u-argon-shell.np-u-hide-right{
-    --np-u-right:0px!important;
-  }
-  body.np-u-preview.np-u-argon-shell {
-    --np-u-paper-width:min(1100px,calc(100vw - var(--np-u-left) - var(--np-u-right) - 84px));
-    --np-u-paper-left:calc(var(--np-u-left) + 42px + max(0px, calc((100vw - var(--np-u-left) - var(--np-u-right) - 1184px) / 2)));
-  }
-  /* When research is folded, Product actions remain floating on the right.
-     Reserve their exact inset (5vw + 40px) plus 16px breathing room;
-     center the paper in the remaining space instead of under the buttons. */
+  /* One symmetric corridor, independent of the research visibility.
+     Keep the real rail width when folded: transform/inert own visibility.
+     The widest potential side (including floating Product actions) is the
+     reserve on BOTH sides. No negative margins or overlay on the prose. */
+  body.np-u-preview.np-u-argon-shell,
   body.np-u-preview.np-u-argon-shell.np-u-hide-right {
+    --np-u-right:clamp(270px,22vw,390px)!important;
     --np-u-product-action-reserve:max(88px,calc(5vw + 56px));
-    --np-u-paper-width:min(1100px,calc(100vw - var(--np-u-left) - var(--np-u-product-action-reserve) - 84px));
-    --np-u-paper-left:calc((100vw + var(--np-u-left) - var(--np-u-product-action-reserve) - var(--np-u-paper-width)) / 2);
+    --np-u-paper-reserve:max(var(--np-u-left),var(--np-u-right),var(--np-u-product-action-reserve));
+    --np-u-paper-width:min(1100px,calc(100vw - 2 * var(--np-u-paper-reserve) - 48px));
+    --np-u-paper-left:calc((100vw - var(--np-u-paper-width)) / 2);
   }
   body.np-u-preview.np-u-argon-shell > main.np-u-reader-main,
   body.np-u-preview.np-u-argon-shell > .page-wrap,
