@@ -1,0 +1,41 @@
+/* Scoped documentary exhibit, no player, scripts, media queries against the viewport,
+   or alternate palette. The parent supplies the journal theme. */
+.g3av{--av-ink:var(--je-ink,#142536);--av-paper:var(--je-paper,#faf7f0);--av-rule:var(--je-rule,#d5cbb9);--av-muted:var(--je-muted,#5e5b54);--av-gold:var(--je-gold,#896020);margin:1.8rem 0;padding:1rem 0;border-block:1px solid var(--av-rule);color:var(--av-ink);font:400 15px/1.5 var(--je-ui,Arial,sans-serif);container-type:inline-size;min-width:0;overflow-wrap:anywhere}
+.g3av,.g3av *{box-sizing:border-box}
+.g3av .g3av-body{display:grid;gap:16px;min-width:0}
+.g3av-has-frame .g3av-body{grid-template-columns:minmax(0,1.06fr) minmax(0,1fr);align-items:start}
+.g3av :is(p,blockquote){margin:0}
+.g3av .g3av-frame{min-width:0}
+.g3av .g3av-frame img{display:block;width:100%;height:auto;max-width:100%;border:1px solid var(--av-rule)}
+.g3av :is(.g3av-frame-meta,.g3av-kicker,.g3av-label,.g3av-original-label,.g3av-recording){font:400 12px/1.45 var(--je-ui,Arial,sans-serif);color:var(--av-muted)}
+.g3av .g3av-frame-meta{margin-top:6px}
+.g3av .g3av-kicker{padding-bottom:9px;border-bottom:1px solid var(--av-rule);margin-bottom:12px;letter-spacing:.035em}
+.g3av .g3av-label{margin-bottom:5px;font-weight:600}
+.g3av .g3av-quotation blockquote{padding:0;border:0;color:var(--av-ink);font:500 clamp(20px,4.1cqi,29px)/1.38 var(--je-serif,Georgia,serif);letter-spacing:-.02em}
+.g3av .g3av-original-label{margin-top:12px;margin-bottom:4px}
+.g3av .g3av-quotation .g3av-original{font:400 14px/1.55 var(--je-body,Georgia,serif);letter-spacing:normal}
+.g3av .g3av-paraphrase{font:400 17px/1.6 var(--je-body,Georgia,serif)}
+.g3av .g3av-attribution{display:grid;gap:2px;margin-top:14px;border-top:1px solid var(--av-rule);padding-top:9px}
+.g3av .g3av-attribution strong{font-size:16px}
+.g3av .g3av-attribution span{font-size:13px;color:var(--av-muted)}
+.g3av .g3av-caption{margin-top:13px;padding-top:9px;border-top:1px solid var(--av-rule);color:var(--av-muted)}
+.g3av a{color:var(--av-gold);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.g3av a:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.g3av .g3av-time{display:inline-flex;align-items:center;gap:10px;min-height:44px;max-width:100%;font-weight:600}
+.g3av .g3av-time b{display:inline-block;font-variant-numeric:tabular-nums;white-space:nowrap}
+.g3av .g3av-play{display:grid;place-items:center;flex:none;border:1px solid currentColor;border-radius:50%;width:30px;height:30px;font-size:11px}
+.g3av .g3av-recording a{display:inline-block;min-height:44px;padding-block:10px;max-width:100%}
+.g3av .g3av-sources{display:flex;flex-wrap:wrap;gap:0 15px}
+.g3av .g3av-sources a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;font-size:13px}
+@container(max-width:560px){.g3av-has-frame .g3av-body{grid-template-columns:minmax(0,1fr)}}
+@media print{
+ .g3av,html.dark .g3av{--av-ink:#191919;--av-paper:#fff;--av-rule:#888;--av-muted:#333;--av-gold:#191919;font-size:10pt;margin:9pt 0;padding:6pt 0;color:var(--av-ink)}
+ .g3av .g3av-body{display:block}
+ .g3av .g3av-frame{max-width:310pt;break-inside:avoid;margin-bottom:7pt}
+ .g3av .g3av-quotation blockquote{font-size:15pt}
+ .g3av .g3av-quotation .g3av-original,.g3av .g3av-paraphrase{font-size:10pt}
+ .g3av .g3av-play{display:none}
+ .g3av .g3av-time,.g3av .g3av-recording a,.g3av .g3av-sources a{min-height:0;padding:2pt 0}
+ .g3av .g3av-kicker,.g3av .g3av-label,.g3av .g3av-original-label{break-after:avoid}
+ .g3av .g3av-attribution,.g3av .g3av-caption{break-inside:avoid}
+}
