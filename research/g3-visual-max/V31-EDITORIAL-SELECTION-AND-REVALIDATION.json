@@ -1,0 +1,197 @@
+{
+  "wave": "V31",
+  "checkedOn": "2026-11-24",
+  "priorHead": "324621917f298849da38c306e3c1fe8c79c76a8e",
+  "authority": "Canonical Research G3_HISTORY/MEDIA_LEDGER.md; source registries unchanged; visual donor only.",
+  "summary": {
+    "uniqueDiscoveryRecords": 77,
+    "newDiscoveryRecords": 0,
+    "previouslyRecordedViewed": 42,
+    "upgradedToViewed": 8,
+    "cumulativeEverViewed": 50,
+    "remainingNotViewed": 27,
+    "directImageProbes": 20,
+    "directImagesViewedNow": 16,
+    "directUnavailableNow": 4,
+    "originalBinariesAcquired": 0,
+    "actualVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "upgrades": [
+    {
+      "id": "V-G3-045",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Exhibition booth of Answers in Genesis; visible booth label, books, staff. No individual identity inference.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-046",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Bookstore checkout line; signage, queue barriers, people. No inference of sales or attendance totals.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-047",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Speaker at wooden G3 lectern; author text attributes opening welcome to Virgil Walker. Foreground obstruction; secondary detail.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-048",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Speaker and slide identifying session about providence and G3 National Conference 2023; text corroborates Carl Hargrove attribution. Preserve slide in crop.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-049",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Audience gathered in small room before empty transparent lectern. Do not caption as an image of Erin Coates herself.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-050",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Wide crowd view, rows of chairs, G3 mark visible; author context before Phil Johnson's sermon. Does not show or quantify full attendance.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-051",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Photograph of large on-stage screen showing speaker; author attributes Phil Johnson. Not an original portrait or extracted video frame.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-053",
+      "observation": "DIRECT_IMAGE_VIEWED_2026_11_24",
+      "visual": "Blurred close-up of illuminated WORSHIP lettering and foreground obstruction; 2020 attribution by author in retrospective 2025 post. Not an audience wide shot; low placement priority.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    }
+  ],
+  "refreshed": [
+    "V-G3-006",
+    "V-G3-007",
+    "V-G3-012",
+    "V-G3-062",
+    "V-G3-070",
+    "V-G3-074",
+    "V-G3-075",
+    "V-G3-077"
+  ],
+  "unavailableThisPass": [
+    "V-G3-001",
+    "V-G3-052",
+    "V-G3-072",
+    "V-G3-076"
+  ],
+  "selection": {
+    "primary": [
+      "V-G3-006",
+      "V-G3-012",
+      "V-G3-075",
+      "V-G3-077",
+      "V-G3-062",
+      "V-G3-074",
+      "V-G3-050",
+      "V-G3-046",
+      "V-G3-048",
+      "V-G3-070"
+    ],
+    "secondary": [
+      "V-G3-007",
+      "V-G3-047",
+      "V-G3-049",
+      "V-G3-045",
+      "V-G3-051"
+    ],
+    "reserve": [
+      "V-G3-053"
+    ],
+    "rule": "All 16 directly inspected this wave, not licensed. Select one major photo plus a maximum of one supporting detail per chapter; prefer preserved full-format document crops. Avoid implying crisis involvement through unrelated historical photos."
+  },
+  "rightsBatches": [
+    {
+      "source": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia",
+      "ids": [
+        "V-G3-006",
+        "V-G3-007",
+        "V-G3-012"
+      ],
+      "contact": "https://www.missionsfirstlove.org/contact.html",
+      "action": "Verify photographer and license; no outreach."
+    },
+    {
+      "source": "https://the-end-time.org/2023/09/21/g3-conference-2023-day-1/",
+      "ids": [
+        "V-G3-045",
+        "V-G3-046",
+        "V-G3-047",
+        "V-G3-048",
+        "V-G3-049",
+        "V-G3-050",
+        "V-G3-051",
+        "V-G3-053"
+      ],
+      "contact": "https://the-end-time.org/contact/",
+      "action": "Request original files and written editorial permission; prioritize 050,046,048, verify individual dates and credits."
+    },
+    {
+      "source": "https://churchworksmedia.com/2020/01/30/my-two-cents-on-the-g3-conference/",
+      "ids": [
+        "V-G3-020",
+        "V-G3-025",
+        "V-G3-026"
+      ],
+      "action": "Still caption-only; request wide audience and choir, not substitute blurred V053."
+    },
+    {
+      "source": "Challies contemporary sponsor announcements, GBTS, publisher/distributor and current trademark owner",
+      "ids": [
+        "V-G3-075",
+        "V-G3-077",
+        "V-G3-062",
+        "V-G3-074",
+        "V-G3-070"
+      ],
+      "action": "Ask for exact source artwork and rights owner; current host is not necessarily creator."
+    }
+  ],
+  "contactSheet": {
+    "file": "G3_V31_contact_sheet.html",
+    "sha256": "c440e0c855cd0ef9a8719a865d4ce3757a1add8595b2b58ede53039ca1ad590d",
+    "ids": [
+      "V-G3-006",
+      "V-G3-007",
+      "V-G3-012",
+      "V-G3-075",
+      "V-G3-077",
+      "V-G3-053",
+      "V-G3-062",
+      "V-G3-074",
+      "V-G3-050",
+      "V-G3-046",
+      "V-G3-048",
+      "V-G3-047",
+      "V-G3-049",
+      "V-G3-045",
+      "V-G3-051",
+      "V-G3-070"
+    ],
+    "storage": "Delivered to owner chat, not committed to public repo. No image bytes embedded. Explicit opt-in external requests; fallback direct source links, no automatic load.",
+    "qa": "HTML structure: 16 unique source cards, 32 links, zero embedded images. Chromium set_content exact HTML: zero initial external requests, 16 mocked load successes, hide, no 320px horizontal overflow. File navigation was blocked by environment; live browser image loading not independently tested. Actual 16 external image objects separately viewed via web retrieval, not as assembled sheet. Mock pixels are test-only; not documentary images."
+  },
+  "gaps": [
+    "No verified original photos 2013–2016.",
+    "2020 auditorium wide shot/choir still caption-only; V053 unsuitable as substitute.",
+    "2022 panel original and permission outstanding.",
+    "Crisis-era documentary portraits still outside this donor selection; canonical Research rights state unchanged."
+  ],
+  "limitations": "No new candidate IDs, no original binaries, no license, no outreach, no public imports. Ever-viewed metric historical not guarantee of current access; source-image views are not an inspected rendered contact sheet. No pixel-level dedup. All previous registries preserved; V31 is an additive reconciliation."
+}
