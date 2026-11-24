@@ -16,7 +16,11 @@
       "catalogueDate": null,
       "recordingId": null,
       "durationSeconds": null,
-      "status": "outside_current_sample"
+      "status": "outside_current_sample",
+      "attendeeReportedTitle": "Unwise Men Proclaiming the Wisdom of God",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata",
+      "attendeeReportedScripture": "1 Corinthians 1:18–25"
     },
     {
       "slot": "2",
@@ -80,7 +84,10 @@
       "catalogueDate": null,
       "recordingId": null,
       "durationSeconds": null,
-      "status": "outside_current_sample"
+      "status": "outside_current_sample",
+      "attendeeReportedTitle": "Q&A",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata"
     },
     {
       "slot": "9",
@@ -104,7 +111,10 @@
       "catalogueDate": null,
       "recordingId": null,
       "durationSeconds": null,
-      "status": "alternate_edition_unresolved"
+      "status": "alternate_edition_unresolved",
+      "attendeeReportedTitle": "The War on the Word",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata"
     },
     {
       "slot": "12",
@@ -128,7 +138,10 @@
       "catalogueDate": null,
       "recordingId": null,
       "durationSeconds": null,
-      "status": "outside_current_sample"
+      "status": "outside_current_sample",
+      "attendeeReportedTitle": "The God-Breathed Word",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata"
     }
   ],
   "alternate": {
