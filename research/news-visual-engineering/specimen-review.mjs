@@ -91,13 +91,51 @@ if(historyMode){
     const sizes=()=>page.evaluate(()=>[...document.querySelectorAll('.jhe-summary,.jhe-boundary p,.jhe-group li p')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
     const base=await sizes();await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));assert.ok((await sizes()).every((s,i)=>Math.abs(s/base[i]-2)<.01));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));assert.deepEqual(await sizes(),base);
     if(!js){await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);await page.screenshot({path:join(evidence,[name,width,dark?'dark':'light','history'].join('-')+'.png'),fullPage:true});}
+    if(name==='chromium'&&width===1440){
+     await page.goto(url);if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
+     await page.emulateMedia({media:'print'});
+     assert.equal(await page.locator('.journal-edition').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(255, 255, 255)');
+     for(const format of ['A4','Letter']){
+      const file=join(evidence,['history',format,dark?'dark':'light',js?'js':'nojs'].join('-')+'.pdf');
+      await page.pdf({path:file,format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
+      const extract=spawnSync('pdftotext',['-layout','-enc','UTF-8',file,'-'],{encoding:'utf8'});
+      assert.equal(extract.status,0,extract.error?.message??extract.stderr);
+      const pages=extract.stdout.split('\f').map(t=>t.trim()).filter(Boolean);
+      const words=v=>v.replace(/[\s\u00ad\-]/gu,'');
+      const text=words(pages.join('\n'));
+      assert.equal(text.split(words(history.readerSafeText)).length-1,1,'one immutable paragraph');
+      assert.ok(text.includes(words(history.boundary)),'evidence limitation retained');
+      for(const source of history.sources){
+       assert.ok(text.includes(words(source.locator)),'full locator retained: '+source.id);
+       assert.ok(pages.some(p=>words(p).includes(words(source.label))&&words(p).includes(words(source.role))),'evidence role stays with label: '+source.id);
+      }
+      for(const group of history.groups)assert.ok(text.includes(words(group.label)),'group heading retained');
+      const bbox=spawnSync('pdftotext',['-bbox','-enc','UTF-8',file,'-'],{encoding:'utf8'});
+      assert.equal(bbox.status,0,bbox.error?.message??bbox.stderr);
+      const sheets=[...bbox.stdout.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)];
+      assert.equal(sheets.length,pages.length);
+      let count=0;
+      for(const sheet of sheets){
+       const width=Number(sheet[1]),height=Number(sheet[2]);
+       for(const word of sheet[3].matchAll(/<word xMin="([-\d.]+)" yMin="([-\d.]+)" xMax="([-\d.]+)" yMax="([-\d.]+)">/g)){
+        const [x1,y1,x2,y2]=word.slice(1).map(Number);
+        assert.ok(x1>=0&&y1>=0&&x2<=width+.5&&y2<=height+.5,'word beyond physical sheet');
+        count++;
+       }
+      }
+      assert.ok(count>0,'bbox word evidence required');
+      paperAcceptance.push({format,dark,js,pages:pages.length,words:count});
+      await writeFile(join(evidence,'history-paper.json'),JSON.stringify(paperAcceptance,null,2));
+      console.log('HISTORY_PAPER_PASS '+JSON.stringify(paperAcceptance.at(-1)));
+     }
+    }
     results.push({name,width,dark,js,citations:3});await writeFile(join(evidence,'history-results.json'),JSON.stringify(results,null,2));console.log('HISTORY_PASS '+JSON.stringify(results.at(-1)));
    }finally{await page.close();}
   }
   }finally{await browser.close();}
  }
  }finally{server.close();}
- assert.equal(results.length,12*selected.length);console.log('HISTORY_CASES='+results.length);
+ assert.equal(results.length,12*selected.length);assert.equal(paperAcceptance.length,selected.includes('chromium')?8:0);console.log('HISTORY_CASES='+results.length+' PAPER='+paperAcceptance.length);
 }else{
 try{
  for(const name of selected){

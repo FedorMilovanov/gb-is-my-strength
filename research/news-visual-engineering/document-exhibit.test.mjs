@@ -59,3 +59,28 @@ test('additional citation cannot collide with another valid row ID',()=>{
 test('same authority is not mutated by repeated projections',()=>{
   const f=multiple(); const old=JSON.stringify(f.authority);view(f);view(f);assert.equal(JSON.stringify(f.authority),old);
 });
+
+// Host-side font readiness controls (no browser mocks counted as real render).
+import {waitForCanonicalFonts} from './wait-for-canonical-fonts.mjs';
+const canonicalFamilies=['Lora','Playfair Display','Source Sans 3'];
+const loadedState=()=>({status:'loaded',loaded:[...canonicalFamilies]});
+test('font readiness accepts all three actually loaded families',async()=>{
+  assert.deepEqual(await waitForCanonicalFonts({evaluate:async()=>loadedState()}),loadedState());
+});
+for(const [label,first] of [['missing family',{status:'loaded',loaded:['Lora','Playfair Display']}],['loading status',{status:'loading',loaded:canonicalFamilies}]]){
+  test('font readiness retries '+label,async()=>{
+    let calls=0;
+    await waitForCanonicalFonts({evaluate:async()=>++calls===1?first:loadedState()});
+    assert.equal(calls,2);
+  });
+}
+test('font readiness propagates evaluation failure',async()=>{
+  await assert.rejects(waitForCanonicalFonts({evaluate:async()=>{throw Error('evaluation failed')}}),/evaluation failed/);
+});
+test('font readiness fails closed for permanently missing family and pending evaluation',{timeout:22000},async()=>{
+  // Run both real deadline controls concurrently; no fake clock or bypass.
+  await Promise.all([
+    assert.rejects(waitForCanonicalFonts({evaluate:async()=>({status:'loaded',loaded:['Lora']})}),/did not become ready within 15s/),
+    assert.rejects(waitForCanonicalFonts({evaluate:()=>new Promise(()=>{})}),/evaluation timed out/),
+  ]);
+});
