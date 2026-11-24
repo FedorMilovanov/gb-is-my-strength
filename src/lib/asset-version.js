@@ -5,7 +5,7 @@
 export const ASSET_VERSIONS = {
   'css/command-palette.css': '3b88813f',
   'css/enhancements-runtime.css': 'd195a91d',
-  'css/floating-cluster.css': 'a76d931e',
+  'css/floating-cluster.css': '6a62a50f',
   'css/highlights-runtime.css': '571b8df5',
   'css/home.css': '4a2fa9a3',
   'css/mobile-hotfix.css': '9cfd6aee',
@@ -19,7 +19,7 @@ export const ASSET_VERSIONS = {
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'e7d193e0',
   'js/enhancements.js': '15476429',
-  'js/floating-cluster-controller.js': '9df8ace5',
+  'js/floating-cluster-controller.js': '2eda7d85',
   'js/glossary.js': 'c7f8b6e9',
   'js/highlights.js': '779e1ce2',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
