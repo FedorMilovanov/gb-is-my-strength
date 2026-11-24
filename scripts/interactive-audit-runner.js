@@ -175,15 +175,14 @@ function runPagefindSearchHandoffGuard(baseUrl) {
   if (!fs.existsSync(PAGEFIND_SEARCH_HANDOFF_GUARD)) {
     throw new Error(`Pagefind search handoff guard is missing at ${PAGEFIND_SEARCH_HANDOFF_GUARD}`);
   }
-  // W121 has two distinct authoritative surfaces: production-like mobile
-  // at AUDIT_BASE, and opt-in W57 desktop at AUDIT_W57_BASE. The workflow
-  // starts both from the same dist. Never send both cases to the W57 pilot.
+  // W121 tests native mobile and canonical ARGON desktop from the same
+  // static build. Preserve the separate audit endpoints and real desktop gate.
   const pilotBase = String(process.env.AUDIT_W57_BASE || '').trim().replace(/\/$/, '');
   if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(pilotBase)) {
-    console.error('W121 requires AUDIT_W57_BASE=http://127.0.0.1:<W57 preview.py port>; plain dist cannot mount W57');
+    console.error('W121 requires AUDIT_W57_BASE=http://127.0.0.1:<canonical static Reader audit port>');
     return Promise.resolve(1);
   }
-  console.log(`W121 native: ${baseUrl}; true W57 pilot: ${pilotBase}`);
+  console.log(`W121 native mobile: ${baseUrl}; canonical ARGON desktop: ${pilotBase}`);
   return runNodeScript(PAGEFIND_SEARCH_HANDOFF_GUARD, [], {
     AUDIT_BASE: baseUrl,
     AUDIT_W57_BASE: pilotBase

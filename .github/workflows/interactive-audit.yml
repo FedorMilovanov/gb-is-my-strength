@@ -337,7 +337,7 @@ jobs:
           echo $! > /tmp/gb-http.pid
           sleep 2
 
-      - name: Start real desktop W57 pilot against the same built dist
+      - name: Verify canonical desktop Reader against the same built dist
         if: steps.audit-scope.outputs.run == 'true'
         shell: bash
         run: |
@@ -345,7 +345,7 @@ jobs:
           echo $! > /tmp/gb-w57.pid
           ready=false
           for attempt in $(seq 1 20); do
-            if curl --fail --silent http://127.0.0.1:19061/__reader_w57__/preview-bootstrap.js -o /tmp/gb-w57-bootstrap.js; then
+            if curl --fail --silent http://127.0.0.1:19061/reader-desktop/bootstrap.js -o /tmp/gb-w57-bootstrap.js; then
               ready=true
               break
             fi
@@ -353,7 +353,14 @@ jobs:
           done
           if [ "$ready" != true ]; then cat /tmp/gb-w57.log; exit 1; fi
           curl --fail --silent 'http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open' -o /tmp/gb-w57-probe.html
-          grep -Fq '/__reader_w57__/preview-bootstrap.js' /tmp/gb-w57-probe.html
+          digest="$(sha256sum /tmp/gb-w57-bootstrap.js | cut -d ' ' -f 1)"
+          grep -Fq "/reader-desktop/bootstrap.js?v=$digest" /tmp/gb-w57-probe.html
+          test "$(grep -o 'data-gb-reader-desktop-bootstrap' /tmp/gb-w57-probe.html | wc -l)" -eq 1
+          if grep -Fq '/__reader_w57__/' /tmp/gb-w57-probe.html; then echo 'Retired injection prefix found'; exit 1; fi
+          curl --fail --silent 'http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=0&paper=space&panel=open' -o /tmp/gb-w57-classic.html
+          cmp /tmp/gb-w57-probe.html /tmp/gb-w57-classic.html
+          curl --fail --silent 'http://127.0.0.1:19061/articles/' -o /tmp/gb-w57-negative.html
+          if grep -Fq '/reader-desktop/' /tmp/gb-w57-negative.html; then echo 'Catalog unexpectedly mounts desktop Reader'; exit 1; fi
 
       - name: Runtime interactive audit with durable evidence
         if: steps.audit-scope.outputs.run == 'true'
