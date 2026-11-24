@@ -1,0 +1,29 @@
+{
+  "testedComponentHead": "a5d83b359b83065d6f7df532627bde0539e3e7fa",
+  "harnessGitBlob": "6f56a4d864a8744a78482e7f5965fe4334c3db1e",
+  "environment": {
+    "os": "Windows",
+    "node": "22.23.4",
+    "astro": "7.4.12",
+    "playwright": "1.62.1",
+    "mode": "disposable exact Git archive; canonical fonts, source registry, JournalSourceReturn and journalEditorial.css; two compiled witness pages, not public routes"
+  },
+  "build": "PASS",
+  "chromium": {
+    "geometryPass": 72,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "total": 188
+  },
+  "firefox": {
+    "status": "INCOMPLETE",
+    "observation": "Engine process launched, did not return a completed scenario block. Diagnostic run requested; remote request not yet confirmed."
+  },
+  "webkit": {
+    "status": "NOT VERIFIED"
+  },
+  "hostedCI": "not complete",
+  "componentChanges": 0
+}
