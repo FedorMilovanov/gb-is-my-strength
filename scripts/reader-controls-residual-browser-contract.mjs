@@ -146,17 +146,32 @@ async function menuSnapshot(page) {
   });
 }
 
+async function waitForSiteMenuOwner(page) {
+  await page.waitForFunction(()=>{
+    const trigger=document.getElementById('hMobileMenuBtn');
+    return trigger?.getAttribute('data-gb-site-menu-owner')==='canonical-runtime'&&trigger.getAttribute('aria-controls')==='hMobileNav';
+  });
+  const expected=await page.evaluate(()=>!!document.querySelector('[data-gb-reader-desktop-bootstrap]')&&matchMedia('(min-width:1121px)').matches);
+  if(expected)await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
+}
 async function auditSiteMenuRoute(page, engine, origin, entry) {
   const route = entry.route;
+  // A mounted Reader reloads at 1121px. Reset to a neutral document
+  // before selecting the next viewport, so that reload cannot abort goto.
+  await page.goto('about:blank');
   await page.setViewportSize(MOBILE);
   await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
   await waitForReader(page);
+  await waitForSiteMenuOwner(page);
 
   const trigger = page.locator('#hMobileMenuBtn');
   let viewport = 'mobile';
   if (!(await trigger.isVisible().catch(() => false))) {
+    await page.goto('about:blank');
     await page.setViewportSize(DESKTOP);
-    await page.waitForTimeout(100);
+    await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+    await waitForReader(page);
+    await waitForSiteMenuOwner(page);
     viewport = 'desktop';
   }
   check(engine, viewport, route, 'site-menu trigger visible in a supported viewport', await trigger.isVisible().catch(() => false));

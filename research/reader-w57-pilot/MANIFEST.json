@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "6bf49d55411480f226f179872a0d782685071a94e23a2771e1b510c67b326e1c",
-      "bytes": 139201
+      "sha256": "09a43ce70def08741e5372a62f9aeb13f2705c7090faae554ff3af4ed3709068",
+      "bytes": 138778
     },
     {
       "name": "reader_editorial_refinement.js",

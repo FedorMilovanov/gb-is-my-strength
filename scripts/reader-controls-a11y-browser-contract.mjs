@@ -5,6 +5,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
@@ -659,21 +660,58 @@ async function auditMobile(browser, origin, routeInfo) {
   }
 }
 
-async function auditDesktop(browser, origin, routeInfo) {
-  const context = await browser.newContext({ viewport: DESKTOP });
+// The default desktop region and the explicit Classic comparison are distinct.
+async function auditArgonSettings(page, prefix, checks) {
+  const trigger=page.locator('[aria-controls="npUFontPanel"]:visible').first();
+  const panel=page.locator('#npUFontPanel');
+  const snapshot=()=>trigger.evaluate(button=>{
+    const target=document.getElementById(button.getAttribute('aria-controls'));
+    const heading=target?.getAttribute('aria-labelledby');
+    return {controls:button.getAttribute('aria-controls'),expanded:button.getAttribute('aria-expanded'),
+      popup:button.getAttribute('aria-haspopup'),role:target?.getAttribute('role'),
+      modal:target?.getAttribute('aria-modal'),hidden:target?.hidden,
+      label:heading?document.getElementById(heading)?.textContent.trim():null,
+      focusInside:target?.contains(document.activeElement),focusReturned:document.activeElement===button,
+      count:document.querySelectorAll('#npUFontPanel').length};
+  });
+  await trigger.waitFor({state:'visible'});
+  const p=prefix+'-surface-settings',closed=await snapshot();
+  record(checks,p+'-01','real trigger and exactly one controlled panel exist',closed.count===1,closed);
+  record(checks,p+'-02','trigger points to the exact named region',closed.controls==='npUFontPanel'&&closed.label==='Настройки чтения',closed);
+  record(checks,p+'-03','closed surface reports collapsed trigger state',closed.hidden===true&&closed.expanded==='false',closed);
+  record(checks,p+'-04','desktop settings has truthful non-modal region semantics',closed.role==='region'&&closed.modal===null&&(closed.popup===null||closed.popup==='false'),closed);
+  await trigger.focus();await trigger.click();
+  record(checks,p+'-05','a rendered trigger can be activated',true);
+  await panel.waitFor({state:'visible'});
+  const opened=await snapshot();
+  record(checks,p+'-06','trigger opens its declared region and moves focus inside',opened.hidden===false&&opened.focusInside,opened);
+  record(checks,p+'-07','open region reports expanded state without a false dialog claim',opened.expanded==='true'&&opened.role==='region'&&opened.popup==='false'&&opened.modal===null,opened);
+  await page.keyboard.press('Escape');await panel.waitFor({state:'hidden'});
+  const after=await snapshot();
+  record(checks,p+'-08','Escape closes surface, collapses trigger and restores opener focus',after.hidden===true&&after.expanded==='false'&&after.focusReturned,after);
+}
+
+async function auditDesktop(browser, origin, routeInfo, {classic=false,width=DESKTOP.width}={}) {
+  const viewportId=classic?'desktop-classic':width===DESKTOP.width?'desktop':'desktop-'+width;
+  const context = await browser.newContext({ viewport: {...DESKTOP,width} });
   await installSpeechFixture(context);
   const page = await context.newPage();
   const checks = []; const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message || String(error)));
   try {
-    const response = await page.goto(origin + routeInfo.route, { waitUntil: 'domcontentloaded', timeout: 45000 });
-    await page.waitForTimeout(350);
+    const opts={waitUntil:'domcontentloaded',timeout:45000};
+    const response=classic?await gotoNativeReader(page,origin+routeInfo.route,opts):await page.goto(origin+routeInfo.route,opts);
+    await page.waitForFunction(()=>!!window.GBReaderControlsA11y&&!!window.GBReaderTTS);
+    if(!classic) await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
     const state = await page.evaluate(() => {
       const visible = Array.from(document.querySelectorAll('[data-fc-action="play"]')).filter((node) => {
         const style = getComputedStyle(node); const rect = node.getBoundingClientRect();
         return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
       });
       return {
+        argon:document.body.classList.contains('np-w57-ready'),
+        overflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth),
+        nativeMobileVisible:[...document.querySelectorAll('.mobile-top-bar,.mobile-bottom-bar,.hmtop,.hmbar')].some(n=>n.getClientRects().length&&getComputedStyle(n).visibility!=='hidden'),
         controlsApi: window.GBReaderControlsA11y?.version || null,
         plays: visible.map((node) => {
           const controls = node.getAttribute('aria-controls');
@@ -681,13 +719,16 @@ async function auditDesktop(browser, origin, routeInfo) {
         }),
       };
     });
-    record(checks, `${routeInfo.id}-desktop-01`, 'desktop route loads', Boolean(response && response.status() < 400), response?.status());
-    record(checks, `${routeInfo.id}-desktop-02`, 'desktop controller API v2 is ready', Number(state.controlsApi) >= 2, state);
-    record(checks, `${routeInfo.id}-desktop-03`, 'desktop has one visible Play', state.plays.length === 1, state.plays);
-    record(checks, `${routeInfo.id}-desktop-04`, 'desktop popup claim remains truthful', state.plays.every((item) => item.haspopup !== 'true' || (item.controls && item.target)), state.plays);
-    record(checks, `${routeInfo.id}-desktop-05`, 'desktop has no page errors', pageErrors.length === 0, pageErrors);
-    for (const surface of routeInfo.desktopSurfaces || []) await auditSurface(page, routeInfo.id, 'desktop', surface, checks);
-    return { caseId: `${routeInfo.id}-desktop`, checks, pageErrors };
+    record(checks, `${routeInfo.id}-${viewportId}-01`, 'desktop route loads', Boolean(response && response.status() < 400), response?.status());
+    record(checks, `${routeInfo.id}-${viewportId}-02`, 'desktop controller API v2 is ready', Number(state.controlsApi) >= 2, state);
+    record(checks, `${routeInfo.id}-${viewportId}-03`, 'desktop has one visible Play', state.plays.length === 1, state.plays);
+    record(checks, `${routeInfo.id}-${viewportId}-04`, 'desktop popup claim remains truthful', state.plays.every((item) => item.haspopup !== 'true' || (item.controls && item.target)), state.plays);
+    record(checks,`${routeInfo.id}-${viewportId}-owner`,'expected real owner without horizontal overflow',state.argon===!classic&&state.overflow===0&&(classic||!state.nativeMobileVisible),state);
+    if(classic){
+      for(const surface of routeInfo.desktopSurfaces||[])await auditSurface(page,routeInfo.id,viewportId,surface,checks);
+    }else await auditArgonSettings(page,`${routeInfo.id}-${viewportId}`,checks);
+    record(checks, `${routeInfo.id}-${viewportId}-05`, 'desktop has no page errors throughout interaction', pageErrors.length === 0, pageErrors);
+    return { caseId: `${routeInfo.id}-${viewportId}`, checks, pageErrors };
   } finally {
     await context.close();
   }
@@ -1229,8 +1270,10 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
     Math.abs(a.x-b.x)<.8 && Math.abs(a.y-b.y)<.8 &&
     Math.abs(a.w-b.w)<.8 && Math.abs(a.h-b.h)<.8);
   try {
-    const response = await page.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/',
-      { waitUntil: 'load' });
+    const route=origin+'/articles/dzhon-gill-chast-2-uchenyi/';
+    // At 1280 the historical geometry contract is Classic-only; the default
+    // 1280 ARGON settings/visibility are verified independently.
+    const response=width>=1121?await gotoNativeReader(page,route,{waitUntil:'load'}):await page.goto(route,{waitUntil:'load'});
     if (dark) await page.evaluate(() => document.documentElement.classList.add('dark'));
     await page.evaluate(() => document.fonts.ready);
     const normal = await read();
@@ -1433,7 +1476,11 @@ const browser = await chromium.launch({ headless: true });
 try {
   const cases = [];
   for (const route of ROUTES) cases.push(await auditMobile(browser, origin, route));
-  for (const route of ROUTES.slice(0, 2)) cases.push(await auditDesktop(browser, origin, route));
+  for (const route of ROUTES.slice(0, 2)) {
+    cases.push(await auditDesktop(browser,origin,route));
+    cases.push(await auditDesktop(browser,origin,route,{classic:true}));
+  }
+  cases.push(await auditDesktop(browser,origin,ROUTES[1],{width:1280}));
   cases.push(await auditGillWideSpeed(browser, origin));
   for (const width of [320,390,526]) cases.push(await auditGillVisibleGaps(browser, origin, width));
   // 401–419px has a genuine 44px-touch-target space constraint: keep the full label inside its own button.

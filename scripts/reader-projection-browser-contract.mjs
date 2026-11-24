@@ -176,8 +176,10 @@ async function runRouteCase(browser, origin, route, viewport, checks) {
   const page = await context.newPage();
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
-  await page.goto(`${origin}${route.route}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  const response=await page.goto(`${origin}${route.route}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForFunction(() => window.GBReaderProjection?.version === 1, null, { timeout: 15000 });
+  const expectedArgon=viewport.id==='desktop'&&await page.evaluate(()=>!!document.querySelector('[data-gb-reader-desktop-bootstrap]'));
+  if(expectedArgon)await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
   await page.evaluate(() => window.GBReaderProjection.refresh());
   await page.waitForTimeout(120);
   const state = await snapshot(page);
@@ -217,6 +219,28 @@ async function runRouteCase(browser, origin, route, viewport, checks) {
     const preserved = state.schemaSelectors.some((selectors) => JSON.stringify(selectors) === JSON.stringify(route.expectAuthored));
     record(checks, `${prefix}-22`, 'speakable', 'authored speakable selectors survive runtime sync (no silent replacement)', preserved, state.schemaSelectors);
     record(checks, `${prefix}-23`, 'speakable', 'emitted selectors target exactly the canonical speakable nodes', state.speakableTargetsEqual === true, { effective: state.effectiveSelectors, schema: state.schemaSelectors });
+  }
+
+  if(route.id==='antisovetov'){
+    const summary=await page.evaluate(html=>{
+      const ssr=new DOMParser().parseFromString(html,'text/html');
+      const original=ssr.querySelector('.summary-card[data-speakable]');
+      const root=GBReaderProjection.getRoot();
+      const cards=[...root.querySelectorAll('.summary-card[data-speakable]')];
+      const live=cards[0];
+      const text=card=>[...(card?.querySelectorAll('.summary-card__text')||[])].map(node=>{
+        const copy=node.cloneNode(true);
+        copy.querySelectorAll('.gtip,.btip,.tooltip,[aria-hidden="true"]').forEach(el=>el.remove());
+        return copy.textContent.replace(/\s+/g,' ').trim();
+      });
+      return {original:text(original),live:text(live),count:cards.length,
+        hidden:live?.hidden,rendered:!!live?.getClientRects().length,
+        authored:live?.dataset.npUCentralOverview,
+        duplicate:!!document.querySelector('details[data-np-u-central-overview]'),
+        projected:GBReaderProjection.getSpeakableNodes().includes(live)};
+    },await response.text());
+    record(checks,prefix+'-24','speakable','all authored summary theses and their original semantic owner survive desktop and mobile',
+      summary.original.length>0&&JSON.stringify(summary.original)===JSON.stringify(summary.live)&&summary.count===1&&summary.hidden===false&&summary.rendered&&summary.projected&&(!expectedArgon||(summary.authored==='authored'&&!summary.duplicate)),summary);
   }
 
   await page.screenshot({ path: path.join(REPORTS, `reader-projection-${prefix}.png`), fullPage: false });
