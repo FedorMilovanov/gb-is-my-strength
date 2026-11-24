@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const [engine, root, mode='generic'] = process.argv.slice(2);
@@ -27,7 +27,7 @@ if(mode!=='generic'){
   for(const r of comparisons){const stem=[engine,r.width,r.dark?'dark':'light',r.variant].join('-');for(const suffix of ['-full','-viewport'])await png(stem+suffix+'.png');}
   for(const r of scenarios)await png([engine,r.width,r.dark?'dark':'light','compact-nojs-full'].join('-')+'.png');
   const papers=isChromium?['A4','Letter'].flatMap(format=>[false,true].map(dark=>({format,dark}))):[];
-  exact(acceptance.paperAcceptance,papers,r=>JSON.stringify([r.format,r.dark]),r=>assert.ok(r.pages>0));
+  exact(acceptance.paperAcceptance,papers,r=>JSON.stringify([r.format,r.dark]),r=>assert.ok(Number.isInteger(r.pages)&&r.pages>0&&Number.isInteger(r.words)&&r.words>0));
   for(const r of papers)await pdf(['compact',r.format,r.dark?'dark':'light'].join('-')+'.pdf');
   console.log(engine+' compact exact evidence: 48 cases / 84 returns / 84 PNG / '+papers.length+' PDFs');
  }else{
@@ -58,11 +58,12 @@ for(const [fixture,widths,citations] of [['short',[320,390,768,1100],3],['long',
 }
 assert.equal(total,144);
 for(const prefix of ['', 'long-'])for(const width of [320,1100])for(const theme of ['light','dark']){
-  assert.ok((await stat(join(root,prefix+engine+'-'+width+'-'+theme+'.png'))).size>0,'missing screenshot');
+  await png(prefix+engine+'-'+width+'-'+theme+'.png');
 }
-if(engine==='chromium')for(const prefix of ['', 'long-'])for(const format of ['A4','Letter'])for(const theme of ['light','dark']){
-  const file=await readFile(join(root,prefix+format+'-'+theme+'.pdf'));
-  assert.equal(file.subarray(0,5).toString(),'%PDF-','missing PDF signature');
+if(engine==='chromium'){
+ const papers=['short','long'].flatMap(fixture=>['A4','Letter'].flatMap(format=>['light','dark'].map(theme=>({fixture,format,theme}))));
+ exact(await json('generic-paper.json'),papers,r=>JSON.stringify([r.fixture,r.format,r.theme]),r=>assert.ok(Number.isInteger(r.pages)&&r.pages>0&&Number.isInteger(r.words)&&r.words>0));
+ for(const r of papers)await pdf((r.fixture==='long'?'long-':'')+r.format+'-'+r.theme+'.pdf');
 }
 console.log(engine+' exact evidence: 24 cases / 144 round trips / 8 screenshots'+(engine==='chromium'?' / 8 physical PDFs':''));
 }

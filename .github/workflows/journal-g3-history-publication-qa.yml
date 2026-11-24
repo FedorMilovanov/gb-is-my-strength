@@ -191,9 +191,12 @@ jobs:
           node --check research/news-visual-engineering/pdf-test.mjs
           node --check research/news-visual-engineering/specimen-review.mjs
           node --check research/news-visual-engineering/ci-evidence-check.mjs
+          node --check research/news-visual-engineering/pdf-word-bounds.mjs
       - name: Install real browser engine
+        id: news_browser
         run: npx playwright install --with-deps ${{ matrix.engine }}
       - name: Provision PDF text analyzer
+        id: news_pdf
         if: matrix.engine == 'chromium'
         run: |
           sudo apt-get update
@@ -222,11 +225,12 @@ jobs:
           trap retain EXIT
           node research/news-visual-engineering/browser-test.mjs "$ENGINE" 2>&1 | tee "$output/runner.log"
           retain
-          node research/news-visual-engineering/ci-evidence-check.mjs "$ENGINE" "$output"
           if [[ "$ENGINE" == chromium ]]; then
             node research/news-visual-engineering/pdf-test.mjs "$output" 2>&1 | tee "$output/pdf-check.log"
           fi
+          node research/news-visual-engineering/ci-evidence-check.mjs "$ENGINE" "$output"
       - name: Compile and verify all three real private evidence formats
+        if: ${{ !cancelled() && steps.news_browser.outcome == 'success' && (matrix.engine != 'chromium' || steps.news_pdf.outcome == 'success') }}
         shell: bash
         env:
           ENGINE: ${{ matrix.engine }}

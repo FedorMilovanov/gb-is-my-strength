@@ -134,3 +134,21 @@ test('record dates retain differing dates, roles and explicit unknown',()=>{
  assert.equal(rows[2].display,'Не установлена');assert.notEqual(rows[0].display,rows[1].display);
 });
 for(const value of [{role:'event',value:'2022-09-15'},{role:'publication',value:'2022-02-30'},{role:'publication'},{role:'publication',value:'2022-09'},{role:'toString',value:null}])test('record date rejects '+JSON.stringify(value),()=>assert.throws(()=>documentRecordDate(value),/Journal document exhibit/));
+
+for(const [label,role] of [['array',['publication']],['coercible object',{toString:()=> 'publication'}]])test('record date rejects non-string '+label,()=>assert.throws(()=>documentRecordDate({role,value:null}),/Journal document exhibit/));
+
+import {validateWordBounds} from './pdf-word-bounds.mjs';
+const sheet=(words,width=100,height=200)=>'<page width="'+width+'" height="'+height+'">'+words+'</page>';
+const word=(x1=1,y1=2,x2=30,y2=40)=>'<word xMin="'+x1+'" yMin="'+y1+'" xMax="'+x2+'" yMax="'+y2+'">text</word>';
+test('paper bounds accepts all physical words across two sheets',()=>assert.equal(validateWordBounds(sheet(word())+sheet(word()+word()),2),3));
+for(const [label,xml,pages] of [
+ ['missing sheet',sheet(word()),2],
+ ['blank sheet',sheet(word())+sheet(''),2],
+ ['right overflow',sheet(word(1,2,101,40)),1],
+ ['bottom overflow',sheet(word(1,2,30,201)),1],
+ ['negative coordinate',sheet(word(-1)),1],
+ ['inverted bounds',sheet(word(40,2,30,40)),1],
+ ['invalid number',sheet(word('NaN')),1],
+ ['invalid page size',sheet(word(),0),1],
+ ['malformed word',sheet('<word xMin="1">text</word>'),1]
+])test('paper bounds rejects '+label,()=>assert.throws(()=>validateWordBounds(xml,pages)));

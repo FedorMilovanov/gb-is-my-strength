@@ -2,6 +2,7 @@ import { build } from 'astro';
 import { chromium, firefox, webkit } from 'playwright';
 import assert from 'node:assert/strict';
 import {waitForCanonicalFonts} from './wait-for-canonical-fonts.mjs';
+import {physicalWordCount} from './pdf-word-bounds.mjs';
 import { createServer } from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { cp, readFile, writeFile, mkdir, mkdtemp, symlink } from 'node:fs/promises';
@@ -134,20 +135,7 @@ if(historyMode){
       }
       for(const group of expectedGroups)assert.ok(text.includes(words(group.label)),'group heading retained');
       if(compareMode)for(const source of history.sources){const display=source.recordDate.value===null?'Не установлена':new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeZone:'UTC'}).format(new Date(source.recordDate.value+'T00:00:00Z'));assert.ok(pages.some(p=>words(p).includes(words(source.label))&&words(p).includes(words(display))),'record date stays with source');}
-      const bbox=spawnSync('pdftotext',['-bbox','-enc','UTF-8',file,'-'],{encoding:'utf8'});
-      assert.equal(bbox.status,0,bbox.error?.message??bbox.stderr);
-      const sheets=[...bbox.stdout.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)];
-      assert.equal(sheets.length,pages.length);
-      let count=0;
-      for(const sheet of sheets){
-       const width=Number(sheet[1]),height=Number(sheet[2]);
-       for(const word of sheet[3].matchAll(/<word xMin="([-\d.]+)" yMin="([-\d.]+)" xMax="([-\d.]+)" yMax="([-\d.]+)">/g)){
-        const [x1,y1,x2,y2]=word.slice(1).map(Number);
-        assert.ok(x1>=0&&y1>=0&&x2<=width+.5&&y2<=height+.5,'word beyond physical sheet');
-        count++;
-       }
-      }
-      assert.ok(count>0,'bbox word evidence required');
+      const count=physicalWordCount(file,pages.length);
       paperAcceptance.push({format,dark,js,pages:pages.length,words:count});
       await writeFile(join(evidence,'history-paper.json'),JSON.stringify(paperAcceptance,null,2));
       console.log('HISTORY_PAPER_PASS '+JSON.stringify(paperAcceptance.at(-1)));
@@ -255,7 +243,8 @@ try{
        const notePages=pages.filter(p=>p.includes('Значение')||p.includes('Предел доказательства'));
        assert.equal(notePages.length,1,'compact annotation pair on one sheet');
        assert.ok(notePages[0].includes('Значение')&&notePages[0].includes('Предел доказательства'));
-       paperAcceptance.push({format,dark,pages:pages.length,file});console.log('PAPER_PASS '+format+' '+dark+' '+pages.length);
+       const count=physicalWordCount(file,pages.length);
+       paperAcceptance.push({format,dark,pages:pages.length,words:count,file});console.log('PAPER_PASS '+format+' '+dark+' '+pages.length+' words='+count);
       }
      }
      compactAcceptance.push({name,width,dark,js:false,citations:2,textScale:2});
