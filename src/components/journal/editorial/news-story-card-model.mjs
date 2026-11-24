@@ -47,10 +47,18 @@ export function assertNewsStoryCard(card) {
   }
   if (card.companion !== undefined && typeof card.companion !== 'boolean') throw new Error('Invalid companion flag');
   if (card.companion && (card.variant ?? 'analysis') !== 'analysis') throw new Error('Companion uses analysis variant');
+  if (card.landingLead !== undefined && typeof card.landingLead !== 'boolean') throw new Error('Invalid landing image hook');
+  if (card.landingLead && ((card.variant ?? 'analysis') !== 'feature' || !card.media)) throw new Error('Landing image hook requires illustrated feature');
   const m=card.media;
   if (m !== undefined) {
     if (!m || !text(m.alt) || !text(m.caption) || !sizes(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isInteger(m.width) || !Number.isInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
     if (m.note !== undefined && !text(m.note)) throw new Error('Empty image caption note');
+    const presentation = m.presentation;
+    if (presentation !== undefined) {
+      if (!presentation || typeof presentation !== 'object' || !['intrinsic','crop'].includes(presentation.mode)) throw new Error('Unknown media presentation');
+      if (presentation.mode === 'intrinsic' && Object.keys(presentation).some(key=>key !== 'mode')) throw new Error('Intrinsic media has no crop options');
+      if (presentation.mode === 'crop' && (!['16:9','4:3','3:4','1:1'].includes(presentation.ratio) || ![presentation.focalX,presentation.focalY].every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100) || Object.keys(presentation).some(key=>!['mode','ratio','focalX','focalY'].includes(key)))) throw new Error('Crop requires explicit ratio and focal point');
+    }
     for (const key of ['avifSrcset','webpSrcset']) if (m[key] !== undefined && !srcset(m[key], key === 'avifSrcset' ? 'avif' : 'webp')) throw new Error('Invalid local responsive image list');
   }
 }

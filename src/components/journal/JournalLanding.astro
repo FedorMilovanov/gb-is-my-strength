@@ -19,10 +19,10 @@ const sizes = '(min-width: 1280px) 790px, (min-width: 1024px) calc(67.74vw - 78.
 
     <section class="journal-section journal-featured" aria-labelledby="lead-dossier">
       <div class="section-heading">
-        <div><p class="eyebrow">Документальное досье</p><h2 id="lead-dossier" tabindex="-1">G3 Ministries</h2></div>
+        <h2 id="lead-dossier" tabindex="-1"><span class="eyebrow">Документальное досье</span><span class="news-dossier-name">G3 Ministries</span></h2>
         <p>Руководство, финансы,<br />судьба служения</p>
       </div>
-      <NewsStoryCard variant="feature"
+      <NewsStoryCard variant="feature" landingLead
         title={g3.title} href="/journal/dossiers/g3/"
         label={`Досье · 2025–2026 · ${g3.readingTimeMinutes} мин чтения`}
         deck="Отставка Джоша Бьюса, попытка перестроить работу и новый конфликт. Разбираем заявления руководства, финансовые документы и открытые вопросы о конференциях, издательстве и церковной сети."
@@ -34,7 +34,6 @@ const sizes = '(min-width: 1280px) 790px, (min-width: 1024px) calc(67.74vw - 78.
           href="/journal/dossiers/g3/history/"
           label={`История G3 · 2011–2024 · ${history.readingTimeMinutes} минут чтения`}
           deck={history.description} actionLabel="Читать исследование" />
-
       </div>
     </section>
 

@@ -34,8 +34,21 @@
     padding-bottom: 12px;
     border-bottom: 1px solid var(--je-rule);
   }
+  .journal-edition .journal-landing .journal-featured .section-heading h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 14px;
+    row-gap: 3px;
+    font-size: clamp(20px, 2.1vw, 28px);
+  }
   .journal-edition .journal-landing .journal-featured .eyebrow {
-    margin-block-end: 5px;
+    margin: 0;
+    letter-spacing: .09em;
+  }
+  .journal-edition .journal-landing .news-dossier-name {
+    font-size: inherit;
+    line-height: 1.25;
   }
   .journal-edition .journal-landing .journal-featured > .news-story-card {
     border: 0;
@@ -116,8 +129,23 @@
     .journal-edition .journal-landing .section-heading {
       gap: 12px;
     }
-    .journal-edition .journal-landing .section-heading h2 {
-      font-size: clamp(25px, 7vw, 32px);
+    .journal-edition .journal-landing .journal-featured .section-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+      padding-bottom: 10px;
+    }
+    .journal-edition .journal-landing .journal-featured .section-heading h2 {
+      font-size: 19px;
+      column-gap: 10px;
+    }
+    .journal-edition .journal-landing .journal-featured .section-heading > p {
+      max-width: none;
+      text-align: start;
+      font-size: 12px;
+    }
+    .journal-edition .journal-landing .journal-featured .section-heading > p br {
+      display: none;
     }
     .journal-edition .journal-landing .journal-featured .eyebrow {
       max-inline-size: none;
@@ -131,6 +159,7 @@
   .journal-edition .journal-landing .journal-featured { display: block; padding: 12pt 0; }
   .journal-edition .journal-landing .section-heading { margin: 0 0 10pt; }
   .journal-edition .journal-landing .section-heading h2 { font-size: 20pt; }
+  .journal-edition .journal-landing .section-heading h2 .eyebrow { display: block; margin: 0 0 4pt; }
   .journal-edition .journal-landing .journal-editorial-grid { padding-top: 12pt; }
   .journal-edition .journal-landing .news-method-row .journal-method { padding: 8pt 0 0; border: 0; }
   .journal-edition .journal-landing .journal-editorial-grid h2 { font-size: 19pt; margin: 0 0 8pt; }

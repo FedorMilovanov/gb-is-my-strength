@@ -27,3 +27,11 @@ for(const bad of [
 test('valid feature caption note and action',()=>assert.doesNotThrow(()=>check({...valid,variant:'feature',actionLabel:'Read',media:{...media,note:'21 sources'}})));
 test('valid companion analysis',()=>assert.doesNotThrow(()=>check({...valid,variant:'analysis',companion:true})));
 for(const bad of [{companion:'true'},{variant:'feature',companion:true},{actionLabel:''},{media:{...media,note:''}}]) test('reject routed presentation '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));
+
+// W3.4: documentary media is intrinsic unless caller explicitly chooses a cover crop.
+for (const dims of [[675,1200],[1200,900],[1200,675]]) test('intrinsic media '+dims.join('x'),()=>assert.doesNotThrow(()=>check({...valid,media:{...media,width:dims[0],height:dims[1]}})));
+test('explicit crop',()=>assert.doesNotThrow(()=>check({...valid,media:{...media,presentation:{mode:'crop',ratio:'4:3',focalX:25,focalY:75}}})));
+test('explicit intrinsic',()=>assert.doesNotThrow(()=>check({...valid,media:{...media,presentation:{mode:'intrinsic'}}})));
+test('single legacy hook on illustrated feature',()=>assert.doesNotThrow(()=>check({...valid,variant:'feature',landingLead:true,media})));
+for(const bad of [{mode:'crop'},{mode:'crop',ratio:'4:3',focalX:-1,focalY:50},{mode:'crop',ratio:'4:3',focalX:50,focalY:101},{mode:'crop',ratio:'7:9',focalX:50,focalY:50},{mode:'crop',ratio:'4:3',focalX:'50',focalY:50},{mode:'intrinsic',ratio:'4:3'},{mode:'auto'},null])test('reject media presentation '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,media:{...media,presentation:bad}})));
+for(const bad of [{landingLead:true},{landingLead:'true'},{variant:'feature',landingLead:true}])test('reject legacy hook '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));

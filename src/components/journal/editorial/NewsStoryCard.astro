@@ -3,26 +3,29 @@ import { assertNewsStoryCard } from './news-story-card-model.mjs';
 interface Media {
   src: string; alt: string; caption: string; width: number; height: number;
   webpSrcset?: string; avifSrcset?: string; sizes: string; note?: string;
+  presentation?: { mode: 'intrinsic' } | { mode: 'crop'; ratio: '16:9' | '4:3' | '3:4' | '1:1'; focalX: number; focalY: number };
 }
 interface Props {
   title: string; href: string; label: string; deck?: string;
   publishedAt?: string; publishedLabel?: string; readingLabel?: string;
   variant?: 'feature' | 'analysis' | 'brief'; headingLevel?: 2 | 3; media?: Media;
-  companion?: boolean; actionLabel?: string;
+  companion?: boolean; actionLabel?: string; landingLead?: boolean;
 }
 const props = Astro.props as Props;
 assertNewsStoryCard(props);
 const { title, href, label, deck, publishedAt, publishedLabel, readingLabel,
-  variant = 'analysis', headingLevel = 3, media, companion = false, actionLabel } = props;
+  variant = 'analysis', headingLevel = 3, media, companion = false, actionLabel, landingLead = false } = props;
+const crop = media?.presentation?.mode === 'crop' ? media.presentation : undefined;
+const cropStyle = crop ? `--news-media-ratio:${crop.ratio.replace(':', ' / ')};--news-media-position:${crop.focalX}% ${crop.focalY}%` : undefined;
 const Heading = headingLevel === 2 ? 'h2' : 'h3';
 ---
 <article class:list={['news-story-card', 'news-story-card--' + variant, companion && 'news-story-card--companion', companion && 'je-next-story']}
   data-pagefind-ignore={companion ? true : undefined}>
   <header class="news-story-head">
     <p class="news-story-label">{label}</p>
-    <Heading class="news-story-title"><a href={href}>{title}{companion && <span aria-hidden="true"> ↗</span>}{actionLabel && <span class="news-story-action" aria-hidden="true">{actionLabel} <span>↗</span></span>}</a></Heading>
+    <Heading class="news-story-title"><a href={href}>{title}{companion && !actionLabel && <span aria-hidden="true"> ↗</span>}{actionLabel && <span class="news-story-action" aria-hidden="true">{actionLabel} <span>↗</span></span>}</a></Heading>
   </header>
-  {media && <figure class:list={['news-story-media', variant === 'feature' && 'lead-context']}>
+  {media && <figure class:list={['news-story-media', landingLead && 'lead-context', crop && 'news-story-media--crop']} style={cropStyle}>
     <picture>
       {media.avifSrcset && <source type="image/avif" srcset={media.avifSrcset} sizes={media.sizes}/>}
       <img src={media.src} srcset={media.webpSrcset} sizes={media.sizes} alt={media.alt}
@@ -55,6 +58,9 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
 .news-story-card--brief {gap:.5rem}
 .news-story-card .news-story-media {margin:0;min-width:0;order:0}
 .news-story-media picture,.news-story-media img {display:block;width:100%;height:auto}
+/* Explicitly neutralize legacy lead-context crop on the single compatibility hook. */
+.news-story-card .news-story-media img {aspect-ratio:auto;object-fit:contain}
+.news-story-card .news-story-media--crop img {aspect-ratio:var(--news-media-ratio);object-fit:cover;object-position:var(--news-media-position)}
 .news-story-media figcaption {display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem 1rem;margin:.4rem 0 0;color:var(--je-muted);font:.8rem/1.45 var(--je-ui);overflow-wrap:anywhere}
 .news-story-deck {margin:0;color:var(--je-muted);font:calc(var(--je-reading-size, 1.125rem) * .9)/1.65 var(--je-body);overflow-wrap:anywhere;text-wrap:pretty}
 .news-story-meta {display:flex;flex-wrap:wrap;gap:.25rem 1rem;color:var(--je-muted);font:.8rem/1.5 var(--je-ui)}
@@ -67,6 +73,8 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
 .news-story-card--brief .news-story-title {font-size:14pt}
 .news-story-title a {min-height:0;display:inline;color:#111}
 .news-story-card .news-story-media {max-width:290pt;break-inside:avoid}
+/* Paper preserves the full approved image, regardless of screen cover treatment. */
+.news-story-card .news-story-media img {aspect-ratio:auto;object-fit:contain;object-position:center}
 .news-story-deck,.news-story-card--companion .news-story-deck {font:11pt/1.45 var(--je-body);color:#111;orphans:3;widows:3}
 .news-story-head {break-inside:avoid;break-after:avoid}
 .news-story-meta {break-inside:avoid}
