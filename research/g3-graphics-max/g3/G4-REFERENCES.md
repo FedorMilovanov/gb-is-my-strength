@@ -1,6 +1,6 @@
 # GRAPHICS MAX — G4 reference register (24 Nov 2026)
 
-Thirty distinct editorial, cartographic, museum and data-design reference pages, retrieved via public search on 24 Nov 2026. Status **B** = original page body read in this wave, **I** = indexed description/metadata inspected; **I** is not a full visual study. The Nature editor interview direct fetch was blocked; the indexed description is usable as a lead only. No copyrighted images or layouts copied, no implication of reuse rights. This is an internal research register, not a public G3 evidence ledger. The 30-entry full visual portfolio inspection remains open; the five body readings support the present specific decisions. 
+Thirty distinct editorial, cartographic, museum and data-design reference pages, retrieved via public search on 24 Nov 2026. Status **B** = original page body read in this wave, **I** = indexed description/metadata inspected; **I** is not a full visual study. The Nature editor interview direct fetch was blocked; the indexed description is usable as a lead only. No copyrighted images or layouts copied, no implication of reuse rights. This is an internal research register, not a public G3 evidence ledger. The 30-entry full visual portfolio inspection remains open; the five body readings support the present specific decisions.
 
 | # | Reference / exact locator | Status | Transferable idea or question for G3 review (our interpretation) |
 |---:|---|:---:|---|
