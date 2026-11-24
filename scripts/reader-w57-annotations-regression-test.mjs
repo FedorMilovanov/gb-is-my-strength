@@ -371,10 +371,10 @@ const qFixture=(initial=[],mode='ok')=>{
  const documentFixture={title:'Article',querySelector:()=>({})};
  const noOp=()=>{};
  const product=(selected)=>{
-  const factory=new Function('selection','uid','currentTitle','sourceUrl','mutateLibrary','QUOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
-  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,owner.mutateLibrary,q,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolve:(_,a)=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
+  const factory=new Function('selection','uid','currentTitle','sourceUrl','mutateLibrary','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
+  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,owner.mutateLibrary,q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolve:(_,a)=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
  };
- const wapi=new Function('window','qKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
+ const wapi=new Function('window','qKey','nKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,n,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
  return {selection,product,wapi,rows:()=>JSON.parse(raw),raw:()=>raw,writes:()=>count,messages,owner};
 };
 const anchor1={blockId:'b1',start:0,end:12,exact:'First phrase',prefix:'',suffix:''};
@@ -420,4 +420,17 @@ for(const mode of ['absent','rejected','quota']){
 assert.doesNotMatch(highlights,/\bfunction write\(key, items\)/,'Product has no raw array writer');
 assert.doesNotMatch(file,/localStorage\.(?:setItem|removeItem)\(/,'W57 has no independent storage writer');
 
+const danglingCopy=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:'copy-A'}}});
+const danglingBefore=JSON.stringify([danglingCopy.notes(),danglingCopy.record]);
+assert.equal((await danglingCopy.owner.restoreDeleted({key:nKey,entry:rawA,index:0},'copy-A')).ok,false);
+assert.equal(JSON.stringify([danglingCopy.notes(),danglingCopy.record]),danglingBefore);
+assert.deepEqual(danglingCopy.writes,[]);
+const danglingQuoteCopy=makeFixture({notes:[{id:'N',text:'old',quoteId:'copy-Q'}],record:rawQ()});
+const danglingQuoteBefore=JSON.stringify([danglingQuoteCopy.notes(),danglingQuoteCopy.record]);
+assert.equal((await danglingQuoteCopy.owner.restoreDeleted({key:qKey,entry:{id:'old-Q',text:'other quote'},index:0},'copy-Q')).ok,false);
+assert.equal(JSON.stringify([danglingQuoteCopy.notes(),danglingQuoteCopy.record]),danglingQuoteBefore);
+assert.deepEqual(danglingQuoteCopy.writes,[]);
+const danglingNew=makeFixture({notes:[],record:{...rawQ(),annotation:{...rawQ().annotation,noteId:'fresh-id'}}});
+assert.equal((await saveProduct(danglingNew,null)).applied,false);
+assert.deepEqual(danglingNew.writes,[]);
 console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');

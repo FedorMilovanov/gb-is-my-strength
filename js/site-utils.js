@@ -10,7 +10,6 @@
   var emergencyTimer = null;
   var restoring = false;
   var highlightObserver = null;
-  var HIGHLIGHTS_KEY = 'gb-highlights-v1';
   // The native print flow temporarily suspends, never destroys, known
   // OverlayRuntime-owned body locks. Native afterprint restores only owners
   // that are still open, preserving user focus and the screen-side overlay.
@@ -796,30 +795,7 @@
     return result;
   }
 
-  function installHighlightStorageGuard() {
-    if (!window.Storage || !Storage.prototype || Storage.prototype.__gbHighlightDedupe) return;
-    var originalSetItem = Storage.prototype.setItem;
-    Object.defineProperty(Storage.prototype, '__gbHighlightDedupe', { value: true });
-    Storage.prototype.setItem = function (key, value) {
-      if (key === HIGHLIGHTS_KEY) {
-        try {
-          var parsed = JSON.parse(String(value));
-          value = JSON.stringify(dedupeHighlights(parsed));
-        } catch (_) {}
-      }
-      return originalSetItem.call(this, key, value);
-    };
-
-    try {
-      var current = localStorage.getItem(HIGHLIGHTS_KEY);
-      if (current) {
-        var parsed = JSON.parse(current);
-        var clean = dedupeHighlights(parsed);
-        if (clean.length !== parsed.length) originalSetItem.call(localStorage, HIGHLIGHTS_KEY, JSON.stringify(clean));
-      }
-    } catch (_) {}
-  }
-
+  // Legacy projections are read-only. The Library owns all writes.
   function syncHighlightDialog(dialog) {
     if (!dialog || dialog.id !== 'gb-hl-backdrop') return;
     var open = dialog.classList.contains('is-open');
@@ -844,7 +820,6 @@
     highlightObserver.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  installHighlightStorageGuard();
   installHighlightAriaGuard();
 
   // A private site.js unlock can remove body styles while a global overlay is

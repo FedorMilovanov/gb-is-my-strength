@@ -191,14 +191,14 @@
         before:selection.anchor.prefix,after:selection.anchor.suffix,savedAt:Date.now(),
         annotation:{version:1,kind,color:currentColor,anchor:selection.anchor,noteId:null}
       };
-      const result=await store.mutateLibrary([qKey],stores=>{
+      const result=await store.mutateLibrary([qKey,nKey],stores=>{
         const old=stores[qKey],key=store.highlightKey(record);
         if(!key)return{reason:'conflict'};
         const matches=old.filter(x=>store.highlightKey(x)===key);
         if(matches.length>1)return{reason:'duplicate'};
         if(matches.length===1)return{changes:{},result:{previous:matches[0]}};
         if(old.length>=200)return{reason:'capacity'};
-        if(old.some(x=>x&&sameId(x.id,record.id)))return{reason:'id-collision'};
+        if(old.some(x=>x&&sameId(x.id,record.id))||stores[nKey].some(n=>sameId(n?.quoteId,record.id)))return{reason:'id-collision'};
         const next=store.addHighlight(old,record);
         if(!next.some(x=>x.id===record.id))return{reason:'conflict'};
         return{changes:{[qKey]:next}};
@@ -297,7 +297,7 @@
         else{
           if(notes.length>=500)return{reason:'capacity'};
           const id='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-          if(notes.some(x=>x&&sameId(x.id,id)))return{reason:'id-collision'};
+          if(notes.some(x=>x&&sameId(x.id,id))||quotes.some(q=>sameId(q?.annotation?.noteId,id)))return{reason:'id-collision'};
           note={id,text:value,quoteText:raw.text,articleTitle:raw.articleTitle,
             url:raw.url,savedAt:Date.now(),quoteId:raw.id};
         }

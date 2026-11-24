@@ -209,8 +209,8 @@
   }
   function gbAddHighlight(items,item) {
     const unique=items,key=gbHighlightKey(item);
-    return key&&!unique.some(x=>gbHighlightKey(x)===key)
-      ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
+    return key&&unique.length<LIMIT_QUOTES&&!unique.some(x=>gbHighlightKey(x)===key)
+      ?[item,...unique]:unique;
   }
   const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
   const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
@@ -296,6 +296,8 @@
           if (localStorage.getItem(change.key) !== change.before) throw new Error('Library changed');
           localStorage.setItem(change.key, change.raw);
           completed.push(change);
+          if (localStorage.getItem(change.key) !== change.raw)
+            throw new Error('Library bytes changed during write');
         }
       } catch {
         let partial = false;
@@ -332,6 +334,9 @@
       const sameId = (a,b) => a != null && b != null && String(a) === String(b);
       const id = copyId ?? entry.id;
       if (items.some(x => x && sameId(x.id,id))) return { reason: 'id-collision' };
+      if (copyId !== null && (key === NOTES_KEY
+        ? quotes.some(q => sameId(q?.annotation?.noteId,id))
+        : notes.some(n => sameId(n?.quoteId,id)))) return { reason: 'id-collision' };
       if (items.length >= (key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES)) return { reason: 'capacity' };
       let restored = copyId === null ? entry : { ...entry, id: copyId, savedAt: Date.now() };
       const changes = {};
@@ -814,12 +819,14 @@
       url: context && context.url || location.origin + location.pathname,
       savedAt: Date.now(),
     };
-    const keys = !editing && context?.quoteId ? [NOTES_KEY, QUOTES_KEY] : [NOTES_KEY];
+    const keys = !editing ? [NOTES_KEY, QUOTES_KEY] : [NOTES_KEY];
     const result = await mutateLibrary(keys, stores => {
       const current = stores[NOTES_KEY];
       if (!editing) {
         if (current.length >= LIMIT_NOTES) return { reason: 'capacity' };
-        if (current.some(x => x && String(x.id) === String(created.id))) return { reason: 'id-collision' };
+        if (current.some(x => x && String(x.id) === String(created.id)) ||
+            stores[QUOTES_KEY].some(q => q?.annotation?.noteId != null &&
+              String(q.annotation.noteId) === String(created.id))) return { reason: 'id-collision' };
         if (context?.quoteId) {
           const linked = stores[QUOTES_KEY].filter(x => x && String(x.id) === String(context.quoteId));
           if (linked.length !== 1 || linked[0].annotation?.noteId != null ||
@@ -964,14 +971,16 @@
       record.annotation = { version: 1, kind: 'quote',
         anchor: selected.positionalAnchor, noteId: null };
     }
-    const result = await mutateLibrary([QUOTES_KEY], stores => {
+    const result = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
       const old = stores[QUOTES_KEY], key = gbHighlightKey(record);
       if (!key) return { reason: 'conflict' };
       const matches = old.filter(x => gbHighlightKey(x) === key);
       if (matches.length > 1) return { reason: 'duplicate' };
       if (matches.length === 1) return { changes: {}, result: { already: true } };
       if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
-      if (old.some(x => x && String(x.id) === String(record.id))) return { reason: 'id-collision' };
+      if (old.some(x => x && String(x.id) === String(record.id)) ||
+          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
+        return { reason: 'id-collision' };
       const next = gbAddHighlight(old, record);
       if (next === old) return { reason: 'conflict' };
       return { changes: { [QUOTES_KEY]: next } };
@@ -1130,7 +1139,7 @@
        текст перекрашивается, а одинаковый цвет честно сообщается как уже
        применённый — без ложного успеха. */
     const key = gbHighlightKey(record);
-    const mutation = await mutateLibrary([QUOTES_KEY], stores => {
+    const mutation = await mutateLibrary([QUOTES_KEY, NOTES_KEY], stores => {
       const old = stores[QUOTES_KEY];
       const fragment = gbFragmentKey(record);
       const context = gbContextKey(record);
@@ -1173,7 +1182,9 @@
           result: { previous: existing, written: updated } };
       }
       if (old.length >= LIMIT_QUOTES) return { reason: 'capacity' };
-      if (old.some(x => x && String(x.id) === String(record.id))) return { reason: 'id-collision' };
+      if (old.some(x => x && String(x.id) === String(record.id)) ||
+          stores[NOTES_KEY].some(n => n?.quoteId != null && String(n.quoteId) === String(record.id)))
+        return { reason: 'id-collision' };
       const next = gbAddHighlight(old, record);
       if (next === old) return { reason: 'conflict' };
       return { changes: { [QUOTES_KEY]: next }, result: { written: record } };

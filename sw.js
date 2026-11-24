@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v229-reader-quote-writer-20261124';
+const CACHE_VERSION = 'gb-v230-reader-storage-owner-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -32,11 +32,11 @@ const PRECACHE_ASSETS = [
   '/nagornaya/tw.min.css?v=bee34e73',
   '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
   '/js/site.js?v=9fa8818a',
-  '/js/site-utils.js?v=aa7bcd98',
+  '/js/site-utils.js?v=06d1f307',
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=d74730d7',
+  '/js/highlights.js?v=391486d5',
   '/js/reader-library-presenter.js?v=841cc1c0',
   '/js/reader-library-v3.js?v=e0728eb0',
   '/js/reader-library-dock.js?v=706a54b0',

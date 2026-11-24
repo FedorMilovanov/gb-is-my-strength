@@ -70,11 +70,11 @@ const unrelated = plain(api.add(mixed, { id: 'new', text: 'Иной отрыво
 assert.deepEqual(unrelated.map(x => x.id), ['new', 'w57-b', 'w57-a', 'native'],
   'unrelated highlight must persist despite pre-existing equal-word ranges');
 
-// The always-installed SiteUtils guard must not undo GBHighlights range identity.
+// SiteUtils helpers are read-only; existing duplicate rows must survive.
 const guardSource=fs.readFileSync(path.resolve(__dirname,'..','js/site-utils.js'),'utf8');
 const guardStart=guardSource.indexOf('function canonicalPage(');
 const guardEnd=guardSource.indexOf('function syncHighlightDialog(',guardStart);
-assert.ok(guardStart>=0&&guardEnd>guardStart,'shared SiteUtils guard exists');
+assert.ok(guardStart>=0&&guardEnd>guardStart);
 class MockStorage{
  constructor(){this.map=new Map()}
  setItem(k,v){this.map.set(k,String(v))}
@@ -83,26 +83,24 @@ class MockStorage{
 const storage=new MockStorage();
 const rangeA={...markedA,id:'guard-a'},rangeB={...markedB,id:'guard-b'};
 const repeatedRange={...markedA,id:'guard-repeat'};
-storage.setItem('gb-highlights-v1',JSON.stringify([
- rangeA,rangeB,repeatedRange,plainQuote,{...plainQuote,id:'legacy-duplicate'}
-]));
-const guard={URL,console,Storage:MockStorage,localStorage:storage,HIGHLIGHTS_KEY:'gb-highlights-v1',
+const initial=JSON.stringify([rangeA,rangeB,repeatedRange,plainQuote,{...plainQuote,id:'legacy-duplicate'}]);
+storage.setItem('gb-highlights-v1',initial);
+const nativeSetter=MockStorage.prototype.setItem;
+const guard={URL,console,Storage:MockStorage,localStorage:storage,
  window:{location:{href:'https://gospod-bog.ru/articles/a/'},Storage:MockStorage}};
 vm.createContext(guard);
-vm.runInContext(guardSource.slice(guardStart,guardEnd)+'\ninstallHighlightStorageGuard();',guard);
-assert.deepEqual(JSON.parse(storage.getItem('gb-highlights-v1')).map(x=>x.id),
- ['guard-a','guard-b','native'],'initial guard must preserve distinct anchored ranges');
-storage.setItem('gb-highlights-v1',JSON.stringify([rangeB,rangeA,plainQuote]));
-assert.deepEqual(JSON.parse(storage.getItem('gb-highlights-v1')).map(x=>x.id),
- ['guard-b','guard-a','native'],'future writes preserve both anchored ranges');
-storage.setItem('gb-highlights-v1',JSON.stringify([rangeA,repeatedRange,rangeB]));
-assert.deepEqual(JSON.parse(storage.getItem('gb-highlights-v1')).map(x=>x.id),
- ['guard-a','guard-b'],'repeated source range still dedupes');
-assert.equal(guard.Storage.prototype.__gbHighlightDedupe,true,'guard must stay enabled');
-
+vm.runInContext(guardSource.slice(guardStart,guardEnd)+'\nthis.project=dedupeHighlights;',guard);
+assert.equal(MockStorage.prototype.setItem,nativeSetter);
+assert.equal(storage.getItem('gb-highlights-v1'),initial);
+assert.deepEqual(plain(guard.project(JSON.parse(initial))).map(x=>x.id),['guard-a','guard-b','native']);
+assert.equal(storage.getItem('gb-highlights-v1'),initial);
+const next=JSON.stringify([rangeA,repeatedRange,rangeB]);
+storage.setItem('gb-highlights-v1',next);
+assert.equal(storage.getItem('gb-highlights-v1'),next);
+assert.doesNotMatch(guardSource,/installHighlightStorageGuard|__gbHighlightDedupe|Storage\.prototype\.setItem\s*=/);
 const many = Array.from({ length: 205 }, (_, i) => ({ id: 'i' + i, text: 'quote ' + i, url: '/article/' + i }));
-assert.equal(api.add(many, { id: 'recent', text: 'new', url: '/recent/' }).length, 200,
-  'preexisting 200-item cap is preserved');
+assert.equal(api.add(many, { id: 'recent', text: 'new', url: '/recent/' }).length, 205,
+  'over-limit legacy rows are not silently truncated');
 
 assert.match(source, /const QUOTES_KEY = 'gb-highlights-v1'/, 'existing quote storage key must not change');
 assert.match(source, /const FAVORITES_KEY = 'gb-favorites'/, 'canonical favorites key is read, not shadowed');
@@ -143,7 +141,7 @@ assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиоте�
 // Position-safe native painting regression: same phrase on two pages, repeated
 // text within one page, a changed source block and W57-owned anchors.
 const locateStart = source.indexOf('  const REGEXP_SPECIAL =');
-const locateEnd = source.indexOf('\n  function saveMarker(', locateStart);
+const locateEnd = source.indexOf('\n  async function saveMarker(', locateStart);
 assert.ok(locateStart >= 0 && locateEnd > locateStart, 'native mark resolver remains a single source owner');
 let articleText = 'Начало Бог благ конец. Далее Бог благ снова.';
 let savedMarks = [];
@@ -211,6 +209,7 @@ assert.ok(anchorSourceStart >= 0 && anchorSourceEnd > anchorSourceStart,
 function makeAnchorBlock(id, text) {
   const block = {
     id, tagName: 'P', textContent: text,
+    matches() { return false; },
     closest() { return null; },
   };
   block.firstChild = { nodeType: 3, nodeValue: text, parentElement: block };
