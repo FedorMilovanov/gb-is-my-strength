@@ -181,8 +181,57 @@ async function test(engine,driver,width,height,base){
  console.log('PASS '+engine+' '+width+'x'+height+' V3 backup/tag/context/search/reading/daily/mobile');
  }finally{await context.close();await browser.close();}
 }
+async function recoveryCase(engine,driver,base) {
+ const browser=await driver.launch(),errors=[];
+ const keys=['gb-highlights-v1','gb-reader-notes-v1','gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
+ const blank=Object.fromEntries(keys.map(k=>[k,null])),raw={...blank};
+ raw[keys[0]]='[ {"id":"Q","text":"old quote","url":"/a"}, null ]';
+ raw[keys[1]]=JSON.stringify([{id:42,text:'legacy',extra:{a:1}},{id:'dup',text:'A'},{id:'dup',text:'B'}]);
+ raw[keys[2]]=JSON.stringify({version:1,extra:'keep',items:[{path:'/a/index.html',title:'old',extra:'a'},null,{path:'/a/',title:'alias',extra:'b'}]});
+ raw[keys[3]]=JSON.stringify({'note:42':[' raw ',' raw ']});
+ try {
+  async function open(seed) {
+   const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true,serviceWorkers:'block'});
+   await context.addInitScript(seed=>{for(const [k,v] of Object.entries(seed))if(v!==null)localStorage.setItem(k,v)},seed);
+   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+   await page.goto(base+route);
+   await page.locator('#gb-hl-fab').click();await page.locator('#gb-hl-manage').click();
+   return {context,page};
+  }
+  const snapshot=p=>p.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),keys);
+  const download=async p=>{
+   const [dl]=await Promise.all([p.waitForEvent('download'),p.locator('[data-research-action=export-recovery]').click()]);
+   assert.equal(dl.suggestedFilename(),'gb-library-recovery.json');
+   return JSON.parse(fs.readFileSync(await dl.path(),'utf8'));
+  };
+  const send=async(p,archive)=>{
+   await p.locator('#gb-hl-json-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(archive))});
+   await p.locator('#gb-hl-import-confirm').waitFor({state:'visible'});
+   await p.locator('[data-research-action=confirm-import]').click();
+  };
+  const done=p=>p.waitForFunction(()=>!document.querySelector('[data-research-action=confirm-import]').disabled);
+  const a=await open(raw),archive=await download(a.page);
+  assert.deepEqual(archive.raw,raw);assert.deepEqual(await snapshot(a.page),raw);
+  const b=await open({});await send(b.page,archive);await b.page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
+  assert.deepEqual(await snapshot(b.page),raw);
+  await send(b.page,archive);await b.page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
+  assert.deepEqual(await snapshot(b.page),raw);
+  const c=await open({[keys[1]]:JSON.stringify([{id:'newer',text:'newer'}])}),before=await snapshot(c.page);
+  await send(c.page,archive);await done(c.page);
+  assert.equal(await c.page.locator('#gb-hl-import-confirm').isVisible(),true);assert.deepEqual(await snapshot(c.page),before);
+  const broken=await open({[keys[0]]:'{bad'}),badArchive=await download(broken.page);
+  assert.equal(badArchive.raw[keys[0]],'{bad');
+  const d=await open({});await send(d.page,badArchive);await done(d.page);
+  assert.deepEqual(await snapshot(d.page),blank);
+  assert.deepEqual(errors,[]);
+  for(const x of [a,b,c,broken,d])await x.context.close();
+  console.log('PASS '+engine+' exact archive recovery UI, legacy bytes and refusal');
+ } finally { await browser.close(); }
+}
 (async()=>{await new Promise(r=>serve.listen(0,'127.0.0.1',r));
 try{const base='http://127.0.0.1:'+serve.address().port;
-for(const [name,driver] of [['chromium',chromium],['webkit',webkit]])
+for(const [name,driver] of [['chromium',chromium],['webkit',webkit]]) {
  for(const [w,h] of [[320,640],[390,844],[768,900],[1440,900]])await test(name,driver,w,h,base);
-console.log('READER LIBRARY V3: 8/8 PASS');}finally{serve.close();}})().catch(e=>{console.error(e);process.exitCode=1;serve.close()});
+ await recoveryCase(name,driver,base);
+}
+console.log('READER LIBRARY V3: 8/8 PASS + 2/2 EXACT RECOVERY PASS');}finally{serve.close();}})().catch(e=>{console.error(e);process.exitCode=1;serve.close()});

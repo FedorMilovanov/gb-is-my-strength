@@ -106,12 +106,15 @@
       b.textContent='✓';b.style.color=color===currentColor?'#3c2c26':'transparent';
       palette.append(b);
     }
-    const entries=()=>read(qKey).filter(x=>samePage(x) &&
+    const entries=()=>read(qKey).filter(x=>x&&typeof x==='object'&&!Array.isArray(x)&&
+      typeof x.text==='string'&&((typeof x.id==='string'&&x.id.length>0)||Number.isSafeInteger(x.id))&&samePage(x) &&
       (x?.annotation?.version===1 || !!x.color)).map(x=>
       x?.annotation?.version===1 ? x : {...x,
         annotation:{version:0,kind:x.kind||'marker',color:x.color||'amber',noteId:null}});
     const all=()=>read(qKey);
     let rangeById=new Map(),pendingNoteId=null,pendingNoteSnapshot=null,pendingRecolorId=null,pendingRecolorSnapshot=null;
+    const noteSaves=new WeakSet();
+    let recolorGeneration=0,recolorInFlight=null;
     function paint(){
       rangeById=new Map();
       const groups={};
@@ -200,7 +203,7 @@
         if(old.length>=200)return{reason:'capacity'};
         if(old.some(x=>x&&sameId(x.id,record.id))||stores[nKey].some(n=>sameId(n?.quoteId,record.id)))return{reason:'id-collision'};
         const next=store.addHighlight(old,record);
-        if(!next.some(x=>x.id===record.id))return{reason:'conflict'};
+        if(!next.some(x=>x?.id===record.id))return{reason:'conflict'};
         return{changes:{[qKey]:next}};
       });
       if(!result.ok){
@@ -268,6 +271,8 @@
     function openNoteEditor(record){
       pendingNoteId=record.id;
       pendingNoteSnapshot=captureNoteSnapshot(record);
+      noteText.readOnly=false;
+      section.querySelector('#npW57SaveNote').disabled=false;
       noteText.value=linkedNote(record)?.text||'';
       editor.hidden=false;section.open=true;
       window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
@@ -398,8 +403,15 @@
       const button=e.target.closest('[data-color]');if(!button)return;
       const chosenColor=button.dataset.color,targetId=pendingRecolorId;
       if(targetId){
-        const updated=await updateRecord(targetId,x=>{x.annotation.color=chosenColor},pendingRecolorSnapshot);
+        const generation=recolorGeneration;
+        if(recolorInFlight===generation)return;
+        recolorInFlight=generation;
+        let updated;
+        try {updated=await updateRecord(targetId,x=>{x.annotation.color=chosenColor},pendingRecolorSnapshot);}
+        finally {if(recolorInFlight===generation)recolorInFlight=null;}
+        if(recolorGeneration!==generation)return;
         if(!updated){say('Цвет не сохранён. Выберите цвет ещё раз или нажмите Escape.');return}
+        recolorGeneration++;
         pendingRecolorId=null;pendingRecolorSnapshot=null;
         palette.setAttribute('aria-label','Цвет выделения');
       }
@@ -413,9 +425,11 @@
     palette.addEventListener('keydown',e=>{
       if(e.key!=='Escape'||!pendingRecolorId)return;
       e.preventDefault();e.stopPropagation();
+      const saving=recolorInFlight===recolorGeneration;
+      recolorGeneration++;
       pendingRecolorId=null;pendingRecolorSnapshot=null;
       palette.setAttribute('aria-label','Цвет выделения');
-      say('Смена цвета отменена. Помета не изменена.');
+      say(saving?'Палитра закрыта. Начатое сохранение может завершиться.':'Смена цвета отменена. Помета не изменена.');
     });
     list.addEventListener('click',async e=>{
       const b=e.target.closest('[data-action]'),li=b?.closest('li[data-id]');if(!li)return;
@@ -425,6 +439,7 @@
       if(action==='switch'){
         await updateRecord(id,x=>{x.annotation.kind=x.annotation.kind==='marker'?'underline':x.annotation.kind==='underline'?'marker':'marker'},JSON.stringify(record));
       }else if(action==='recolor'){
+        recolorGeneration++;
         pendingRecolorId=id;pendingRecolorSnapshot=JSON.stringify(record);
         palette.setAttribute('aria-label','Выберите новый цвет сохранённой пометы');
         say('Выберите цвет этой пометы в палитре выше. Escape — отмена.');
@@ -445,7 +460,7 @@
         });
         if(!deleted.ok){say('Не удалось безопасно удалить помету. Повторите попытку.');return}
         // An open draft is never discarded as a side effect of deletion.
-        if(sameId(pendingRecolorId,id)){pendingRecolorId=null;pendingRecolorSnapshot=null;palette.setAttribute('aria-label','Цвет выделения')}
+        if(sameId(pendingRecolorId,id)){recolorGeneration++;pendingRecolorId=null;pendingRecolorSnapshot=null;palette.setAttribute('aria-label','Цвет выделения')}
         const receipt=deleted.receipt;
         lastUndo=receipt;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
         const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
@@ -464,15 +479,27 @@
       }
     });
     section.querySelector('#npW57CancelNote').addEventListener('click',()=>{
-      pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';editor.hidden=true;
-      say('Редактирование отменено; сохранённые заметки не изменены.');
+      const saving=pendingNoteSnapshot&&noteSaves.has(pendingNoteSnapshot);
+      pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';noteText.readOnly=false;editor.hidden=true;
+      section.querySelector('#npW57SaveNote').disabled=false;
+      say(saving?'Редактор закрыт. Начатое сохранение может завершиться.':'Редактирование отменено; сохранённые заметки не изменены.');
     });
     section.querySelector('#npW57SaveNote').addEventListener('click',async()=>{
-      const value=noteText.value.trim(),id=pendingNoteId;
-      if(!value||!id){say('Введите текст заметки.');return}
+      const value=noteText.value.trim(),id=pendingNoteId,snapshot=pendingNoteSnapshot;
+      if(!value||!id||!snapshot){say('Введите текст заметки.');return}
+      if(noteSaves.has(snapshot))return;
       const record=entries().find(x=>sameId(x.id,id));
       if(!record){say('Исходное выделение не найдено. Текст остаётся в редакторе.');return}
-      const result=await saveLinkedNote(record,value,pendingNoteSnapshot);
+      noteSaves.add(snapshot);noteText.readOnly=true;
+      const button=section.querySelector('#npW57SaveNote');button.disabled=true;
+      let result;
+      try {result=await saveLinkedNote(record,value,snapshot);}
+      catch {result={ok:false,message:'Ошибка сохранения. Черновик остаётся в редакторе.'};}
+      finally {
+        noteSaves.delete(snapshot);
+        if(pendingNoteSnapshot===snapshot){noteText.readOnly=false;button.disabled=false;}
+      }
+      if(pendingNoteSnapshot!==snapshot)return;
       if(!result.ok){say(result.message);return}
       pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';editor.hidden=true;
       // Same-tab localStorage writes never emit a storage event: update the card.

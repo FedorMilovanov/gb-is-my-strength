@@ -164,7 +164,7 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'book returns to mobile bar after resize');
   assert.deepEqual(errors, [], 'no client-side JS errors');
   console.log('PASS', browserName, width, 'legacy quote/favorite data, notes, expand, search, export, selection, accessibility');
-  } finally { await context.close(); await browser.close(); }
+  } finally { await browser.close(); }
 }
 
 async function checkGbs2(name, driver, url) {
