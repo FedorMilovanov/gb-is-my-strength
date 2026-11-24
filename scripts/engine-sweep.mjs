@@ -109,6 +109,25 @@ async function newPage(vp, { speech = false } = {}) {
   return { ctx, page };
 }
 
+// Historical screen-layout assertions explicitly exercise the supported Classic
+// comparison, not a silently selected fallback from default desktop Reader.
+async function gotoClassic(page, route, id) {
+  const target = new URL(route, base);
+  target.searchParams.set('reader-pilot', '0');
+  const response = await page.goto(target.href, { waitUntil: 'networkidle' });
+  const ownership = await page.evaluate(() => ({
+    classic: new URL(location.href).searchParams.get('reader-pilot') === '0',
+    ready: document.body.classList.contains('np-w57-ready'),
+    model: !!window.__NP_UNIVERSAL_PREVIEW__,
+    annotations: !!window.__NP_W57_ANNOTATIONS__,
+    activeStyles: [...document.querySelectorAll('link[data-gb-reader-desktop-css]')].some(link => matchMedia(link.media).matches),
+    runtime: [...document.scripts].some(script => /\/reader-desktop\/reader_/.test(script.src))
+  }));
+  const ok = response?.status() === 200 && ownership.classic && !ownership.ready &&
+    !ownership.model && !ownership.annotations && !ownership.activeStyles && !ownership.runtime;
+  R(id, 'Classic: explicit comparison owner, no W57 runtime', ok, JSON.stringify(ownership));
+  if (!ok) throw new Error('Classic ownership failed: ' + id + ' ' + JSON.stringify(ownership));
+}
 async function clickVisibleCenter(page, selector) {
   const hit = await page.evaluate((value) => {
     const el = document.querySelector(value);
@@ -134,10 +153,10 @@ async function clickVisibleCenter(page, selector) {
   return hit;
 }
 
-/* ============ СЕРИЯ-ДВИЖОК — ДЕСКТОП ============ */
+/* ============ СЕРИЯ-ДВИЖОК — ДЕСКТОП CLASSIC ============ */
 for (const [id, url] of SERIES) {
   const { ctx, page } = await newPage({ width: 1440, height: 900 });
-  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await gotoClassic(page, url, id);
   await page.waitForTimeout(500);
 
   R(id, 'desk: rail', !!(await page.$('[data-gill-v16] .gbs-rail')));
@@ -367,7 +386,7 @@ for (const [id, url] of SERIES) {
 /* ============ ОДИНОЧНЫЙ ДВИЖОК ============ */
 for (const [id, url] of SINGLES) {
   let { ctx, page } = await newPage({ width: 1440, height: 900 });
-  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await gotoClassic(page, url, id);
   await page.waitForTimeout(500);
   R(id, 'desk: ReaderRail', !!(await page.$('.hrail')));
   // Exercise the actual rate selector, never fabricate a badge label in DOM.
@@ -512,7 +531,7 @@ for (const [id, url] of SINGLES) {
 /* ============ WIDE DESKTOP SPEED PILL — CONTENT CLEARANCE ============ */
 {
   const { ctx, page } = await newPage({ width: 1680, height: 851 });
-  await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
+  await gotoClassic(page, '/articles/dzhon-gill-chast-1-chelovek/', 'reader-width-1680');
   await page.evaluate(() => {
     const current = window.GBReaderPreferences?.get?.() || {};
     window.GBReaderPreferences?.set?.({ ...current, measure: 'wide' }, { source: 'engine-sweep-wide-speed' });
@@ -555,10 +574,10 @@ for (const [id, url] of SINGLES) {
   await ctx.close();
 }
 
-/* ============ READER WIDTH + PDF/PRINT — СИСТЕМНЫЙ КОНТРАКТ ============ */
+/* ============ READER WIDTH — CLASSIC SCREEN CONTRACT ============ */
 {
   const { ctx, page } = await newPage({ width: 1440, height: 851 });
-  await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
+  await gotoClassic(page, '/articles/dzhon-gill-chast-1-chelovek/', 'reader-width-1440');
   await page.evaluate(() => {
     const current = window.GBReaderPreferences?.get?.() || {};
     window.GBReaderPreferences?.set?.({ ...current, measure: 'wide' }, { source: 'engine-sweep' });
@@ -592,7 +611,37 @@ for (const [id, url] of SINGLES) {
       safe.articleRight <= safe.panelLeft - 12 && safe.scrollWidth <= safe.viewport + 1,
     JSON.stringify(safe));
   if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1440.png'), fullPage: false });
+  await ctx.close();
+}
 
+/* ============ DEFAULT DESKTOP PRODUCT + CANONICAL PHYSICAL PRINT ============ */
+{
+  const { ctx, page } = await newPage({ width: 1440, height: 851 });
+  const response = await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'domcontentloaded' });
+  if (response?.status() !== 200) throw new Error('Default product route HTTP failure');
+  await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+    window.__NP_UNIVERSAL_PREVIEW__?.ready === true && window.__NP_W57_ANNOTATIONS__?.ready === true &&
+    !new URL(location.href).searchParams.has('reader-pilot'), null, { timeout: 15000 });
+  R('print', 'default product owns desktop before export', true, page.url());
+
+  const settings = page.locator('#railSettingsBtn[aria-controls="npUFontPanel"]');
+  await settings.click();
+  const panel = page.locator('#npUFontPanel');
+  await panel.waitFor({ state: 'visible' });
+  const oldSheetHidden = await page.locator('#gillSettingsOverlay').getAttribute('aria-hidden');
+  R('default-reader', 'single settings owner', oldSheetHidden === 'true' &&
+    await settings.getAttribute('aria-expanded') === 'true', String(oldSheetHidden));
+  await panel.locator('[data-np-u-type-width="narrow"]').click();
+  await page.waitForFunction(() => window.GBReaderPreferences?.get?.().measure === 'narrow');
+  await panel.locator('[data-np-u-type-width="wide"]').click();
+  await page.waitForFunction(() => window.GBReaderPreferences?.get?.().measure === 'wide');
+  await panel.locator('[data-np-u-type-theme="sepia"]').click();
+  await page.waitForFunction(() => window.GBReaderPreferences?.get?.().theme === 'sepia');
+  R('default-reader', 'real width and theme controls update canonical preferences', true, '');
+  await page.keyboard.press('Escape');
+  await panel.waitFor({ state: 'hidden' });
+  R('default-reader', 'settings Escape restores actual trigger focus',
+    await settings.evaluate(el => document.activeElement === el), '');
   await page.evaluate(() => { window.print = () => { window.__printCalls = (window.__printCalls || 0) + 1; }; });
   const printHit = await clickVisibleCenter(page, '.gbs-rail-foot [data-action="print"]');
   R('print', 'PDF button hit-target', !!printHit && printHit.visible && printHit.hit, JSON.stringify(printHit));
@@ -1008,7 +1057,7 @@ for (const [id, url, satelliteUrl] of [
   ['heart', '/articles/krajne-li-isporcheno-serdce/', '/articles/skrytye-idoly-serdca/'],
 ]) {
   const { ctx, page } = await newPage({ width: 1440, height: 900 });
-  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await gotoClassic(page, url, id + '-toc');
   await page.waitForTimeout(400);
   // Hydration may replace the legacy TOC shell; wait for the actual owner
   // before mutating it so a transient lookup cannot crash the whole sweep.
@@ -1042,7 +1091,7 @@ for (const [id, url, satelliteUrl] of [
 
   // Страница статьи главы: правильный номер СВОЕЙ ГЛАВЫ (не дефолт "1 из N").
   const { ctx: ctx2, page: page2 } = await newPage({ width: 1440, height: 900 });
-  await page2.goto(base + satelliteUrl, { waitUntil: 'networkidle' });
+  await gotoClassic(page2, satelliteUrl, id + '-satellite');
   await page2.waitForTimeout(300);
   const meta = await page2.evaluate(() => document.getElementById('gbs2Meta')?.textContent || '');
   R(id, 'TOC: статья главы показывает номер своей главы',
