@@ -4,6 +4,8 @@ import JournalEditorialRail from './JournalEditorialRail.astro';
 import JournalArticleHeader from './JournalArticleHeader.astro';
 import JournalContents from './JournalContents.astro';
 import JournalDataFigure from './JournalDataFigure.astro';
+import G3AnnualFinance from './g3-visual/G3AnnualFinance.astro';
+import { adoptedAnnualFinance } from './g3-visual/adopted-visual-inputs';
 import JournalSourceReturn from './JournalSourceReturn.astro';
 import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
 import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
@@ -295,6 +297,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       </p>
       <p class="source-note-paragraph" data-publication-claims="G3-PUB-002 G3-PUB-003 G3-PUB-004"><a id="cite-finance-G3-S002" data-journal-citation class="source-note" href="#src-G3-S002">Налоговые формы IRS, финансовые годы 2022–2025</a></p>
     </div>
+    <G3AnnualFinance projection={adoptedAnnualFinance()} />
     <JournalDataFigure title="Рост расходов до кризисов руководства" unit="Изменение FY2022 → FY2023 · доллары США" rows={financeDeltas}>
       Два крупнейших увеличения сопоставлены с общим изменением расходов, а не сложены в его состав.
       Это данные поданной декларации, не заключение внешнего аудитора.{' '}

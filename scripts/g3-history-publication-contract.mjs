@@ -35,11 +35,11 @@ test('Research #628 handoff is pinned, and the 2025–26 crisis seal is independ
   assert.ok(!oldCrisis.includes('G3-HIST-PUB-'), 'do not silently inflate old historical seal');
 });
 
-test('Adopted #632 text and catalogue intake has exact source anchors; annual claim remains pending', () => {
+test('Adopted #632 text and catalogue intake has exact source anchors and separately adopted annual finance', () => {
   assert.ok(expansion.researchHandoffUrl.includes('f49d20d31931ec389690b3033cefbb66cda67522'));
   assert.deepEqual([...expansion.activeTextClaimIds], ['G3-HIST-PUB-10','G3-HIST-PUB-11']);
-  assert.deepEqual([...expansion.activeComponentClaimIds], ['G3-HIST-PUB-12']);
-  assert.deepEqual([...expansion.pendingComponentClaimIds], ['G3-PUB-017']);
+  assert.deepEqual([...expansion.activeComponentClaimIds], ['G3-HIST-PUB-12','G3-PUB-017']);
+  assert.deepEqual([...expansion.pendingComponentClaimIds], []);
   assert.deepEqual([...expansion.adoptedClaimIds], [...expansion.activeTextClaimIds,...expansion.activeComponentClaimIds,...expansion.pendingComponentClaimIds]);
   assert.equal(expansion.rights, 'TEXTUAL_PARAPHRASE_LINK_AND_ORIGINAL_DATA_GRAPHICS_ONLY');
   const expected = [

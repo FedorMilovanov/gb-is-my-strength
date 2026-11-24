@@ -35,8 +35,26 @@ const { JOURNAL_PRODUCT_METADATA: journal } = await load('src/data/journal/journ
 const { G3_HISTORY_METADATA: history } = await load('src/data/journal/g3HistoryMetadata.ts');
 const { G3_HISTORY_SOURCES: historySources } = await load('src/data/journal/g3HistorySources.ts');
 const { G3_SOURCE_BIBLIOGRAPHY: sources } = await load('src/data/journal/g3SourceBibliography.ts');
+const { G3_EXPANSION_HANDOFF: expansion } = await load('src/data/journal/g3ExpansionHandoff.ts');
+const annual = JSON.parse(read('src/components/journal/g3-visual/adopted-visual-data.json')).finance;
+// Independent exact fixture from merged Research #632; the frozen crisis handoff is untouched.
+const annualRows = [[2019,100,0,100,100],[2020,204510,29901,174609,174709],[2021,1471335,1054265,417070,591779],[2022,1735978,1010186,725792,1318931],[2023,1705689,2071986,-366297,1043850],[2024,1212253,1401429,-189176,854674],[2025,399645,950642,-550997,304459]];
+assert.equal(annual.claimId, 'G3-PUB-017');
+assert.equal(annual.currency, 'USD');
+assert.equal(annual.fiscalYearEnd, 'December');
+assert.deepEqual(annual.rows.map(r => [r.fy,r.revenue,r.expenses,r.result,r.netAssets]), annualRows);
+assert.ok(annualRows.every(r => r[1]-r[2]===r[3]));
+assert.ok(expansion.activeComponentClaimIds.includes('G3-PUB-017'));
 const current = read('src/components/journal/G3Dossier.astro');
 const old = previous('src/components/journal/G3Dossier.astro');
+assert.match(current, /<G3AnnualFinance projection=\{adoptedAnnualFinance\(\)\} \/>/);
+const annualSource=read('src/components/journal/g3-visual/G3AnnualFinance.astro');
+assert.match(annualSource,/data-publication-claims=\{review \? undefined : "G3-PUB-017"\}/);
+assert.match(annualSource,/assertAdoptedAnnualFinance\(props.projection\)/);
+for (const id of ['G3-S002','G3-S028']) {
+  assert.ok(sources.some(s=>s.id===id));
+  assert.ok(annualSource.includes('href="#src-'+id+'"'));
+}
 const values = [...current.match(/const financeDeltas = \[([\s\S]*?)\];/)[1].matchAll(/value:\s*(\d+)/g)].map((match) => Number(match[1]));
 assert.deepEqual(values, [1061800, 817283, 246511], 'the comparison must retain the exact pinned G3-PUB-002 deltas');
 function sourceDoc(value) {
@@ -247,6 +265,21 @@ if (!process.argv.includes('--source-only')) {
       // branch is emitted: when dated correction records exist, the
       // "no material corrections" placeholder must NOT appear in dist.
       // Compare its real source-owned date and replacement text instead.
+      const annualSections=nodes.filter(node=>hasClass(node,'g3-annual-finance'));
+      assert.equal(annualSections.length,1,'single adopted annual finance module');
+      const annualSection=annualSections[0];
+      assert.equal(attr(annualSection,'data-publication-claims'),'G3-PUB-017');
+      assert.equal(all(annualSection,node=>hasClass(node,'gaf-hold')).length,0);
+      const annualTable=all(annualSection,node=>node.tagName==='table');
+      assert.equal(annualTable.length,1);
+      const actualRows=all(annualTable[0],node=>node.tagName==='tbody').flatMap(body=>all(body,node=>node.tagName==='tr')).map(row=>all(row,node=>['th','td'].includes(node.tagName)).map(cell=>Number(normalize(text(cell)).replace('−','-'))));
+      assert.deepEqual(actualRows,annualRows,'all 28 annual values and year labels must render exactly');
+      for (const id of ['G3-S002','G3-S028']) {
+        const links=all(annualSection,node=>node.tagName==='a'&&attr(node,'href')==='#src-'+id);
+        assert.equal(links.length,1);
+        assert.equal(attr(links[0],'id'),'cite-finance-annual-'+id);
+        assert.notEqual(attr(links[0],'data-journal-citation'),undefined);
+      }
       const correctionDeclaration = current.match(/const corrections:[\s\S]*?=\s*\[([\s\S]*?)\];\s*const contents/);
       assert.ok(correctionDeclaration, 'correction record declaration must remain inspectable');
       const expectedCorrections = [...correctionDeclaration[1].matchAll(/correctedAt:\s*'([^']+)'[\s\S]*?newMeaning:\s*'([^']+)'/g)];

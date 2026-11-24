@@ -193,7 +193,19 @@ const assertPublishedHistory = async (page, response) => {
   assert.match(await page.locator('meta[name="robots"]').getAttribute('content'), /index,\s*follow/);
   assert.equal(await page.locator('body[data-journal-id="g3-history"]').count(), 1);
   assert.equal(await page.locator('.je-review-note, [data-research-publication-status="PUBLICATION_HOLD"]').count(), 0);
-  assert.equal(await page.locator('.bibliography-item').count(), 22, 'Research bibliography must contain all 22 sources');
+  assert.equal(await page.locator('.bibliography-item').count(), 26, 'Research bibliography must contain all 26 adopted sources');
+  assert.equal(await page.locator('.g3-matrix[data-publication-claims="G3-HIST-PUB-12"]').count(),1);
+  assert.equal(await page.locator('.g3-matrix .gm-row').count(),26);
+  assert.equal(await page.locator('.g3-matrix [data-journal-citation]').count(),60);
+};
+const assertAdoptedFinance = async (page) => {
+  const annual=page.locator('.g3-annual-finance[data-publication-claims="G3-PUB-017"]');
+  assert.equal(await annual.count(),1);
+  assert.equal(await annual.locator('tbody tr').count(),7);
+  const rows=await annual.locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('th,td')].map(cell=>Number(cell.textContent.replace(/\s+/gu,'').replace('−','-')))));
+  assert.deepEqual(rows,[[2019,100,0,100,100],[2020,204510,29901,174609,174709],[2021,1471335,1054265,417070,591779],[2022,1735978,1010186,725792,1318931],[2023,1705689,2071986,-366297,1043850],[2024,1212253,1401429,-189176,854674],[2025,399645,950642,-550997,304459]]);
+  assert.equal(await annual.locator('[data-journal-citation]').count(),2);
+  assert.equal(await annual.locator('.gaf-hold').count(),0);
 };
 const citationFor = (page, kind, second = false) => page.locator(kind === 'dossier'
   ? second ? '#finance .je-data-figure [data-journal-citation]' : '#finance .source-note[data-journal-citation]'
@@ -284,6 +296,7 @@ try {
     try {
       const response = await ready(page, route.url);
       if (route.kind === 'history') await assertPublishedHistory(page, response);
+      else if (route.kind === 'dossier') await assertAdoptedFinance(page);
       item.layout = await inspect(page);
       await shot(page, `${route.kind}-${width}-${theme}`);
       assert.equal(item.layout.documentOverflow, 0);
@@ -903,6 +916,7 @@ try {
           item.phase = 'navigation/ready';
           const response = await ready(page, route.url, (phase) => { item.phase = phase; });
           if (route.kind === 'history') await assertPublishedHistory(page, response);
+          else if (route.kind === 'dossier') await assertAdoptedFinance(page);
           // The shared dark-theme anchor color must not override Journal's
           // inverse skip-navigation foreground. Check the *focused* control
           // in every real mobile engine/theme and JS/no-JS mode.
@@ -1099,6 +1113,7 @@ try {
         try {
           const response = await ready(page, route.url);
           if (route.kind === 'history') await assertPublishedHistory(page, response);
+          else if (route.kind === 'dossier') await assertAdoptedFinance(page);
           await page.emulateMedia({ media: 'print' });
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');
