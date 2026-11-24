@@ -3,16 +3,19 @@
 import matrix from './matrix-data.json';
 import { G3_HISTORY_SOURCES, historyCitation, type G3HistorySourceId } from '@/data/journal/g3HistorySources';
 import './matrix.css';
-type MatrixData = { years: number[]; rows: { id: string; name: string; years: number[] }[] };
+import { assertAdoptedMatrix, type MatrixData } from './adopted-visual-inputs';
 interface Props {
   data?: MatrixData;
+  claimId?: 'G3-HIST-PUB-12';
   sourceIds?: Readonly<Partial<Record<number, G3HistorySourceId>>>;
 }
 const approvedSourceIds: Readonly<Partial<Record<number, G3HistorySourceId>>> = {
   2013: 'gnl-2013', 2014: 'gnl-2014', 2015: 'gnl-2015', 2016: 'gnl-2016',
   2017: 'gnl-2017', 2019: 'gnl-2019', 2020: 'gnl-2020',
 };
-const { data = matrix, sourceIds = approvedSourceIds } = Astro.props;
+const { data = matrix, sourceIds = approvedSourceIds, claimId } = Astro.props;
+if (claimId === 'G3-HIST-PUB-12') assertAdoptedMatrix(data);
+else if (data !== matrix) throw new Error('Custom G3 matrix requires adopted claim G3-HIST-PUB-12');
 const years = data.years;
 const source = (year: number) => {
   const id = sourceIds[year];
@@ -32,12 +35,12 @@ if (new Set(data.rows.map(row => row.id)).size !== data.rows.length ||
   throw new Error('Invalid G3 matrix row');
 }
 ---
-<section class="g3-matrix" data-g3-matrix style={`--gm-year-count:${years.length}`} aria-label="Проповедники в каталогах G3">
+<section class="g3-matrix" data-g3-matrix data-publication-claims={claimId} style={`--gm-year-count:${years.length}`} aria-label="Имена в каталогах G3">
   <p class="gm-kicker">Архив конференций · {years[0]}–{years[years.length-1]}</p>
-  <h2>Проповедники в каталогах G3</h2>
+  <h2>Имена в каталогах G3</h2>
   <p class="gm-intro">Выборочные сведения из {years.length} каталогов конференций. Точка ведёт к источнику соответствующего года; прочерк означает только отсутствие имени в этой подборке.</p>
   <div class="gm-filter" hidden>
-    <label>Имя проповедника<input type="search" placeholder="Например, Вошер" autocomplete="off" /></label>
+    <label>Имя участника каталога<input type="search" placeholder="Например, Вошер" autocomplete="off" /></label>
     <label>Год конференции<select><option value="">Все годы</option>{years.map(year => <option value={year}>{year}</option>)}</select></label>
     <button type="button">Сбросить</button>
   </div>

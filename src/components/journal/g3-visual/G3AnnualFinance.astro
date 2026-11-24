@@ -1,16 +1,20 @@
 ---
-// REVIEW ONLY; do not import from a production route. Requires new adopted Research projection.
+// Parent selects review-only witness or exact adopted Research projection. No public route import here.
 import './finance.css';
-type FinanceRow = { fy: number; revenue: number; expenses: number; result: number; netAssets: number };
-interface Props {
-  reviewOnly: true;
-  proposal: { state: string; currency: string; rows: FinanceRow[] };
+import { assertAdoptedAnnualFinance, type AdoptedFinance, type FinanceRow } from './adopted-visual-inputs';
+type Props = { reviewOnly: true; proposal: {state:string;currency:string;rows:FinanceRow[]}; projection?: never }
+  | { reviewOnly?: false; proposal?: never; projection: AdoptedFinance };
+const props = Astro.props;
+const review = props.reviewOnly === true;
+let rows: readonly FinanceRow[];
+if (review) {
+  if(props.proposal?.state!=='PUBLICATION_HOLD'||props.proposal.currency!=='USD') throw new Error('Invalid review-only finance data');
+  rows=props.proposal.rows;
+} else {
+  if(!props.projection) throw new Error('G3 annual finance requires adopted projection');
+  assertAdoptedAnnualFinance(props.projection);
+  rows=props.projection.rows;
 }
-const { proposal } = Astro.props;
-if (Astro.props.reviewOnly !== true || proposal?.state !== 'PUBLICATION_HOLD' || proposal.currency !== 'USD') {
-  throw new Error('G3 annual finance requires explicit review-only rendering; no publication authority');
-}
-const rows = proposal.rows;
 if (rows.length !== 7 || rows.some((r,i) => r.fy !== 2019+i ||
     ![r.revenue,r.expenses,r.result,r.netAssets].every(Number.isSafeInteger) ||
     r.revenue < 0 || r.expenses < 0 || r.netAssets < 0 || r.revenue-r.expenses !== r.result ||
@@ -22,8 +26,8 @@ const labels = ['Год','Доходы','Расходы','Результат','�
 const grid = 'M0 0H700 M0 40H700 M0 80H700 M0 120H700 M0 160H700';
 const points = rows.map((r,i) => [i*100+50,160-r.netAssets/1400000*160].join(',')).join(' ');
 ---
-<section class="g3-annual-finance" aria-label="Годовая финансовая отчётность">
-  <p class="gaf-hold">Внутренняя приёмка · публикация не разрешена</p>
+<section class="g3-annual-finance" data-publication-claims={review ? undefined : "G3-PUB-017"} aria-label="Годовая финансовая отчётность">
+  {review && <p class="gaf-hold">Внутренняя приёмка · публикация не разрешена</p>}
   <h2>Доходы, расходы и активы</h2>
   <p class="gaf-meta">Финансовые годы, заканчивающиеся в декабре · USD</p>
   <figure class="gaf-primary">
@@ -50,7 +54,7 @@ const points = rows.map((r,i) => [i*100+50,160-r.netAssets/1400000*160].join(','
           <div class="gaf-years">{rows.map(r => <span>{r.fy}</span>)}</div>
         </div>
       </div>
-      <figcaption>Доходы минус расходы.</figcaption>
+      <figcaption>Доходы минус расходы; не изменение чистых активов.</figcaption>
     </figure>
     <figure>
       <h3>Чистые активы · млн $</h3>
@@ -64,5 +68,5 @@ const points = rows.map((r,i) => [i*100+50,160-r.netAssets/1400000*160].join(','
     </figure>
   </div>
   <table role="table"><caption>Точные значения · USD</caption><thead role="rowgroup"><tr role="row">{labels.map(l => <th scope="col" role="columnheader">{l}</th>)}</tr></thead><tbody role="rowgroup">{rows.map(r => <tr role="row"><th scope="row" role="rowheader">{r.fy}</th>{[r.revenue,r.expenses,r.result,r.netAssets].map((n,i) => <td role="cell" data-label={labels[i+1]}>{fmt(n)}</td>)}</tr>)}</tbody></table>
-  <p class="gaf-source">IRS Form 990 (2019 — 990-EZ), <a id="cite-finance-annual-G3-S002" data-journal-citation href="#src-G3-S002">годовые декларации IRS</a>. Не внешний аудит.</p>
+  <p class="gaf-source">IRS Form 990 (2019 — 990-EZ), <a id="cite-finance-annual-G3-S002" data-journal-citation href="#src-G3-S002">годовые декларации IRS</a>{!review && <> · <a id="cite-finance-annual-G3-S028" data-journal-citation href="#src-G3-S028">Архив налоговых документов</a></>}. Не внешний аудит.</p>
 </section>

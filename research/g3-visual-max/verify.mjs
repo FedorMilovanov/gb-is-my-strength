@@ -55,8 +55,20 @@ for(const [i,r] of f.rows.entries()){
   assert.equal(r.revenue-r.expenses,r.result);assert(r.revenue>=0&&r.expenses>=0&&r.netAssets>=0);
 }
 const annual=read(src+'G3AnnualFinance.astro');
-assert(annual.includes("Astro.props.reviewOnly !== true")&&annual.includes("proposal?.state !== 'PUBLICATION_HOLD'"));
+assert(annual.includes("props.proposal?.state!=='PUBLICATION_HOLD'")&&annual.includes("assertAdoptedAnnualFinance(props.projection)"));
 assert(!annual.includes("finance-proposal.json"));
 assert(annual.includes("заканчивающиеся в декабре"));
 assert(!read(src+'G3SpeakerMatrix.astro').includes('matrix-expansion-hold'));
 console.log('PASS: 37 base / 23 exact H-T / 60 distinct pairs / 26 names / 9 years / exact fixture IDs / 28 finance values, HOLD preserved');
+
+const adopted=json(src+'adopted-visual-data.json');
+assert.equal(adopted.researchMerge,'f49d20d31931ec389690b3033cefbb66cda67522');
+assert.equal(adopted.matrix.claimId,'G3-HIST-PUB-12');
+assert.deepEqual(sorted(adopted.matrix.entries.map(r=>r.id+'/'+r.year)),sorted(extra));
+assert.deepEqual(adopted.matrix.entries.map(({topic,...row})=>row),h.entries);
+assert.equal(adopted.finance.claimId,'G3-PUB-017');
+assert.deepEqual(adopted.finance.rows,f.rows);
+assert.equal(adopted.finance.fiscalYearEnd,'December');
+assert(annual.includes('{review && <p class="gaf-hold">'));
+assert(read(src+'G3SpeakerMatrix.astro').includes('assertAdoptedMatrix(data)'));
+console.log('PASS: adopted #632 projection 23 exact keys and 28 cells; no route activation');
