@@ -147,6 +147,36 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.keyboard.press('Escape');await p.waitForTimeout(470);
    row.states.escapeClosed=await p.evaluate(measure);
    test('Escape closes after rapid reopen',!row.states.escapeClosed.sheet.open&&row.states.escapeClosed.sheet.display==='none',row.states.escapeClosed.sheet);
+   // Close during the actual entry animation. Sample both ends in the
+   // browser so an old compositor entry cannot masquerade as an exit.
+   row.states.interruptedEntry=await p.evaluate(async()=>{
+     document.dispatchEvent(new CustomEvent('hm:open-settings'));
+     const sheet=document.getElementById('hmSettings'),panel=sheet.querySelector('.hmsheet-panel');
+     const sample=()=>({opacity:Number(getComputedStyle(panel).opacity),open:sheet.classList.contains('is-open'),
+       closing:sheet.classList.contains('is-closing'),display:getComputedStyle(sheet).display,
+       inert:sheet.inert,aria:sheet.getAttribute('aria-hidden')});
+     const deadline=performance.now()+800;
+     while(performance.now()<deadline){
+       const opacity=Number(getComputedStyle(panel).opacity);
+       if(opacity>.10&&opacity<.90)break;
+       await new Promise(requestAnimationFrame);
+     }
+     const before=sample();
+     document.getElementById('hmSettingsClose').click();
+     const start=sample();
+     await new Promise(resolve=>setTimeout(resolve,100));
+     const mid=sample();
+     return {before,start,mid};
+   });
+   await p.waitForFunction(()=>getComputedStyle(document.getElementById('hmSettings')).display==='none',null,{timeout:1500});
+   const interrupted=row.states.interruptedEntry;
+   test('interrupted entry reverses into real inert exit',
+     interrupted.before.opacity>.10&&interrupted.before.opacity<.90&&
+     !interrupted.start.open&&interrupted.start.closing&&interrupted.start.inert&&interrupted.start.aria==='true'&&
+     interrupted.mid.opacity<interrupted.start.opacity,interrupted);
+   const afterInterrupted=await p.evaluate(measure);
+   test('interrupted exit releases scroll and restores article',afterInterrupted.sheet.display==='none'&&
+     !afterInterrupted.sheet.closing&&Math.abs(afterInterrupted.scrollY-base.scrollY)<2&&closeEnough(base.p,afterInterrupted.p),afterInterrupted);
    test('no runtime errors',errors.length===0,errors);
   }catch(e){row.failed.push({name:'test-execution',detail:String(e)})}
   outcomes.push(row);await p.close();
