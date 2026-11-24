@@ -1683,44 +1683,75 @@ body.np-u-preview .article-body .np-u-evidence-highlight{
 /* W15 research instruments: real biblical text & real editorial dictionary.
    The picker is the navigation, not a wall of forty-one small verse pills. */
 #npUniversalDemo.np-u-argon .np-u-study-picker{
- display:grid;gap:6px;margin:0 0 12px;padding:0;
+ display:grid;gap:6px;margin:0 0 12px;padding:0;min-width:0;
 }
 #npUniversalDemo.np-u-argon .np-u-study-picker>label{
- font:500 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+ font:500 11px/1.4 'Source Sans 3',system-ui,sans-serif;
  color:var(--np-u-muted);
 }
+/* Both native research selects receive the full rail width. The counter
+   and step controls share one quiet navigation row, independent of data type. */
 #npUniversalDemo.np-u-argon .np-u-study-picker-row{
- display:flex;align-items:center;gap:4px;min-width:0;
+ display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;
+ align-items:center;gap:4px 6px;min-width:0;
 }
 #npUniversalDemo.np-u-argon .np-u-study-picker-row select{
- box-sizing:border-box;flex:1 1 auto;min-width:0;width:100%;
- height:31px;min-height:31px;padding:4px 21px 4px 7px;
- border:1px solid var(--np-u-rule);border-radius:3px;
- color:var(--np-u-ink);background:var(--np-u-white);
- font:500 11px/1.2 'Source Sans 3',system-ui,sans-serif;
- text-overflow:ellipsis;cursor:pointer;
+ grid-column:1 / -1;grid-row:1;box-sizing:border-box;min-width:0;width:100%;
+ height:44px;min-height:44px;padding:4px 30px 4px 10px;
+ border:1px solid color-mix(in srgb,var(--np-u-ink) 45%,var(--np-u-rule));
+ border-radius:6px;color:var(--np-u-ink);
+ appearance:none;
+ background:linear-gradient(45deg,transparent 50%,var(--np-u-muted) 50%) right 15px center/5px 5px no-repeat,
+  linear-gradient(135deg,var(--np-u-muted) 50%,transparent 50%) right 10px center/5px 5px no-repeat,var(--np-u-white);
+ font:500 12px/1.3 'Source Sans 3',system-ui,sans-serif;
+ text-overflow:ellipsis;cursor:pointer;box-shadow:none;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row select:focus{
+ outline:none;box-shadow:none;
 }
 #npUniversalDemo.np-u-argon .np-u-study-picker-row select:focus-visible{
- outline:2px solid var(--np-u-red);outline-offset:2px;
+ /* Inset indicator occupies the same perimeter as the resting border. */
+ border-color:transparent;outline:2px solid var(--np-u-red);outline-offset:-2px;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row select:disabled{
+ opacity:.55;cursor:default;
 }
 #npUniversalDemo.np-u-argon .np-u-study-picker-counter{
- flex:0 0 auto;min-width:30px;white-space:nowrap;text-align:center;
- font:500 10px/1 'JetBrains Mono',Consolas,monospace;
+ grid-column:1;grid-row:2;min-width:0;white-space:nowrap;text-align:left;
+ font:500 11px/1 'JetBrains Mono',Consolas,monospace;
  color:var(--np-u-muted);
 }
 #npUniversalDemo.np-u-argon .np-u-study-picker-row button{
- flex:0 0 44px;display:grid;place-items:center;
+ display:grid;place-items:center;box-sizing:border-box;
  width:44px;height:44px;min-height:44px;
  padding:0;margin:0;background:transparent;
- border:1px solid var(--np-u-rule);border-radius:3px;
+ border:1px solid transparent;border-radius:6px;
  color:var(--np-u-ink);font:400 19px/1 Georgia,serif;
+ touch-action:manipulation;
 }
-#npUniversalDemo.np-u-argon .np-u-study-picker-row button:is(:hover,:focus-visible):not(:disabled){
- color:var(--np-u-red);border-color:var(--np-u-red);
- background:var(--np-u-red-soft);
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:is([data-np-u-lex-step="-1"],[data-np-u-scripture-step="-1"]){
+ grid-column:2;grid-row:2;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:is([data-np-u-lex-step="1"],[data-np-u-scripture-step="1"]){
+ grid-column:3;grid-row:2;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:hover:not(:disabled){
+ color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:focus-visible{
+ color:var(--np-u-red);outline:2px solid var(--np-u-red);outline-offset:-2px;
 }
 #npUniversalDemo.np-u-argon .np-u-study-picker-row button:disabled{
  opacity:.3;cursor:default;
+}
+@media(forced-colors:active){
+ #npUniversalDemo.np-u-argon .np-u-study-picker-row select{
+  appearance:auto;background:Canvas;border-color:ButtonText;color:CanvasText;
+ }
+ #npUniversalDemo.np-u-argon .np-u-study-picker-row select:focus-visible,
+ #npUniversalDemo.np-u-argon .np-u-study-picker-row button:focus-visible{
+  outline:2px solid Highlight;outline-offset:-2px;border-color:transparent;
+ }
 }
 #npUniversalDemo.np-u-argon .np-u-scripture-reading{
  display:block;max-height:240px;overflow-y:auto;
@@ -1806,18 +1837,6 @@ body.np-u-preview .article-body .np-u-evidence-highlight{
  #npUniversalDemo.np-u-argon .np-u-scripture-quote{
   font-size:17px!important;line-height:1.5!important;
  }
-}
-#npUniversalDemo.np-u-argon .np-u-study-picker-row button{
- flex-basis:44px!important;width:44px!important;
- height:44px!important;min-height:44px!important;
- touch-action:manipulation;
-}
-#npUniversalDemo.np-u-argon .np-u-study-picker-row select{
- min-height:44px!important;height:44px!important;
-}
-#npUniversalDemo.np-u-argon .np-u-study-picker-row button:focus-visible{
- outline:2px solid var(--np-u-red)!important;
- outline-offset:2px;
 }
 #npUniversalDemo.np-u-argon .np-u-study-actions button{
  min-height:34px!important;
@@ -2665,27 +2684,6 @@ body.np-u-preview.np-u-argon-shell article[data-reader-projection] h1{
   border-bottom:0!important;margin-bottom:24px!important;
  }
 }
-/* Glossary: select was only 94px wide at 1280 and clipped full term. */
-@media(min-width:1121px) and (max-width:1439px){
- body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row{
-  display:grid!important;grid-template-columns:minmax(0,1fr) 44px 44px!important;
-  align-items:center!important;column-gap:6px!important;row-gap:6px!important;
- }
- body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row select{
-  grid-column:1 / -1!important;grid-row:1!important;box-sizing:border-box!important;
-  width:100%!important;min-width:0!important;height:44px!important;min-height:44px!important;
- }
- body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row .np-u-study-picker-counter{
-  grid-column:1!important;grid-row:2!important;justify-self:start!important;
- }
- body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row button[data-np-u-lex-step="-1"]{
-  grid-column:2!important;grid-row:2!important;
- }
- body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row button[data-np-u-lex-step="1"]{
-  grid-column:3!important;grid-row:2!important;
- }
-}
-
 /* W38 ? single-line header. Existing Product controls remain in BODY to
    retain native TTS hover, selected-speed badge, Save, theme and search. */
 @media(min-width:1121px){
