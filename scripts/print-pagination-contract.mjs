@@ -815,6 +815,121 @@ try {
       }
     }
   }
+
+  // W42 privacy: real Product Library, fresh contexts, synthetic private
+  // data only. Physical PDFs must match a clean same-route baseline.
+  // This does NOT exercise the native headed dialog or opt-in W57.
+  report.privateLibrary = [];
+  const privacyDir = join(OUT, 'private-library');
+  await mkdir(privacyDir, { recursive: true });
+  const { createHash } = await import('node:crypto');
+  const { mkdtemp, readdir, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const privacyHash = bytes => createHash('sha256').update(bytes).digest('hex');
+  async function privacyRaster(pdf, pages) {
+    const dir = await mkdtemp(join(tmpdir(), 'gb-print-private-raster-'));
+    try {
+      execFileSync('pdftoppm', ['-r','72','-gray',pdf,join(dir,'page')],
+        { timeout:120000, maxBuffer:8*1024*1024 });
+      const names = (await readdir(dir)).filter(x=>/^page-\d+\.pgm$/.test(x))
+        .sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+      if (names.length !== pages) throw Error('raster page count mismatch');
+      return await Promise.all(names.map(async name => privacyHash(await readFile(join(dir,name)))));
+    } finally { await rm(dir,{recursive:true,force:true}); }
+  }
+  async function privateState(page) {
+    return page.evaluate(() => {
+      const keys=['gb-highlights-v1','gb-reader-notes-v1','gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
+      const area=document.querySelector('#gb-hl-note-text'), editor=document.querySelector('#gb-hl-editor');
+      const dialog=document.querySelector('#gb-hl-panel'), selection=getSelection();
+      return {
+        stores:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),
+        url:location.href,title:document.title,
+        focus:document.activeElement?.id||null,
+        scroll:[scrollX,scrollY],dialogScroll:dialog?[dialog.scrollLeft,dialog.scrollTop]:null,
+        editorHidden:editor?.hidden??null,
+        draft:area?.value??null,readOnly:area?.readOnly??null,
+        caret:area?[area.selectionStart,area.selectionEnd,area.selectionDirection]:null,
+        documentSelection:selection?.toString()||'',selectionRanges:selection?.rangeCount||0,
+        printMedia:matchMedia('print').matches,
+        printMarkers:document.querySelectorAll('[data-gb-print-monolith]').length,
+        geometryReady:document.documentElement.hasAttribute('data-gb-print-geometry-ready')
+      };
+    });
+  }
+  async function privacyPdf(page, name) {
+    const pdf = join(privacyDir,name+'.pdf');
+    // No screen/print emulation or injected suppression CSS.
+    await page.pdf({path:pdf,format:'A4',printBackground:true,preferCSSPageSize:true,timeout:120000});
+    const text=execFileSync('pdftotext',['-enc','UTF-8','-layout',pdf,'-'],
+      {encoding:'utf8',maxBuffer:32*1024*1024,timeout:120000});
+    const paper=paperFormatWitness(pdf,'A4');
+    if(paper.failures.length)throw Error('privacy physical page geometry failed');
+    const raster=await privacyRaster(pdf,paper.total);
+    return {text,textHash:privacyHash(text),raster,paper,pdf:'private-library/'+name+'.pdf'};
+  }
+  for (const [id,route] of BASE_ROUTES.filter(([id])=>['gill-part2','single-article'].includes(id))) {
+    const context=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+    const row={id,route,scope:'synthetic private QA only',checks:[],failures:[]};
+    report.privateLibrary.push(row);
+    try {
+      await context.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      const response=await page.goto(base+route+'?reader-pilot=0',{waitUntil:'load'});
+      const source=await readFile(join(DIST,route,'index.html'));
+      if(!response?.ok()||privacyHash(await response.body())!==privacyHash(source))throw Error('privacy HTTP/dist mismatch');
+      row.sourceHash=privacyHash(source);
+      await page.evaluate(async()=>{await document.fonts.ready;});
+      await page.waitForFunction(()=>!!window.GBHighlights?.mutateLibrary&&!!window.GBPrintEngine?.prepare);
+      const saved='GBPRIVATEW42SAVED'+id.replace(/[^a-z0-9]/gi,'').toUpperCase();
+      const draft='GBPRIVATEW42DRAFT'+id.replace(/[^a-z0-9]/gi,'').toUpperCase();
+      const clean=await privacyPdf(page,id+'-clean');
+      row.clean={pdf:clean.pdf,pages:clean.paper.total,textHash:clean.textHash,raster:clean.raster};
+      const compact=x=>x.normalize('NFKC').replace(/[\s\u00ad]+/g,'');
+      if(!clean.text.trim()||[saved,draft].some(token=>compact(clean.text).includes(token)))throw Error('invalid clean baseline');
+      await page.locator('#gb-hl-fab').click();
+      await page.locator('#gb-hl-panel').waitFor({state:'visible'});
+      await page.locator('#gb-hl-new-note').click();
+      await page.locator('#gb-hl-note-text').fill(saved);
+      await page.locator('#gb-hl-editor button[type=submit]').click();
+      await page.waitForFunction(token=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').some(n=>n.text===token),saved);
+      await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
+      await page.locator('#gb-hl-list').getByText(saved,{exact:true}).waitFor({state:'visible'});
+      await page.locator('#gb-hl-new-note').click();
+      const area=page.locator('#gb-hl-note-text');
+      await area.fill(draft);
+      await area.evaluate(el=>{el.focus({preventScroll:true});el.setSelectionRange(2,8,'forward');});
+      await page.locator('#gb-hl-editor').waitFor({state:'visible'});
+      const initial=await privateState(page);
+      if(initial.draft!==draft||initial.focus!=='gb-hl-note-text'||initial.editorHidden||
+         initial.readOnly||initial.caret?.[0]!==2||initial.caret?.[1]!==8||
+         !JSON.parse(initial.stores['gb-reader-notes-v1']||'[]').some(n=>n.text===saved)||
+         Object.values(initial.stores).some(raw=>raw?.includes(draft)))throw Error('private fixture not established');
+      for(const attempt of ['open-draft','warm-retry']){
+        const before=await privateState(page);
+        if(before.draft!==draft||before.editorHidden||before.focus!=='gb-hl-note-text')throw Error('draft lost before print');
+        const actual=await privacyPdf(page,id+'-'+attempt);
+        await page.waitForFunction(()=>!matchMedia('print').matches);
+        const after=await privateState(page);
+        const leak=[saved,draft].filter(token=>compact(actual.text).includes(token));
+        const textEqual=actual.text===clean.text;
+        const rasterEqual=JSON.stringify(actual.raster)===JSON.stringify(clean.raster);
+        const stateChanges=Object.keys(before).filter(k=>JSON.stringify(before[k])!==JSON.stringify(after[k]));
+        const check={attempt,pdf:actual.pdf,pages:actual.paper.total,textHash:actual.textHash,
+          raster:actual.raster,leak,textEqual,rasterEqual,stateChanges};
+        row.checks.push(check);
+        if(leak.length||!textEqual||!rasterEqual||stateChanges.length)
+          row.failures.push(attempt+': privacy/content/raster/lifecycle mismatch');
+      }
+      if(errors.length)row.failures.push('page errors: '+errors.slice(0,3).join('; '));
+      if(row.checks.length!==2)row.failures.push('incomplete private PDF attempts');
+    }catch(error){row.failures.push(String(error));}
+    finally{await context.close();}
+    for(const failure of row.failures)report.failures.push(id+' W42: '+failure);
+  }
+  if(report.privateLibrary.length!==2)report.failures.push('W42 required private-library routes missing');
+
 } finally {
   await browser.close().catch(() => {});
   await new Promise((resolve) => server.close(resolve));
