@@ -1,0 +1,193 @@
+{
+  "status": "RESEARCH_HOLD",
+  "mode": "LANE / GRAPHICS MAX",
+  "canonicalMain": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "rollback": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "sourceBlobs": [
+    {
+      "path": "src/data/journal/g3HistorySources.ts",
+      "blob": "410b57903b6fe4bb67f2e976253baee5b9591232"
+    },
+    {
+      "path": "src/components/journal/G3HistoryArticle.astro",
+      "blob": "9f21afdb08b521fa108afe79e2651a267b5765c9"
+    },
+    {
+      "path": "src/components/journal/G3HistoryFeature.astro",
+      "blob": "d0063bece78e953e607d48b7e98956ede3cb64f7"
+    },
+    {
+      "path": "src/components/journal/JournalSourceReturn.astro",
+      "blob": "f3ce414163b60da8560924eaf1cbb18a703332c0"
+    }
+  ],
+  "entries": [
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-01",
+      "sourceId": "gnl-2015",
+      "href": "#history-source-gnl-2015",
+      "url": "https://www.gnli.com/titles/2015-G3-Conference-or-G3-Ministries/2910",
+      "returnHref": "#g3-year-2015"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-02",
+      "sourceId": "white-manuscripts-2022",
+      "href": "#history-source-white-manuscripts-2022",
+      "url": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-making-sense-of-manuscripts-immanuel-bible-church-springfield-virginia-9-15-2022/",
+      "returnHref": "#g3-year-2022"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-03",
+      "sourceId": "white-bible-2022",
+      "href": "#history-source-white-bible-2022",
+      "url": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-how-we-got-our-bible-immanuel-bible-church-springfield-virginia-9-15-2022/",
+      "returnHref": "#g3-year-2022"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-04",
+      "sourceId": "gnl-2014",
+      "href": "#history-source-gnl-2014",
+      "url": "https://www.gnli.com/titles/2014-G3-Conference-or-G3-Ministries/2909",
+      "returnHref": "#g3-year-2014"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-05",
+      "sourceId": "challies-2018-lessons",
+      "href": "#history-source-challies-2018-lessons",
+      "url": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-06",
+      "sourceId": "gnl-2016",
+      "href": "#history-source-gnl-2016",
+      "url": "https://www.gnli.com/titles/2016-G3-Conference-or-G3-Ministries/2912",
+      "returnHref": "#g3-year-2016"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-07",
+      "sourceId": "crotts-2021",
+      "href": "#history-source-crotts-2021",
+      "url": "https://anchoragegrace.org/gospel-grace-and-glory/",
+      "returnHref": "#g3-growth"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-08",
+      "sourceId": "gnl-2013",
+      "href": "#history-source-gnl-2013",
+      "url": "https://www.gnli.com/titles/2013-G3-Conference-or-G3-Ministries/2908",
+      "returnHref": "#g3-year-2013"
+    },
+    {
+      "specimen": "atlas",
+      "citationId": "cite-g42-atlas-09",
+      "sourceId": "piper-2019",
+      "href": "#history-source-piper-2019",
+      "url": "https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions",
+      "returnHref": "#g3-year-2019"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-01",
+      "sourceId": "challies-2018-video",
+      "href": "#history-source-challies-2018-video",
+      "url": "https://www.challies.com/vlog/from-every-tribe-and-language-and-people-and-nation/",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-02",
+      "sourceId": "firstlove-2018",
+      "href": "#history-source-firstlove-2018",
+      "url": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-03",
+      "sourceId": "challies-2018-lessons",
+      "href": "#history-source-challies-2018-lessons",
+      "url": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-04",
+      "sourceId": "ascol-2018",
+      "href": "#history-source-ascol-2018",
+      "url": "https://founders.org/articles/the-statement-on-social-justice-and-the-gospel/",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-05",
+      "sourceId": "statement-2018",
+      "href": "#history-source-statement-2018",
+      "url": "https://socialjusticestatement.com/",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-06",
+      "sourceId": "responses-2018",
+      "href": "#history-source-responses-2018",
+      "url": "https://churchleaders.com/news/333017-the-statement-on-social-justice-and-the-gospel-stirs-up-controversy-and-conversation.html",
+      "returnHref": "#g3-year-2018"
+    },
+    {
+      "specimen": "spread",
+      "citationId": "cite-g42-spread-07",
+      "sourceId": "challies",
+      "href": "#history-source-challies",
+      "url": "https://www.challies.com/articles/you-me-and-g3/",
+      "returnHref": "#g3-history"
+    }
+  ],
+  "placement": {
+    "atlas": "#g3-meaning",
+    "spread": "#g3-year-2018"
+  },
+  "adjacentOwners": [
+    {
+      "pr": 2384,
+      "head": "7d44ed3b1cc892b106e34ccceceef0cdac965133",
+      "surface": "JournalDocumentExhibit and model; do not fork"
+    },
+    {
+      "pr": 2385,
+      "head": "48ac3b9188eacec4e3b71c08718eae523d3ba904",
+      "surface": "SourceChronicle research and native editorial landing; coordinate before intake"
+    }
+  ],
+  "architecture": "Use existing typed historyCitation(sourceId), unique citation IDs, data-journal-citation and existing JournalSourceReturn. No new runtime, bibliography registry, route, global styles, or duplicated universal document component. Proposed single placement per specimen; preserve accepted factual boundaries and all existing citations. Do not add both if editorial review finds duplication. Shared CSS from G41 is prototype only; map to native tokens and scope within existing ownership.",
+  "witness": {
+    "archive": "G3_G42_navigation_witness.zip",
+    "sha256": "e8bb596ab19fc2a29d3d099703fef63c4c4076c32c3409a9a673c5df3025838f",
+    "combinedHtmlSha256": "5537383616ba6b2f0748bb62be81243ca8d970607f6e47add613de839c2dd802",
+    "qaSha256": "360a1c84333fb3cfdcafd3d87a2967e872b99935c0b520afb4f7a2d9aa9bcfe4",
+    "cases": 6,
+    "journeys": 96,
+    "sourceTargets": 15,
+    "citations": 16,
+    "sharedSource": "challies-2018-lessons",
+    "sharedSourceRebindChecks": 6,
+    "method": "Sandbox Chromium set_content; file URI and intercepted HTTPS top-level blocked. JS translation of existing native handler and stand-in sections, not compiled Astro or pixel parity. Combined CSS intentionally only one specimen. No browser zoom/axe/screen reader/hosted engines acceptance.",
+    "RDC": 0,
+    "ownerWorkstation": false,
+    "CUDA": false
+  },
+  "remaining": [
+    "MAX0 and ART/NEWS ownership approval",
+    "Native Astro candidate build and actual citation/source return tests",
+    "Scoped CSS and full visual, axe, zoom, keyboard, forced-colors, hosted three engines and actual paper regression",
+    "No publication permission; AV remains HOLD"
+  ]
+}
