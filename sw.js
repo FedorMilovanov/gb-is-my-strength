@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v226-skip-link-dark-aa-20261123';
+const CACHE_VERSION = 'gb-v227-mobile-sepia-glass-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -22,7 +22,7 @@ const PRECACHE_ASSETS = [
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
   '/css/nagornaya-mobile-toc.css?v=623e0845',
-  '/css/floating-cluster.css?v=0ca3939e',
+  '/css/floating-cluster.css?v=a76d931e',
   '/css/series-samizdat.css?v=6d9658bd',
   '/css/reader-preferences.css?v=9f01260b',
   '/css/enhancements-runtime.css?v=d195a91d',

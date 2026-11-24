@@ -4419,6 +4419,11 @@ html.dark [data-gill-v16] .mobile-top-bar {
     -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
     backdrop-filter: blur(22px) saturate(180%) !important;
   }
+  /* Keep unscrolled sepia glass neutral; retain the existing scrolled frost. */
+  [data-gill-v16][data-gill-reader-theme="sepia"] .mobile-top-bar:not(.is-scrolled) {
+    -webkit-backdrop-filter: blur(22px) saturate(100%) !important;
+    backdrop-filter: blur(22px) saturate(100%) !important;
+  }
   html.dark [data-gill-v16] .mobile-top-bar {
     background: transparent !important;
   }
