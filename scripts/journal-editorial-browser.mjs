@@ -19,6 +19,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { chromium, firefox, webkit } from 'playwright';
+import { reviewAtlasContrast } from './lib/journal-atlas-contrast-review.mjs';
 const require = createRequire(import.meta.url);
 const { monitorRuntime } = require('./lib/browser-runtime-noise.js');
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -64,7 +65,7 @@ const witnessFiles = [
   ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
   ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
-  'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
+  'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-atlas-contrast-review.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
 for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
 const browser = await ({ chromium, firefox, webkit })[engine].launch({
@@ -996,7 +997,13 @@ try {
           if (selected && javaScriptEnabled) {
             item.axe = await audit(page);
             assert.deepEqual(item.axe.violations, []);
-            item.clippedContrastReview = await reviewClippedContrast(page, item.axe.incomplete);
+            // A narrowly measured review of exact map text, never an axe rule exclusion.
+            // Non-history routes and all remaining nodes retain the previous strict TOC review.
+            const atlas = route.kind === 'history'
+              ? await reviewAtlasContrast(page, item.axe.incomplete)
+              : { witnesses: [], remaining: item.axe.incomplete };
+            item.atlasContrastReview = atlas.witnesses;
+            item.clippedContrastReview = await reviewClippedContrast(page, atlas.remaining);
           }
           if (nativeReturn) await page.keyboard.press('Tab');
           for (const href of links) {
