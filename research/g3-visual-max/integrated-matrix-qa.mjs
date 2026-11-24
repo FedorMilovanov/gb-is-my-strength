@@ -5,7 +5,7 @@ import path from 'node:path';
 import {createServer} from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {chromium,firefox,webkit} from 'playwright';
-const root=fileURLToPath(new URL('../../',import.meta.url));
+const root=path.resolve(fileURLToPath(new URL('../../',import.meta.url)));
 assert(process.env.G3_VISUAL_DISPOSABLE==='1'&&!fs.existsSync(path.join(root,'.git')));
 const at=(...p)=>path.join(root,...p);
 const route='/journal/dossiers/g3/history/';
@@ -29,7 +29,7 @@ const server=createServer((req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
 const issues=[],reports=[],out=at('integrated-evidence');fs.mkdirSync(out,{recursive:true});
-const note=(where,kind,detail)=>issues.push({where,kind,detail});
+const note=(where,kind,detail)=>{issues.push({where,kind,detail});if(issues.length<=8)console.log('EARLY_ISSUE',JSON.stringify({where,kind,detail}));};
 try{
  for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
   const browser=await type.launch();let geometry=0,returns=0,filter=0,print=0;
@@ -40,7 +40,7 @@ try{
     const page=await ctx.newPage();page.setDefaultTimeout(7000);
     const errors=[],missing=[];page.on('pageerror',e=>errors.push(String(e)));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(origin+'/'))missing.push(new URL(r.url()).pathname)});
     try{
-     await page.goto(origin+route,{waitUntil:'load'});
+     const response=await page.goto(origin+route,{waitUntil:'load'});assert.equal(response?.status(),200,'actual history route HTTP status');
      await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
      await page.evaluate(()=>document.fonts.ready);
      const matrix=page.locator('.g3-matrix'),row=matrix.locator('.gm-row'),control=matrix.locator('.gm-filter');
@@ -83,7 +83,7 @@ try{
      if(errors.length)note(where,'pageerror',errors);
      const critical=missing.filter(p=>/\.(css|js|mjs|woff2?|webp|avif|svg|png)$/.test(p));
      if(critical.length)note(where,'missing-static',Array.from(new Set(critical)));
-    }catch(e){note(where,'assertion',String(e))}
+    }catch(e){note(where,'assertion',e.stack||String(e))}
     finally{await ctx.close()}
    }
    const result={engine,version:browser.version(),geometry,returns,filter,print,issues:issues.filter(x=>x.where.engine===engine).length};reports.push(result);console.log('ENGINE',JSON.stringify(result));
