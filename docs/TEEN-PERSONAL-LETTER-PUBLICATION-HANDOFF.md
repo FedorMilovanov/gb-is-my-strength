@@ -2,6 +2,18 @@
 
 Статус: **EDITORIAL DRAFT / НЕ ПУБЛИКОВАТЬ**. Авторский PR: #2377. Системная интеграция: #2368 (3+4). Дата: 2026-11-23.
 
+## W53 — fail-closed media guard and source-link recheck (24.11.2026)
+
+**Mode LANE / existing author PR #2377; rollback `42ee4d1f57c15c5b69cacb2d3599c15d8a2f1374`, main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** Four existing author files remain the scope; MDX untouched in W53. #2368 family HEAD observed `6a52784da6f21bb9d65822a611d93211925d8f47`: exact Teen Series Release success, full matrix not yet complete at preflight.
+
+**Confirmed defect:** W52 resolver selected the four artwork URLs by OG metadata alone. Premature OG change or a partially imported asset family could emit broken images. A published card could also render text-only with the obsolete general OG image.
+
+**Fix:** resolver commit `8a26c022`, blob `b9073ea56fff09250b3234d69f830382d55b129a`, exports a single four-path asset list and pure `assertTeenPersonalLetterMedia(card,isFile)`. Source-only draft preview without artwork remains valid. Once artwork is declared, any missing asset (including OG) throws; published card without approved artwork throws. Existing draft/noindex/owner/source/status gates unchanged. Astro component commit `207d3828`, blob `86243a39f3e0642117fdc484350cc3c1efda5348`, invokes guard during server-side rendering with `statSync(resolve(process.cwd(),'public',url.slice(1)))`, requiring regular nonempty files. No browser runtime or layout changes. This checks presence, not integrity of WebP: the W51 exact SHA-256/dimensions acceptance remains mandatory at import.
+
+**Evidence:** exact resolver fetched from GitHub, written to isolated Windows TEMP and independently git-hashed (identical blob); Node v22.23.1 native TS stripping, 22/22 executable checks, exit 0: production hides draft; draft without media previews; both preview/published with complete media pass; removal of each individual asset or all four fails; published without selected art and blank alt fail; duplicate and mismatched route owner/source/status remain blocked. This is targeted resolver/guard execution, not full Astro acceptance. W51 ZIP independently reopened: all four dimensions/bytes/SHA-256 identical to W51. All five existing reader-facing safety URLs reopened on official sites on 24.11, content supports corresponding advice; no new prose or links necessary. Integrator must include the guard and its negative scenarios in the combined build/browser/release contract. For a published-state fixture supply all four assets; do not simulate publication with the old general cover.
+
+**Unresolved:** targeted Windows Downloads lookup again found no W51 archive; no binary commit or OG switch claimed. Keep Draft/noindex, publication HOLD and article content unchanged. Need actual four-asset import, verified hashes, coordinated full Astro DEV + production tests and final exact-head CI, then separate publication approval. Do not use public file relays or loosen the new guard.
+
 ## W52 — выбранное полотно, visual polish и reader-facing источники (24.11.2026)
 
 **Mode LANE / existing author #2377; rollback `d119b550037a92f4e7ddb6db39cd7173fd272894`, main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** No changes to #2368 active lane, route ownership, series arrays, Reader runtime, or existing seven articles. Four existing author-owned files only.
