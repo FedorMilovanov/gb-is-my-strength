@@ -51,10 +51,6 @@ const parse = (key, fallback) => {
   try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return value ?? fallback; }
   catch { return fallback; }
 };
-const store = (key, value) => {
-  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
-  catch { return false; }
-};
 function wordBase(v) {
   return cap(v, 100).toLocaleLowerCase('ru-RU').replace(/ё/g, 'е').normalize('NFC')
     .replace(/[^а-яa-z0-9]+/g, '');
@@ -220,15 +216,58 @@ function validateBackup(payload) {
       hiddenDate: cap(revisit.hiddenDate, 10) },
   };
 }
-function serializeCurrent() {
-  const favoriteStore = window.GBFavoriteStore;
-  return {
-    quotes: Array.isArray(parse(KEYS.quotes, [])) ? parse(KEYS.quotes, []) : [],
-    notes: Array.isArray(parse(KEYS.notes, [])) ? parse(KEYS.notes, []) : [],
-    favorites: favoriteStore?.list ? favoriteStore.list({ persistMigration: false }) : parse(KEYS.favorites, []),
-    tags: objectMap(parse(KEYS.tags, {})), reading: objectMap(parse(KEYS.reading, {})),
-    revisit: objectMap(parse(KEYS.revisit, {})),
-  };
+async function serializeCurrent() {
+  const owner=window.GBHighlights;
+  if(typeof owner?.mutateLibrary!=='function') throw new Error('Безопасный экспорт недоступен. Обновите страницу.');
+  const names=Object.keys(KEYS);
+  const result=await owner.mutateLibrary(Object.values(KEYS),stores=>({
+    changes:{},result:{data:Object.fromEntries(names.map(name=>[name,stores[KEYS[name]]]))}
+  }));
+  if(!result.ok) throw new Error('Не удалось безопасно прочитать все разделы библиотеки. Экспорт отменён, данные не изменены.');
+  return result.data;
+}
+// Metadata edits must use the fresh map inside the same lock as backup import.
+function mutateResearch(name, prepare) {
+  const owner=window.GBHighlights;
+  if(!['tags','reading','revisit'].includes(name) || typeof owner?.mutateLibrary!=='function')
+    return Promise.resolve({ok:false,reason:'lock-unavailable'});
+  const key=KEYS[name];
+  return owner.mutateLibrary([key],stores=>{
+    const old=stores[key], outcome=prepare(old);
+    if(!outcome || outcome.reason) return {reason:outcome?.reason||'conflict'};
+    return {changes:exact(old,outcome.value)?{}:{[key]:outcome.value},result:{value:outcome.value}};
+  });
+}
+function appendTag(map,key,label) {
+  const prior=Object.hasOwn(map,key)?map[key]:[];
+  if(!Array.isArray(prior)||prior.some(x=>typeof x!=='string')) return {reason:'invalid-record'};
+  const current=safeTags(prior), id=label.toLocaleLowerCase('ru-RU');
+  if(current.some(x=>x.toLocaleLowerCase('ru-RU')===id)) return {reason:'duplicate'};
+  if(current.length>=MAX.tagsPerItem) return {reason:'capacity'};
+  return {value:{...map,[key]:prior.concat(label)}};
+}
+function changeReading(map,key,state,title,at) {
+  const old=Object.hasOwn(map,key)?map[key]:{};
+  if(!old||typeof old!=='object'||Array.isArray(old)) return {reason:'invalid-record'};
+  if(old.updatedAt!=null && (!Number.isFinite(Number(old.updatedAt))||Number(old.updatedAt)>at))
+    return {reason:'conflict'};
+  const record={...old,state,title:cap(title||old.title,240),
+    updatedAt:at,anchor:old.anchor||'',ratio:Number(old.ratio)||0};
+  return {value:{...map,[key]:record}};
+}
+function updateProgress(map,key,expected,progress) {
+  const live=map[key];
+  if(!live||live.state!=='reading'||!exact(live,expected)) return {reason:'conflict'};
+  return {value:{...map,[key]:{...live,...progress}}};
+}
+function updateRevisit(map,action,value) {
+  if(action==='hide-today') return {value:{...map,hiddenDate:value}};
+  if(action!=='never-quote') return {reason:'invalid-action'};
+  const prior=Object.hasOwn(map,'suppressed')?map.suppressed:{};
+  if(!prior||typeof prior!=='object'||Array.isArray(prior)) return {reason:'invalid-record'};
+  if(Object.hasOwn(prior,value)) return {value:map};
+  if(Object.keys(prior).length>=200) return {reason:'capacity'};
+  return {value:{...map,suppressed:{...prior,[value]:true}}};
 }
 function safeMerge(old, next) {
   const quotes=mergeRecords(old.quotes,next.quotes,true,MAX.quotes);
@@ -362,21 +401,18 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   let extras = node('div', 'gb-hl-research-extras');
 
   function getTags(item) { return safeTags(tags[stringKey(item)]); }
-  function setTag(item, text) {
+  async function setTag(item, text) {
     const label = cap(String(text || '').trim().replace(/\s+/g, ' '), 36);
     if (!label) { notify('Введите название метки.', true); return false; }
-    const key = stringKey(item), prev = tags, current = safeTags(prev[key]);
-    if (current.some((x) => x.toLocaleLowerCase('ru-RU') === label.toLocaleLowerCase('ru-RU'))) {
-      notify('Такая метка уже есть у записи.', true); return false;
+    const result=await mutateResearch('tags',map=>appendTag(map,stringKey(item),label));
+    if(!result.ok) {
+      notify(result.reason==='duplicate'?'Такая метка уже есть у записи.':
+        result.reason==='capacity'?'Достигнут лимит меток.':
+        'Метки не сохранены: данные изменились или хранилище недоступно.',true);
+      return false;
     }
-    if (current.length >= MAX.tagsPerItem) {
-      notify('Для одной записи можно сохранить не более 20 меток.', true); return false;
-    }
-    tags = { ...prev, [key]: current.concat(label) };
-    if (!store(KEYS.tags, tags)) {
-      tags = prev; notify('Метки не сохранены: проверьте место в браузере.', true); return false;
-    }
-    notify('Метка добавлена.'); refresh(); return true;
+    tags=objectMap(parse(KEYS.tags,{}));
+    notify('Метка добавлена.');refresh();return true;
   }
   function getTopics(items = getItems()) {
     // Preserve orphan data for Undo/import; do not display orphan-only filters.
@@ -454,17 +490,16 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   }
   function currentPath() { return cleanPath(location.pathname); }
   function currentStatus() { return reading[currentPath()] || null; }
-  function updateReading(path, state, title) {
-    const key = cleanPath(path);
-    if (!key) return;
-    const prev = reading, old = prev[key] || {};
-    const record = { ...old, state, title: cap(title || old.title || document.title, 240),
-      updatedAt: Date.now(), anchor: old.anchor || '', ratio: Number(old.ratio) || 0 };
-    reading = { ...prev, [key]: record };
-    if (!store(KEYS.reading, reading)) { reading = prev; notify('Не удалось записать статус чтения.', true); return; }
+  async function updateReading(path, state, title) {
+    const key=cleanPath(path);
+    if(!key)return false;
+    const at=Date.now(), fallbackTitle=title||document.title;
+    const result=await mutateResearch('reading',map=>changeReading(map,key,state,fallbackTitle,at));
+    reading=objectMap(parse(KEYS.reading,{}));
+    if(!result.ok){notify('Не удалось безопасно записать статус чтения. Повторите попытку.',true);return false;}
     notify(state === 'reading' ? 'Материал добавлен в «Читаю».' : state === 'finished'
       ? 'Отмечено как прочитанное. Больше не предлагаем.' : 'Материал скрыт из предложений.');
-    refresh();
+    refresh();return true;
   }
   function eligibleCurrent() {
     const path = currentPath();
@@ -480,15 +515,17 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     return '';
   }
   let progressTimer = null;
-  function rememberProgress() {
-    if (isOpen() || currentStatus()?.state !== 'reading') return;
-    const doc = document.documentElement;
-    const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
-    const record = { ...currentStatus(), anchor: anchorAtScroll(),
-      ratio: Math.min(1, Math.max(0, window.scrollY / maxScroll)), updatedAt: Date.now() };
-    const before = reading;
-    reading = { ...before, [currentPath()]: record };
-    if (!store(KEYS.reading, reading)) reading = before;
+  async function rememberProgress() {
+    if(isOpen())return;
+    const key=currentPath(), expected=currentStatus();
+    if(expected?.state!=='reading')return;
+    const doc=document.documentElement;
+    const maxScroll=Math.max(1,doc.scrollHeight-window.innerHeight);
+    const progress={anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
+    // A pending scroll save must not resurrect a finished/dismissed status
+    // or overwrite a newer record from another tab.
+    await mutateResearch('reading',map=>updateProgress(map,key,expected,progress));
+    reading=objectMap(parse(KEYS.reading,{}));
   }
   window.addEventListener('scroll', () => {
     if (currentStatus()?.state !== 'reading') return;
@@ -642,7 +679,9 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       return;
     }
     if (action === 'export-json') {
-      const data = serializeCurrent();
+      let data;
+      try { data=await serializeCurrent(); }
+      catch(error) { notify(error.message,true);return; }
       const blob = new Blob([JSON.stringify({ format: FORMAT, version: 3, exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob), a = document.createElement('a');
       a.href = url; a.download = 'gb-library-backup.json'; document.body.append(a); a.click(); a.remove();
@@ -676,9 +715,14 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     if (action === 'cancel-tag') { tagEditor.hidden = true; selectedItem = null; return; }
     if (action === 'save-tag') {
       if (!selectedItem) return;
-      if (setTag(selectedItem, tagInput.value)) {
-        tagEditor.hidden = true; selectedItem = null;
-      }
+      const item=selectedItem, text=tagInput.value;
+      if(tagSave.disabled)return;
+      tagSave.disabled=true;
+      try {
+        if(await setTag(item,text) && selectedItem===item && tagInput.value===text) {
+          tagEditor.hidden=true;selectedItem=null;
+        }
+      } finally {tagSave.disabled=false;}
       return;
     }
     if (action === 'context') {
@@ -694,24 +738,20 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       card.querySelector('.gb-hl-meta')?.before(detail);
       b.setAttribute('aria-expanded', 'true'); return;
     }
-    if (action === 'start-current') { updateReading(currentPath(), 'reading', document.title.split(' · ')[0]); rememberProgress(); return; }
-    if (action === 'finish-current') { updateReading(currentPath(), 'finished', document.title.split(' · ')[0]); return; }
-    if (action === 'dismiss-current') { updateReading(currentPath(), 'dismissed', document.title.split(' · ')[0]); return; }
+    if (action === 'start-current') { if(await updateReading(currentPath(), 'reading', document.title.split(' · ')[0])) await rememberProgress(); return; }
+    if (action === 'finish-current') { await updateReading(currentPath(), 'finished', document.title.split(' · ')[0]); return; }
+    if (action === 'dismiss-current') { await updateReading(currentPath(), 'dismissed', document.title.split(' · ')[0]); return; }
     if (['start-reading', 'finish-reading', 'dismiss-reading'].includes(action)) {
       const state = action === 'start-reading' ? 'reading' : action === 'finish-reading' ? 'finished' : 'dismissed';
-      updateReading(value, state, reading[value]?.title || getItems().find((x) => cleanPath(x.url) === value)?.title || value);
+      await updateReading(value, state, reading[value]?.title || getItems().find((x) => cleanPath(x.url) === value)?.title || value);
       fillManager(); return;
     }
     if (action === 'resume') { resume(value); return; }
-    if (action === 'hide-today') {
-      const previous = revisit; revisit = { ...previous, hiddenDate: today() };
-      if (!store(KEYS.revisit, revisit)) revisit = previous;
-      refresh(); return;
-    }
-    if (action === 'never-quote') {
-      const previous = revisit;
-      revisit = { ...previous, suppressed: { ...objectMap(previous.suppressed), [value]: true } };
-      if (!store(KEYS.revisit, revisit)) revisit = previous;
+    if (action === 'hide-today' || action === 'never-quote') {
+      const choice=action==='hide-today'?today():value;
+      const result=await mutateResearch('revisit',map=>updateRevisit(map,action,choice));
+      revisit=objectMap(parse(KEYS.revisit,{}));
+      if(!result.ok)notify('Не удалось безопасно сохранить исключение. Повторите попытку.',true);
       refresh();
     }
   }
@@ -761,4 +801,4 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
 }
 
 // Pure fail-closed backup contract functions (Node regression tests).
-export { safeTags, boundedTags, safeMerge, validateBackup, atomicImport };
+export { safeTags, boundedTags, safeMerge, validateBackup, atomicImport, serializeCurrent, mutateResearch, appendTag, changeReading, updateProgress, updateRevisit };

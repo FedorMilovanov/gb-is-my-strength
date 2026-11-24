@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 globalThis.location={origin:'https://gospod-bog.ru'};
 const source=fs.readFileSync(path.join(root,'js/reader-library-v3.js'),'utf8');
-const {safeTags,boundedTags,safeMerge,validateBackup,atomicImport}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {safeTags,boundedTags,safeMerge,validateBackup,atomicImport,serializeCurrent,mutateResearch,appendTag,changeReading,updateProgress,updateRevisit}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const labels=Array.from({length:20},(_,i)=>'Тема '+(i+1));
 assert.deepEqual(boundedTags(['Тема 1',...labels]),labels);
 assert.deepEqual(safeTags(['Новая','НОВАЯ']),['Новая']);
@@ -106,4 +106,42 @@ partial.install();
 await assert.rejects(atomicImport(backup),/Ошибка импорта и отката/);
 assert.deepEqual(JSON.parse(partial.raw.get(keys.notes)),concurrent,'rollback must not overwrite intervening external write');
 assert.equal(partial.raw.has(keys.quotes),false);
-console.log('READER LIBRARY TAG, RECORD AND IMPORT INTEGRITY: PASS');
+
+const metadata=fixture({tags:{'note:42':[' raw ',' raw ']},reading:{'/old':{state:'reading',updatedAt:1,extra:'keep'}},revisit:{suppressed:{old:true}}});
+metadata.install();
+await Promise.all([
+ mutateResearch('tags',map=>appendTag(map,'note:42','new-a')),
+ mutateResearch('tags',map=>appendTag(map,'note:42','new-b')),
+]);
+assert.deepEqual(JSON.parse(metadata.raw.get(keys.tags))['note:42'],[' raw ',' raw ','new-a','new-b']);
+const tagBefore=metadata.snapshot();
+assert.equal((await mutateResearch('tags',map=>appendTag(map,'note:42','NEW-A'))).ok,false);
+assert.deepEqual(metadata.snapshot(),tagBefore);
+const expected=JSON.parse(metadata.raw.get(keys.reading))['/old'];
+await Promise.all([
+ mutateResearch('reading',map=>changeReading(map,'/new','reading','new',10)),
+ mutateResearch('reading',map=>changeReading(map,'/old','finished','old',11)),
+]);
+const readingAfter=JSON.parse(metadata.raw.get(keys.reading));
+assert.equal(readingAfter['/new'].state,'reading');
+assert.equal(readingAfter['/old'].state,'finished');
+assert.equal(readingAfter['/old'].extra,'keep');
+assert.equal((await mutateResearch('reading',map=>updateProgress(map,'/old',expected,{ratio:.5,updatedAt:12}))).ok,false);
+assert.deepEqual(JSON.parse(metadata.raw.get(keys.reading)),readingAfter);
+await Promise.all([
+ mutateResearch('revisit',map=>updateRevisit(map,'never-quote','A')),
+ mutateResearch('revisit',map=>updateRevisit(map,'never-quote','B')),
+ mutateResearch('revisit',map=>updateRevisit(map,'hide-today','2026-11-24')),
+]);
+assert.deepEqual(JSON.parse(metadata.raw.get(keys.revisit)),{suppressed:{old:true,A:true,B:true},hiddenDate:'2026-11-24'});
+const exportBefore=metadata.snapshot();
+const exported=await serializeCurrent();
+assert.deepEqual(exported.tags,JSON.parse(exportBefore[keys.tags]));
+assert.deepEqual(exported.reading,readingAfter);
+assert.deepEqual(metadata.snapshot(),exportBefore,'export is a read-only snapshot');
+corrupt.install();await assert.rejects(serializeCurrent(),/Экспорт отменён/);assert.deepEqual(corrupt.snapshot(),corruptBefore);
+refused.install();await assert.rejects(serializeCurrent(),/Экспорт отменён/);assert.deepEqual(refused.snapshot(),refusedBefore);
+assert.equal((await mutateResearch('tags',map=>appendTag(map,'note:42','refused'))).ok,false);
+assert.deepEqual(refused.snapshot(),refusedBefore);
+assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)\s*\(/,'v3 has no raw storage writer');
+console.log('READER LIBRARY TAG, RECORD, IMPORT AND METADATA INTEGRITY: PASS');
