@@ -2,7 +2,7 @@
 // Browser QA of exact W57 opt-in pilot. No live site writes.
 import assert from 'node:assert/strict';
 import {spawn,execFileSync} from 'node:child_process';
-import {mkdir,writeFile,readFile} from 'node:fs/promises';
+import {mkdir,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import {resolve,dirname} from 'node:path';
@@ -208,13 +208,11 @@ try{
  assert.ok(started,'W57 preview.py failed to listen');
  // The route registry owns reading eligibility. Test actual HTTP responses,
  // not a string for a script which is only inserted by the bootstrap.
- const {entries,errors}=require('./lib/public-surface-registry').buildPublicSurfaceRegistry();
- assert.deepEqual(errors,[]);
- const protectedRoute=route=>['/nagornaya/','/journal/','/updates/','/news/','/novosti/'].some(prefix=>route.startsWith(prefix));
- const eligible=entries.filter(e=>e.owner==='astro'&&e.status==='production-dist'&&e.routeRole==='reading'&&e.settingsCapability==='reader-ui'&&!protectedRoute(e.route));
- const hardPaths=eligible.filter(e=>e.route.startsWith('/hard-texts/')).map(e=>e.route);
+ const desktopContract=require('./lib/reader-desktop-contract').buildDesktopReaderContract();
+ const eligible=desktopContract.routes.map(route=>({route}));
+ const hardPaths=desktopContract.routes.filter(route=>route.startsWith('/hard-texts/'));
  assert.equal(hardPaths.length,7,'hard-texts reading coverage drift');
- const manifest=JSON.parse(await readFile(resolve(ROOT,'research/reader-w57-pilot/MANIFEST.json'),'utf8'));
+ const manifest={files:[...desktopContract.styles,...desktopContract.scripts]};
  const prefix='/__reader_w57__/';
  let bootstrapUrl;
  for(const {route} of eligible){

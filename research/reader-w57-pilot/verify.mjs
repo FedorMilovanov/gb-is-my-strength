@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const manifest = JSON.parse(readFileSync(join(root, 'MANIFEST.json'), 'utf8'));
@@ -13,6 +14,28 @@ for (const file of manifest.files) {
   assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256,
     file.name + ' differs from accepted local W57');
 }
+const require = createRequire(import.meta.url);
+const { isDesktopReaderRoute, buildDesktopReaderContract } = require('../../scripts/lib/reader-desktop-contract');
+const accepted = { route:'/articles/example/', owner:'astro', status:'production-dist', routeRole:'reading', settingsCapability:'reader-ui' };
+assert.equal(isDesktopReaderRoute(accepted), true);
+for (const patch of [
+  {route:'/nagornaya/example/'},{route:'/journal/example/'},{route:'/updates/example/'},
+  {route:'/news/example/'},{route:'/novosti/example/'},{routeRole:'landing'},{routeRole:'reference'},
+  {owner:'built-app'},{status:'build-only'},{settingsCapability:'none'},
+]) assert.equal(isDesktopReaderRoute({...accepted,...patch}), false, JSON.stringify(patch));
+const desktopContract = buildDesktopReaderContract();
+assert.equal(desktopContract.routes.filter(route=>route.startsWith('/hard-texts/')).length, 7);
+for(const route of ['/hard-texts/','/hard-texts/genesis-6/','/articles/','/baptisty-rossii/','/nagornaya/chast-1/','/journal/dossiers/g3/'])
+  assert.ok(!desktopContract.routes.includes(route), 'protected route: '+route);
+assert.deepEqual([...desktopContract.styles,...desktopContract.scripts], manifest.files, 'one ordered manifest owner');
+assert.deepEqual(desktopContract.styles.map(asset=>asset.name), [
+  'reader_universal_preview.css','reader_argon_first.css','reader_editorial_refinement.css',
+  'reader_editorial_consolidation.css','reader_editorial_w51.css','reader_w57.css',
+], 'approved stylesheet cascade order');
+assert.deepEqual(desktopContract.scripts.map(asset=>asset.name), [
+  'reader_universal_contract.js','reader_universal_preview.js','reader_editorial_refinement.js',
+  'reader_editorial_consolidation.js','reader_w57.js','reader_w57_annotations.js',
+], 'approved desktop runtime dependency order');
 const css = readFileSync(join(root, 'assets', 'reader_w57.css'), 'utf8');
 const js = readFileSync(join(root, 'assets', 'reader_w57.js'), 'utf8');
 const annotations = readFileSync(join(root, 'assets', 'reader_w57_annotations.js'), 'utf8');
