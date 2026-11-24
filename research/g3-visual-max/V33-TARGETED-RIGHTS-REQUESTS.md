@@ -3,7 +3,7 @@
 Scope: existing VISUAL MAX lane #2383. No contact, no rights clearance and no public use. These drafts supplement V24 and media-permissions.md, not replace them. Request only selected objects. Verify actual sender, publisher identity and rights before owner-approved outreach. Never imply that a distributor, website host or successor brand necessarily owns artwork.
 
 ## 1. African Christian University — early archive priority
-Contact: https://acu-usa.com/contact (actual contact page read). 
+Contact: https://acu-usa.com/contact (actual contact page read).
 
 **Subject:** Archival photographs and February 2014 ACU Prayer Update — G3 Conference
 
