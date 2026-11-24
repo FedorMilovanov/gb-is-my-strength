@@ -29,6 +29,13 @@ on:
       - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
       - "src/components/article-pilots/gill-context/**"
+      - "src/components/article-pilots/gill-series/GillEditorialAtlas.astro"
+      - "src/components/article-pilots/gill-series/gillSeriesData.ts"
+      - "src/components/article-pilots/gill-part1/GillPart1SectionQuizTail.astro"
+      - "src/components/article-pilots/gill-part2/GillPart2ArticleBody.astro"
+      - "src/components/article-pilots/gill-part3/GillPart3ArticleBody.astro"
+      - "src/components/article-pilots/gill-part4/GillPart4ArticleBody.astro"
+      - "src/components/article-pilots/gill-spravochnik/GillSpravochnikSectionQuizTail.astro"
       - "src/styles/reader-responsive-tables.css"
       - "css/highlights-runtime.css"
       - "js/highlights.js"
@@ -73,6 +80,13 @@ on:
       - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
       - "src/components/article-pilots/gill-context/**"
+      - "src/components/article-pilots/gill-series/GillEditorialAtlas.astro"
+      - "src/components/article-pilots/gill-series/gillSeriesData.ts"
+      - "src/components/article-pilots/gill-part1/GillPart1SectionQuizTail.astro"
+      - "src/components/article-pilots/gill-part2/GillPart2ArticleBody.astro"
+      - "src/components/article-pilots/gill-part3/GillPart3ArticleBody.astro"
+      - "src/components/article-pilots/gill-part4/GillPart4ArticleBody.astro"
+      - "src/components/article-pilots/gill-spravochnik/GillSpravochnikSectionQuizTail.astro"
       - "src/styles/reader-responsive-tables.css"
       - "css/highlights-runtime.css"
       - "js/highlights.js"
@@ -159,12 +173,20 @@ jobs:
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
       - name: Build production-like dist
+        id: reader_build
         run: |
           mkdir -p reports
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
 
+      - name: Run exact-head Gill whole-page and atlas contracts
+        if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          node scripts/reader-gill-wholepage-browser-contract.mjs 2>&1 | tee reports/reader-gill-wholepage-browser-contract.log
+
       - name: Run permanent browser contracts
+        if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
         run: |
           set -o pipefail
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-a11y-browser-contract.mjs 2>&1 | tee reports/reader-controls-a11y-browser-contract.log
@@ -173,7 +195,6 @@ jobs:
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
           node scripts/reader-library-v3-browser-test.cjs 2>&1 | tee reports/reader-library-v3-browser-test.log
           READER_STRUCTURED_SHOTS=reports/reader-structured-shots node scripts/reader-structured-content-browser-contract.mjs 2>&1 | tee reports/reader-structured-content-browser-contract.log
-          node scripts/reader-gill-wholepage-browser-contract.mjs 2>&1 | tee reports/reader-gill-wholepage-browser-contract.log
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-w57-two-tab-browser-contract.mjs 2>&1 | tee reports/reader-w57-two-tab-browser-contract.log
           node scripts/reader-library-short-viewport-browser-contract.mjs 2>&1 | tee reports/reader-library-short-viewport-browser-contract.log
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log

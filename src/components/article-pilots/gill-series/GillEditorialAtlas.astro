@@ -87,8 +87,10 @@ const paths: Record<GillSeriesPageId, string> = {
   .atlas-name { font-size: 1.13rem; line-height: 1.25; }
   .atlas-time { font-size: .76rem; color: var(--atlas-muted); margin-top: .15rem; }
   .atlas-here { font-size: .72rem; font-weight: 700; color: var(--atlas-gold); margin-top: .15rem; }
+  /* site.css styles every footer as site chrome; keep this editorial note local. */
+  .gill-atlas .atlas-foot { display: block; margin: 0; padding: 0; border: 0; }
   .atlas-foot { font-size: .75rem; color: var(--atlas-muted); }
-  .atlas-foot p { margin: 0; }
+  .gill-atlas .atlas-foot p { margin: 0; font: inherit; }
   .atlas-rule { display: block; width: 100%; height: 16px; margin: .65rem 0; fill: none; stroke: var(--atlas-rule); }
   @container gill-atlas (min-width: 36rem) {
     .atlas-list .atlas-row { grid-template-columns: minmax(0,1fr) 48px minmax(0,1fr); }

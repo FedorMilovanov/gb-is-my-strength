@@ -100,6 +100,34 @@ function paperFormatWitness(file, format) {
   return { format, total, first: sizes.get(1) || null, failures };
 }
 
+function gillAtlasTextWitness(text, route){
+  const labels=[['Введение','Исторический контекст','28 мин'],['I','Человек','32 мин'],['II','Учёный','39 мин'],['III','Экзегет','71 мин'],['IV','Наследие','54 мин'],['Справочный раздел','Справочник по Гиллу','15 мин']];
+  const slugs=['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek','dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik'];
+  const current=slugs.findIndex(slug=>route==='/articles/'+slug+'/');
+  if(current<0)return null;
+  const failures=[],pages=text.normalize('NFC').split('\f').map(p=>p.split(/\r?\n/));
+  const compact=s=>s.replace(/\s+/g,'').toLowerCase();
+  const locations=token=>pages.flatMap((lines,p)=>lines.flatMap((line,y)=>compact(line)===compact(token)?[{p,y}]:[]));
+  const heads=locations('Джон Гилл · путеводитель'),ends=locations('Порядок чтения, а не хронология событий.');
+  if(heads.length!==1||ends.length!==1)return {failures:['atlas boundary missing or ambiguous'],heads,ends};
+  const head=heads[0],end=ends[0];
+  if(head.p!==end.p||head.y>=end.y)return {failures:['atlas split or reversed'],head,end};
+  const cells=pages[head.p].slice(head.y+1,end.y).flatMap((line,y)=>[...line.matchAll(/\S+(?: \S+)*/g)].map(m=>({x:m.index,y,text:m[0].trim().replace(/\s+/g,' ')})));
+  const one=value=>{const found=cells.filter(cell=>cell.text===value);if(found.length!==1){failures.push('missing/duplicate: '+value);return null;}return found[0];};
+  one('Карта серии');one('Четыре основные части, историческое введение и справочник.');
+  const rows=labels.map(label=>label.map(one));const here=one('Вы здесь');
+  for(let i=0;i<rows.length;i++){
+    const [m,n,t]=rows[i];if(!m||!n||!t)continue;
+    if(!(m.y<n.y&&n.y<t.y&&Math.abs(m.x-n.x)<=3&&Math.abs(t.x-n.x)<=3))failures.push('wrong label group: '+labels[i][1]);
+  }
+  if(here&&rows[current][2]){const t=rows[current][2];if(here.y<=t.y||here.y>t.y+2||Math.abs(here.x-t.x)>3)failures.push('wrong current label');}
+  const names=rows.map(r=>r[1]);if(names.every(Boolean)){
+    const [a,b,c,d,e,f]=names;
+    if(!(a.y<b.y&&b.y===c.y&&b.y<d.y&&d.y===e.y&&d.y<f.y&&c.x>b.x+10&&e.x>d.x+10))failures.push('wrong atlas folio order');
+  }
+  return {page:head.p+1,failures,scope:'bounded clean PDF text/column witness, not vector/font geometry'};
+}
+
 function routeId(route) {
   const slug = String(route || '')
     .replace(/^\/+|\/+$/g, '')
@@ -630,6 +658,8 @@ try {
     if (cleanPaper.failures.length) report.failures.push(`${id}: physical A4 page-size witness failed: ${JSON.stringify(cleanPaper.failures.slice(0, 12))}`);
     const hermHeader = id === 'single-article' ? hermHeaderWitness(cleanPdfText, HERM_HEADER_EXPECTED) : null;
     if (hermHeader?.failures.length) report.failures.push(`${id}: HERM-PAPER-CHROME: ${hermHeader.failures.join(', ')}`);
+    const gillAtlas = gillAtlasTextWitness(cleanPdfText, url);
+    if (gillAtlas?.failures.length) report.failures.push(`${id}: GILL-ATLAS-PAPER: ${gillAtlas.failures.join(', ')}`);
     const textProbeMissingNotes = missingPublicationNotes(cleanPdfText, routeNotes);
 
     const noteTokens = routeNotes.map((note, index) => ({
@@ -719,6 +749,7 @@ try {
       missingPublicationNoteIds: missingNotes.map((note) => note.id),
       hermHeader,
       cleanPaper,
+      gillAtlas,
       textProbeMissingPublicationNoteIds: textProbeMissingNotes.map((note) => note.id),
       paginationAuthority: enforcePaginationMarkers,
       noteMarkerPdf: routeNotes.length ? `note-markers/${id}.pdf` : null,
@@ -730,6 +761,59 @@ try {
       pairSplits: pairSplits.slice(0, 12)
     });
     await context.close();
+  }
+  // Real default-media PDFs: no emulateMedia('print') or CSS-size override.
+  // The physical dimensions are the independent authority, not page.pdf's label.
+  report.paperFormats = [];
+  const formatDir = join(OUT, 'paper-formats');
+  await mkdir(formatDir, { recursive: true });
+  for (const format of ['A4', 'Letter']) {
+    for (const javaScriptEnabled of [true, false]) {
+      const name = `herm-${format.toLowerCase()}-${javaScriptEnabled ? 'js' : 'nojs'}`;
+      const context = await browser.newContext({
+        viewport: { width: 1240, height: 900 }, javaScriptEnabled, serviceWorkers: 'block'
+      });
+      try {
+        const page = await context.newPage();
+        await page.route('**/*', r => r.request().url().startsWith(base + '/') ? r.continue() : r.abort());
+        const url = BASE_ROUTES.find(([id]) => id === 'single-article')[1];
+        const response = await page.goto(base + url, { waitUntil: 'load' });
+        if (response?.status() !== 200) throw new Error('Herm route not served');
+        await page.evaluate(async () => { await document.fonts?.ready; });
+        if (javaScriptEnabled) {
+          await page.waitForFunction(() => window.GBPrintPagination?.geometryVersion === 3);
+          await page.evaluate(() => {
+            const media = matchMedia('print');
+            window.__gbPaperFormatWitness = null;
+            const capture = event => {
+              if (event.matches) window.__gbPaperFormatWitness = window.GBPrintPagination.getReport()?.paperGeometry || null;
+            };
+            if (media.addEventListener) media.addEventListener('change', capture);
+            else media.addListener(capture);
+          });
+        }
+        const pdf = join(formatDir, name + '.pdf');
+        const txt = join(formatDir, name + '.txt');
+        await page.pdf({ path: pdf, format, printBackground: true, preferCSSPageSize: true });
+        execFileSync('pdftotext', ['-layout', pdf, txt]);
+        const paper = paperFormatWitness(pdf, format);
+        const header = hermHeaderWitness(await readFile(txt, 'utf8'), HERM_HEADER_EXPECTED);
+        const runtime = javaScriptEnabled ? await page.evaluate(() => window.__gbPaperFormatWitness) : null;
+        const expectedMm = format === 'A4' ? 269 : 251.4;
+        const runtimeOk = !javaScriptEnabled || (runtime?.source === 'print-media-14mm-css-margins'
+          && Math.abs(runtime.contentMm - expectedMm) < 0.01);
+        await page.waitForFunction(() => !matchMedia('print').matches
+          && !document.querySelector('[data-gb-print-monolith]')
+          && !document.documentElement.hasAttribute('data-gb-print-geometry-ready'));
+        report.paperFormats.push({ name, paper, header, runtime, runtimeOk, pdf: 'paper-formats/' + name + '.pdf' });
+        if (paper.failures.length || header.failures.length || !runtimeOk)
+          report.failures.push(`${name}: physical format/header/runtime witness failed`);
+      } catch (error) {
+        report.failures.push(`${name}: ${String(error)}`);
+      } finally {
+        await context.close();
+      }
+    }
   }
 } finally {
   await browser.close().catch(() => {});

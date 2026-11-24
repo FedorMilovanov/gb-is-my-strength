@@ -738,7 +738,7 @@ html:not(.dark) .gtip.gb-floating-tip::before {
    GB PRINT CONTRACT v2.1 — 2026-07-24
    One A4/PDF contract for series, books and standalone articles.
    ========================================================= */
-@page { size: A4; margin: 14mm; }
+@page { size: auto; margin: 14mm; }
 @media print {
   html, body {
     width: auto;

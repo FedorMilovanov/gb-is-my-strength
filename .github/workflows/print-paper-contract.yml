@@ -74,6 +74,7 @@ jobs:
       - name: Raster-audit every route PDF and build contact sheets
         run: |
           python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix --out reports/print-paper/matrix-raster
+          python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix/paper-formats --out reports/print-paper/paper-formats-raster
           python3 scripts/print-pagination-raster-audit.py reports/print-paper/reversible-card --out reports/print-paper/reversible-card-raster
       - if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

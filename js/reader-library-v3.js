@@ -11,6 +11,8 @@ const KEYS = Object.freeze({
 });
 const FORMAT = 'gospod-bog-reader-library';
 const RECOVERY_FORMAT = 'gospod-bog-reader-library-recovery';
+const BACKUP_MAX_BYTES = 4 * 1024 * 1024;
+const RECOVERY_MAX_BYTES = 32 * 1024 * 1024;
 const MAX = { quotes: 200, notes: 500, favorites: 50, tags: 800, tagsPerItem: 20, reading: 1000 };
 const cap = (v, n) => String(v == null ? '' : v).slice(0, n);
 const node = (tag, className, text) => {
@@ -137,6 +139,8 @@ function checkImportedLinks(quotes,notes,addedQuotes,addedNotes) {
   for(const note of addedNotes) {
     const forward=quotes.filter(q=>sameId(q?.annotation?.noteId,note.id));
     if(forward.length>1 || (forward.length===1 && note.quoteId!=null && !sameId(forward[0].id,note.quoteId))) conflict();
+    // Completing a legacy forward link must not compete with another reverse link.
+    if(forward.some(q=>notes.some(n=>n!==note && sameId(n?.quoteId,q.id)))) conflict();
     if(note.quoteId!=null) {
       const targets=quotes.filter(q=>sameId(q?.id,note.quoteId));
       if(targets.length>1 || notes.some(n=>n!==note&&sameId(n?.quoteId,note.quoteId))) conflict();
@@ -147,6 +151,8 @@ function checkImportedLinks(quotes,notes,addedQuotes,addedNotes) {
     const reverse=notes.filter(n=>sameId(n?.quoteId,quote.id));
     const explicit=quote.annotation?.noteId;
     if(reverse.length>1) conflict();
+    // Completing a legacy reverse link must not give one note to another quote.
+    if(reverse.some(n=>quotes.some(q=>q!==quote && sameId(q?.annotation?.noteId,n.id)))) conflict();
     if(explicit!=null) {
       const targets=notes.filter(n=>sameId(n?.id,explicit));
       if(targets.length>1 || (reverse.length && !sameId(reverse[0].id,explicit)) ||
@@ -199,14 +205,18 @@ function validateBackup(payload) {
   }
   const reading = objectMap(p.reading);
   if (Object.keys(reading).length > MAX.reading) throw new Error('Слишком много статусов чтения.');
-  const cleanReading = {};
+  const cleanReading = {}, readingNow = Date.now();
   for (const [path, value] of Object.entries(reading)) {
     if (!cleanPath(path) || !value || !['reading', 'finished', 'dismissed'].includes(value.state)) {
       throw new Error('Некорректное состояние чтения.');
     }
-    cleanReading[cleanPath(path)] = { state: value.state, title: cap(value.title, 240),
+    const canonicalPath = cleanPath(path);
+    const normalized = { state: value.state, title: cap(value.title, 240),
       anchor: cap(value.anchor, 160), ratio: Math.max(0, Math.min(1, Number(value.ratio) || 0)),
-      updatedAt: Math.min(Date.now(), Math.max(0, Number(value.updatedAt) || 0)) };
+      updatedAt: Math.min(readingNow, Math.max(0, Number(value.updatedAt) || 0)) };
+    if (Object.hasOwn(cleanReading, canonicalPath) && !exact(cleanReading[canonicalPath], normalized))
+      throw new Error('Конфликт адресов статей в резервной копии. Импорт отменён без изменения данных.');
+    cleanReading[canonicalPath] = normalized;
   }
   const revisit = objectMap(p.revisit);
   const suppressed = objectMap(revisit.suppressed);
@@ -297,6 +307,17 @@ function updateRevisit(map,action,value) {
 function safeMerge(old, next) {
   const quotes=mergeRecords(old.quotes,next.quotes,true,MAX.quotes);
   const notes=mergeRecords(old.notes,next.notes,false,MAX.notes);
+  // Newly imported positional records obey the canonical highlight identity.
+  // Existing rows are never deduplicated or rewritten here.
+  for (const quote of quotes.added) {
+    const anchor=quote?.annotation?.version===1 && quote.annotation.anchor;
+    if (!anchor || !Number.isInteger(anchor.start) || !Number.isInteger(anchor.end) || typeof anchor.exact!=='string') continue;
+    const owner=window?.GBHighlights;
+    if(typeof owner?.highlightKey!=='function') throw new Error('Безопасная проверка пометок недоступна. Импорт отменён.');
+    const key=owner.highlightKey(quote);
+    if(!key || quotes.result.some(other=>other!==quote && owner.highlightKey(other)===key))
+      throw new Error('Конфликт позиций пометок. Импорт отменён без изменения данных.');
+  }
   checkImportedLinks(quotes.result,notes.result,quotes.added,notes.added);
   const merged = {
     quotes: quotes.result, notes: notes.result,
@@ -304,8 +325,11 @@ function safeMerge(old, next) {
     tags: { ...old.tags }, reading: { ...old.reading },
     revisit: { ...old.revisit },
   };
-  for(const [key,value] of Object.entries(next.reading))
+  for(const [key,value] of Object.entries(next.reading)) {
+    if(Object.keys(old.reading).some(prior => prior !== key && cleanPath(prior) === key))
+      throw new Error('Конфликт адресов статей в сохранённой библиотеке. Импорт отменён без изменения данных.');
     if(!Object.hasOwn(old.reading,key)) merged.reading[key]=value;
+  }
   for (const [key,incoming] of Object.entries(next.tags)) {
     if (!Array.isArray(incoming)) throw new Error('Некорректный список меток. Импорт отменён.');
     const prior=Object.hasOwn(old.tags,key)?old.tags[key]:[];
@@ -710,6 +734,10 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       try { payload=raw?await serializeRecovery():{format:FORMAT,version:3,exportedAt:new Date().toISOString(),data:await serializeCurrent()}; }
       catch(error) { notify(error.message,true);return; }
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+      if (blob.size > (raw ? RECOVERY_MAX_BYTES : BACKUP_MAX_BYTES)) {
+        notify(raw ? 'Точная копия больше 32 МБ. Файл не создан.' : 'Копия для объединения больше 4 МБ. Используйте «Точная копия». Файл не создан.', true);
+        return;
+      }
       const url = URL.createObjectURL(blob), a = document.createElement('a');
       a.href = url; a.download = raw?'gb-library-recovery.json':'gb-library-backup.json'; document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
@@ -796,7 +824,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     invalidateImport();
     const generation = importGeneration;
     if (!input) return;
-    if (input.size > 32 * 1024 * 1024) { notify('Файл больше 32 МБ.', true); return; }
+    if (input.size > RECOVERY_MAX_BYTES) { notify('Файл больше 32 МБ.', true); return; }
     try {
       const contents = await input.text();
       if (generation !== importGeneration) return;
@@ -805,7 +833,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
         pendingImport={recovery:true,raw:validateRecovery(json)};
         prompt.textContent='Точная копия: будут восстановлены только отсутствующие разделы. Если хотя бы один существующий раздел отличается, операция будет отменена. Повреждённый JSON автоматически не восстанавливается.';
       } else {
-        if(input.size>4*1024*1024)throw new Error('Обычная копия больше 4 МБ.');
+        if(input.size>BACKUP_MAX_BYTES)throw new Error('Обычная копия больше 4 МБ.');
         const data=validateBackup(json);
         pendingImport={recovery:false,data};
         prompt.textContent = 'В копии ' + data.quotes.length + ' цитат, '

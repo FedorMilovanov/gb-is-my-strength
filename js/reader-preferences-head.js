@@ -228,7 +228,7 @@
     style.id = STYLE_ID;
     style.textContent = [
       '@media print {',
-      '  @page { size: A4; margin: 14mm; }',
+      '  @page { size: auto; margin: 14mm; }',
       '  html body { orphans: 3; widows: 3; }',
       '  html body [data-print-flow="atomic"],',
       '  html body .gb-print-closing-group { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
@@ -317,6 +317,35 @@
     var value = probe.getBoundingClientRect().height;
     probe.remove();
     return value || (mm * 96 / 25.4);
+  }
+
+  // Paper size is observable only while print media is active. Preserve the
+  // existing A4 preflight when the browser does not expose a supported size.
+  function resolvePaperGeometry() {
+    var fallback = { heightMm: 297, contentMm: 269, source: 'a4-fallback' };
+    if (!isPrintMedia()) return fallback;
+    try {
+      var matches = function (mm) {
+        return window.matchMedia('(min-height: ' + mm + 'mm)').matches;
+      };
+      if (!matches(50) || matches(1000)) return fallback;
+      var lo = 50, hi = 1000;
+      while (hi - lo > 0.05) {
+        var mid = (lo + hi) / 2;
+        if (matches(mid)) lo = mid;
+        else hi = mid;
+      }
+      // Snap the four supported physical paper heights, avoiding fractional
+      // Chromium paper rounding and not interpreting arbitrary viewport sizes.
+      var supported = [297, 279.4, 210, 215.9];
+      for (var i = 0; i < supported.length; i++) {
+        if (Math.abs(lo - supported[i]) <= 0.75) {
+          return { heightMm: supported[i], contentMm: supported[i] - 28,
+            source: 'print-media-14mm-css-margins' };
+        }
+      }
+    } catch (_) {}
+    return fallback;
   }
 
   function depth(node) {
@@ -616,13 +645,15 @@
     // A native beforeprint callback can precede the print media query.
     // Do not expand during the engine's ordinary screen preflight.
     if (isPrintMedia() || event && event.type === 'beforeprint') expandEditorialDisclosures(root);
-    var pageHeight = measureMm(269);
+    var paperGeometry = resolvePaperGeometry();
+    var pageHeight = measureMm(paperGeometry.contentMm);
     var stats = classifyCandidates(root, pageHeight);
     report = {
       version: VERSION,
       prepared: true,
       route: location.pathname,
       pageContentHeight: Math.round(pageHeight),
+      paperGeometry: paperGeometry,
       stats: stats
     };
     document.documentElement.setAttribute('data-gb-print-pagination', 'ready');

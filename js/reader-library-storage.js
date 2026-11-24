@@ -60,9 +60,13 @@
       let state, outcome, staged;
       try {
         state = Object.fromEntries(keys.map(key => [key, strictLibraryRead(key)]));
+        // Preparation is synchronous but may mutate the decoded working copy.
+        // Capture the pre-prepare count, not a reference to a mutable array/map.
+        const count = (value,spec) => spec.array ? value.length : Object.keys(value).length;
+        const initialCounts = Object.fromEntries(keys.map(key => [key,count(state[key].items,state[key].spec)]));
         outcome = prepare(Object.fromEntries(keys.map(key => [key, state[key].items])));
         if (!outcome || outcome.reason) return libraryFailure(outcome?.reason || 'conflict', outcome?.current);
-        if (!outcome.changes || Object.keys(outcome.changes).some(key => !state[key]))
+        if (!outcome.changes || Object.keys(outcome.changes).some(key => !Object.hasOwn(state,key)))
           return libraryFailure('invalid-mutation');
         staged = [];
         for (const key of keys) {
@@ -70,9 +74,12 @@
           const items = outcome.changes[key];
           const { spec, encode } = state[key];
           if (!validLibraryShape(items,spec)) return libraryFailure('invalid-mutation');
-          const count = value => spec.array ? value.length : Object.keys(value).length;
-          if (count(items) > spec.limit && count(items) > count(state[key].items))
-            return libraryFailure('capacity', state[key].items);
+          const nextCount = count(items,spec);
+          if (nextCount > spec.limit && nextCount > initialCounts[key]) {
+            // Report the original snapshot, never the rejected working copy.
+            const prior = state[key].raw === null ? (spec.array ? [] : {}) : JSON.parse(state[key].raw);
+            return libraryFailure('capacity', spec.envelope && !Array.isArray(prior) ? prior.items : prior);
+          }
           const raw = encode(items);
           if (raw !== state[key].raw) staged.push({ key, raw, before: state[key].raw });
         }
@@ -98,6 +105,13 @@
         completed.push(change);
         if (localStorage.getItem(change.key) !== change.raw)
           throw new Error('Library bytes changed during write');
+      }
+      // Detect a non-cooperating writer that changed an earlier write or
+      // a read-only dependency while later keys were being committed.
+      const expected = new Map(staged.map(change => [change.key, change.raw]));
+      for (const key of Object.keys(before)) {
+        if (localStorage.getItem(key) !== (expected.has(key) ? expected.get(key) : before[key]))
+          throw new Error('Library changed before commit verification');
       }
     } catch {
       let partial = false;

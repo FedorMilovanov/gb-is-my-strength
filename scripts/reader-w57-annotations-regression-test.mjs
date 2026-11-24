@@ -478,3 +478,55 @@ assert.equal(wArea.value,'new W57 draft');
 assert.equal(wEditor.hidden,false);
 assert.equal(wArea.readOnly,false);
 console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');
+
+
+// W39 — a Product-linked draft must bind to the exact source quote opened,
+// not merely an ID that could now point to different text or geometry.
+const w39quote={id:'Q-W39',text:'original',url:'/article/a',annotation:{version:1,noteId:null,color:'amber'}};
+const w39context=q=>({quoteId:q.id,quoteSnapshot:JSON.stringify(q),quoteText:q.text,url:q.url,title:'Article'});
+const w39zero={...w39quote,id:0};
+for(const [name,opened,current,notes,context,allowed,id] of [
+ ['unchanged',w39quote,w39quote,[],w39context(w39quote),true,'Q-W39'],
+ ['changed text',w39quote,{...w39quote,text:'changed'},[],w39context(w39quote),false],
+ ['changed position',w39quote,{...w39quote,annotation:{...w39quote.annotation,color:'rose'}},[],w39context(w39quote),false],
+ ['competing note',w39quote,w39quote,[{id:'other',text:'other',quoteId:'Q-W39'}],w39context(w39quote),false],
+ ['no opening snapshot',w39quote,w39quote,[],{quoteId:'Q-W39',quoteText:'original'},false],
+ ['standalone',w39quote,w39quote,[],{quoteText:'selection',url:'/article/a'},true,undefined],
+ ['legacy zero ID',w39zero,w39zero,[],w39context(w39zero),true,0]
+]) {
+ const f=makeFixture({record:JSON.parse(JSON.stringify(current)),notes});
+ const before=JSON.stringify(f.notes()), result=await saveProduct(f,null,context);
+ assert.equal(result.applied,allowed,'W39 '+name);
+ if(allowed){assert.equal(f.notes()[0].quoteId,id);assert.equal(f.writes.length,1);}
+ else {assert.equal(result.draftText,'edited');assert.equal(JSON.stringify(f.notes()),before);assert.deepEqual(f.writes,[]);}
+}
+assert.match(highlights,/context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\)/,'selection path captures exact quote');
+assert.match(highlights,/quoteSnapshot: item\.recordSnapshot/,'library card path captures exact quote');
+console.log('W39: 7/7 Product-linked draft cases PASS');
+
+
+// W40 — Undo must not turn a dangling legacy edge into a conflicting link.
+const w40q=(id,noteId=null)=>({id,text:'quote '+id,url:'/a',annotation:{version:1,noteId}});
+const w40n=(id,quoteId)=>({id,text:'note '+id,...(quoteId===undefined?{}:{quoteId})});
+const w40qa=w40q('Q'),w40qb=w40q('R','A'),w40na=w40n('A','Q');
+for(const [name,record,notes,receipt] of [
+ ['new forward claim',w40qb,[],{key:nKey,entry:w40n('A'),index:0,clearedLinks:[]}],
+ ['reverse target claimed',w40q('Q','B'),[w40n('B')],{key:nKey,entry:w40na,index:0,clearedLinks:[],relatedQuote:JSON.stringify(w40q('Q','B'))}],
+ ['reverse-only note already claimed',w40qb,[w40na],{key:qKey,entry:w40qa,index:0}],
+ ['explicit note already claimed',w40qb,[w40n('A')],{key:qKey,entry:w40q('Q','A'),index:0}],
+ ['duplicate reverse target',w40q('unrelated'),[w40na,w40n('A')],{key:qKey,entry:w40qa,index:0}]
+]){
+ const f=makeFixture({record:JSON.parse(JSON.stringify(record)),notes});
+ const before=JSON.stringify([f.record,f.notes()]);
+ const r=await f.owner.restoreDeleted(receipt);
+ assert.equal(r.ok,false,'W40 '+name);assert.equal(r.reason,'link-conflict');
+ assert.deepEqual(f.writes,[]);assert.equal(JSON.stringify([f.record,f.notes()]),before);
+}
+{
+ const f=makeFixture({record:w40qb});
+ const receipt={key:nKey,entry:w40n('A'),index:0,clearedLinks:[]};
+ const r=await f.owner.restoreDeleted(receipt,'W40-copy');
+ assert.equal(r.ok,true);assert.equal(f.notes()[0].id,'W40-copy');assert.equal(f.notes()[0].quoteId,undefined);
+ assert.equal(f.record.annotation.noteId,'A');
+}
+console.log('W40: 6/6 Undo integrity cases PASS');

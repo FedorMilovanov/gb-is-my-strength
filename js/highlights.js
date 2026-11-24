@@ -274,6 +274,15 @@
             if (related.length > 1 || (related.length ? JSON.stringify(related[0]) : null) !== receipt.relatedQuote)
               return { reason: 'link-conflict' };
           }
+          // Any forward claim now present was not part of the cleared
+          // post-delete state. Do not let Undo attach to a newly claimed note.
+          if (quotes.some(q => sameId(q?.annotation?.noteId,entry.id)) ||
+              clearedLinks.length > 1 ||
+              (entry.quoteId != null && clearedLinks.some(link => !sameId(link.id,entry.quoteId))))
+            return { reason: 'link-conflict' };
+          if (entry.quoteId != null && quotes.some(q => sameId(q?.id,entry.quoteId) &&
+              q?.annotation?.noteId != null && !sameId(q.annotation.noteId,entry.id)))
+            return { reason: 'link-conflict' };
           for (const link of clearedLinks) {
             const found = quotes.filter(q => q && sameId(q.id,link.id));
             if (found.length !== 1 || JSON.stringify(found[0]) !== link.postDelete ||
@@ -293,6 +302,10 @@
         const explicit = restored.annotation?.noteId;
         const reverse = notes.filter(n => n && sameId(n.quoteId,restored.id));
         if (reverse.length > 1) return { reason: 'link-conflict' };
+        const targetId = explicit ?? reverse[0]?.id;
+        if (targetId != null && (notes.filter(n => sameId(n?.id,targetId)).length !== 1 ||
+            quotes.some(q => sameId(q?.annotation?.noteId,targetId))))
+          return { reason: 'link-conflict' };
         if (explicit != null) {
           const linked = notes.filter(n => n && sameId(n.id,explicit));
           if (linked.length !== 1 || (linked[0].quoteId != null && !sameId(linked[0].quoteId,restored.id)) ||
@@ -398,7 +411,10 @@
     });
     // Keep a useful unlinked note if this occurrence is new, legacy, or
     // ambiguous. Never assign a quoteId from a coincidental text match.
-    if (matches.length === 1) context.quoteId = matches[0].id;
+    if (matches.length === 1) {
+      context.quoteId = matches[0].id;
+      context.quoteSnapshot = JSON.stringify(matches[0]);
+    }
     return context;
   }
   function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
@@ -719,7 +735,7 @@
     if (action === 'delete') deleteItem(item);
     if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
     if (action === 'edit-note') showEditor(null, item);
-    if (action === 'note-for-quote') showEditor({ quoteId: item.id, quoteText: item.text, title: item.title, url: item.url });
+    if (action === 'note-for-quote') showEditor({ quoteId: item.id, quoteSnapshot: item.recordSnapshot, quoteText: item.text, title: item.title, url: item.url });
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
   }
   function showEditor(context = null, editing = null) {
@@ -751,7 +767,7 @@
     textArea.readOnly=true;
     const context=activeDraft.context, editing=activeDraft.editing;
     const created = {
-      id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
+      id: uid('note'), text, ...(context?.quoteId != null ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
       articleTitle: context && context.title || currentTitle(),
       url: context && context.url || location.origin + location.pathname,
       savedAt: Date.now(),
@@ -765,9 +781,9 @@
         if (current.some(x => x && String(x.id) === String(created.id)) ||
             stores[QUOTES_KEY].some(q => q?.annotation?.noteId != null &&
               String(q.annotation.noteId) === String(created.id))) return { reason: 'id-collision' };
-        if (context?.quoteId) {
+        if (context?.quoteId != null) {
           const linked = stores[QUOTES_KEY].filter(x => x && String(x.id) === String(context.quoteId));
-          if (linked.length !== 1 || linked[0].annotation?.noteId != null ||
+          if (linked.length !== 1 || JSON.stringify(linked[0]) !== context.quoteSnapshot || linked[0].annotation?.noteId != null ||
               current.some(x => x?.quoteId != null && String(x.quoteId) === String(context.quoteId)))
             return { reason: 'link-conflict' };
         }
