@@ -84,6 +84,10 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .intro-module .standfirst::first-letter { float: left; font: 600 68px/.9 var(--je-serif); margin: 7px 10px 0 0; color: var(--je-gold); }
 .journal-edition .prose > p.source-note-paragraph { margin-top: 25px; padding-top: 12px; border-top: 1px solid var(--je-rule); color: var(--je-muted); font: 13px/1.65 var(--je-ui); }
 .journal-edition .source-note, .journal-edition .claim-ref a, .journal-edition a.claim-ref { color: var(--je-gold); text-decoration: underline; text-decoration-style: dotted; }
+/* Standalone source notes are controls, not inline prose links. Keep a real touch target before figures. */
+@media screen and (max-width: 1023px) {
+  .journal-edition .source-note-paragraph > a.source-note { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding-block: 4px; }
+}
 .journal-edition .claim-ref { color: var(--je-muted); font: 12px/1.55 var(--je-ui); }
 .journal-edition .timeline { list-style: none; padding: 0; margin: 27px 0 0; }
 .journal-edition .timeline > li { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 26px; padding: 23px 0; border-top: 1px solid var(--je-rule); }

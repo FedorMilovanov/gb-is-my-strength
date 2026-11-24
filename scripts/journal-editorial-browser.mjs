@@ -254,7 +254,7 @@ const reviewClippedContrast = async (page, reviews) => {
   for (const review of reviews) {
     assert.equal(review.id, 'color-contrast', 'unexpected compact-TOC accessibility review');
     for (const node of review.nodes) {
-      assert.ok(node.summary?.includes("Element's background color could not be determined because it's partially obscured by another element"));
+      assert.ok(node.summary?.includes("Element's background color could not be determined because it's partially obscured by another element"), 'unresolved axe review: '+JSON.stringify(node));
       assert.equal(node.target.length, 1);
       const state = await page.evaluate((selector) => {
         const matches = document.querySelectorAll(selector), el = matches[0];

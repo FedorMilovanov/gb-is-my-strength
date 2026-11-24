@@ -223,7 +223,20 @@ if (!process.argv.includes('--source-only')) {
       assert.ok(ids.includes(hash), `broken anchor #${hash} at ${route}`);
     }
     assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('/_review/'), 'draft history must not enter public HTML');
-    if (route !== historyRoute) assert.ok(!html.includes('history-source-'), 'history bibliography must remain separate');
+    if (route !== historyRoute) {
+      // The ecosystem deliberately links to two sources on the companion route.
+      // Forbid duplicated local bibliography ownership, not valid cross-route links.
+      assert.ok(!ids.some(id=>id.startsWith('history-source-')), 'history bibliography IDs must remain separate');
+      assert.ok(!nodes.some(node=>node.tagName==='a'&&attr(node,'href')?.startsWith('#history-source-')), 'no local history bibliography links on other routes');
+      const cross=nodes.filter(node=>node.tagName==='a'&&attr(node,'href')?.includes('/history/#history-source-')).map(node=>attr(node,'href'));
+      const expected=route==='/journal/dossiers/g3/'?['challies','aniol-2021'].map(id=>historyRoute+'#history-source-'+id):[];
+      assert.deepEqual(cross.sort(),expected.sort(),'only the adopted companion-source links');
+      for(const href of cross) {
+        const id=href.split('#history-source-')[1];
+        assert.ok(historySources.some(source=>source.id===id),'cross-route source must be in history registry');
+        assert.ok(byId(parse(read('dist'+historyRoute+'index.html')),'history-source-'+id),'cross-route source must exist in built history');
+      }
+    }
     const covers = nodes.filter((node) => node.tagName === 'source' && attr(node, 'type') === 'image/avif');
     assert.equal(covers.length, 1, `exactly one responsive AVIF cover at ${route}`);
     const fontHints = nodes.filter((node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'font');
