@@ -9,13 +9,19 @@ const LETTER_COVER = `${LETTER_MEDIA_BASE}-cover.webp`;
 const LETTER_COVER_600 = `${LETTER_MEDIA_BASE}-cover-600w.webp`;
 const LETTER_COVER_1200 = `${LETTER_MEDIA_BASE}-cover-1200w.webp`;
 
+const LETTER_AVIF = `${LETTER_MEDIA_BASE}-cover.avif`;
+const LETTER_AVIF_600 = `${LETTER_MEDIA_BASE}-cover-600w.avif`;
+const LETTER_AVIF_1200 = `${LETTER_MEDIA_BASE}-cover-1200w.avif`;
+
 export const TEEN_PERSONAL_LETTER_ASSETS = [
   LETTER_COVER, LETTER_COVER_600, LETTER_COVER_1200, LETTER_OG_IMAGE,
+  LETTER_AVIF, LETTER_AVIF_600, LETTER_AVIF_1200,
 ] as const;
 
 interface LetterMedia {
   src: string;
   srcset: string;
+  avifSrcset: string;
   alt: string;
 }
 
@@ -63,12 +69,13 @@ export function resolveTeenPersonalLetterCard(
   if (matches.length !== 1) return null;
 
   const article = matches[0];
-  // W51: use the selected artwork only once its canonical MDX metadata
+  // W54: use the selected artwork only once its canonical MDX metadata
   // points to the committed asset family. No fallback to the trilogy hero.
   const alt = article.ogImageAlt?.trim();
   const media = article.ogImage === LETTER_OG_IMAGE && alt ? {
     src: LETTER_COVER,
     srcset: `${LETTER_COVER_600} 600w, ${LETTER_COVER_1200} 1200w, ${LETTER_COVER} 1600w`,
+    avifSrcset: `${LETTER_AVIF_600} 600w, ${LETTER_AVIF_1200} 1200w, ${LETTER_AVIF} 1600w`,
     alt,
   } : undefined;
   const content: LetterCardContent = {
