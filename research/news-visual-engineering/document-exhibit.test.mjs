@@ -35,3 +35,27 @@ const cases=[
 for (const [name, change] of cases) test(name,()=>{const f=fixture();change(f);assert.throws(()=>view(f),/Journal document exhibit/);});
 test('two exhibits do not collide when caller supplies unique IDs',()=>{const a=fixture(),b=fixture();b.input.id='other-document';assert.notEqual(view(a).sections[0].citationId,view(b).sections[0].citationId);});
 test('hyphenated exhibit and section IDs cannot collide',()=>assert.notEqual(documentCitationId('a-document-b','c'),documentCitationId('a','b-document-c')));
+
+function multiple() {
+  const f=fixture();
+  f.authority.sources.push({id:'second',href:'#source-second',label:'Second'});
+  f.authority.claims[0].references.push({sourceId:'second',locator:'§ 2'},{sourceId:'fixture-source',locator:'§ 3'});
+  return f;
+}
+test('all admitted references survive, including two locators in the same source',()=>{
+  const v=view(multiple()).sections[0];
+  assert.deepEqual(v.citations.map(c=>[c.source.id,c.locator]),[['fixture-source','§ 1'],['second','§ 2'],['fixture-source','§ 3']]);
+  assert.equal(v.citations[0].citationId,v.citationId);
+  assert.equal(new Set(v.citations.map(c=>c.citationId)).size,3);
+});
+test('primary reference may be reordered but cannot drop other references',()=>{
+  const f=multiple(); f.input.sections[0].sourceId='second'; f.input.sections[0].locator='§ 2';
+  const v=view(f).sections[0];assert.deepEqual(v.citations.map(c=>c.locator),['§ 2','§ 1','§ 3']);
+});
+test('additional citation cannot collide with another valid row ID',()=>{
+  const f=multiple();f.input.sections.push({...f.input.sections[0],id:'a-ref-2'});
+  const all=view(f).sections.flatMap(s=>s.citations.map(c=>c.citationId));assert.equal(new Set(all).size,all.length);
+});
+test('same authority is not mutated by repeated projections',()=>{
+  const f=multiple(); const old=JSON.stringify(f.authority);view(f);view(f);assert.equal(JSON.stringify(f.authority),old);
+});

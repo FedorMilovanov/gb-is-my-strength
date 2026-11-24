@@ -36,12 +36,12 @@ export function documentExhibitView(input, authority) {
   const claims = new Map();
   for (const claim of authority.claims) {
     if (!clean(claim?.id) || claims.has(claim.id) || !Array.isArray(claim.references) || !claim.references.length) fail('invalid claim registry');
-    const refs = new Set();
+    const refs = new Map();
     for (const ref of claim.references) {
       if (!sourceMap.has(ref?.sourceId) || !clean(ref.locator)) fail('invalid claim reference');
       const key = JSON.stringify([ref.sourceId, ref.locator]);
       if (refs.has(key)) fail('duplicate claim reference');
-      refs.add(key);
+      refs.set(key, { sourceId: ref.sourceId, locator: ref.locator });
     }
     claims.set(claim.id, refs);
   }
@@ -53,12 +53,23 @@ export function documentExhibitView(input, authority) {
     if (!claims.has(row.claimId)) fail('claim outside admitted projection');
     const source = sourceMap.get(row.sourceId);
     if (!source) fail('unknown source');
-    if (!claims.get(row.claimId).has(JSON.stringify([row.sourceId, row.locator]))) fail('source or locator outside admitted claim');
+    const admitted = claims.get(row.claimId);
+    const primaryKey = JSON.stringify([row.sourceId, row.locator]);
+    if (!admitted.has(primaryKey)) fail('source or locator outside admitted claim');
+    // The row chooses its primary document fragment, not which evidence to omit.
+    // All remaining admitted references are projected from the same authority.
+    const ordered = [admitted.get(primaryKey), ...[...admitted.entries()].filter(([key]) => key !== primaryKey).map(([, ref]) => ref)];
+    const citationId = documentCitationId(input.id, row.id);
+    const citations = ordered.map((ref, i) => ({
+      source: sourceMap.get(ref.sourceId),
+      locator: ref.locator,
+      citationId: i === 0 ? citationId : citationId + ':ref-' + (i + 1),
+    }));
     return { id: row.id, number: String(index + 1).padStart(2, '0'),
       heading: text(row.heading, 'heading'), locator: text(row.locator, 'locator'),
       summary: text(row.summary, 'summary'), significance: text(row.significance, 'significance'),
       limitation: text(row.limitation, 'limitation'), claimId: row.claimId,
-      source, citationId: documentCitationId(input.id, row.id) };
+      source, citationId, citations };
   });
   const documentDate = date(input.documentDate);
   const publicationDate = date(input.publicationDate);

@@ -121,8 +121,11 @@ try {
           const data=await page.evaluate(()=>({over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),rows:document.querySelectorAll('.jdx-section').length,exhibits:document.querySelectorAll('.jdx').length}));
           assert.equal(data.over,false);assert.equal(data.rows,10);assert.equal(data.exhibits,2);assert.equal(new Set(data.ids).size,data.ids.length);
           if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
-          const links=page.locator('.jdx a');assert.equal(await links.count(),10);
-          for(let i=0;i<10;i++){
+          const links=page.locator('.jdx a');assert.equal(await links.count(),11);
+          assert.equal(await page.locator('.jdx a[id$=":ref-2"]').count(),1);
+          assert.ok((await page.locator('.jdx a[id$=":ref-2"]').textContent()).includes('Дополнительный локатор'));
+          assert.equal(await page.locator('.jdx a[id$=":ref-2"]').getAttribute('href'),'#source-other');
+          for(let i=0;i<11;i++){
             const link=links.nth(i),id=await link.getAttribute('id'),target=await link.getAttribute('href');
             await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,target);
             const back=page.locator(target+' [data-journal-source-return]');
@@ -143,7 +146,7 @@ try {
               for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,'long-'+format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
             }
           }
-          longResults.push({engine:name,width,dark,js,citations:10});await persist();
+          longResults.push({engine:name,width,dark,js,citations:11});await persist();
           console.log('CASE_PASS '+JSON.stringify({fixture:'long',engine:name,width,dark,js}));
         }finally{await context.close();}
       }

@@ -6,6 +6,7 @@ interface ExhibitViewRow extends Omit<Section, 'sourceId'> {
   number: string;
   source: Source;
   citationId: string;
+  citations: { source: Source; locator: string; citationId: string }[];
 }
 interface ExhibitView {
   id: string;
@@ -48,7 +49,11 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
         <p class="jdx-locator"><span aria-hidden="true">{row.number} / </span>{row.locator}</p>
         <h3>{row.heading}</h3>
         <p>{row.summary}</p>
-        <a id={row.citationId} data-journal-citation href={row.source.href} aria-label={`Источник: ${row.source.label} · ${row.heading}`}>Источник: {row.source.label}</a>
+        <div class="jdx-citations" role="group" aria-label={`Источники: ${row.heading}`}>
+          {row.citations.map(citation => <a id={citation.citationId} data-journal-citation href={citation.source.href} aria-label={`Источник: ${citation.source.label} · ${citation.locator} · ${row.heading}`}>
+            <span>Источник: {citation.source.label}{row.citations.length > 1 && <span class="jdx-citation-locator"> · {citation.locator}</span>}</span>
+          </a>)}
+        </div>
       </div>
       <div class="jdx-commentary">
         <dl>
@@ -76,7 +81,9 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-passage { padding-inline: clamp(1rem, 4cqi, 2rem); }
   .jdx-passage h3 { margin: 0 0 .6rem; font: 600 1.25rem/1.3 var(--je-serif); }
   .jdx-passage p:not(.jdx-locator) { margin: 0 0 .75rem; font: 400 calc(1rem * var(--gb-reader-font-scale, 1))/1.7 var(--je-body); }
-  .jdx-passage a { display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
+  .jdx-citations { display: flex; flex-direction: column; align-items: flex-start; }
+  .jdx-citation-locator { color: var(--je-muted); font-weight: 400; }
+  .jdx-passage a { max-width: 100%; display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
   .jdx-commentary { margin-inline: clamp(1rem, 4cqi, 2rem); padding: .2rem 1.1rem .2rem 1rem; border-inline-start: 1px solid var(--je-rule); }
   .jdx-commentary dl { margin: 0; }
   .jdx-commentary div + div { border-block-start: 1px solid var(--je-rule); padding-block-start: .8rem; margin-block-start: .8rem; }
@@ -101,6 +108,8 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     .jdx-passage h3, .jdx-locator, .jdx-commentary dt { break-after: avoid; }
     .jdx-passage p, .jdx-commentary dd { orphans: 3; widows: 3; }
     .jdx-passage p:not(.jdx-locator) { break-after: avoid; }
+    .jdx-citations { display: block; break-inside: avoid; }
+    .jdx-citation-locator { color: #111; }
     .jdx-passage a { display: block; min-height: 0; break-before: avoid; }
     .jdx-commentary { margin-block-start: .5rem; }
     .jdx-commentary div { break-inside: avoid; }
