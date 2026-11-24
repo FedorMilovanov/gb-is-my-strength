@@ -114,8 +114,8 @@ assert.match(highlights,/function noteContextForSelection\(selected\)/,
  'Product selection notes need a shared positional association owner');
 assert.match(highlights,/GBReaderAnchors\.sameRange\(exact, stored\)/,
  'notes must compare real source DOM Ranges');
-assert.match(highlights,/if \(matches\.length === 1\) context\.quoteId = matches\[0\]\.id/,
- 'unknown and ambiguous occurrences must fail closed');
+assert.match(highlights,/if\s*\(matches\.length === 1\)\s*\{\s*context\.quoteId = matches\[0\]\.id;\s*context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\);\s*\}/,
+ 'unknown and ambiguous occurrences must fail closed; unique selection must capture the exact linked record');
 assert.equal((highlights.match(/const context = noteContextForSelection\(s\);/g)||[]).length,2,
  'touch toolbar and native selection popup must share one association rule');
 
