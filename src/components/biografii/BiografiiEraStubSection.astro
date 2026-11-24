@@ -1,8 +1,5 @@
 ---
-/**
- * BiografiiEraStubSection.astro — reusable placeholder era block for /biografii/.
- * The native route renders every era in SSR without observer-owned visibility.
- */
+/** Compact server-rendered entry for a historical era awaiting publications. */
 export interface Props {
   badge: string;
   id: string;
@@ -11,32 +8,41 @@ export interface Props {
 }
 const { badge, id, title, desc } = Astro.props;
 ---
-<section class="h-section bio-era" style="padding-top:0;" aria-labelledby={id}>
-  <div class="bio-era__head">
-    <span class="bio-era__badge">{badge}</span>
-    <span class="bio-era__rule" aria-hidden="true"></span>
-  </div>
-  <h2 class="bio-era__title" id={id}>{title}</h2>
-  <p class="bio-era__desc">{desc}</p>
-
-  <div class="bio-stub" data-pagefind-ignore>
-    <span class="bio-stub__corner bio-stub__corner--tl" aria-hidden="true"></span>
-    <span class="bio-stub__corner bio-stub__corner--tr" aria-hidden="true"></span>
-    <span class="bio-stub__corner bio-stub__corner--bl" aria-hidden="true"></span>
-    <span class="bio-stub__corner bio-stub__corner--br" aria-hidden="true"></span>
-    <div class="bio-stub__row">
-      <span class="bio-stub__icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"></path></svg></span>
-      <div>
-        <p class="bio-stub__kicker">Архив эпохи</p>
-        <h3 class="bio-stub__name">Материалы в подготовке</h3>
-      </div>
-    </div>
-    <p class="bio-stub__text">Исследование жизни служителей, городов их деятельности, ключевых богословских дебатов и миссионерских путей этого периода.</p>
-    <span class="bio-stub__status"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Материал в разработке</span>
-    <div class="bio-stub__facets">
-      <span class="bio-stub__facet"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path></svg> Личность</span>
-      <span class="bio-stub__facet"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path></svg> Контекст</span>
-      <span class="bio-stub__facet"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path></svg> Наследие</span>
-    </div>
+<section class="bio-era-entry" aria-labelledby={id}>
+  <div class="bio-era-entry__period">{badge}</div>
+  <div class="bio-era-entry__body">
+    <h2 id={id}>{title}</h2>
+    <p class="bio-era-entry__desc">{desc}</p>
+    <p class="bio-era-entry__status" data-pagefind-ignore>Материалы в подготовке</p>
   </div>
 </section>
+<style>
+  .bio-era-entry {
+    display:grid;
+    grid-template-columns:minmax(5rem,8rem) minmax(0,1fr);
+    align-items:start;
+    gap:1.25rem;
+    padding:1.25rem 0;
+    border-top:1px solid var(--color-border);
+    color:var(--color-text);
+  }
+  .bio-era-entry__period {
+    font:600 1rem/1.5 Lora,Georgia,serif;
+    color:var(--color-accent-strong);
+    padding-top:.15rem;
+  }
+  .bio-era-entry__body{min-width:0}
+  .bio-era-entry h2{
+    font:600 clamp(1.2rem,2.3vw,1.55rem)/1.3 Lora,Georgia,serif;
+    margin:0 0 .4rem;
+    scroll-margin-top:7rem;
+    color:var(--color-text);
+  }
+  .bio-era-entry__desc{margin:0 0 .45rem;font-size:.95rem;line-height:1.65;color:var(--color-text)}
+  .bio-era-entry__status{margin:0;font-size:.8rem;line-height:1.5;color:var(--color-text-muted)}
+  @media(max-width:580px){
+    .bio-era-entry{grid-template-columns:4.25rem minmax(0,1fr);gap:.75rem}
+    .bio-era-entry__period{font-size:.85rem}
+  }
+  @media print{.bio-era-entry{break-inside:avoid}}
+</style>
