@@ -36,13 +36,17 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
-      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js') {
+      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js' ||
+      url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));
   } else {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(url.pathname === '/baptisty-rossii/' ? gbsHtml : html);
+    const transientHtml = html.replace('</head>', '<style>#selection-share-popup[aria-hidden="true"]{display:none}</style></head>');
+    res.end(url.pathname === '/baptisty-rossii/' ? gbsHtml :
+      url.pathname === '/articles/selection-native/' ? transientHtml :
+      url.pathname === '/articles/selection-fallback/' ? transientHtml.replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>', '') : html);
   }
 });
 const longQuote = 'Длинная выдержка из первой статьи для исследования, '.repeat(16);
@@ -143,6 +147,7 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1'))[0].url.includes('#more:~:text=')), true,
     'saved quote source points to native text fragment at its section anchor');
   await page.locator('#ss-note').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'visible'});
   assert.equal(await page.locator('#gb-hl-editor').isVisible(), true);
   await page.locator('#gb-hl-note-text').fill('Заметка к новой цитате');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
@@ -210,6 +215,75 @@ async function checkGbs2(name, driver, url) {
   }
 }
 
+
+// Exercise actual touch activation on both transient surfaces, with a controlled
+// first presenter request. Selection range setup is deterministic, not a claim
+// of OS-native long-press selection or physical Android/iOS coverage.
+async function checkTransientFocus(name,driver,base) {
+  const browser=await driver.launch({headless:true});
+  try {
+    for(const surface of ['native','fallback']) for(const termination of ['close','cancel','failure']) {
+      const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,serviceWorkers:'block'});
+      const page=await context.newPage();
+      let release, signalRequest, requested=0;
+      const gate=new Promise(resolve=>{release=resolve});
+      const requestSeen=new Promise(resolve=>{signalRequest=resolve});
+      const errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      try {
+        await page.route('**/js/reader-library-presenter.js?*',async route=>{
+          requested++;signalRequest();
+          await gate;
+          if(termination==='failure') await route.abort('failed');
+          else await route.continue();
+        });
+        await page.goto(base+'/articles/selection-'+surface+'/',{waitUntil:'load'});
+        await page.locator('#gb-hl-fab').waitFor({state:'visible'});
+        await page.evaluate(()=>{
+          const range=document.createRange();range.selectNodeContents(document.getElementById('more'));
+          const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+          document.dispatchEvent(new Event('selectionchange'));
+        });
+        const note=page.locator(surface==='native'?'#ss-note':'#gb-hl-selbar-note');
+        await note.waitFor({state:'visible'});
+        const before=await page.evaluate(()=>scrollY);
+        await note.tap();
+        await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')==='true');
+        await requestSeen;
+        assert.equal(requested,1,'one real presenter request');
+        if(termination==='cancel') {
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true');
+          release();
+          // The cancelled load still finishes mounting its hidden dialog. Do
+          // not assert before the obsolete continuation has had its chance.
+          await page.locator('#gb-hl-backdrop[inert]').waitFor({state:'attached'});
+        } else {
+          release();
+          if(termination==='close'){
+            await page.locator('#gb-hl-editor').waitFor({state:'visible'});
+            await page.locator('#gb-hl-close').tap();
+          } else await page.waitForFunction(()=>document.getElementById('gb-hl-toast')?.dataset.open==='true');
+        }
+        await page.waitForFunction(()=>{
+          const fab=document.getElementById('gb-hl-fab'),active=document.activeElement;
+          return fab?.getAttribute('aria-busy')!=='true' && !!active?.closest('article') &&
+            active!==document.body && active.getClientRects().length>0 &&
+            !active.closest('[hidden],[inert],[aria-hidden="true"]') &&
+            !document.getElementById('gb-hl-backdrop')?.classList.contains('is-open');
+        });
+        const after=await page.evaluate(()=>({id:document.activeElement.id,tag:document.activeElement.tagName,scroll:scrollY,
+          lock:document.body.classList.contains('no-scroll'),expanded:document.getElementById('gb-hl-fab').getAttribute('aria-expanded')}));
+        assert.ok(after.id==='more'||after.tag==='H1','stable authored reading target: '+JSON.stringify(after));
+        assert.equal(after.lock,false);assert.equal(after.expanded,'false');
+        assert.ok(Math.abs(after.scroll-before)<=1,'no scroll jump');
+        assert.deepEqual(errors,[]);
+        console.log('PASS',name,surface,termination,'transient selection focus');
+      } finally { release();await context.close(); }
+    }
+  } finally { await browser.close(); }
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -218,6 +292,7 @@ async function checkGbs2(name, driver, url) {
     for (const [name, browser] of [['chromium', chromium], ['firefox', firefox], ['webkit', webkit]]) {
       for (const width of [320, 390]) await check(name, browser, url, width);
       await checkGbs2(name, browser, url.replace('/articles/sample/', '/baptisty-rossii/'));
+      if(name!=='firefox') await checkTransientFocus(name,browser,new URL(url).origin);
     }
     console.log('✅ Reader Library browser integration: 6 end-to-end passes');
   } finally { server.close(); }

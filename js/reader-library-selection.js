@@ -11,6 +11,16 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     popup.append(b);
     b.addEventListener('click', handler);
   }
+  function selectionReturnTarget() {
+    const sel = window.getSelection?.();
+    if (!sel?.isCollapsed && sel?.rangeCount) {
+      const host = sel.getRangeAt(0).commonAncestorContainer;
+      const node = host.nodeType === 1 ? host : host.parentElement;
+      const block = node?.closest('p,li,blockquote,h2,h3,h4,article');
+      if (block?.closest('article,main [data-pagefind-body]')) return block;
+    }
+    return document.querySelector('article.article-body h1, article h1, main h1');
+  }
   function mobileSelectionBar() {
     let bar = document.getElementById('gb-hl-selbar');
     if (bar) return bar;
@@ -69,8 +79,9 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     note.addEventListener('click', () => {
       const s = selection();
       const context = noteContextForSelection(s);
+      const returnTarget = selectionReturnTarget();
       hide();
-      open(note).then((opened) => { if (opened) showEditor(context); });
+      open(note,returnTarget).then((opened) => { if (opened) showEditor(context); });
     });
     return bar;
   }
@@ -174,9 +185,10 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
       const s = selection();
       const context = noteContextForSelection(s);
+      const returnTarget = selectionReturnTarget();
       popup.classList.remove('ss-visible');
       popup.setAttribute('aria-hidden', 'true');
-      open(document.getElementById('ss-note')).then((opened) => { if (opened) showEditor(context); });
+      open(document.getElementById('ss-note'),returnTarget).then((opened) => { if (opened) showEditor(context); });
     }, popup);
   }
   return Object.freeze({attachSelection,hide,placeSelectionBar});

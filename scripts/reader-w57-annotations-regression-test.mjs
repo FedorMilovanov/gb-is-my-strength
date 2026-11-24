@@ -543,19 +543,19 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const lifecycle=highlights.slice(from,to);
  function fixture(){
   let requests=[],opened=false,locked=0,focus=0,paint=0,errors=0,broken=false;
-  const attributes=new Map();
-  const fab={setAttribute:(k,v)=>attributes.set(k,v),removeAttribute:k=>attributes.delete(k)};
-  const triggerAttributes=new Map([['aria-haspopup','dialog']]);
-  const trigger={isConnected:true,focus:()=>{focus++},setAttribute:(k,v)=>triggerAttributes.set(k,v),removeAttribute:k=>triggerAttributes.delete(k),getAttribute:k=>triggerAttributes.get(k)};
+  const attributes=new Map(), triggerAttributes=new Map([['aria-haspopup','dialog']]), returnAttributes=new Map();
+  let active, hidden=false;
+  function target(attrs,kind,tabIndex=0){return {isConnected:true,tabIndex,getClientRects:()=>[{}],closest:()=>kind==='trigger'&&hidden?{}:null,hasAttribute:k=>attrs.has(k),focus:opts=>{assert.equal(opts.preventScroll,true);active=kind;document.activeElement=kind==='trigger'?trigger:kind==='return'?returnTarget:fab;focus++},setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getAttribute:k=>attrs.get(k),addEventListener(){}};}
+  const fab=target(attributes,'fab'),trigger=target(triggerAttributes,'trigger'),returnTarget=target(returnAttributes,'return',-1);
   const overlay={classList:{add:()=>{opened=true},remove:()=>{opened=false}},setAttribute(){},removeAttribute(){},querySelector:()=>({focus(){}})};
-  const document={activeElement:trigger};
+  const document={activeElement:trigger,getElementById:()=>null,querySelector:()=>null};
   const window={SiteUtils:{lockScroll:()=>{locked++},unlockScroll:()=>{locked--}}};
   const loadPresenter=()=>new Promise((resolve,reject)=>requests.push({resolve,reject}));
   const render=()=>{paint++;if(broken)throw Error('render failure')};
-  const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo',
+  const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo','getComputedStyle',
    "let research=null, opener=null, tab='', filter='', searchTerm='', shown=0; const BATCH_SIZE=30, search={value:''};"+lifecycle+'return {open,close};');
-  const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{});
-  return {api,requests,trigger,attributes,triggerAttributes,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
+  const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{},()=>({visibility:'visible'}));
+  return {api,requests,trigger,returnTarget,returnAttributes,attributes,triggerAttributes,hideTrigger:()=>{hidden=true},active:()=>active,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
  }
  const f=fixture();
  const pending=f.api.open(f.trigger);
@@ -586,6 +586,22 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const broken=fixture(),rendering=broken.api.open(broken.trigger);broken.breakRender();broken.requests[0].resolve();
  assert.equal(await rendering,false);assert.equal(broken.state().locked,0,'failed render must release scroll lock');
  assert.equal(broken.state().opened,false);assert.equal(broken.state().errors,1);
+ for(const kind of ['touch toolbar','native popup']) {
+  for(const termination of ['close','cancel','failure']) {
+   const scene=fixture();scene.hideTrigger();const task=scene.api.open(scene.trigger,scene.returnTarget);
+   if(termination==='close'){scene.requests[0].resolve();assert.equal(await task,true);scene.api.close();}
+   else if(termination==='cancel'){scene.api.close();scene.requests[0].resolve();assert.equal(await task,false);}
+   else {scene.requests[0].reject(Error('offline'));assert.equal(await task,false);}
+   assert.equal(scene.active(),'return',kind+' '+termination+' returns focus to authored text');
+   assert.equal(scene.state().locked,0);assert.equal(scene.state().opened,false);
+   assert.equal(scene.triggerAttributes.has('aria-busy'),false);
+   assert.equal(scene.returnAttributes.get('tabindex'),'-1');
+  }
+ }
+ const race=fixture();race.hideTrigger();const stale=race.api.open(race.trigger,race.returnTarget);race.api.close();
+ const fresh=race.api.open(race.trigger,race.returnTarget);const focused=race.state().focus;
+ race.requests[0].reject(Error('obsolete'));assert.equal(await stale,false);assert.equal(race.state().focus,focused,'obsolete failure must not restore focus during newer open');
+ race.requests[1].resolve();assert.equal(await fresh,true);race.api.close();assert.equal(race.active(),'return');
 }
 
 

@@ -500,24 +500,44 @@
     else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
   }
   let opening = null, openGeneration = 0, pendingTrigger = null;
+  let pendingReturn = null, focusReturn = null;
+  function restoreReadingFocus(preferred) {
+    const candidates = [preferred, fab, document.getElementById('npULibraryButton'), document.querySelector('article.article-body h1, article h1, main h1')];
+    for (const target of candidates) {
+      if (!target?.isConnected || target.disabled || !target.focus || !target.getClientRects().length ||
+          target.closest('[hidden],[inert],[aria-hidden="true"]') || getComputedStyle(target).visibility !== 'visible') continue;
+      const temporary = target.tabIndex < 0 && !target.hasAttribute('tabindex');
+      if (temporary) target.setAttribute('tabindex','-1');
+      target.focus({preventScroll:true});
+      if (document.activeElement === target) {
+        if (temporary) target.addEventListener('blur', () => target.removeAttribute('tabindex'), {once:true});
+        return;
+      }
+      if (temporary) target.removeAttribute('tabindex');
+    }
+  }
   function clearOpenBusy() {
     fab?.removeAttribute('aria-busy');
     pendingTrigger?.removeAttribute?.('aria-busy');
     pendingTrigger = null;
+    pendingReturn = null;
   }
-  function open(trigger) {
+  function open(trigger, returnTarget = null) {
     if (!fab) create();
     if (!fab) return Promise.resolve(false);
     if (isOpen()) return Promise.resolve(true);
     if (opening) return opening;
     const generation = ++openGeneration;
     const activeTrigger = trigger || document.activeElement;
+    const activeReturn = returnTarget || activeTrigger;
     pendingTrigger = activeTrigger;
+    pendingReturn = activeReturn;
     fab.setAttribute('aria-busy','true');
     if (activeTrigger !== fab) activeTrigger?.setAttribute?.('aria-busy','true');
     const task = loadPresenter().then(() => {
       if (generation !== openGeneration) return false;
       opener = activeTrigger;
+      focusReturn = activeReturn;
       tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
       search.value = '';
       overlay.removeAttribute('inert');
@@ -536,6 +556,7 @@
     }).catch(() => {
       if (generation === openGeneration) {
         if (isOpen()) close();
+        else restoreReadingFocus(activeReturn);
         toast('Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.', null);
       }
       return false;
@@ -546,8 +567,9 @@
     return task;
   }
   function close() {
+    const cancelledReturn = pendingReturn;
     if (opening) { ++openGeneration; opening = null; clearOpenBusy(); }
-    if (!isOpen()) return;
+    if (!isOpen()) { if (cancelledReturn) restoreReadingFocus(cancelledReturn); return; }
     hideEditor(false);
     clearUndo();
     research?.resetMenu();
@@ -558,8 +580,9 @@
     if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') opener.setAttribute('aria-expanded','false');
     if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
     else document.body.classList.remove('no-scroll');
-    if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true });
+    restoreReadingFocus(focusReturn);
     opener = null;
+    focusReturn = null;
   }
   function sync() { if (fab) { const count=all().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
   let dockImpl, dockLoad, contextFromSelection = () => ({ before: '', after: '' });
@@ -858,7 +881,7 @@
   }
   function loadSelectionController() {
     if (selectionController) return Promise.resolve(selectionController);
-    selectionLoad ||= import('/js/reader-library-selection.js?v=0d5c90fc')
+    selectionLoad ||= import('/js/reader-library-selection.js?v=f0732680')
       .then(module => {
         const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,noteContextForSelection,saveMarker,saveSelectedQuote,open,showEditor,hideToast,element});
         controller.attachSelection();
