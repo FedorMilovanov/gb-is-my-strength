@@ -1,11 +1,21 @@
 ---
-import type { TeenPersonalLetterCard } from './teenPersonalLetterCard';
+import { statSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { assertTeenPersonalLetterMedia, type TeenPersonalLetterCard } from './teenPersonalLetterCard';
 
 interface Props {
   card: TeenPersonalLetterCard;
 }
 
 const { card } = Astro.props;
+assertTeenPersonalLetterMedia(card, (url) => {
+  try {
+    const file = statSync(resolve(process.cwd(), 'public', url.slice(1)));
+    return file.isFile() && file.size > 0;
+  } catch {
+    return false;
+  }
+});
 ---
 <section
   class="teen-letter"
