@@ -1,0 +1,67 @@
+{
+  "wave": "V20",
+  "testedParent": "8f9130a97a916e58c5dbac7ce169ee1b8b93d98f",
+  "priorPaperReport": "V19-PAPER-CLOSURE.json",
+  "scope": "Manual inspection of the two distinct last-page compositions of the eight historical actual PDFs generated in V19; not full-article artistic acceptance.",
+  "evidenceRoot": "%TEMP%/g3-v19-paper-2e01f592fd6f48b1aafad8b4af233820/evidence",
+  "observations": {
+    "A4": "Three final bibliography entries 31–33, continuation label/headline and paragraph, companion article title, author/footer in a coherent page; all visible and intact.",
+    "Letter": "Same sequence, intact, consistent horizontal margins; no clipped title, URL or author footer. More compact typography remains readable in the inspected page image; smallest text is metadata/URL-scale and not a new requirement to reduce size."
+  },
+  "inspectedJpegs": [
+    "history-A4-light-js-last.jpg",
+    "history-Letter-dark-nojs-last.jpg"
+  ],
+  "originalRasterGroups": [
+    {
+      "paper": "A4",
+      "variants": 4,
+      "sha256": "17bc436301d3ea08178a51bace48567bbd901428b293483b51315e7d76a3a3f5",
+      "boundsPt": [
+        39.75,
+        48.53,
+        554.24,
+        746.7
+      ],
+      "fontSizesPt": [
+        7.99,
+        8.25,
+        9,
+        9.75,
+        10.5,
+        10.99,
+        15,
+        20.25,
+        21.75
+      ]
+    },
+    {
+      "paper": "Letter",
+      "variants": 4,
+      "sha256": "bbd7cff6c06a8d779f616b3a35166573a91119202ee3fbca01d565fb80ecbd16",
+      "boundsPt": [
+        63,
+        45.06,
+        547.01,
+        701.85
+      ],
+      "fontSizesPt": [
+        7.52,
+        7.76,
+        8.47,
+        9.17,
+        9.88,
+        10.34,
+        14.11,
+        19.05,
+        20.46
+      ]
+    }
+  ],
+  "geometry": {
+    "variants": 8,
+    "outsideTextSpans": 0,
+    "lastPageWords": 145
+  },
+  "disposition": "Last-sheet defect visual acceptance complete. Full hosted CI and wider artistic signoff separate. No production edits."
+}
