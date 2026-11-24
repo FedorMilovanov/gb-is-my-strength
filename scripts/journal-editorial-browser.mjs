@@ -739,7 +739,10 @@ try {
             await shot(page, name);
             if (javaScriptEnabled) {
               item.axe = await audit(page);
-              assert.deepEqual(item.axe.violations, []); assert.deepEqual(item.axe.incomplete, []);
+              assert.deepEqual(item.axe.violations, []);
+              const reviewed = await reviewAtlasContrast(page, item.axe.incomplete, { short: true });
+              item.graphicsReview = reviewed;
+              assert.deepEqual(reviewed.remaining, []);
             }
           }
           item.keyboardBackward = [];
