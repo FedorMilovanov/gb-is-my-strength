@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
+import { writeFile } from 'node:fs/promises';
 import { waitForCanonicalFonts } from './wait-for-canonical-fonts.mjs';
 
 // Two deliberately targeted states per fixture, within existing browser cases.
@@ -13,6 +14,7 @@ export function assertFocusWitness(state,label='keyboard focus'){
   assert.ok(state.indicatorVisible,label+' has no painted focus indicator');
   assert.ok(state.boundsInside,label+' focus indicator is clipped by viewport/header');
   assert.ok(state.clipInside,label+' focus indicator is clipped by an ancestor scrollport');
+  assert.ok(Array.isArray(state.fragments)&&state.fragments.length>0&&state.fragments.every(fragment=>fragment.centerVisible===true),label+' actual link fragment is obscured');
   assert.ok(state.unobscured,label+' focus target is obscured by an overlay');
   assert.ok(state.visible,label+' target and focus indicator are not fully visible');
   return state;
@@ -57,8 +59,8 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
     }
     throw new Error(stem+' native focus scrolling did not settle');
   };
-  const focusState=async index=>{
-    const state=await links.nth(index).evaluate(el=>{
+  let phase='scale',lastState=null;
+  const measureFocus=async index=>links.nth(index).evaluate(el=>{
       const rect=el.getBoundingClientRect(),css=getComputedStyle(el);
       const outlineWidth=parseFloat(css.outlineWidth)||0,outlineOffset=parseFloat(css.outlineOffset)||0;
       const outline=Math.max(0,outlineWidth+outlineOffset);
@@ -71,8 +73,14 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
       const usableViewportWidth=document.documentElement.clientWidth;
       const targetInside=rect.width>0&&rect.height>0&&rect.left>=-1&&rect.right<=usableViewportWidth+1&&rect.top>=headerBottom-1&&rect.bottom<=innerHeight+1;
       const boundsInside=paint.left>=-1&&paint.right<=usableViewportWidth+1&&paint.top>=headerBottom-1&&paint.bottom<=innerHeight+1;
-      const center=document.elementFromPoint((rect.left+rect.right)/2,(rect.top+rect.bottom)/2);
-      const centerVisible=!!center&&(center===el||el.contains(center));
+      // A multi-line inline anchor's union rectangle includes empty space
+      // between/after lines. Hit-test every actual nonempty fragment instead.
+      const describe=node=>node?{tag:node.tagName,id:node.id,className:String(node.className||'')}:null;
+      const fragments=[...el.getClientRects()].filter(r=>r.width>0&&r.height>0).map(r=>{
+        const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+        return {rect:r.toJSON(),centerVisible:!!hit&&(hit===el||el.contains(hit)),hit:describe(hit)};
+      });
+      const centerVisible=fragments.length>0&&fragments.every(f=>f.centerVisible);
       const clippingAncestors=[];
       for(let ancestor=el.parentElement;ancestor&&ancestor!==document.body&&ancestor!==document.documentElement;ancestor=ancestor.parentElement){
         const style=getComputedStyle(ancestor),r=ancestor.getBoundingClientRect();
@@ -86,7 +94,7 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
         if(clipped)clippingAncestors.push({tag:ancestor.tagName,id:ancestor.id,className:String(ancestor.className||''),clip});
       }
       const clipInside=clippingAncestors.length===0;
-      const samples=[[paint.left+.5,(rect.top+rect.bottom)/2],[paint.right-.5,(rect.top+rect.bottom)/2],[(rect.left+rect.right)/2,paint.top+.5],[(rect.left+rect.right)/2,paint.bottom-.5]];
+      const samples=fragments.flatMap(({rect:r})=>[[r.left-outline+.5,(r.top+r.bottom)/2],[r.right+outline-.5,(r.top+r.bottom)/2],[(r.left+r.right)/2,r.top-outline+.5],[(r.left+r.right)/2,r.bottom+outline-.5]]);
       const overlayAt=(x,y)=>{
         if(x<0||y<0||x>=usableViewportWidth||y>=innerHeight)return false;
         const top=document.elementFromPoint(x,y);
@@ -95,16 +103,27 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
         return style.visibility!=='hidden'&&Number(style.opacity)>0&&style.pointerEvents!=='none'&&
           (style.position==='fixed'||style.position==='sticky'||(['absolute','relative'].includes(style.position)&&z!==null&&z>=0));
       };
-      const unobscured=centerVisible&&!samples.some(([x,y])=>overlayAt(x,y));
+      const overlayHits=samples.filter(([x,y])=>overlayAt(x,y)).map(([x,y])=>({x,y,hit:describe(document.elementFromPoint(x,y))}));
+      const unobscured=centerVisible&&overlayHits.length===0;
       return {
         active:document.activeElement===el,keyboard:el.matches(':focus-visible'),
         targetInside,boundsInside,clipInside,clippingAncestors,indicatorVisible,outlineWidth,outlineOffset,outline,outlineStyle,
-        outlineColor:css.outlineColor,outlineColorVisible,unobscured,
+        outlineColor:css.outlineColor,outlineColorVisible,unobscured,fragments,overlayHits,
+        target:{id:el.id,href:el.getAttribute('href'),text:el.textContent.trim().slice(0,240),rect:rect.toJSON(),scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom},
+        activeElement:describe(document.activeElement),scrollY,scrollHeight:document.documentElement.scrollHeight,
         visible:targetInside&&boundsInside&&clipInside&&indicatorVisible&&unobscured,
         scale:2,viewport:{width:innerWidth,height:innerHeight},headerBottom,usableViewportWidth,paint
       };
     });
-    return assertFocusWitness(state,stem+' link '+index);
+  const focusState=async index=>{
+    lastState=await measureFocus(index);
+    // Match the proven G3 driver-side bounded visibility wait, without
+    // scrolling or refocusing from the test. A persistent failure still fails.
+    for(let step=0;step<45&&lastState.active&&lastState.keyboard&&!lastState.boundsInside;step++){
+      await page.waitForTimeout(75);
+      lastState=await measureFocus(index);
+    }
+    return assertFocusWitness(lastState,stem+' link '+index);
   };
   try{
     await page.evaluate(()=>{document.documentElement.style.setProperty('--gb-reader-font-scale','2');window.scrollTo(0,0);});
@@ -114,21 +133,32 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
     const states=[];
     // Native Tab is exercised only after the 2x Reader scale is active.
     for(let index=0;index<kinds.length;index++){
+      phase='forward Tab '+index+' '+kinds[index];lastState=null;
       await page.keyboard.press('Tab');
       await settleNativeScroll();
       states.push(await focusState(index));
       if(index===0){
         await page.screenshot({path:join(evidence,stem+'-citation-focus.png')});
-        await page.screenshot({path:join(evidence,stem+'-scale2-full.png'),fullPage:true});
         await page.screenshot({path:join(evidence,stem+'-scale2-viewport.png')});
       }
       if(index===kinds.length-1)await page.screenshot({path:join(evidence,stem+'-return-focus.png')});
     }
+    phase='reverse Shift+Tab';lastState=null;
     await page.keyboard.press('Shift+Tab');
     await settleNativeScroll();
     await focusState(kinds.length-2);
     assert.deepEqual(await sizes(),scaled,stem+' scale changed during keyboard navigation');
+    // Full-page capture may temporarily alter browser scroll/layout; do it only
+    // after the complete native traversal, not between consecutive Tab events.
+    phase='full-page evidence';
+    await page.screenshot({path:join(evidence,stem+'-scale2-full.png'),fullPage:true});
     return {stem,tabs:kinds.length,reverse:true,citations,external,returns,scale:2,scaledElements:base.length,viewport,focus:states};
+  }catch(error){
+    const diagnostic={stem,phase,error:error.message,state:lastState,url:page.url(),viewport};
+    await writeFile(join(evidence,stem+'-focus-failure.json'),JSON.stringify(diagnostic,null,2));
+    console.error('KEYBOARD_FOCUS_FAILURE '+JSON.stringify(diagnostic));
+    await page.screenshot({path:join(evidence,stem+'-focus-failure.png'),timeout:8000}).catch(e=>console.error('FOCUS_SCREENSHOT_FAILURE '+e.message));
+    throw error;
   }finally{
     await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
     assert.deepEqual(await sizes(),base,stem+' scale reset');
