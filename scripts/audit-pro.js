@@ -4436,9 +4436,35 @@ const JS_SIZE_FLOORS = {
     return;
   }
 
+  // The preview link owns only unmodified primary-click navigation.
+  // Preserve the browser's native Ctrl/Meta click behavior without permitting
+  // a second keyboard shortcut owner. Exempt only the exact complete adapter;
+  // any changed handler or additional modifier parsing must fail closed.
+  const previewLinkClick = 'd&&d.addEventListener("click",function(t){if(t.button===0&&!t.ctrlKey&&!t.metaKey&&!t.shiftKey&&!t.altKey){t.preventDefault();e.title&&U(e.title);__gbOpenArticleResult(e)}})';
+  function hasUnexpectedSearchModifierParsing(source) {
+    const pieces = source.split(previewLinkClick);
+    if (pieces.length > 2) return true;
+    return /\b(?:ctrlKey|metaKey)\b/.test(pieces.join(''));
+  }
+  const keyHandler = 'document.addEventListener("keydown",function(e){if(e.ctrlKey||e.metaKey)open()})';
+  const shortcutFixtures = [
+    ['no modifier parser', 'window.addEventListener("gb:openSearch",open)', false],
+    ['native modified click preserved', previewLinkClick, false],
+    ['keyboard shortcut parser', keyHandler, true],
+    ['second owner beside allowed click', previewLinkClick + ';' + keyHandler, true],
+    ['duplicate click owner', previewLinkClick + ';' + previewLinkClick, true],
+    ['mutated click handler', previewLinkClick.replace('t.button===0', 't.button!==0'), true],
+    ['meta only parser', 'if(e.metaKey)open()', true],
+  ];
+  for (const [label, sample, expected] of shortcutFixtures) {
+    if (hasUnexpectedSearchModifierParsing(sample) !== expected) {
+      R.err('Search shortcut boundary self-test failed: ' + label);
+      return;
+    }
+  }
   const searchJs = read('js/search.js');
-  if (/\b(?:ctrlKey|metaKey)\b/.test(searchJs)) {
-    R.err('Search shortcuts: js/search.js must consume gb:openSearch and never parse Ctrl/Meta');
+  if (hasUnexpectedSearchModifierParsing(searchJs)) {
+    R.err('Search shortcuts: js/search.js must consume gb:openSearch; only the exact native preview-link click adapter may inspect Ctrl/Meta');
     return;
   }
   if (!searchJs.includes('window.addEventListener("gb:openSearch"')) {
