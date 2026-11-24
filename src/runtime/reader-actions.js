@@ -230,6 +230,7 @@
     exportMenu.remove();
     exportOpener = null;
     opener?.setAttribute('aria-expanded', 'false');
+    opener?.removeAttribute('aria-controls');
     if (restoreFocus && opener?.isConnected && opener.getClientRects().length) opener.focus({ preventScroll: true });
   }
   function invokeExport(id, source = 'export-menu') {
@@ -277,8 +278,10 @@
     document.querySelectorAll('[data-action="print"]').forEach(trigger => {
       trigger.setAttribute('aria-label', 'Скачать или распечатать');
       trigger.setAttribute('aria-haspopup', 'menu');
-      trigger.setAttribute('aria-controls', 'gbReaderExportMenu');
-      if (trigger !== exportOpener) trigger.setAttribute('aria-expanded', 'false');
+      if (trigger !== exportOpener) {
+        trigger.removeAttribute('aria-controls');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
       trigger.setAttribute('title', 'Скачать или распечатать');
     });
   }
@@ -315,6 +318,7 @@
     exportMenu.classList.toggle('reader-export-menu--inline', Boolean(sheet));
     (sheet || document.body).append(exportMenu);
     exportMenu.hidden = false;
+    trigger.setAttribute('aria-controls', exportMenu.id);
     trigger.setAttribute('aria-expanded', 'true');
     if (!sheet) positionExport();
     exportMenu.querySelector('[data-reader-export-command="print"]')?.focus({ preventScroll: false });

@@ -596,9 +596,13 @@ for (const [id, url] of SINGLES) {
   await page.evaluate(() => { window.print = () => { window.__printCalls = (window.__printCalls || 0) + 1; }; });
   const printHit = await clickVisibleCenter(page, '.gbs-rail-foot [data-action="print"]');
   R('print', 'PDF button hit-target', !!printHit && printHit.visible && printHit.hit, JSON.stringify(printHit));
+  const exportMenu = page.locator('#gbReaderExportMenu');
+  await exportMenu.waitFor({ state: 'visible' });
+  R('print', 'export opens two distinct commands without printing', await exportMenu.locator('[role="menuitem"]').count() === 2 && !(await page.evaluate(() => window.__printCalls)), '');
+  await exportMenu.locator('[data-reader-export-command="print"]').click();
   await page.waitForFunction(() => window.__printCalls === 1 && window.GBPrintEngine?.getReport?.(), null, { timeout: 8000 });
   const report = await page.evaluate(() => window.GBPrintEngine.getReport());
-  R('print', 'single shared print engine prepares once', report?.version === 2.1 && report?.source === 'button', JSON.stringify(report));
+  R('print', 'single shared print engine prepares once', report?.version === 2.1 && report?.source === 'export-menu', JSON.stringify(report));
 
   await page.emulateMedia({ media: 'print' });
   await page.waitForTimeout(250);

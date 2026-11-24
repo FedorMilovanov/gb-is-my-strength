@@ -80,7 +80,7 @@ async function installPlatformOutcomes(page, test) {
 async function openArticle(page, identifier) {
   const response = await page.goto(BASE + ARTICLE, { waitUntil: 'domcontentloaded', timeout: 30000 });
   assert.equal(response?.status(), 200, identifier + ': article HTTP');
-  await page.waitForFunction(() => window.GBReaderActions?.version === 1, null, { timeout: 18000 });
+  await page.waitForFunction(() => window.GBReaderActions?.version === 2, null, { timeout: 18000 });
   const admitted = await page.evaluate(() => Boolean(document.querySelector('[data-gb-reader-desktop-bootstrap]')));
   const width = page.viewportSize().width;
   if (admitted && width >= 1121) {
@@ -183,12 +183,34 @@ async function checkPrint(browser,browserName,width) {
     // Only stub the OS dialog. The production capture handler, print
     // preparation and cleanup remain the actual Reader implementation.
     await page.evaluate(()=>{window.__gbNativePrintCalls=0;window.print=()=>{window.__gbNativePrintCalls++;};});
+    const originalUrl=page.url();
+    const menu=page.locator('#gbReaderExportMenu');
+    assert.equal(await button.getAttribute('aria-expanded'),'false',identifier+': initially collapsed');
+    assert.equal(await button.getAttribute('aria-controls'),null,identifier+': no dangling IDREF');
     await button.click({timeout:12000});
+    await menu.waitFor({state:'visible'});
+    assert.equal(await button.getAttribute('aria-expanded'),'true',identifier+': export opened');
+    assert.equal(await button.getAttribute('aria-controls'),'gbReaderExportMenu',identifier+': live menu IDREF');
+    assert.equal(await menu.locator('[role="menuitem"]').count(),2,identifier+': distinct commands');
+    assert.equal(await page.evaluate(()=>window.__gbNativePrintCalls),0,identifier+': opening is not printing');
+    const download=menu.locator('[data-reader-export-command="download"]');
+    const print=menu.locator('[data-reader-export-command="print"]');
+    assert.equal(await download.getAttribute('aria-disabled'),'true',identifier+': unpublished PDF not offered as available');
+    await download.evaluate(node=>node.click());
+    assert.equal(await page.evaluate(()=>window.__gbNativePrintCalls),0,identifier+': unavailable download never prints');
+    assert.equal(page.url(),originalUrl,identifier+': unavailable download never navigates');
+    await page.keyboard.press('Escape');
+    assert.equal(await menu.count(),0,identifier+': Escape closes');
+    assert.equal(await button.getAttribute('aria-controls'),null,identifier+': closed IDREF removed');
+    assert.equal(await button.evaluate(node=>document.activeElement===node),true,identifier+': focus returns to opener');
+    await button.click({timeout:12000});
+    await print.click({timeout:12000});
     await page.waitForFunction(()=>window.__gbNativePrintCalls===1);
+    assert.equal(await menu.count(),0,identifier+': explicit Print closes menu');
     const receipt=await page.evaluate(()=>({calls:window.__gbNativePrintCalls,report:window.GBPrintEngine.getReport()}));
     assert.equal(receipt.calls,1,identifier+': exactly one native dialog request');
     assert.equal(receipt.report?.prepared,true,identifier+': canonical print prepared');
-    assert.equal(receipt.report?.source,'button',identifier+': actual button dispatch');
+    assert.equal(receipt.report?.source,'export-menu',identifier+': explicit print command dispatch');
     await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));
     assert.equal(await page.evaluate(()=>window.GBPrintEngine.getReport()),null,identifier+': native afterprint cleanup');
     console.log('PASS '+identifier+' canonical print request (OS dialog stubbed)');
