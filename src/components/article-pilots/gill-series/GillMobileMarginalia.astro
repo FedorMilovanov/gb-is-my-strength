@@ -953,9 +953,7 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
 </style>
 
 <style is:global>
-  /* W107: hide only the 2px progress stroke, NOT its layout slot.
-     display:none used to shift the Analytics tab rail upward by 2px. */
-  #partTocOverlay.gbr-research-open .toc-sheet__scroll-bar {visibility:hidden!important;}
+  /* Reading progress is shared by both tabs; the header remains stable. */
   #partTocOverlay.gbr-research-open .toc-sheet {background:#fffcf7;}
   #partTocOverlay .gbr-marginalia-eyebrow,
   #partTocOverlay .gbr-marginalia-category,

@@ -48,7 +48,10 @@ const shortTitle = (t: string) => t.replace(/^(?:Часть|Глава)\s+[IVXLC
       <button class="back" id="backToSeries" aria-label="Назад к серии"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg></button>
       <div class="toc-head-txt"><div class="lab">{config.seriesTitle} · {currentPartLabel}</div><h3>{current.tier === 'chapter' ? 'Оглавление главы' : 'Оглавление части'}</h3></div>
     </div>
-    <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
+    <div class="toc-sheet__reading-progress" data-reader-toc-progress>
+      <div class="toc-sheet__progress-caption" aria-hidden="true"><span>Прогресс чтения</span><span data-reader-toc-pct>0%</span></div>
+      <div class="toc-sheet__scroll-bar" role="progressbar" aria-label="Прогресс чтения" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i aria-hidden="true"></i></div>
+    </div>
     <div class="gbr-marginalia-tabs" role="tablist" aria-label="Оглавление и исследовательские материалы">
       <button type="button" id="gbrTocTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="toc" aria-selected="true" aria-controls="gbs2PartToc" tabindex="0">Оглавление</button>
       <button type="button" id="gbrMarginaliaTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="research" aria-selected="false" aria-controls="gbrMarginalia" tabindex="-1">Аналитика</button>

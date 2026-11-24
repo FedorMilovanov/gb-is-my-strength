@@ -2798,6 +2798,18 @@
       }
       var mobPctEl = qs('#gbs2MobPct');
       if (mobPctEl) mobPctEl.textContent = pct + '%';
+      // Project the article percentage, not the section ordinal or series progress.
+      var tocProgress = qs('#partTocOverlay [data-reader-toc-progress]');
+      if (tocProgress) {
+        var progressBar = tocProgress.querySelector('[role="progressbar"]');
+        if (progressBar && progressBar.getAttribute('aria-valuenow') !== String(pct)) {
+          progressBar.setAttribute('aria-valuenow', String(pct));
+          var progressFill = progressBar.querySelector('i');
+          var progressValue = tocProgress.querySelector('[data-reader-toc-pct]');
+          if (progressFill) progressFill.style.width = pct + '%';
+          if (progressValue) progressValue.textContent = pct + '%';
+        }
+      }
       var mobArticleRing = qs('#gbs2MobArticleRing');
       if (mobArticleRing) {
         var articleCirc = 2 * Math.PI * 12.5;
@@ -2970,14 +2982,6 @@
         }
       }
 
-      var partItems = qsa('.toc-part-item');
-      var partActiveIdx = -1;
-      partItems.forEach(function (el, idx) {
-        if (el.classList.contains('is-active') || el.classList.contains('is-current')) partActiveIdx = idx;
-      });
-      var partPct = partActiveIdx >= 0 ? Math.round(((partActiveIdx + 1) / Math.max(1, partItems.length)) * 100) : pct;
-      var scrollBar = qs('.toc-sheet__scroll-bar i');
-      if (scrollBar) scrollBar.style.width = partPct + '%';
     }
 
     if (readerState && readerState.configure && readerState.subscribe) {
