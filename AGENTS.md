@@ -29,6 +29,18 @@
 полный environment inventory или запускать все repository checks. Возможности среды
 проверяются только когда выбранные команды от них зависят.
 
+## Shared workstation and Remote Commander resource policy
+
+Follow the shared [local execution resource protocol](https://github.com/FedorMilovanov/AuditRepo/blob/ad9b5c3df44985a5f7aba2fbb283dd8178b1c92d/LOCAL_EXECUTION_RESOURCE_PROTOCOL.md) (canonical path in AuditRepo; use integrated current authority when available). These minimum rules are mandatory independently of link availability:
+
+- Prefer GitHub connector/API for source, diffs, issues, PRs, commits, CI and artifacts; hosted sandbox/CI for builds and full browser matrices; authorized provider API for provider operations. Use Remote Desktop Commander (RDC) only for genuinely device-bound evidence or actions, with reason and bounded scope. No local inventory for a docs-only GitHub change.
+- Batch related local commands, compact outputs and retain one process/call ID. Reconcile timeout/unknown effects before replay; no rapid polling, redundant clones/builds, account enumeration or account switching to evade service limits.
+- Before resource-heavy work on the owner's Windows machine, verify fresh system Commit, free RAM, disk and shared admission. Warn at 75% Commit, deny new heavy jobs at 80%, diagnose at 90%; deny if free RAM < 6 GiB, target disk free < 15 GiB or admission/counters unknown. Until a verified common controller exists, maximum one heavy job machine-wide with positive coordination; otherwise hosted CI or HOLD. After verified rollout, maximum two controlled slots. Never run parallel browser engines within a slot.
+- No local Windows WebKit or CUDA by default; exceptions need explicit owner approval and bounded isolated execution. Browser probe 10 min, heavy build/QA 20 min by default; approved long media jobs require an explicit deadline. Close contexts/browsers/servers in finally and use an external watchdog for hangs; clean only the identified owned process tree, never owner tabs, other agents or dirty worktrees.
+- Report actual transport, RDC calls used, exact evidence, completion/cleanup and HOLD. Do not bypass existing evidence, rights, publication, security, visual acceptance or required exact-head checks to save resources. A written policy alone is not proof of a deployed controller.
+
+For NEWS, Reader, Names of God, G3, HOREB and other visual lanes, use hosted browser matrices and artifacts rather than parallel Windows browser processes. Reuse exact-head witnesses where appropriate; never replace owner visual signoff with green CI.
+
 ## 2. Minimum lane record
 
 ```md
