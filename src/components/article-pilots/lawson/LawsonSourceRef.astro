@@ -58,8 +58,10 @@ const source = lawsonSource(id);
     bottom: calc(100% + .55rem);
     width: min(22rem, calc(100vw - 2rem));
     max-height: min(32rem, calc(100dvh - 6rem));
-    overflow-y: auto;
+    overflow: auto;
     overscroll-behavior: contain;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
     display: grid;
     gap: .48rem;
     padding: .85rem .9rem;
@@ -122,21 +124,13 @@ const source = lawsonSource(id);
 </style>
 
 <script>
+  import { placeLawsonPopover } from './lawsonPopoverPlacement';
+
   function placeSourceCard(ref: HTMLElement) {
     if (!ref.hasAttribute('data-open')) return;
     const card = ref.querySelector<HTMLElement>('.lawson-source-popover');
     if (!card) return;
-    if (!matchMedia('(min-width: 1200px)').matches) {
-      card.style.removeProperty('left');
-      card.style.translate = '';
-      return;
-    }
-    card.style.translate = '';
-    const marker = ref.getBoundingClientRect();
-    card.style.left = `${Math.min(0, innerWidth - 16 - marker.left - card.offsetWidth)}px`;
-    const bounds = card.getBoundingClientRect();
-    const verticalShift = Math.max(16 - bounds.top, Math.min(0, innerHeight - 16 - bounds.bottom));
-    card.style.translate = `0 ${verticalShift}px`;
+    placeLawsonPopover(ref, card, .55 * parseFloat(getComputedStyle(document.documentElement).fontSize));
   }
   function closeSource(ref: HTMLElement) {
     ref.removeAttribute('data-open');
@@ -180,9 +174,11 @@ const source = lawsonSource(id);
     closeSource(open);
     open.querySelector('button')?.focus();
   });
-  window.addEventListener('resize', () => {
+  function repositionOpenCards() {
     document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach(placeSourceCard);
-  }, { passive: true });
+  }
+  window.addEventListener('resize', repositionOpenCards, { passive: true });
+  window.addEventListener('scroll', repositionOpenCards, { passive: true });
   // Keep the native link until all delegated handlers are installed.
   document.querySelectorAll<HTMLElement>('.lawson-source-ref').forEach((ref) => {
     const fallback = ref.querySelector<HTMLAnchorElement>('.lawson-source-fallback');

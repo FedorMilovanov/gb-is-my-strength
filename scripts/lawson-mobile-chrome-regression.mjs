@@ -18,7 +18,7 @@ import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
-import { chromium } from 'playwright-core';
+import { chromium } from 'playwright';
 
 const DIST = join(process.cwd(), 'dist');
 function routeFile(p){ const clean = decodeURIComponent(p.split('?')[0]).replace(/^\/+/,''); return join(DIST, clean, 'index.html'); }
@@ -65,15 +65,16 @@ const ROUTES = [
 let failures = [];
 
 const { server, origin } = await serve();
-const browser = await chromium.launch({ executablePath:'/tmp/chrome.sh', args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
+const browser = await chromium.launch({ args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
 
 for (const route of ROUTES) {
   for (const vp of VIEWPORTS) {
     const context = await browser.newContext({ viewport:{width:vp.w,height:vp.h}, isMobile:true, hasTouch:true });
     const page = await context.newPage();
-    await page.goto(origin+route, {waitUntil:'networkidle'});
+    const response = await page.goto(origin+route, {waitUntil:'networkidle'});
+    if (!response?.ok()) throw new Error(`Route failed: ${route} (${response?.status()})`);
     await page.waitForTimeout(600);
-    const result = await page.evaluate(()=>{
+    const result = await page.evaluate((lawson)=>{
       const hmtop = document.querySelector('.hmtop');
       const hmbar = document.querySelector('.hmbar');
       const play = document.querySelector('.hm-ember');
@@ -93,7 +94,47 @@ for (const route of ROUTES) {
       const floaterRect = floater?getRect(floater):null;
       const fallbackRect = fallback?getRect(fallback):null;
 
-      const errors = [];
+      function inspectLawsonMobilePresence() {
+        const errors = [];
+        const one = (selector, name) => {
+          const nodes = document.querySelectorAll(selector);
+          if (nodes.length !== 1) { errors.push(name + ': expected exactly one, got ' + nodes.length); return null; }
+          return nodes[0];
+        };
+        const shell = one('[data-mobile-chrome]', 'mobile shell');
+        const top = one('.hmtop', 'top bar'), bottom = one('.hmbar', 'bottom bar');
+        const play = one('.hm-ember', 'Play'), badge = one('.hm-spdbadge', 'speed badge'), hero = one('h1', 'H1');
+        if (shell && shell.dataset.mobileChromeEngine !== 'article') errors.push('wrong mobile shell engine');
+        for (const [el, attr] of [[top,'data-mobile-topbar'], [bottom,'data-mobile-bottombar']]) {
+          if (el && (el.parentElement !== shell || !el.hasAttribute(attr))) errors.push(attr + ': wrong owner');
+        }
+        for (const [el,name] of [[play,'Play'],[badge,'speed badge']]) if (el && (!top || !top.contains(el))) errors.push(name + ': wrong owner');
+        if (play && badge && (!play.closest('.reader-mobile-play-group') || play.closest('.reader-mobile-play-group') !== badge.closest('.reader-mobile-play-group'))) errors.push('Play and badge must share canonical group');
+        const w = document.documentElement.clientWidth, h = window.innerHeight;
+        function visible(el, name, full) {
+          if (!el) return;
+          const r = el.getBoundingClientRect(), css = getComputedStyle(el);
+          let opacity = 1;
+          for (let a=el; a; a=a.parentElement) opacity *= Number(getComputedStyle(a).opacity);
+          if (!r.width || !r.height || css.visibility !== 'visible' || opacity <= 0 || el.closest('[hidden],[inert],[aria-hidden="true"]')) errors.push(name + ': not visible/available');
+          if (!(r.left < w && r.right > 0 && r.top < h && r.bottom > 0)) errors.push(name + ': outside viewport');
+          if (full && (r.left < -1 || r.right > w+1 || r.top < -1 || r.bottom > h+1)) errors.push(name + ': clipped by viewport');
+        }
+        for (const [el,name] of [[top,'top bar'],[bottom,'bottom bar'],[play,'Play'],[badge,'speed badge']]) visible(el,name,true);
+        visible(hero,'H1',false);
+        if (hero && !hero.textContent.trim()) errors.push('H1: empty');
+        for (const [el,name] of [[play,'Play'],[badge,'speed badge']]) {
+          if (!el) continue;
+          if (el.matches(':disabled') || el.getAttribute('aria-disabled') === 'true') errors.push(name + ': disabled');
+          const r=el.getBoundingClientRect();
+          if (r.width>0 && r.height>0) {
+            const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+            if (!hit || !el.contains(hit)) errors.push(name + ': pointer target blocked');
+          }
+        }
+        return errors;
+      }
+      const errors = lawson ? inspectLawsonMobilePresence() : [];
 
       // 1. Leaked nav list under header when closed
       if (leakedNav) {
@@ -137,7 +178,7 @@ for (const route of ROUTES) {
         if (gap>=60) errors.push(`badge not compact: gap ${gap}px >=60`);
         if (playRect.width<30 || playRect.height<30) errors.push(`play too small: ${playRect.width}x${playRect.height}`);
         if (badgeRect.width>50 || badgeRect.height>35) errors.push(`badge too large: ${badgeRect.width}x${badgeRect.height}`);
-      } else {
+      } else if (!lawson) {
         // These routes should have play+ badge — check if play element exists at all
         const hasPlay = !!document.querySelector('.hm-ember, .gb-ember');
         if (!hasPlay) errors.push('play missing');
@@ -159,7 +200,7 @@ for (const route of ROUTES) {
       }
 
       return { errors, topH: topRect?.height, bottomH: bottomRect?.height, playW: playRect?.width, badgeGap: playRect&&badgeRect?Math.abs(badgeRect.left-playRect.right):null };
-    });
+    }, route === ROUTES[0]);
 
     if (result.errors.length>0) {
       failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
