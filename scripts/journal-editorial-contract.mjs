@@ -69,6 +69,50 @@ for (const name of ['g3ProductMetadata', 'g3PublicationHandoff', 'g3SourceBiblio
 }
 assert.equal(sources.length, 21);
 // Reader link routes are not a new claim or alteration of the sealed ledger.
+// Independent expected grouping: every sealed source has an honest SSR destination.
+const expectedSourceSections = new Map(Object.entries({
+  "timeline": [
+    "G3-S001"
+  ],
+  "finance": [
+    "G3-S002",
+    "G3-S028"
+  ],
+  "buice": [
+    "G3-S008",
+    "G3-S009",
+    "G3-S010",
+    "G3-S023",
+    "G3-S024"
+  ],
+  "buck": [
+    "G3-S012",
+    "G3-S015",
+    "G3-S035",
+    "G3-S042"
+  ],
+  "wind-down": [
+    "G3-S011",
+    "G3-S017",
+    "G3-S033",
+    "G3-S050",
+    "G3-S053"
+  ],
+  "governance": [
+    "G3-S046",
+    "G3-S047",
+    "G3-S096"
+  ],
+  "documents": [
+    "G3-S054"
+  ]
+}).flatMap(([section, ids]) => ids.map(id => [id, '#'+section])));
+assert.equal(expectedSourceSections.size, sources.length);
+for (const source of sources) {
+  const target = expectedSourceSections.get(source.id);
+  assert.ok(target && byId(after, target.slice(1)), `Missing section fallback: ${source.id}`);
+  assert.ok(current.includes(`'${source.id}': '${target}'`), `Wrong source section: ${source.id}`);
+}
 const readerLinks = new Map([
   ['G3-S002', 'https://projects.propublica.org/nonprofits/organizations/842403597'],
   ['G3-S008', 'https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/'],
@@ -246,9 +290,10 @@ if (!process.argv.includes('--source-only')) {
         }
         const returns = all(entry, (node) => node.tagName === 'a' && attr(node, 'data-journal-source-return') !== undefined);
         assert.equal(returns.length, 1, `one honest SSR return at ${source.id}`);
-        assert.equal(attr(returns[0], 'href'), '#documents');
+        assert.equal(attr(returns[0], 'href'), expectedSourceSections.get(source.id));
+        assert.ok(byId(doc, expectedSourceSections.get(source.id).slice(1)), `Missing rendered source context ${source.id}`);
         assert.notEqual(attr(returns[0], 'data-pagefind-ignore'), undefined, 'navigation-only fallback text must not pollute search');
-        assert.match(text(returns[0]), /К методике проверки/);
+        assert.match(text(returns[0]), expectedSourceSections.get(source.id) === '#documents' ? /К методике проверки/ : /К связанному разделу статьи/);
       }
       assert.equal(nodes.filter((node) => attr(node, 'data-journal-source-navigation') !== undefined).length, 1);
       const citations = nodes.filter((node) => node.tagName === 'a' && attr(node, 'href')?.startsWith('#src-'));

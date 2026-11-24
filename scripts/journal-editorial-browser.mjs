@@ -501,7 +501,7 @@ try {
         assert.equal(new URL(bookmark.url()).hash, sourceHash);
         assert.equal(await back.getAttribute('href'), expected);
         result.nativeCitationBackForward = true;
-        const fallback = route.kind === 'dossier' ? '#documents' : '#g3-history';
+        const fallback = route.kind === 'dossier' ? '#finance' : '#g3-history';
         await bookmark.reload({ waitUntil: 'networkidle' }); await settle(bookmark);
         assert.equal(await back.getAttribute('href'), fallback, 'reload must use its honest SSR fallback, not stale cross-load state');
         const direct = await context.newPage();
@@ -610,7 +610,7 @@ try {
         const sourceHash = await citation.getAttribute('href');
         await citation.click(); await settleWithoutScripts(p);
         const back = p.locator(`${sourceHash} [data-journal-source-return]`);
-        const fallback = route.kind === 'dossier' ? '#documents' : '#g3-history';
+        const fallback = route.kind === 'dossier' ? '#finance' : '#g3-history';
         assert.equal(await back.getAttribute('href'), fallback);
         assert.equal(await back.getAttribute('aria-label'), null, 'no-JS must not promise a remembered exact citation');
         await back.click(); await settleWithoutScripts(p);

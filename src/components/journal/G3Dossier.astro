@@ -76,6 +76,31 @@ const sourceRoles: Record<string, string> = {
   'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Издательские страницы',
   'G3-S096': 'Архивная страница организации',
 };
+// Honest native fallback for a fresh source visit. The shared adapter can
+// still replace it with the exact citation actually activated in this tab.
+const sourceSection: Record<string, `#${string}`> = {
+  'G3-S001': '#timeline',
+  'G3-S002': '#finance',
+  'G3-S028': '#finance',
+  'G3-S008': '#buice',
+  'G3-S009': '#buice',
+  'G3-S010': '#buice',
+  'G3-S023': '#buice',
+  'G3-S024': '#buice',
+  'G3-S012': '#buck',
+  'G3-S015': '#buck',
+  'G3-S035': '#buck',
+  'G3-S042': '#buck',
+  'G3-S011': '#wind-down',
+  'G3-S017': '#wind-down',
+  'G3-S033': '#wind-down',
+  'G3-S050': '#wind-down',
+  'G3-S053': '#wind-down',
+  'G3-S046': '#governance',
+  'G3-S047': '#governance',
+  'G3-S096': '#governance',
+  'G3-S054': '#documents',
+};
 const sourcePortalLabels: Record<string, string> = {
   'G3-S001': 'Реестр штата Джорджия: поиск организаций',
   'G3-S002': 'IRS: архив электронных деклараций Form 990',
@@ -475,7 +500,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
                   {!entry.publicUrl && !readerLink && <span>Ссылка на полный оригинал в этой версии не предоставлена.</span>}
                 </p>
               </details>
-              <JournalSourceReturn href="#documents" label="К методике проверки" />
+              <JournalSourceReturn href={sourceSection[entry.id] || "#documents"} label={sourceSection[entry.id] === "#documents" ? "К методике проверки" : "К связанному разделу статьи"} />
             </li>
           );
         })}
