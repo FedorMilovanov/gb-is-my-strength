@@ -65,6 +65,7 @@ const witnessFiles = [
   ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
   ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
+  'src/components/journal/editorial/JournalCompactDocumentIndex.astro',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-atlas-contrast-review.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
 for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
@@ -247,6 +248,67 @@ const sourceRoundTrip = async (page, citation, keyboard, onSource) => {
   assert.ok(Math.abs(position.y - position.expected) < 2, `citation hidden or offset from its native fragment destination: ${JSON.stringify(position)}`);
   return { id, source: hash, keyboardOutbound: keyboard, keyboardReturn: !keyboard, focusRestored: true, position };
 };
+
+const g44Sources = [
+  [
+    "cite-r6-challies-2018-video",
+    "challies-2018-video"
+  ],
+  [
+    "cite-r6-firstlove-2018",
+    "firstlove-2018"
+  ],
+  [
+    "cite-r6-challies-2018-lessons",
+    "challies-2018-lessons"
+  ],
+  [
+    "cite-g3-year-2018-ascol-2018",
+    "ascol-2018"
+  ],
+  [
+    "cite-g3-year-2018-statement-2018",
+    "statement-2018"
+  ],
+  [
+    "cite-g3-year-2018-responses-2018",
+    "responses-2018"
+  ],
+  [
+    "cite-g3-year-2018-challies",
+    "challies"
+  ]
+];
+async function g44NativeReturns(page, js) {
+  const section=page.locator('#g3-year-2018');
+  assert.equal(await section.count(),1);
+  const ordered=await section.locator('[data-journal-citation]').evaluateAll(nodes=>nodes.map(n=>n.id));
+  assert.deepEqual(ordered,g44Sources.map(([id])=>id),'G44 source order / no duplication');
+  const results=[];
+  for (const [i,[id,sourceId]] of g44Sources.entries()) {
+    const citation=section.locator('#'+id), hash='#history-source-'+sourceId;
+    assert.equal(await page.locator('#'+id).count(),1);
+    assert.equal(await citation.getAttribute('href'),hash);
+    assert.equal(await page.locator(hash).count(),1);
+    if(js) { results.push(await sourceRoundTrip(page,citation,i%2===0)); continue; }
+    const fallback=sourceId==='challies'?'#g3-history':'#g3-year-2018';
+    if(i%2===0){await citation.focus();await page.keyboard.press('Enter');}else await citation.click();
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,hash);
+    const source=page.locator(hash), back=source.locator('[data-journal-source-return]');
+    assert.equal(await source.evaluate(e=>e===document.activeElement),true);
+    assert.equal(await back.count(),1);
+    assert.equal(await back.getAttribute('href'),fallback);
+    assert.equal(await back.getAttribute('aria-label'),null);
+    if(i%2===0)await back.click();else{await back.focus();await page.keyboard.press('Enter');}
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,fallback);
+    assert.equal(await page.locator(fallback).evaluate(e=>e===document.activeElement),true);
+    results.push({id,source:hash,fallback,nativeFocus:true});
+  }
+  return results;
+}
+
 // axe reports contrast review items for rows clipped by a native scrollport.
 // Retain every item; accept only this measured case, with a flat opaque paper
 // background and independently computed >=4.5:1 foreground contrast. Anything
@@ -436,6 +498,7 @@ try {
         assert.equal(item.citationMarkup.returns, item.citationMarkup.sources);
         assert.equal(item.citationMarkup.oneReturnPerSource, true);
         item.citationRoundTrip = await sourceRoundTrip(page, citationFor(page, route.kind), theme === 'light');
+        if (route.kind === 'history' && [320,390,768,1440].includes(width)) item.g44Returns = await g44NativeReturns(page,true);
         if ([390, 1440].includes(width)) {
           await shot(page, `${route.kind}-body-${width}-${theme}`);
           item.repeatedSourceRoundTrip = await sourceRoundTrip(page, citationFor(page, route.kind, true), theme !== 'light', async (source) => {
@@ -643,6 +706,7 @@ try {
         assert.equal(new URL(p.url()).hash, fallback);
         assert.equal(await p.locator(fallback).evaluate((el) => el === document.activeElement), true);
         result.noJsSourceFallback = { source: sourceHash, destination: fallback };
+        if (route.kind === 'history') result.g44NoJsReturns = await g44NativeReturns(p,false);
       }
       result.noJsReadingAndAnchors = true;
     } catch (error) { report.problems.push(`${route.kind} no-JS: ${error.message}`); }

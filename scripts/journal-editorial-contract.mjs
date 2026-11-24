@@ -28,6 +28,121 @@ function all(node, predicate) {
 const byId = (doc, id) => all(doc, (node) => attr(node, 'id') === id)[0];
 const text = (node) => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(text).join('');
 const normalize = (value) => value.replace(/\s+/gu, '');
+
+/** Immutable G44 editorial witness, accepted ART/E36 on #2381. */
+const G44_ROWS = [
+  [
+    "cite-r6-challies-2018-video",
+    "#history-source-challies-2018-video",
+    "Тим Чаллис. From Every Tribe and Language and People and Nation",
+    "2018-01-23",
+    "publication",
+    "#g3-year-2018",
+    "Тим Чаллис: опыт общины",
+    "23 января 2018 · публикация сообщения"
+  ],
+  [
+    "cite-r6-firstlove-2018",
+    "#history-source-firstlove-2018",
+    "FirstLove Missions. G3 Conference in Atlanta, Georgia",
+    "2018-01-30",
+    "publication",
+    "#g3-year-2018",
+    "FirstLove: отчёт о выставке",
+    "30 января 2018 · публикация отчёта"
+  ],
+  [
+    "cite-r6-challies-2018-lessons",
+    "#history-source-challies-2018-lessons",
+    "Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church",
+    "2018-02-02",
+    "publication",
+    "#g3-year-2018",
+    "Тим Чаллис: гостеприимство",
+    "2 февраля 2018 · публикация статьи"
+  ],
+  [
+    "cite-g3-year-2018-ascol-2018",
+    "#history-source-ascol-2018",
+    "Датированное свидетельство Тома Аскола",
+    "2018-06-19",
+    "attributed_event",
+    "#g3-year-2018",
+    "Встреча в Далласе",
+    "19 июня 2018 · дата встречи по рассказу Аскола"
+  ],
+  [
+    "cite-g3-year-2018-statement-2018",
+    "#history-source-statement-2018",
+    "Текст и история подготовки заявления",
+    "2018-09-04",
+    "publication",
+    "#g3-year-2018",
+    "Заявление о социальной справедливости и Евангелии",
+    "4 сентября 2018 · публикация заявления"
+  ],
+  [
+    "cite-g3-year-2018-responses-2018",
+    "#history-source-responses-2018",
+    "Отклики современников",
+    "2018-09",
+    "publication_month",
+    "#g3-year-2018",
+    "Отклики на заявление",
+    "Сентябрь 2018 · месяц освещения"
+  ],
+  [
+    "cite-g3-year-2018-challies",
+    "#history-source-challies",
+    "Позиция Чаллиса",
+    "2025-05-23",
+    "publication",
+    "#g3-history",
+    "Тим Чаллис: позднейшие воспоминания",
+    "23 мая 2025 · публикация воспоминаний"
+  ]
+];
+function assertG44Dist(doc) {
+  const one=(parent,predicate,label)=>{const matches=all(parent,predicate);assert.equal(matches.length,1,label);return matches[0];};
+  const id=(parent,key)=>one(parent,n=>attr(n,'id')===key,'unique ID '+key);
+  const section=id(doc,'g3-year-2018');
+  const prose=one(section,n=>hasClass(n,'je-history-text'),'history prose owner');
+  const paragraphs=(prose.childNodes||[]).filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote'));
+  const pinnedSource=execFileSync('git',['show','3ce78622de90705a11c37648cdef98021ff64b83:src/components/journal/G3HistoryFeature.astro'],{cwd:root,encoding:'utf8'});
+  const pinnedStart=pinnedSource.indexOf('<section id="g3-year-2018"');
+  assert.ok(pinnedStart>=0);
+  const pinned=parse(pinnedSource.slice(pinnedStart,pinnedSource.indexOf('</section>',pinnedStart)+10));
+  const pinnedOwner=one(pinned,n=>hasClass(n,'je-history-text'),'pinned prose owner');
+  const baselineParagraphs=pinnedOwner.childNodes.filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote')).map(n=>normalize(text(n)));
+  assert.equal(baselineParagraphs.length,3);
+  assert.deepEqual(paragraphs.map(n=>normalize(text(n))),baselineParagraphs,'three immutable paragraphs');
+  assert.equal(one(section,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-13','PUB13 exactly once'),paragraphs[2]);
+  const index=id(section,'g3-2018-document-index');
+  assert.equal(index.parentNode,prose);
+  assert.equal(paragraphs[2],(prose.childNodes||[]).filter(n=>n.tagName).at(-2),'index follows original narrative');
+  assert.equal(normalize(text(one(index,n=>n.tagName==='h3','index heading'))),normalize('Две линии одного года'));
+  const groups=all(index,n=>hasClass(n,'jcdi-group'));
+  assert.equal(groups.length,3);
+  assert.deepEqual(groups.map(n=>normalize(text(one(n,x=>x.tagName==='h4','group heading')))),['Жизнь общины','Заявление','Ретроспектива · 2025'].map(normalize));
+  assert.ok(hasClass(groups[2],'jcdi-retrospective'));
+  const lists=groups.map(n=>one(n,x=>x.tagName==='ol'&&hasClass(x,'jcdi-records'),'native ordered group'));
+  assert.deepEqual(lists.map(n=>n.childNodes.filter(x=>x.tagName==='li').length),[3,3,1]);
+  const links=all(section,n=>n.tagName==='a'&&attr(n,'data-journal-citation')!==undefined);
+  assert.deepEqual(links.map(n=>attr(n,'id')),G44_ROWS.map(r=>r[0]),'ordered source vector');
+  for(const [i,[citation,href,label,date,kind,backHref,heading,dateLabel]] of G44_ROWS.entries()){
+    const link=id(doc,citation);assert.equal(link,links[i]);assert.equal(attr(link,'href'),href);
+    assert.equal(normalize(text(link)),normalize(label));
+    const row=link.parentNode;assert.equal(row.tagName,'li');assert.equal(row.parentNode,lists[i<3?0:i<6?1:2]);
+    assert.equal(attr(row,'data-g44-date-kind'),kind);
+    assert.equal(attr(one(row,n=>n.tagName==='time','one date '+citation),'datetime'),date);
+    assert.equal(normalize(text(one(row,n=>hasClass(n,'jcdi-date'),'date role'))),normalize(dateLabel));
+    assert.equal(normalize(text(one(row,n=>hasClass(n,'jcdi-label'),'row heading'))),normalize(heading));
+    const source=id(doc,href.slice(1));
+    const back=one(source,n=>n.tagName==='a'&&attr(n,'data-journal-source-return')!==undefined,'one return '+citation);
+    assert.equal(attr(back,'href'),backHref);id(doc,backHref.slice(1));
+  }
+}
+
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const load = (name) => import(pathToFileURL(path.join(root, name)).href);
 const { G3_PRODUCT_METADATA: metadata } = await load('src/data/journal/g3ProductMetadata.ts');
@@ -403,6 +518,7 @@ if (!process.argv.includes('--source-only')) {
           assert.ok(byId(doc,'cite-r6-'+id));
         }
       }
+      assertG44Dist(doc);
       const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
       assert.equal(atlas.length,1);
       const atlasCitations=all(atlas[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined);

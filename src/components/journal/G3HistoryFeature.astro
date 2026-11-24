@@ -6,6 +6,7 @@
  */
 import { historyCitation as cite } from '@/data/journal/g3HistorySources';
 import G3SpeakerMatrix from './g3-visual/G3SpeakerMatrix.astro';
+import JournalCompactDocumentIndex from './editorial/JournalCompactDocumentIndex.astro';
 import G3HistoricalPanorama from './g3-graphics/G3HistoricalPanorama.astro';
 import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visual-inputs';
 ---
@@ -117,9 +118,50 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
       Чаллис позднее писал, что участвовал в обсуждениях, но не подписал текст.
       В своих воспоминаниях он также описал изменение атмосферы конференции.</p>
 <p data-history-expansion-claim="G3-HIST-PUB-13">В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках. В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства. В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы.</p>
-<p class="je-history-footnote"><a id="cite-r6-challies-2018-video" data-journal-citation href={cite('challies-2018-video')}>Тим Чаллис. From Every Tribe and Language and People and Nation</a> · <a id="cite-r6-challies-2018-lessons" data-journal-citation href={cite('challies-2018-lessons')}>Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church</a> · <a id="cite-r6-firstlove-2018" data-journal-citation href={cite('firstlove-2018')}>FirstLove Missions. G3 Conference in Atlanta, Georgia</a></p>
-<p class="je-history-footnote"><a id="cite-g3-year-2018-ascol-2018" data-journal-citation href={cite('ascol-2018')}>Датированное свидетельство Тома Аскола</a></p>
-<p class="je-history-footnote"><a id="cite-g3-year-2018-statement-2018" data-journal-citation href={cite('statement-2018')}>Текст и история подготовки заявления</a> · <a id="cite-g3-year-2018-responses-2018" data-journal-citation href={cite('responses-2018')}>Отклики современников</a> · <a id="cite-g3-year-2018-challies" data-journal-citation href={cite('challies')}>Позиция Чаллиса</a></p>
+<JournalCompactDocumentIndex id="g3-2018-document-index" title="Две линии одного года"
+    conferenceTitle="Жизнь общины" discussionTitle="Заявление" retrospectiveTitle="Ретроспектива · 2025">
+    <Fragment slot="conference">
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-01-23">23 января 2018</time> · публикация сообщения</p>
+        <p class="jcdi-label">Тим Чаллис: опыт общины</p>
+        <a id="cite-r6-challies-2018-video" data-journal-citation href={cite('challies-2018-video')}>Тим Чаллис. From Every Tribe and Language and People and Nation</a>
+      </li>
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-01-30">30 января 2018</time> · публикация отчёта</p>
+        <p class="jcdi-label">FirstLove: отчёт о выставке</p>
+        <a id="cite-r6-firstlove-2018" data-journal-citation href={cite('firstlove-2018')}>FirstLove Missions. G3 Conference in Atlanta, Georgia</a>
+      </li>
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-02-02">2 февраля 2018</time> · публикация статьи</p>
+        <p class="jcdi-label">Тим Чаллис: гостеприимство</p>
+        <a id="cite-r6-challies-2018-lessons" data-journal-citation href={cite('challies-2018-lessons')}>Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church</a>
+      </li>
+    </Fragment>
+    <Fragment slot="discussion">
+      <li data-g44-date-kind="attributed_event">
+        <p class="jcdi-date"><time datetime="2018-06-19">19 июня 2018</time> · дата встречи по рассказу Аскола</p>
+        <p class="jcdi-label">Встреча в Далласе</p>
+        <a id="cite-g3-year-2018-ascol-2018" data-journal-citation href={cite('ascol-2018')}>Датированное свидетельство Тома Аскола</a>
+      </li>
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-09-04">4 сентября 2018</time> · публикация заявления</p>
+        <p class="jcdi-label">Заявление о социальной справедливости и Евангелии</p>
+        <a id="cite-g3-year-2018-statement-2018" data-journal-citation href={cite('statement-2018')}>Текст и история подготовки заявления</a>
+      </li>
+      <li data-g44-date-kind="publication_month">
+        <p class="jcdi-date"><time datetime="2018-09">Сентябрь 2018</time> · месяц освещения</p>
+        <p class="jcdi-label">Отклики на заявление</p>
+        <a id="cite-g3-year-2018-responses-2018" data-journal-citation href={cite('responses-2018')}>Отклики современников</a>
+      </li>
+    </Fragment>
+    <Fragment slot="retrospective">
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2025-05-23">23 мая 2025</time> · публикация воспоминаний</p>
+        <p class="jcdi-label">Тим Чаллис: позднейшие воспоминания</p>
+        <a id="cite-g3-year-2018-challies" data-journal-citation href={cite('challies')}>Позиция Чаллиса</a>
+      </li>
+    </Fragment>
+  </JournalCompactDocumentIndex>
   </div>
 </section>
 
