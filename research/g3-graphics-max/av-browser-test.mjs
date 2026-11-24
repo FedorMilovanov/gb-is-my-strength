@@ -5,10 +5,11 @@ import {createServer} from 'node:http';
 import {spawnSync} from 'node:child_process';
 import {chromium,firefox,webkit} from 'playwright';
 const root=process.cwd(),out=process.env.AV_OUT;
-assert(process.env.G3_GRAPHICS_DISPOSABLE==='1'&&!existsSync('.git')&&!existsSync('src/pages')&&!existsSync('astro.config.mjs')&&out&&!path.resolve(out).startsWith(root+path.sep));mkdirSync(out,{recursive:true});
+assert(process.env.G3_GRAPHICS_DISPOSABLE==='1'&&!existsSync('.git')&&!existsSync('src/pages')&&!existsSync('astro.config.mjs')&&!existsSync('tsconfig.json')&&out&&!path.resolve(out).startsWith(root+path.sep));mkdirSync(out,{recursive:true});
 mkdirSync('src/pages',{recursive:true});mkdirSync('public',{recursive:true});cpSync('fonts','public/fonts',{recursive:true});
 const sampleBrowser=await chromium.launch();
 try{const sample=await sampleBrowser.newPage({viewport:{width:640,height:360}});await sample.setContent('<html><body style="margin:0;background:#f3f3f3"><svg viewBox="0 0 640 360" width="640" height="360"><g fill="none" stroke="#777" stroke-width="3"><rect x="24" y="24" width="592" height="312"/><path d="M24 24L616 336M616 24L24 336"/></g></svg></body></html>');await sample.screenshot({path:'public/test-card.png'});}finally{await sampleBrowser.close();}
+writeFileSync('tsconfig.json',JSON.stringify({extends:'astro/tsconfigs/strict',compilerOptions:{baseUrl:'.',paths:{'@/*':['src/*']}},include:['.astro/types.d.ts','src/**/*'],exclude:['dist','node_modules']}));
 writeFileSync('astro.config.mjs',"import {defineConfig} from 'astro/config';import {fileURLToPath} from 'node:url';export default defineConfig({output:'static',vite:{resolve:{alias:{'@':fileURLToPath(new URL('./src/',import.meta.url))}}}});");
 writeFileSync('src/pages/index.astro',[
 '---',
@@ -21,6 +22,7 @@ writeFileSync('src/pages/index.astro',[
 '---',
 '<!doctype html><html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>PRIVATE SYNTHETIC QA</title><link rel="stylesheet" href="/fonts/fonts.css"/><style is:global>body{margin:0}.witness{width:min(100% - 24px,740px);margin:auto} @media print{.witness{width:100%}}</style></head><body><main class="journal-edition" data-journal-source-navigation><div class="witness"><p>PRIVATE SYNTHETIC QA — НЕ ИСТОРИЧЕСКИЙ МАТЕРИАЛ</p><p id="fallback" tabindex="-1">Тестовый раздел</p>{cases.map((e,i)=><section data-case={i}><AV evidence={e}/></section>)}<section class="bibliography-item" id="src-TEST-SOURCE" tabindex="-1"><p>Тестовый источник</p><SourceReturn href="#fallback"/></section></div></main></body></html>'
 ].join('\n'));
+const typecheck=spawnSync(process.execPath,['scripts/astro-cli.mjs','check'],{stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});assert.equal(typecheck.status,0,'AV Astro typecheck');
 const run=spawnSync(process.execPath,['scripts/astro-cli.mjs','build'],{stdio:'inherit',env:{...process.env,ASTRO_TELEMETRY_DISABLED:'1'}});assert.equal(run.status,0);
 const dist=path.join(root,'dist');const server=createServer((req,res)=>{let f=path.resolve(dist,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(existsSync(f)&&statSync(f).isDirectory())f=path.join(f,'index.html');if(!f.startsWith(dist+path.sep)||!existsSync(f)||!statSync(f).isFile()){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':({'.html':'text/html; charset=utf-8','.js':'application/javascript','.css':'text/css','.woff2':'font/woff2','.png':'image/png'})[path.extname(f)]||'application/octet-stream'});res.end(readFileSync(f));});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port+'/';

@@ -2,6 +2,7 @@
 import {exhibitView} from './av-exhibit-model.mjs';
 import './av-exhibit.css';
 // Parent passes only the accepted, canonical evidence projection. No route owns approval here.
+interface SourceLink { id: string; label: string; href: string; citationId: string }
 interface Props { evidence: unknown }
 const v=exhibitView(Astro.props.evidence);
 ---
@@ -25,6 +26,6 @@ const v=exhibitView(Astro.props.evidence);
  <figcaption class="g3av-caption">
   <a class="g3av-time" href={v.playbackHref} aria-label={'Оригинальная запись: '+v.speaker+', '+v.sessionTitle+', '+v.interval}><span aria-hidden="true" class="g3av-play">▶</span><span>Смотреть фрагмент <b>{v.interval}</b></span></a>
   <p class="g3av-recording">Запись: <a href={v.recordingUrl}>{v.recordingUrl}</a></p>
-  <div class="g3av-sources">{v.sourceLinks.map(s=><a id={s.citationId} data-journal-citation href={s.href}>{s.label}</a>)}</div>
+  <div class="g3av-sources">{v.sourceLinks.map((s: SourceLink)=><a id={s.citationId} data-journal-citation href={s.href}>{s.label}</a>)}</div>
  </figcaption>
 </figure>}
