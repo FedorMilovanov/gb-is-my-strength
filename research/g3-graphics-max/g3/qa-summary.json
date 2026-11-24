@@ -8,11 +8,53 @@
     "total": 6
   },
   "sourceReturn": {
-    "pass": 96,
-    "total": 96
+    "pass": 104,
+    "total": 104
+  },
+  "disclosure": {
+    "pass": 4,
+    "total": 4
   },
   "print": {
     "pass": 6,
     "total": 6
-  }
+  },
+  "heights": [
+    {
+      "name": "history",
+      "theme": "light",
+      "width": 390,
+      "height": 1429.8125
+    },
+    {
+      "name": "history",
+      "theme": "light",
+      "width": 740,
+      "height": 1269.15625
+    },
+    {
+      "name": "ecosystem",
+      "theme": "light",
+      "width": 390,
+      "height": 1537.28125
+    },
+    {
+      "name": "ecosystem",
+      "theme": "light",
+      "width": 740,
+      "height": 1185.296875
+    },
+    {
+      "name": "finance",
+      "theme": "light",
+      "width": 390,
+      "height": 550.8125
+    },
+    {
+      "name": "finance",
+      "theme": "light",
+      "width": 740,
+      "height": 797.578125
+    }
+  ]
 }

@@ -3,50 +3,56 @@
     "file": "history-A4.pdf",
     "pages": 2,
     "textChars": [
-      1543,
-      1056
+      1410,
+      895
     ],
+    "missingLabels": [],
     "pass": true
   },
   {
     "file": "history-Letter.pdf",
     "pages": 2,
     "textChars": [
-      1543,
-      1056
+      1295,
+      1010
     ],
+    "missingLabels": [],
     "pass": true
   },
   {
     "file": "ecosystem-A4.pdf",
     "pages": 1,
     "textChars": [
-      1489
+      1490
     ],
+    "missingLabels": [],
     "pass": true
   },
   {
     "file": "ecosystem-Letter.pdf",
     "pages": 1,
     "textChars": [
-      1489
+      1490
     ],
+    "missingLabels": [],
     "pass": true
   },
   {
     "file": "finance-A4.pdf",
     "pages": 1,
     "textChars": [
-      581
+      678
     ],
+    "missingLabels": [],
     "pass": true
   },
   {
     "file": "finance-Letter.pdf",
     "pages": 1,
     "textChars": [
-      581
+      678
     ],
+    "missingLabels": [],
     "pass": true
   }
 ]

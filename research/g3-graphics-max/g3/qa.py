@@ -21,16 +21,21 @@ def witness(name,theme,width,with_sources=True):
  f=frags[name];s=BeautifulSoup(f,'html.parser'); anchors=s.select('a[data-journal-citation]');dest=sorted(set(a['href'][1:] for a in anchors));sources=''.join(f'<section tabindex="-1" class="bibliography-item" id="{d}"><h4>{d}</h4><a data-journal-source-return href="#fallback"><span data-journal-source-return-label>К связанному разделу статьи</span></a></section>' for d in dest) if with_sources else ''
  return '<!doctype html><html lang="ru" class="'+('dark' if theme=='dark' else '')+'"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>'+base+css+f'.story{{max-width:{width}px}}</style><body class="journal-edition"><main class="story" data-journal-source-navigation><div id="fallback" tabindex="-1"></div>'+f+sources+'</main><script>'+adapter+'</script></body></html>'
 
-out=[];trips=[];forced=[]
+out=[];trips=[];forced=[];compact=[];disclosure=[]
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_EXECUTABLE','/usr/bin/chromium'),headless=True,args=['--no-sandbox'])
  for n in frags:
   for t in ['light','dark']:
    for w in [320,360,390,430,580,640,660,680,740,850,1024]:
     pg=b.new_page(viewport={'width':max(1024,w),'height':900},java_script_enabled=False)
-    pg.set_content(witness(n,t,w));d=pg.evaluate('''()=>{let r=document.querySelector('.g3g'),b=r.getBoundingClientRect(),links=[...r.querySelectorAll('a')];return {width:b.width,overflow:r.scrollWidth>r.clientWidth+1,documentOverflow:document.documentElement.scrollWidth>innerWidth,linkMin:Math.min(...links.map(a=>a.getBoundingClientRect().height)),duplicateIds:[...document.querySelectorAll('[id]')].map(e=>e.id).filter((v,i,a)=>a.indexOf(v)!==i),clipped:[...r.querySelectorAll('h3,h4,h5,p,td,th,a')].filter(e=>e.scrollWidth>e.clientWidth+2&&e.clientWidth>0).map(e=>e.textContent.slice(0,70)),linkNames:links.map(a=>a.textContent.trim()),badLocal:links.filter(a=>a.hasAttribute('data-journal-citation')&&!document.getElementById(a.hash.slice(1))).length}}''')
+    pg.set_content(witness(n,t,w));root=pg.locator('.g3g');height=root.bounding_box()['height'];compact.append({'name':n,'theme':t,'width':w,'height':height})
+    if w in [390,740]:root.screenshot(path=str(P/f'{n}-{w}-{t}.png'))
+    if n=='history':
+     assert pg.locator('details').get_attribute('open') is None
+     pg.locator('summary').focus();pg.keyboard.press('Enter');assert pg.locator('details').get_attribute('open') is not None
+    d=pg.evaluate('''()=>{let r=document.querySelector('.g3g'),b=r.getBoundingClientRect(),links=[...r.querySelectorAll('a')];return {width:b.width,overflow:r.scrollWidth>r.clientWidth+1,documentOverflow:document.documentElement.scrollWidth>innerWidth,linkMin:Math.min(...links.map(a=>a.getBoundingClientRect().height)),duplicateIds:[...document.querySelectorAll('[id]')].map(e=>e.id).filter((v,i,a)=>a.indexOf(v)!==i),clipped:[...r.querySelectorAll('h3,h4,h5,p,td,th,a')].filter(e=>e.scrollWidth>e.clientWidth+2&&e.clientWidth>0).map(e=>e.textContent.slice(0,70)),linkNames:links.map(a=>a.textContent.trim()),badLocal:links.filter(a=>a.hasAttribute('data-journal-citation')&&!document.getElementById(a.hash.slice(1))).length}}''')
     d.update(name=n,theme=t,target=w);d['pass']=abs(d['width']-w)<1 and not d['overflow'] and not d['documentOverflow'] and d['linkMin']>=43.9 and not d['duplicateIds'] and not d['clipped'] and len(set(d['linkNames']))==len(d['linkNames']) and d['badLocal']==0;out.append(d)
-    if w in [390,740]:pg.locator('.g3g').screenshot(path=str(P/f'{n}-{w}-{t}.png'))
+    if n=='history' and w in [390,740]:pg.locator('.g3g').screenshot(path=str(P/f'{n}-{w}-{t}-expanded.png'))
     pg.close()
    pg=b.new_page(viewport={'width':1024,'height':900},forced_colors='active',java_script_enabled=False);pg.set_content(witness(n,t,390));forced.append({'name':n,'theme':t,'pass':pg.locator('.g3g').evaluate('(e)=>e.scrollWidth<=e.clientWidth+1')});pg.close()
   for fmt in ['A4','Letter']:
@@ -39,14 +44,21 @@ with sync_playwright() as p:
   for w in [390,740]:
    for js in [True,False]:
     pg=b.new_page(viewport={'width':max(1024,w),'height':900},java_script_enabled=js)
-    pg.set_content(witness(n,'light',w));ids=pg.locator('.g3g a[data-journal-citation]').evaluate_all('(xs)=>xs.map(a=>a.id)')
+    pg.set_content(witness(n,'light',w));
+    if n=='history':pg.locator('summary').focus();pg.keyboard.press('Enter')
+    ids=pg.locator('.g3g a[data-journal-citation]').evaluate_all('(xs)=>xs.map(a=>a.id)')
     for id in ids:
      link=pg.locator('#'+id);href=link.get_attribute('href');link.focus();pg.keyboard.press('Enter');pg.wait_for_url('**'+href)
      back=pg.locator(href+' [data-journal-source-return]');expected='#'+id if js else '#fallback';actual=back.get_attribute('href');back.focus();pg.keyboard.press('Enter');pg.wait_for_url('**'+expected);trips.append({'name':n,'width':w,'js':js,'id':id,'pass':actual==expected})
+    if n=='history':
+     pg.set_content(witness(n,'light',w));pg.evaluate("location.hash='cite-g3g-history-6'")
+     pg.wait_for_timeout(120)
+     opened=pg.locator('details').get_attribute('open') is not None
+     disclosure.append({'width':w,'js':js,'pass':opened and pg.locator('#cite-g3g-history-6').is_visible()})
     pg.close()
  b.close()
-(P/'qa.json').write_text(json.dumps({'geometry':out,'forced':forced,'sourceReturn':trips},ensure_ascii=False,indent=2))
-for k,x in [('geometry',out),('forced',forced),('sourceReturn',trips)]:
+(P/'qa.json').write_text(json.dumps({'geometry':out,'forced':forced,'sourceReturn':trips,'compact':compact,'disclosure':disclosure},ensure_ascii=False,indent=2))
+for k,x in [('geometry',out),('forced',forced),('sourceReturn',trips),('disclosure',disclosure)]:
  print(k,sum(r['pass'] for r in x),'/',len(x));print([r for r in x if not r['pass']][:3])
 
 print_rows=[]
@@ -54,8 +66,8 @@ for name in frags:
  for fmt in ['A4','Letter']:
   pdf=P/f'{name}-{fmt}.pdf'
   with fitz.open(pdf) as doc:
-   counts=[len(page.get_text()) for page in doc]
-   print_rows.append({'file':pdf.name,'pages':len(doc),'textChars':counts,'pass':all(c>0 for c in counts) and len(doc)==(2 if name=='history' else 1)})
+   counts=[len(page.get_text()) for page in doc];full=' '.join(' '.join(page.get_text().split()) for page in doc);labels=[a.get_text(' ',strip=True) for a in BeautifulSoup(frags[name],'html.parser').select('a')];missing=[a for a in labels if a not in full]
+   print_rows.append({'file':pdf.name,'pages':len(doc),'textChars':counts,'missingLabels':missing,'pass':all(c>0 for c in counts) and not missing and len(doc)<=(2 if name=='history' else 2)})
 (P/'qa-print.json').write_text(json.dumps(print_rows,indent=2))
 print('print',sum(r['pass'] for r in print_rows),'/',len(print_rows))
-if not all(r['pass'] for r in out+forced+trips+print_rows): raise SystemExit(1)
+if not all(r['pass'] for r in out+forced+trips+print_rows+disclosure): raise SystemExit(1)

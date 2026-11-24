@@ -1,0 +1,43 @@
+# GRAPHICS MAX — G4 reference register (24 Nov 2026)
+
+Thirty distinct editorial, cartographic, museum and data-design reference pages, retrieved via public search on 24 Nov 2026. Status **B** = original page body read in this wave, **I** = indexed description/metadata inspected; **I** is not a full visual study. The Nature editor interview direct fetch was blocked; the indexed description is usable as a lead only. No copyrighted images or layouts copied, no implication of reuse rights. This is an internal research register, not a public G3 evidence ledger. The 30-entry full visual portfolio inspection remains open; the five body readings support the present specific decisions. 
+
+| # | Reference / exact locator | Status | Transferable idea or question for G3 review (our interpretation) |
+|---:|---|:---:|---|
+| 01 | [Nature: Day in the life of an art editor](https://www.nature.com/articles/d42859-019-00107-y) | I | Editorial visual forms depend on article genre; do not make a chart into an ornamental cover. Direct fetch blocked by login redirect. |
+| 02 | [A framework for visual communication at Nature](https://pubmed.ncbi.nlm.nih.gov/27117485/) | I | Begin with audience and information purpose; label uncertainty and intended reading level. |
+| 03 | [National Geographic: Vintage Maps From the Archives](https://www.nationalgeographic.com/adventure/article/map-of-the-day-cartography-vintage-archive-culture) | B | Maps complement text and photography; use a single large geographical plate only where location explains something. 1922 world reference, 1961 London panorama and 1957 sky map are named leads, not borrowed art. |
+| 04 | [National Geographic: 100 Years of Pull-Out Maps](https://www.nationalgeographic.com/culture/article/supplemental-maps-cartography-magazine-anniversary-culture?loggedin=true) | I | Prioritize label legibility at actual output scale. |
+| 05 | [National Geographic: About Maps](https://www.nationalgeographic.com/maps/article/about-maps) | I | Geography is a factual discipline, not decoration; document map sources. |
+| 06 | [Library of Congress: Maps In Our Lives](https://www.loc.gov/exhibits/maps/maps-exhibit.html) | I | Pair geographical orientation with cultural/historical explanation. |
+| 07 | [National Geographic: Custom Publishing](https://www.natgeomaps.com/custommaps/) | I | Scope map to the story rather than default world projection. |
+| 08 | [Reuters Graphics](https://reutersagency.com/content/content-types/graphics/) | I | Combine explanatory chart, map and illustration only when each adds distinct context. |
+| 09 | [Financial Times Visual Vocabulary](https://github.com/Financial-Times/chart-doctor/blob/main/visual-vocabulary/README.md) | I | A waterfall addresses additive change; a map addresses spatial context; do not interchange. |
+| 10 | [FT: Charts that work](https://www.ft.com/content/c7bb24c9-964d-479f-ba24-03a2b2df6e85) | I | Choose visual grammar before the styling. |
+| 11 | [EU Data Visualisation Guide: Choosing charts](https://data.europa.eu/apps/data-visualisation-guide/choosing-charts-the-message) | I | Explain the principal comparison in the title. |
+| 12 | [EU Data Visualisation Guide: Guiding text](https://data.europa.eu/apps/data-visualisation-guide/guiding-text) | I | Titles, units, legend and annotations should be understandable in isolation. |
+| 13 | [V&A: Open to interpretation](https://lookup.vam.ac.uk/east-storehouse/storagedisplays/USE2241/) | I | Each exhibit has a particular question and label; avoid fake facsimiles. |
+| 14 | [The Met: Heilbrunn Timeline of Art History](https://www.metmuseum.org/met-publications/heilbrunn-timeline-of-art-history) | I | Historical chronology can be thematic and geographical, not an exhaustive annual list. |
+| 15 | [The Met: Italian Peninsula, 1000–1400](https://artistproject.metmuseum.org/toah/ht/07/eust.html) | B | Dated entries with linked related material; preserve chronology without implying continuous evidence. |
+| 16 | [The Met: France, 1600–1800](https://artistproject.metmuseum.org/toah/ht/09/euwf.html) | I | Compare the period structure to the three G3 eras. |
+| 17 | [The Met: Eastern Europe and Scandinavia, 1000–1400](https://artistproject.metmuseum.org/toah/ht/07/eue.html) | I | Geography can be an organizing axis for historical material. |
+| 18 | [Cooper Hewitt: NYT Graphics Department](https://www.cooperhewitt.org/2019/09/17/communication-design-the-new-york-times-graphics-department/) | I | Investigative graphics should explain relationships, not manufacture documentary visuals. |
+| 19 | [Guardian interactives](https://www.theguardian.com/interactive) | I | Catalogue of possible editorial sequences; select only story-appropriate examples in later art review. |
+| 20 | [ProPublica: Design Principles for News Apps & Graphics](https://www.propublica.org/nerds/design-principles-for-news-apps-graphics) | B | Scale and adjacent annotation: map foregrounded, exact values close to bars, sources close to observations. |
+| 21 | [ProPublica: News apps style guide](https://github.com/propublica/guides/blob/master/news-apps.md) | I | Establish a consistent editorial/data grammar without creating a second runtime. |
+| 22 | [The Pudding: Our Resources](https://pudding.cool/resources/) | I | Visual essays require data preparation and editorial design before animation. |
+| 23 | [Visual Capitalist: Top 25 Visualizations of 2025](https://www.visualcapitalist.com/our-top-25-visualizations-of-2025/) | I | Later compare geographic and ranked formats; avoid importing brand aesthetic. |
+| 24 | [Smithsonian: Online Exhibitions](https://www.si.edu/exhibitions/online) | I | Review how object stories support a broader narrative; use only properly licensed actual artifacts. |
+| 25 | [Datawrapper: Waterfall chart](https://www.datawrapper.de/docs/how-to-create-a-waterfall-chart) | B | Differentiate cumulative steps from totals, annotate each exact signed change, test label collision. |
+| 26 | [Datawrapper: Map labels](https://www.datawrapper.de/docs/how-to-add-map-labels) | I | Check every label and leader at both wide and narrow story widths. |
+| 27 | [Datawrapper: Accessible charts, maps, tables](https://www.datawrapper.de/docs/how-we-make-sure-our-charts-maps-and-tables-are-accessible) | I | Text equivalents and contrast matter as much as appearance. |
+| 28 | [ONS: Chart annotations](https://service-manual.ons.gov.uk/data-visualisation/guidance/annotations) | I | Annotate the tiny negative residual at its true position. |
+| 29 | [ONS: Chart text](https://service-manual.ons.gov.uk/data-visualisation/guidance/chart-text) | I | Keep axis units and denominator explicit; exact labels/table retain access. |
+| 30 | [W3C WAI: Complex images](https://www.w3.org/WAI/tutorials/images/complex/) | B | Preserve the equivalent textual data/structure in HTML instead of relying on SVG-only perception. |
+
+## G4 design decisions and acceptance gates
+
+- **Historical plate:** map becomes principal artwork, wide crop of the original geographic geometry; square Dallas marker means the 2018 statement meeting, other circles mean conference or advertised location. Notes clarify all four sites; source attribution and uncertainty stay visible. Three era summaries remain visible; optional native disclosure contains all twelve exact dates and citations. No JS dependency and no second source-return adapter shipped. Print must include every citation even when closed. Real map visual quality is still subject to independent review; not a claim to equal NatGeo cartography.
+- **Finance:** difference and total labels over the bars; exact residual remains same scale; percent denominator explicitly net change, not total expense. A single semantic exact table is visible; mobile reflow uses the same model. No annual-series duplication.
+- **Institutional panel:** replace repetitive symbolic church/press engraving with dated documentary order. 2021 branches indicate announced plans, not ownership/transfer; 2026 ending is not legal dissolution. Separate three September observations (corporate registry, app-store metadata, bookstore storefront); conceptual mini-specimens are not photos or reproduced screens. Formal art acceptance still open pending actual integrated article render and rights-cleared media.
+- **Next review:** actual screenshot-level analysis of 30 selected finished works is not closed. Use the register to choose specific works and document composition, typography, information density, visual hierarchy, annotation and responsive treatment. No screenshot harvesting or publication without rights. Verify actual Astro route, browser engines, fonts, print and source-return before publication.
