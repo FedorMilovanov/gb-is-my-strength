@@ -84,6 +84,8 @@ try{
       for(const paper of ['A4','Letter']){await page.pdf({path:path.join(out,'history-'+paper+'-'+(dark?'dark':'light')+'-'+(js?'js':'nojs')+'.pdf'),format:paper,printBackground:true,margin:{top:'14mm',bottom:'14mm',left:'14mm',right:'14mm'}});print++}
      }
      if((width===320||width===1440)&&js){await page.emulateMedia({media:'screen'});await matrix.screenshot({path:path.join(out,engine+'-'+width+'-'+(dark?'dark':'light')+'.png')})}
+     // Print emulation belongs to the history capture, not the next route.
+     await page.emulateMedia({media:'screen'});
      const fin=await page.goto(origin+crisis,{waitUntil:'load'});assert.equal(fin?.status(),200,'actual crisis route HTTP status');
      await page.evaluate(d=>document.documentElement.classList.toggle('dark',d),dark);
      await page.evaluate(()=>document.fonts.ready);
@@ -101,6 +103,7 @@ try{
       if(width===320||width===740){
        await link.focus();await page.keyboard.press('Enter');await page.waitForFunction(t=>location.hash===t,dest);
        const back=page.locator(dest+' [data-journal-source-return]'),href=await back.getAttribute('href');
+       assert(await back.isVisible(),'financial source return must be visible in screen mode: '+sid);
        if(js)assert.equal(href,'#'+id);else assert.equal(await page.locator(href).count(),1);
        await back.focus();await page.keyboard.press('Enter');await page.waitForFunction(t=>location.hash===t,href);returns++;
       }
