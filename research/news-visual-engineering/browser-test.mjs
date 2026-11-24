@@ -17,6 +17,7 @@ console.log('EVIDENCE_DIR='+root);
 await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
 for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/styles/editorial-edition.css','fonts']) await copy(path);
 await copy('research/news-visual-engineering/exhibit-fixture.astro.txt','src/pages/index.astro');
+await copy('research/news-visual-engineering/exhibit-long-fixture.astro.txt','src/pages/long/index.astro');
 await writeFile(join(root,'package.json'),'{"type":"module","private":true}');
 await build({root,cacheDir:join(root,'.astro-cache'),vite:{cacheDir:join(root,'.vite-cache')},telemetry:false});
 const dist=resolve(root,'dist');
@@ -24,7 +25,7 @@ const mime={'.css':'text/css','.js':'text/javascript','.woff2':'font/woff2','.tt
 const server=createServer(async(req,res)=>{
   try {
     const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-    const file=resolve(dist,'.'+(path==='/'?'/index.html':path));
+    const file=resolve(dist,'.'+(path.endsWith('/')?path+'index.html':path));
     if (!file.startsWith(dist+sep)) throw Error('outside dist');
     const bytes=await readFile(file);
     res.setHeader('Content-Type',mime[extname(file)]??'text/html; charset=utf-8');res.end(bytes);
@@ -34,6 +35,16 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const url='http://127.0.0.1:'+server.address().port;
 const evidence=join(root,'evidence');await mkdir(evidence);
 const results=[];
+const longResults=[];
+const borderCheck=async page=>{
+  const v=await page.locator('.jdx').first().evaluate(el=>{
+    const css=getComputedStyle(el);const probe=document.createElement('span');el.append(probe);
+    probe.style.color='var(--je-gold)';const gold=getComputedStyle(probe).color;
+    probe.style.color='var(--je-rule)';const rule=getComputedStyle(probe).color;probe.remove();
+    return {start:css.borderBlockStartWidth,end:css.borderBlockEndWidth,top:css.borderBlockStartColor,bottom:css.borderBlockEndColor,gold,rule};
+  });
+  assert.equal(v.start,'2px');assert.equal(v.end,'1px');assert.equal(v.top,v.gold);assert.equal(v.bottom,v.rule);
+};
 try {
   for (const [name,engine] of Object.entries({chromium,firefox,webkit})) {
     const browser=await engine.launch({headless:true});
@@ -56,6 +67,7 @@ try {
           assert.equal(data.over,false);assert.equal(data.rows,3);assert.equal(data.links,true);assert.equal(data.unknown,true);
           assert.equal(data.grid.split(' ').length,width>=768?2:1);assert.equal(new Set(data.ids).size,data.ids.length);
           for(const font of ['Lora','Playfair Display','Source Sans 3'])assert.ok(data.fonts.includes(font),'font not loaded: '+font);
+          await borderCheck(page);
           if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
           const links=page.locator('.jdx a');
           for(let i=0;i<3;i++){
@@ -78,11 +90,50 @@ try {
           results.push({engine:name,width,dark,js,citations:3,textScale:2});
         } finally {await context.close();}
       }
+      for(const width of [320,1100])for(const dark of [false,true])for(const js of [false,true]){
+        const context=await browser.newContext({viewport:{width,height:950},javaScriptEnabled:js});
+        try{
+          const page=await context.newPage();assert.equal((await page.goto(url+'/long/')).status(),200);
+          if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
+          await page.evaluate(()=>document.fonts.ready);
+          await borderCheck(page);
+          const data=await page.evaluate(()=>({over:document.documentElement.scrollWidth>innerWidth,ids:[...document.querySelectorAll('[id]')].map(el=>el.id),rows:document.querySelectorAll('.jdx-section').length,exhibits:document.querySelectorAll('.jdx').length}));
+          assert.equal(data.over,false);assert.equal(data.rows,10);assert.equal(data.exhibits,2);assert.equal(new Set(data.ids).size,data.ids.length);
+          if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
+          const links=page.locator('.jdx a');assert.equal(await links.count(),10);
+          for(let i=0;i<10;i++){
+            const link=links.nth(i),id=await link.getAttribute('id'),target=await link.getAttribute('href');
+            await link.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,target);
+            const back=page.locator(target+' [data-journal-source-return]');
+            const fallback=target==='#source-fixture'?'#cite-13-long-document-document-part-1':'#cite-13-long-document-document-part-2';
+            const expected=js?'#'+id:fallback;
+            assert.equal(await back.getAttribute('href'),expected);
+            await back.focus();await page.keyboard.press('Enter');assert.equal(new URL(page.url()).hash,expected);
+          }
+          await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+          await page.evaluate(()=>document.documentElement.style.removeProperty('--gb-reader-font-scale'));
+          if(!js){
+            await page.goto(url+'/long/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
+            await page.evaluate(()=>document.fonts.ready);
+            await page.screenshot({path:join(evidence,'long-'+name+'-'+width+'-'+(dark?'dark':'light')+'.png'),fullPage:true});
+            if(name==='chromium'&&width===1100){
+              await page.emulateMedia({media:'print'});
+              const border=await page.locator('.jdx').first().evaluate(el=>{const s=getComputedStyle(el);return [s.borderBlockStartWidth,s.borderBlockEndWidth,s.borderBlockStartColor,s.borderBlockEndColor]});
+              assert.deepEqual(border,['2px','1px','rgb(85, 85, 85)','rgb(85, 85, 85)']);
+              for(const format of ['A4','Letter'])await page.pdf({path:join(evidence,'long-'+format+'-'+(dark?'dark':'light')+'.pdf'),format,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'},printBackground:true});
+            }
+          }
+          longResults.push({engine:name,width,dark,js,citations:10});
+        }finally{await context.close();}
+      }
     } finally {await browser.close();}
     console.log(name+' PASS');
   }
 } finally {
-  await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2)+'\n');server.close();
+  await writeFile(join(evidence,'results.json'),JSON.stringify({short:results,long:longResults},null,2)+'\n');server.close();
 }
 console.log('SCENARIOS='+results.length);
 assert.equal(results.length,48);
+console.log('LONG_SCENARIOS='+longResults.length);
+assert.equal(longResults.length,24);

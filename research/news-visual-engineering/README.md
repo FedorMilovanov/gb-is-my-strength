@@ -6,3 +6,5 @@ Only editorial paraphrase is supported; no facsimile, quotations, image or recon
 Run: node --test research/news-visual-engineering/document-exhibit.test.mjs
 Browser witness: `node research/news-visual-engineering/browser-test.mjs` (existing repo Node dependencies and three installed Playwright engines; no dependency install). Creates an isolated temporary Astro build, uses actual source-return component, existing fonts and editorial tokens, produces JSON, screenshots and four PDFs in the printed temporary directory.
 Before route intake: compile actual Astro; validate links and noJS; actual Chromium/Firefox/WebKit 320–1440 light/dark, keyboard, zoom and A4/Letter print. Confirm art direction with AGENT 1 and independent QA with AGENT 3. No release claim.
+
+W3.2: long fixture has eight rows plus a second exhibit with two rows; both are synthetic. Runner adds 24 scenarios, verifies two exhibits have unique IDs, all ten citation round trips, computed border colors/widths and print border overrides. Inspect long PNGs and PDF page breaks separately before admission; no historical or media content is authorized.

@@ -28,7 +28,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     <p class="jdx-note">Редакционный пересказ документа.</p>
   </header>
   <ol class="jdx-sections" role="list">
-    {view.sections.map(row => <li class="jdx-section" data-journal-document-claim={row.claimId}>
+    {view.sections.map(row => <li class="jdx-section" id={`section-${row.citationId}`} data-journal-document-claim={row.claimId}>
       <div class="jdx-passage">
         <p class="jdx-locator"><span aria-hidden="true">{row.number} / </span>{row.locator}</p>
         <h3>{row.heading}</h3>
@@ -45,7 +45,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   </ol>
 </section>
 <style>
-  .jdx { margin-block: 2.25rem; min-width: 0; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); color: var(--je-ink); container-type: inline-size; }
+  .jdx { margin-block: 2.25rem; min-width: 0; border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); color: var(--je-ink); container-type: inline-size; }
   .jdx-lead { padding: clamp(1rem, 4cqi, 2rem); background: var(--je-paper-raised); }
   .jdx-kicker, .jdx-locator { margin: 0 0 .65rem; color: var(--je-gold); font: 600 .8rem/1.5 var(--je-ui); letter-spacing: .065em; }
   .jdx h2 { margin: 0 0 .75rem; font: 600 clamp(1.65rem, 5cqi, 2.5rem)/1.14 var(--je-serif); }
@@ -61,14 +61,14 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-passage h3 { margin: 0 0 .6rem; font: 600 1.25rem/1.3 var(--je-serif); }
   .jdx-passage p:not(.jdx-locator) { margin: 0 0 .75rem; font: 400 1rem/1.7 var(--je-body); }
   .jdx-passage a { display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
-  .jdx-commentary { margin-inline: clamp(1rem, 4cqi, 2rem); padding: 1rem 1.1rem; border-inline-start: 2px solid var(--je-soft-gold); background: var(--je-paper-raised); }
+  .jdx-commentary { margin-inline: clamp(1rem, 4cqi, 2rem); padding: .2rem 1.1rem .2rem 1rem; border-inline-start: 1px solid var(--je-rule); }
   .jdx-commentary dl { margin: 0; }
   .jdx-commentary div + div { border-block-start: 1px solid var(--je-rule); padding-block-start: .8rem; margin-block-start: .8rem; }
   .jdx-commentary dt { font: 600 .85rem/1.5 var(--je-ui); color: var(--je-gold); }
   .jdx-commentary dd { margin: .35rem 0 0; font: calc(.95rem * var(--gb-reader-font-scale, 1))/1.65 var(--je-body); }
   @container (min-width: 44rem) {
     .jdx-section { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 0; }
-    .jdx-commentary { margin-inline-start: 0; }
+    .jdx-commentary { margin-inline-start: 0; padding-inline-start: 1.25rem; }
   }
   @media (forced-colors: active) {
     .jdx, .jdx-commentary { border-color: CanvasText; }
@@ -80,7 +80,8 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     .jdx :is(h2,h3,p,dt,dd,a) { color: #111; }
     .jdx-lead { break-inside: avoid; break-after: avoid; }
     .jdx-section { display: block; }
-    .jdx-passage h3, .jdx-commentary dt { break-after: avoid; }
+    .jdx-passage h3, .jdx-locator, .jdx-commentary dt { break-after: avoid; }
+    .jdx-passage p, .jdx-commentary dd { orphans: 3; widows: 3; }
     .jdx-commentary { margin-block-start: .5rem; }
     .jdx-commentary div { break-inside: avoid; }
   }
