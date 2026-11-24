@@ -37,6 +37,7 @@ const BASE_ROUTES = [
   ['single-article', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/']
 ];
 const PAGINATION_ROUTE_URLS = new Set(BASE_ROUTES.map(([, url]) => url));
+const GILL_ATLAS_ROUTE_URLS = ['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek','dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik'].map(slug => `/articles/${slug}/`);
 
 // HERM-PAPER-CHROME: clean physical PDF witness independent of marker pagination.
 const HERM_HEADER_EXPECTED = {
@@ -102,8 +103,7 @@ function paperFormatWitness(file, format) {
 
 function gillAtlasTextWitness(text, route){
   const labels=[['Введение','Исторический контекст','28 мин'],['I','Человек','32 мин'],['II','Учёный','39 мин'],['III','Экзегет','71 мин'],['IV','Наследие','54 мин'],['Справочный раздел','Справочник по Гиллу','15 мин']];
-  const slugs=['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek','dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik'];
-  const current=slugs.findIndex(slug=>route==='/articles/'+slug+'/');
+  const current=GILL_ATLAS_ROUTE_URLS.indexOf(route);
   if(current<0)return null;
   const failures=[],pages=text.normalize('NFC').split('\f').map(p=>p.split(/\r?\n/));
   const compact=s=>s.replace(/\s+/g,'').toLowerCase();
@@ -114,8 +114,9 @@ function gillAtlasTextWitness(text, route){
   if(head.p!==end.p||head.y>=end.y)return {failures:['atlas split or reversed'],head,end};
   const cells=pages[head.p].slice(head.y+1,end.y).flatMap((line,y)=>[...line.matchAll(/\S+(?: \S+)*/g)].map(m=>({x:m.index,y,text:m[0].trim().replace(/\s+/g,' ')})));
   const one=value=>{const found=cells.filter(cell=>cell.text===value);if(found.length!==1){failures.push('missing/duplicate: '+value);return null;}return found[0];};
-  one('Карта серии');one('Четыре основные части, историческое введение и справочник.');
+  const title=one('Карта серии'),intro=one('Четыре основные части, историческое введение и справочник.');
   const rows=labels.map(label=>label.map(one));const here=one('Вы здесь');
+  if(title&&intro&&rows[0][0]&&!(title.y<intro.y&&intro.y<rows[0][0].y))failures.push('wrong atlas header order');
   for(let i=0;i<rows.length;i++){
     const [m,n,t]=rows[i];if(!m||!n||!t)continue;
     if(!(m.y<n.y&&n.y<t.y&&Math.abs(m.x-n.x)<=3&&Math.abs(t.x-n.x)<=3))failures.push('wrong label group: '+labels[i][1]);
@@ -199,6 +200,10 @@ for (const [url, entry] of Object.entries(noteRegistry.routes)) {
   if (!notes.length) throw new Error(`NoteRegistry route ${url} has no notes`);
   if (routeMap.has(url)) routeMap.get(url)[2] = notes;
   else routeMap.set(url, [routeId(url), url, notes]);
+}
+// Atlas coverage is independent of whether a route has registered publication notes.
+for (const url of GILL_ATLAS_ROUTE_URLS) {
+  if (!routeMap.has(url)) routeMap.set(url, [routeId(url), url, []]);
 }
 const ROUTES = [...routeMap.values()];
 
@@ -1107,6 +1112,14 @@ try {
   await new Promise((resolve) => server.close(resolve));
 }
 
+for (const url of GILL_ATLAS_ROUTE_URLS) {
+  const rows = report.routes.filter(row => row.url === url);
+  if (rows.length !== 1 || !rows[0].cleanPdf || !existsSync(join(OUT, rows[0].cleanPdf)) ||
+      !rows[0].cleanPaper || rows[0].cleanPaper.failures.length ||
+      !rows[0].gillAtlas || rows[0].gillAtlas.failures.length) {
+    report.failures.push(`GILL-ATLAS-PAPER: missing or failed required physical witness for ${url}`);
+  }
+}
 if (!mutationWitnessDone) report.failures.push('NoteRegistry mutation witness did not run');
 await writeFile(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
