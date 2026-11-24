@@ -22,3 +22,8 @@ for(const bad of [
  {sizes:'100vw, 100vw'},
  {sizes:'0px'},
 ]) test('NEWS-QA-006 reject '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,media:{...media,...bad}})));
+
+// W3.2 actual routed variants and optional presentation-only values.
+test('valid feature caption note and action',()=>assert.doesNotThrow(()=>check({...valid,variant:'feature',actionLabel:'Read',media:{...media,note:'21 sources'}})));
+test('valid companion analysis',()=>assert.doesNotThrow(()=>check({...valid,variant:'analysis',companion:true})));
+for(const bad of [{companion:'true'},{variant:'feature',companion:true},{actionLabel:''},{media:{...media,note:''}}]) test('reject routed presentation '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));

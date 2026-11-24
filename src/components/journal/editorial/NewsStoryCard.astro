@@ -2,31 +2,33 @@
 import { assertNewsStoryCard } from './news-story-card-model.mjs';
 interface Media {
   src: string; alt: string; caption: string; width: number; height: number;
-  webpSrcset?: string; avifSrcset?: string; sizes: string;
+  webpSrcset?: string; avifSrcset?: string; sizes: string; note?: string;
 }
 interface Props {
   title: string; href: string; label: string; deck?: string;
   publishedAt?: string; publishedLabel?: string; readingLabel?: string;
   variant?: 'feature' | 'analysis' | 'brief'; headingLevel?: 2 | 3; media?: Media;
+  companion?: boolean; actionLabel?: string;
 }
 const props = Astro.props as Props;
 assertNewsStoryCard(props);
 const { title, href, label, deck, publishedAt, publishedLabel, readingLabel,
-  variant = 'analysis', headingLevel = 3, media } = props;
+  variant = 'analysis', headingLevel = 3, media, companion = false, actionLabel } = props;
 const Heading = headingLevel === 2 ? 'h2' : 'h3';
 ---
-<article class:list={['news-story-card', 'news-story-card--' + variant]}>
+<article class:list={['news-story-card', 'news-story-card--' + variant, companion && 'news-story-card--companion', companion && 'je-next-story']}
+  data-pagefind-ignore={companion ? true : undefined}>
   <header class="news-story-head">
     <p class="news-story-label">{label}</p>
-    <Heading class="news-story-title"><a href={href}>{title}</a></Heading>
+    <Heading class="news-story-title"><a href={href}>{title}{companion && <span aria-hidden="true"> ↗</span>}{actionLabel && <span class="news-story-action" aria-hidden="true">{actionLabel} <span>↗</span></span>}</a></Heading>
   </header>
-  {media && <figure class="news-story-media">
+  {media && <figure class:list={['news-story-media', variant === 'feature' && 'lead-context']}>
     <picture>
       {media.avifSrcset && <source type="image/avif" srcset={media.avifSrcset} sizes={media.sizes}/>}
       <img src={media.src} srcset={media.webpSrcset} sizes={media.sizes} alt={media.alt}
-        width={media.width} height={media.height} loading={variant === 'feature' ? 'eager' : 'lazy'} decoding="async"/>
+        width={media.width} height={media.height} loading={variant === 'feature' ? 'eager' : 'lazy'} fetchpriority={variant === 'feature' ? 'high' : 'auto'} decoding="async"/>
     </picture>
-    <figcaption>{media.caption}</figcaption>
+    <figcaption><span>{media.caption}</span>{media.note && <span>{media.note}</span>}</figcaption>
   </figure>}
   {deck && <p class="news-story-deck">{deck}</p>}
   {(publishedAt || readingLabel) && <div class="news-story-meta">
@@ -42,21 +44,30 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
 .news-story-title a {display:inline-block;min-height:44px;color:var(--je-ink);text-decoration:none}
 .news-story-title a:hover {text-decoration:underline;text-decoration-color:var(--je-gold);text-underline-offset:.18em}
 .news-story-title a:focus-visible {outline:2px solid var(--je-gold);outline-offset:3px}
-.news-story-card--feature .news-story-title {font-size:clamp(1.9rem,3.2vw,2.65rem)}
+.news-story-card--feature .news-story-title {max-width:29ch;font-size:clamp(1.9rem,3.2vw,2.65rem);line-height:1.16}
+.news-story-card--companion .news-story-title a {font:inherit;line-height:inherit;text-decoration:none}
+.news-story-card--companion .news-story-title {font-size:clamp(1.65rem,2.6vw,2.35rem)}
+.news-story-card--companion .news-story-deck {margin:0;color:var(--je-muted);font:calc(var(--je-reading-size,1.125rem) * .9)/1.65 var(--je-body);text-transform:none;letter-spacing:normal}
+.news-story-card--companion .news-story-title a:hover {text-decoration:underline;text-decoration-color:var(--je-gold)}
+.news-story-action {display:block;margin-top:.5rem;color:var(--je-gold);font:600 .8rem/1.5 var(--je-ui);letter-spacing:.035em;text-decoration:underline;text-underline-offset:.2em}
+.news-story-action > span {padding-inline-start:.25em}
 .news-story-card--brief .news-story-title {font-size:1.2rem;line-height:1.35}
 .news-story-card--brief {gap:.5rem}
-.news-story-media {margin:0;min-width:0}
+.news-story-card .news-story-media {margin:0;min-width:0;order:0}
 .news-story-media picture,.news-story-media img {display:block;width:100%;height:auto}
-.news-story-media figcaption {margin:.4rem 0 0;color:var(--je-muted);font:.8rem/1.45 var(--je-ui);overflow-wrap:anywhere}
+.news-story-media figcaption {display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem 1rem;margin:.4rem 0 0;color:var(--je-muted);font:.8rem/1.45 var(--je-ui);overflow-wrap:anywhere}
 .news-story-deck {margin:0;color:var(--je-muted);font:calc(var(--je-reading-size, 1.125rem) * .9)/1.65 var(--je-body);overflow-wrap:anywhere;text-wrap:pretty}
 .news-story-meta {display:flex;flex-wrap:wrap;gap:.25rem 1rem;color:var(--je-muted);font:.8rem/1.5 var(--je-ui)}
 @media print {
-.news-story-card {gap:6pt;padding-block:8pt}
-.news-story-title,.news-story-card--feature .news-story-title {font-size:19pt;break-after:avoid}
+.news-story-card {display:block;padding-block:8pt;}
+.news-story-head,.news-story-media,.news-story-deck {margin-block-end:6pt}
+.news-story-card--companion {break-inside:avoid}
+.news-story-action {display:none}
+.news-story-title,.news-story-card--feature .news-story-title,.news-story-card--companion .news-story-title {font-size:19pt;break-after:avoid}
 .news-story-card--brief .news-story-title {font-size:14pt}
 .news-story-title a {min-height:0;display:inline;color:#111}
-.news-story-media {max-width:290pt;break-inside:avoid}
-.news-story-deck {font:11pt/1.45 var(--je-body);color:#111;orphans:3;widows:3}
+.news-story-card .news-story-media {max-width:290pt;break-inside:avoid}
+.news-story-deck,.news-story-card--companion .news-story-deck {font:11pt/1.45 var(--je-body);color:#111;orphans:3;widows:3}
 .news-story-head {break-inside:avoid;break-after:avoid}
 .news-story-meta {break-inside:avoid}
 }

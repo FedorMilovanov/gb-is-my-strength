@@ -41,13 +41,16 @@ export function assertNewsStoryCard(card) {
   if (!card || !text(card.title) || !text(card.label) || typeof card.href !== 'string' || !route.test(card.href)) throw new Error('Required editorial title, label and canonical internal article route');
   if (!['feature','analysis','brief'].includes(card.variant ?? 'analysis')) throw new Error('Unknown story variant');
   if (![2,3].includes(card.headingLevel ?? 3)) throw new Error('Invalid heading level');
-  for (const key of ['deck','readingLabel']) if (card[key] !== undefined && !text(card[key])) throw new Error('Empty optional editorial text: '+key);
+  for (const key of ['deck','readingLabel','actionLabel']) if (card[key] !== undefined && !text(card[key])) throw new Error('Empty optional editorial text: '+key);
   if (card.publishedAt !== undefined || card.publishedLabel !== undefined) {
     if (!date(card.publishedAt) || !text(card.publishedLabel)) throw new Error('Explicit valid publication timestamp and label required');
   }
+  if (card.companion !== undefined && typeof card.companion !== 'boolean') throw new Error('Invalid companion flag');
+  if (card.companion && (card.variant ?? 'analysis') !== 'analysis') throw new Error('Companion uses analysis variant');
   const m=card.media;
   if (m !== undefined) {
     if (!m || !text(m.alt) || !text(m.caption) || !sizes(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isInteger(m.width) || !Number.isInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
+    if (m.note !== undefined && !text(m.note)) throw new Error('Empty image caption note');
     for (const key of ['avifSrcset','webpSrcset']) if (m[key] !== undefined && !srcset(m[key], key === 'avifSrcset' ? 'avif' : 'webp')) throw new Error('Invalid local responsive image list');
   }
 }
