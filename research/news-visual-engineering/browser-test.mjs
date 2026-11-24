@@ -43,6 +43,8 @@ const borderCheck=async page=>{
     probe.style.color='var(--je-rule)';const rule=getComputedStyle(probe).color;probe.remove();
     return {start:css.borderBlockStartWidth,end:css.borderBlockEndWidth,top:css.borderBlockStartColor,bottom:css.borderBlockEndColor,gold,rule};
   });
+  const meta=await page.locator('.jdx-meta').first().evaluate(el=>({width:el.getBoundingClientRect().width,issuer:el.firstElementChild.getBoundingClientRect().width}));
+  assert.ok(Math.abs(meta.width-meta.issuer)<1,'issuer must span complete metadata width');
   assert.equal(v.start,'2px');assert.equal(v.end,'1px');assert.equal(v.top,v.gold);assert.equal(v.bottom,v.rule);
 };
 try {

@@ -51,6 +51,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx h2 { margin: 0 0 .75rem; font: 600 clamp(1.65rem, 5cqi, 2.5rem)/1.14 var(--je-serif); }
   .jdx-deck { margin: 0 0 1.35rem; font: 400 calc(1rem * var(--gb-reader-font-scale, 1))/1.7 var(--je-body); }
   .jdx-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 1rem; margin: 0; border-block-start: 1px solid var(--je-rule); padding-block-start: 1rem; }
+  .jdx-meta > div:first-child { grid-column: 1 / -1; }
   .jdx-meta div, .jdx-passage, .jdx-commentary { min-width: 0; overflow-wrap: anywhere; }
   .jdx-meta dt { color: var(--je-muted); font: .8rem/1.4 var(--je-ui); }
   .jdx-meta dd { margin: .25rem 0 0; font: 600 .95rem/1.5 var(--je-ui); }
@@ -67,6 +68,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-commentary dt { font: 600 .85rem/1.5 var(--je-ui); color: var(--je-gold); }
   .jdx-commentary dd { margin: .35rem 0 0; font: calc(.95rem * var(--gb-reader-font-scale, 1))/1.65 var(--je-body); }
   @container (min-width: 44rem) {
+    .jdx-meta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .jdx-section { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 0; }
     .jdx-commentary { margin-inline-start: 0; padding-inline-start: 1.25rem; }
   }
@@ -78,6 +80,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
     .jdx { container-type: normal; color: #111; border-color: #555; }
     .jdx-lead, .jdx-commentary { background: transparent; }
     .jdx :is(h2,h3,p,dt,dd,a) { color: #111; }
+    .jdx-meta { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .jdx-lead { break-inside: avoid; break-after: avoid; }
     .jdx-section { display: block; }
     .jdx-passage h3, .jdx-locator, .jdx-commentary dt { break-after: avoid; }
