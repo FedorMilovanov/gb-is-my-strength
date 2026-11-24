@@ -58,7 +58,7 @@ html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
 /* Institutional evidence sequence: no causal/ownership arrows. */
 .g3g .g3g-institution-rail{list-style:none;padding:0;margin:18px 0 0}
 .g3g .g3g-institution-rail>li{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:0 0 5px;break-inside:avoid}
-.g3g .g3g-institution-rail>li>time{position:relative;font:600 24px/1.3 var(--je-serif,Georgia,serif);font-variant-numeric:lining-nums tabular-nums;border-right:1px solid var(--line);padding-right:10px}
+.g3g .g3g-institution-rail>li>time{position:relative;font:600 24px/1.3 var(--je-serif,Georgia,serif);font-variant-numeric:lining-nums tabular-nums;white-space:nowrap;overflow-wrap:normal;word-break:normal;hyphens:none;border-right:1px solid var(--line);padding-right:10px}
 .g3g .g3g-institution-rail>li>time::after{content:'';position:absolute;top:11px;right:-4px;width:7px;height:7px;background:var(--paper);border:1px solid var(--ink);border-radius:50%}
 .g3g .g3g-institution-rail>li>div{padding:0 0 4px;border-bottom:1px solid var(--line);min-width:0}
 .g3g .g3g-kind{display:block;margin-bottom:3px}
@@ -116,7 +116,7 @@ html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
 @container(max-width:440px){
  .g3g .g3g-atlas-list{grid-template-columns:1fr}
  .g3g .g3g-source+.g3g-source{margin-inline-start:0}
- .g3g .g3g-institution-rail>li{grid-template-columns:55px minmax(0,1fr);gap:10px}
+ .g3g .g3g-institution-rail>li{grid-template-columns:64px minmax(0,1fr);gap:10px}
  .g3g .g3g-institution-rail>li>time{font-size:20px}
  .g3g .g3g-plan-branches{grid-template-columns:1fr;gap:0}
  .g3g .g3g-plan-branches li{border-bottom:0;padding:4px 0}
@@ -142,8 +142,10 @@ html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
  .g3g .g3g-chron-details summary{min-height:0;padding:4pt 0}
  /* Chromium print can expose closed native details content; exact print witness verifies each link. */
  .g3g .g3g-chron-details::details-content{content-visibility:visible;display:block}
- .g3g .g3g-institution-rail>li{grid-template-columns:56px minmax(0,1fr);gap:8px;padding-bottom:2px}
- .g3g .g3g-institution-rail>li>time{font-size:15pt}
+ .g3g .g3g-institution-rail>li{grid-template-columns:66px minmax(0,1fr);gap:8px;padding-bottom:2px}
+ .g3g .g3g-institution-rail>li>time{font-size:15pt;padding-right:6px}
+ .g3g-ecosystem>header{break-inside:avoid;break-after:avoid}
+ .g3g-ecosystem>.g3g-institution-rail{break-before:avoid}
  .g3g .g3g-institution-rail h4{font-size:11pt}
  .g3g .g3g-plan-branches{grid-template-columns:repeat(3,minmax(0,1fr))}
  .g3g .g3g-snapshot{grid-template-columns:repeat(3,minmax(0,1fr))}
