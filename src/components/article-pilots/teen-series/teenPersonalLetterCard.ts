@@ -5,6 +5,13 @@ export const TEEN_PERSONAL_LETTER_SOURCE = `src/pages/articles/${TEEN_PERSONAL_L
 
 const LETTER_MEDIA_BASE = '/images/teen-series/personal-letter';
 const LETTER_OG_IMAGE = `${LETTER_MEDIA_BASE}-og.webp`;
+const LETTER_COVER = `${LETTER_MEDIA_BASE}-cover.webp`;
+const LETTER_COVER_600 = `${LETTER_MEDIA_BASE}-cover-600w.webp`;
+const LETTER_COVER_1200 = `${LETTER_MEDIA_BASE}-cover-1200w.webp`;
+
+export const TEEN_PERSONAL_LETTER_ASSETS = [
+  LETTER_COVER, LETTER_COVER_600, LETTER_COVER_1200, LETTER_OG_IMAGE,
+] as const;
 
 interface LetterMedia {
   src: string;
@@ -60,8 +67,8 @@ export function resolveTeenPersonalLetterCard(
   // points to the committed asset family. No fallback to the trilogy hero.
   const alt = article.ogImageAlt?.trim();
   const media = article.ogImage === LETTER_OG_IMAGE && alt ? {
-    src: `${LETTER_MEDIA_BASE}-cover.webp`,
-    srcset: `${LETTER_MEDIA_BASE}-cover-600w.webp 600w, ${LETTER_MEDIA_BASE}-cover-1200w.webp 1200w, ${LETTER_MEDIA_BASE}-cover.webp 1600w`,
+    src: LETTER_COVER,
+    srcset: `${LETTER_COVER_600} 600w, ${LETTER_COVER_1200} 1200w, ${LETTER_COVER} 1600w`,
     alt,
   } : undefined;
   const content: LetterCardContent = {
@@ -82,4 +89,26 @@ export function resolveTeenPersonalLetterCard(
   }
 
   return dev ? { ...content, kind: 'preview', href: null } : null;
+}
+
+/**
+ * Fail closed when a declared artwork family is incomplete, including the OG
+ * derivative. A source-only preview may still omit artwork before import,
+ * but a published card must have the owner-selected media.
+ * The caller supplies a server-side file predicate; no browser dependency.
+ */
+export function assertTeenPersonalLetterMedia(
+  card: TeenPersonalLetterCard,
+  isFile: (url: string) => boolean,
+): void {
+  if (!card.media) {
+    if (card.kind === 'published') {
+      throw new Error('Teen personal letter: published card requires the approved artwork');
+    }
+    return;
+  }
+  const missing = TEEN_PERSONAL_LETTER_ASSETS.filter((url) => !isFile(url));
+  if (missing.length > 0) {
+    throw new Error(`Teen personal letter: missing artwork files: ${missing.join(', ')}`);
+  }
 }
