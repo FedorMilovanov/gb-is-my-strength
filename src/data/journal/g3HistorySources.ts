@@ -162,6 +162,104 @@ export const G3_HISTORY_SOURCES = [
     boundary: 'Аудио в этой редакционной волне не прослушано. Точный фрагмент о переезде требует сверки со звуком; дословные цитаты не приводятся.',
     returnHref: '#g3-evidence', researchLocator: 'HIST-15 / HIST-16',
   },
+  {
+    id: 'piper-2019', title: 'Джон Пайпер. The Invincible Power of Joy for World Missions',
+    period: '17 января 2019', role: 'Авторский текст проповеди',
+    url: 'https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions',
+    boundary: 'Письменный текст проповеди по Флп. 2:17–18, опубликованный автором. Приведён пересказ, а не дословная цитата из аудиозаписи.',
+    returnHref: '#g3-year-2019', researchLocator: 'G3-HIST-PUB-10',
+  },
+  {
+    id: '316-2024', title: 'Three Sixteen Publishing — отчёт за июнь 2024 года',
+    period: '5 июня 2024', role: 'Свидетельство издательства — участника',
+    url: 'https://316publishing.com/blogs/blog/june-2024-the-lsb-ppr-conferences-a-new-susan-heck-bible-study-more',
+    boundary: 'Абзац о майской встрече в Countryside Bible Church. Участие издательства не подтверждает весь состав докладчиков или посещаемость.',
+    returnHref: '#g3-year-2024', researchLocator: 'G3-HIST-PUB-11',
+  },
+  {
+    id: 'gnl-2018', title: 'GNL. 2018 G3 Conference',
+    period: 'Записи 2018 года', role: 'Каталог видеозаписей',
+    url: 'https://www.gnli.com/titles/2018-G3-Conference-or-G3-Ministries/2902',
+    boundary: 'Выбранные записи и имена, от Questions & Answers 1 до The Church is Ground-Zero for Discipleship. Не полный список участников и не стенограмма.',
+    returnHref: '#g3-catalogue-matrix', researchLocator: 'G3-HIST-PUB-12',
+  },
+  {
+    id: 'gnl-2021', title: 'GNL. 2021 G3 National Conference',
+    period: 'Записи 2021 года', role: 'Каталог видеозаписей',
+    url: 'https://www.gnli.com/titles/2021-G3-National-Conference-or-G3-Ministries/2906',
+    boundary: 'Выбранные записи и имена, от Christ as Eternal Judge до The Cosmic Triumph of Christ. Каталог не устанавливает форму выступления или полный состав участников.',
+    returnHref: '#g3-catalogue-matrix', researchLocator: 'G3-HIST-PUB-12',
+  },
+  {
+    "id": "challies-2018-video",
+    "title": "Тим Чаллис. From Every Tribe and Language and People and Nation",
+    "period": "23 января 2018",
+    "role": "Свидетельство автора выступления",
+    "url": "https://www.challies.com/vlog/from-every-tribe-and-language-and-people-and-nation/",
+    "boundary": "Сообщение автора о видеозаписи. Не подтверждение её просмотра редакцией.",
+    "returnHref": "#g3-year-2018",
+    "researchLocator": "G3-HIST-PUB-13"
+  },
+  {
+    "id": "challies-2018-lessons",
+    "title": "Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church",
+    "period": "2 февраля 2018",
+    "role": "Авторская статья",
+    "url": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/",
+    "boundary": "Обсуждение прихожан и урок о гостеприимстве.",
+    "returnHref": "#g3-year-2018",
+    "researchLocator": "G3-HIST-PUB-13"
+  },
+  {
+    "id": "firstlove-2018",
+    "title": "FirstLove Missions. G3 Conference in Atlanta, Georgia",
+    "period": "30 января 2018",
+    "role": "Отчёт участника выставки",
+    "url": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia",
+    "boundary": "Число распространённых экземпляров книг и брошюр по собственному отчёту, не число посетителей.",
+    "returnHref": "#g3-year-2018",
+    "researchLocator": "G3-HIST-PUB-13"
+  },
+  {
+    "id": "crotts-2021",
+    "title": "Джефф Кроттс. Gospel, Grace and Glory",
+    "period": "6 октября 2021",
+    "role": "Свидетельство участника",
+    "url": "https://anchoragegrace.org/gospel-grace-and-glory/",
+    "boundary": "Два отдельных выступления МакАртура по воспоминаниям автора; не стенограмма или подтверждение формата выступления.",
+    "returnHref": "#g3-growth",
+    "researchLocator": "G3-HIST-PUB-14"
+  },
+  {
+    "id": "benson-2022",
+    "title": "Рэнди Бенсон. The G3 Church Network",
+    "period": "9 февраля 2022",
+    "role": "Сообщение поместной церкви",
+    "url": "https://gardenchurchnb.com/the-g3-church-network/",
+    "boundary": "Решение общины и понимание сотрудничества пастором; не договор о членстве или общая практика сети.",
+    "returnHref": "#g3-growth",
+    "researchLocator": "G3-HIST-PUB-15"
+  },
+  {
+    "id": "white-manuscripts-2022",
+    "title": "Джеймс Уайт. Making Sense of Manuscripts",
+    "period": "15 сентября 2022 · дата записи на сайте",
+    "role": "Метаданные участника",
+    "url": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-making-sense-of-manuscripts-immanuel-bible-church-springfield-virginia-9-15-2022/",
+    "boundary": "Название и площадка, не точная дата выступления или содержание записи.",
+    "returnHref": "#g3-year-2022",
+    "researchLocator": "G3-HIST-PUB-16"
+  },
+  {
+    "id": "white-bible-2022",
+    "title": "Джеймс Уайт. How We Got Our Bible",
+    "period": "15 сентября 2022 · дата записи на сайте",
+    "role": "Метаданные участника",
+    "url": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-how-we-got-our-bible-immanuel-bible-church-springfield-virginia-9-15-2022/",
+    "boundary": "Название и площадка, не точная дата выступления или содержание записи.",
+    "returnHref": "#g3-year-2022",
+    "researchLocator": "G3-HIST-PUB-16"
+  },
 ] as const;
 
 export type G3HistorySourceId = (typeof G3_HISTORY_SOURCES)[number]['id'];
