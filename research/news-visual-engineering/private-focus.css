@@ -9,6 +9,8 @@
   }
   .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]):focus-visible {
     outline: 2px solid var(--je-ink); outline-offset: -2px;
+    /* Native keyboard scroll clearance; leave existing fragment top offsets intact. */
+    scroll-margin-block-end: 24px;
   }
   .news-private-review .news-bib-actions {
     display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px;
