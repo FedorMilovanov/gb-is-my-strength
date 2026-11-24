@@ -1,0 +1,172 @@
+{
+  "wave": "V27",
+  "checkedOn": "2026-11-24",
+  "authority": "Research G3_HISTORY/MEDIA_LEDGER.md; MAX0 directive #2383 comment 7131270265",
+  "priorHead": "2d70490c8bdba79f4214ccd09f705b690347bd93",
+  "summary": {
+    "priorDiscoveryRecords": 55,
+    "newAssetAddressRecords": 5,
+    "combinedDiscoveryRecords": 60,
+    "newVisuallyViewed": 0,
+    "newUnavailable": 5,
+    "newOriginalsAcquired": 0,
+    "newActualVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "rows": [
+    {
+      "id": "V-G3-056",
+      "kind": "retrospective-catalogue-banner-lead",
+      "eventYear": 2013,
+      "publicationDate": null,
+      "source": "https://www.gnli.com/titles/2013-G3-Conference-or-G3-Ministries/2908",
+      "assetUrl": "https://storage.gnli.com/yrtP7TDQjxzESottHbnRqYkY",
+      "filenameAsLinked": "9 G3 Ministries 2013 G3 Conference_Banner.png",
+      "episodesAsListed": 9,
+      "observation": "CATALOGUE_BODY_READ_IMAGE_LINK_REDIRECT_TARGET_UNAVAILABLE",
+      "placement": "Early conference era; catalogue illustration only",
+      "priority": "medium",
+      "creator": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "localBinary": null,
+      "originalDimensions": null,
+      "visual": null,
+      "warning": "Later catalogue design, date of artwork unknown; not proof of original conference poster, physical attendance or venue."
+    },
+    {
+      "id": "V-G3-057",
+      "kind": "retrospective-catalogue-banner-lead",
+      "eventYear": 2014,
+      "publicationDate": null,
+      "source": "https://www.gnli.com/titles/2014-G3-Conference-or-G3-Ministries/2909",
+      "assetUrl": "https://storage.gnli.com/mhQYwzTkwmBAbxWVLNJaGb6m",
+      "filenameAsLinked": "10 G3 Ministries 2014 G3 Conference_Banner.png",
+      "episodesAsListed": 11,
+      "observation": "CATALOGUE_BODY_READ_IMAGE_LINK_REDIRECT_TARGET_UNAVAILABLE",
+      "placement": "Early conference era; catalogue illustration only",
+      "priority": "medium",
+      "creator": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "localBinary": null,
+      "originalDimensions": null,
+      "visual": null,
+      "warning": "Later catalogue design, date of artwork unknown; not proof of original conference poster, physical attendance or venue."
+    },
+    {
+      "id": "V-G3-058",
+      "kind": "retrospective-catalogue-banner-lead",
+      "eventYear": 2015,
+      "publicationDate": null,
+      "source": "https://www.gnli.com/titles/2015-G3-Conference-or-G3-Ministries/2910",
+      "assetUrl": "https://storage.gnli.com/n4keYmbPEeTm3dWCgFgK16qu",
+      "filenameAsLinked": "11 G3 Ministries 2015 G3 Conference_Banner.png",
+      "episodesAsListed": 10,
+      "observation": "CATALOGUE_BODY_READ_IMAGE_LINK_REDIRECT_TARGET_UNAVAILABLE",
+      "placement": "Early conference era; catalogue illustration only",
+      "priority": "medium",
+      "creator": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "localBinary": null,
+      "originalDimensions": null,
+      "visual": null,
+      "warning": "Later catalogue design, date of artwork unknown; not proof of original conference poster, physical attendance or venue."
+    },
+    {
+      "id": "V-G3-059",
+      "kind": "retrospective-catalogue-banner-lead",
+      "eventYear": 2016,
+      "publicationDate": null,
+      "source": "https://www.gnli.com/titles/2016-G3-Conference-or-G3-Ministries/2912",
+      "assetUrl": "https://storage.gnli.com/NCvGyHN5aJjK588wZf7NqWJV",
+      "filenameAsLinked": "13 G3 Ministries 2016 G3 Conference_Banner.png",
+      "episodesAsListed": 8,
+      "observation": "CATALOGUE_BODY_READ_IMAGE_LINK_REDIRECT_TARGET_UNAVAILABLE",
+      "placement": "Early conference era; catalogue illustration only",
+      "priority": "medium",
+      "creator": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "localBinary": null,
+      "originalDimensions": null,
+      "visual": null,
+      "warning": "Later catalogue design, date of artwork unknown; not proof of original conference poster, physical attendance or venue."
+    },
+    {
+      "id": "V-G3-060",
+      "kind": "retrospective-catalogue-banner-lead",
+      "eventYear": 2017,
+      "publicationDate": null,
+      "source": "https://www.gnli.com/titles/2017-G3-Conference-or-G3-Ministries/2901",
+      "assetUrl": "https://storage.gnli.com/zcHFmdXXkfr3cYqFTvNXY3bd",
+      "filenameAsLinked": "2 G3 Ministries 2017 G3 Conference - 1_Banner.png",
+      "episodesAsListed": 18,
+      "observation": "CATALOGUE_BODY_READ_IMAGE_LINK_REDIRECT_TARGET_UNAVAILABLE",
+      "placement": "H04 catalogue/document context only",
+      "priority": "medium",
+      "creator": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "localBinary": null,
+      "originalDimensions": null,
+      "visual": null,
+      "warning": "Later catalogue design, date of artwork unknown; not proof of original conference poster, physical attendance or venue."
+    }
+  ],
+  "documentarySources": [
+    {
+      "source": "https://veritasdomain.wordpress.com/2015/01/25/complete-videos-from-g3-conference-2015/",
+      "publicationDate": "2015-01-25",
+      "observation": "Body read, lists 14 numbered sessions plus Q&A. Panel original https://new.livestream.com/g3conference/events/3748379 returned 502. Other listed URLs not individually tested. Do not infer full playback.",
+      "purpose": "Contemporary session-order recovery, source for Research comparison, not new visual asset."
+    },
+    {
+      "source": "https://farinvazquez.blogspot.com/2015/02/",
+      "publicationDate": "2015-02-23",
+      "observation": "Monthly archive body read, first-person account of Jan 22–24 conference at Pray's Mill; exact post https://farinvazquez.blogspot.com/2015/02/my-first-conference.html returned challenge redirect. No bypass.",
+      "purpose": "Early eyewitness context; possible permission contact through public author channels."
+    },
+    {
+      "source": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "publicationDate": "2015-02-24",
+      "observation": "Body and session notes read; V-G3-027 existing image not counted again.",
+      "purpose": "Independent contemporary session-order and content context."
+    },
+    {
+      "source": "https://www.sermonaudio.com/series/64422",
+      "observation": "Church broadcaster catalogue lists 11 audio sermons dated Jan 22–24 2015. No playback or acquisition. Generic speaker portraits excluded.",
+      "purpose": "Independent edition metadata; titles and durations must not be mapped blindly to video clocks."
+    },
+    {
+      "source": "https://hbcharlesjr.com/resource-library/articles/saturday-shout-outs-g3-_____-ministry-links/",
+      "observation": "Speaker's first-person confirmation of 2016 participation. Linked https://www.deliveredbygrace.com/reflections-on-the-2016-g3/ returned 502.",
+      "purpose": "Provenance cross-check, no new image."
+    },
+    {
+      "source": "https://rodiagnusdei.wordpress.com/2015/01/23/paul-washer-at-the-3g-conference/",
+      "publicationDate": "2015-01-23",
+      "observation": "Body refers to photo and a 65-minute session-six recording, excerpt around 25min. Actual image URL not exposed in retrieved body, no image counted.",
+      "purpose": "Historical AV lead only; not a verified frame timecode."
+    }
+  ],
+  "avAlternates": [
+    {
+      "session": "2014 Q&A",
+      "source": "https://www.gnli.com/videos/The-QandA-Panel-Discussion-or-Various-Speakers-or-2014-G3-Conference/337169",
+      "durationAsListed": "59:34",
+      "access": "Series body confirms link and duration; direct page only returns sign-in shell. No playback or timestamps.",
+      "next": "Confirm alternate edition and rights with publisher; original YouTube edition clock remains separate."
+    },
+    {
+      "session": "2017 Paul Washer session six",
+      "source": "https://www.gnli.com/videos/The-Sufficiency-of-Scripture-Gods-Church-Gods-Way-or-Paul-Washer/207494",
+      "durationAsListed": "56:20",
+      "access": "Series listing matched title already linked to V-G3-044; current direct page only sign-in shell. No playback.",
+      "next": "Compare with original edition only after authorized playback; no duplicate visual candidate."
+    }
+  ],
+  "counts": "56 catalogue entries across 5 years; already partly covered by Research, not newly acquired recordings or distinct attendance claims. GNL banners are 5 distinct URLs, pixel dedup not possible. No new dated documentary photo found.",
+  "limitations": "No binary, preview, contact sheet, frame, license or outbound contact. Five image redirect targets inaccessible. No further challenge retries. All 5 new rows are retrospective catalogue asset leads, not contemporaneous photos. No production changes."
+}

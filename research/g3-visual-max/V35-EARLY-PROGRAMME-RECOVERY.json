@@ -1,0 +1,161 @@
+{
+  "wave": "V35",
+  "checkedOn": "2026-11-24",
+  "priorHead": "05213943ffc1d99a00b7eeac968c9bc794a5ddf4",
+  "authority": "MAX0 W19; Research canonical ledgers; no source adoption or public writes",
+  "summary": {
+    "totalVisualCandidates": 78,
+    "everViewed": 51,
+    "newVisualCandidates": 0,
+    "newOriginalImages": 0,
+    "newVideoFrames": 0,
+    "publicEligible": 0,
+    "newDocumentaryLeads": 3
+  },
+  "programme2014": {
+    "source": "https://g3min.org/g3-2014-song-list/",
+    "publicationDate": "2014-01-29",
+    "access": "Search-indexed full programme text retrieved; direct open redirects to https://lumenaministries.com/. Indexed historical content, not current live original.",
+    "musicLeader": "Devon Kauflin, as credited by organizer",
+    "sessions": [
+      {
+        "date": "2014-01-23",
+        "session": 1,
+        "speaker": "Josh Buice",
+        "scripture": "Ephesians 4",
+        "gnlTitleMatch": false,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-23",
+        "session": 2,
+        "speaker": "Tim Challies",
+        "scripture": "1 Thessalonians 4:1–12",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-23",
+        "session": 3,
+        "speaker": "Conrad Mbewe",
+        "scripture": "John 4:21–24",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-23",
+        "session": 4,
+        "speaker": "Steven Lawson",
+        "scripture": "Romans 8:29–30",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-24",
+        "session": 5,
+        "speaker": "David Miller",
+        "scripture": "Matthew 16:13–18",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-24",
+        "session": 6,
+        "speaker": "Steven Lawson",
+        "scripture": "2 Timothy 4:1–5",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-24",
+        "session": 7,
+        "speaker": "John Snyder",
+        "scripture": null,
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-24",
+        "session": 8,
+        "speaker": "Conrad Mbewe",
+        "scripture": "Acts 16:11–15",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-24",
+        "session": 9,
+        "speaker": "Voddie Baucham",
+        "scripture": "Revelation 1:4–6",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-25",
+        "session": 10,
+        "speaker": "David Miller",
+        "scripture": "Hebrews 1",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      },
+      {
+        "date": "2014-01-25",
+        "session": 11,
+        "speaker": "Voddie Baucham",
+        "scripture": "2 Timothy 2",
+        "gnlTitleMatch": true,
+        "source": "indexed organizer retrospective, not heard/viewed"
+      }
+    ],
+    "comparison": {
+      "gnl": "https://www.gnli.com/titles/2014-G3-Conference-or-G3-Ministries/2909",
+      "organizerArchive": "https://g3min.org/archives/?conf=2014",
+      "matchingNumberedSessions": 10,
+      "programmeOnlySession": 1,
+      "catalogueOnlyQA": 1,
+      "warning": "Both lists contain 11 entries but differ in membership. GNL includes Q&A, absent from song list; numbered session 1 absent from GNL and indexed organizer video archive. No evidence that recording of opening talk survives. Do not change adopted matrix catalogue counts."
+    },
+    "editorialUse": "Candidate for early worship section or source-linked programme inset after Research approval; no lyrics, score, song reproduction or invented photographs. Use dates and selected factual descriptions only."
+  },
+  "otherLeads": [
+    {
+      "source": "https://g3min.org/2015-g3-conference-review/",
+      "publicationDate": "2015-01-30",
+      "access": "Indexed organizer review with breakout speakers and resource references, direct open redirects to Lumena",
+      "relevance": "Contemporary account of 2015; locate Chris King Puritan handout and Challies productivity worksheet from owner archive, not counted as acquired documents. Do not reuse indexed quotations as verified speech."
+    },
+    {
+      "source": "https://servantsofgrace.org/33-josh-buice-the-church-g3-conference-and-ministrypodcast/",
+      "publicationDate": "2016-06-29",
+      "access": "Actual publisher HTML read; episode 33 description discusses G3 origins and director's work. No playable audio URL exposed in retrieved text.",
+      "relevance": "Contemporary interview candidate; contact publisher https://servantsofgrace.org/ (contact page link exists), request original episode and transcript. No claims from unheard audio."
+    }
+  ],
+  "existingEvidenceUpgrade": [
+    {
+      "source": "https://www.youtube.com/watch?v=PFXQAOEVb28",
+      "sessionId": "G3-AV-2014-MBEWE-MISSION",
+      "access": "Indexed YouTube description explicitly attributes to 2014 G3; direct fetch failed",
+      "relevance": "Exact recording locator for existing session; no new session, frame or download."
+    },
+    {
+      "source": "https://founders.org/wp-content/uploads/2016/10/FoundersJournal94.pdf",
+      "access": "Existing V25 source; indexed PDF text read; screenshot requests zero-based pages 31 and 32 both 403. No page number verified or image acquired.",
+      "relevance": "Contemporary notice of 2014 venue and theme; not new candidate."
+    }
+  ],
+  "quarantine": [
+    {
+      "source": "https://smilegast.weebly.com/",
+      "reason": "Unattributed later repost resembling 2016 host retrospective; no original provenance, exclude all numeric claims and image labels."
+    }
+  ],
+  "dedup": "Default-branch Research search for song-list, 2015 review, 2016 episode and PFXQAOEVb28 returned zero; initial AV inventory existing Mbewe mission row identified. Search noncoverage not proof of novelty across unmerged branches; Research review needed.",
+  "resource": {
+    "rdcCalls": 0,
+    "ownerHeavyJobs": 0,
+    "cuda": false,
+    "windowsWebkit": false
+  },
+  "handoff": "Research: review opening session as separate programme-only evidence, preserve catalogue matrix scope. Editorial: use music-leader/programme context only after adoption. Rights holder contact drafts remain unsent. Early photograph request ACU from V33 remains priority; no new image or public claim."
+}

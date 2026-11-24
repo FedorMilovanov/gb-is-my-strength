@@ -1,0 +1,250 @@
+{
+  "wave": "V29",
+  "checkedOn": "2026-11-24",
+  "priorHead": "e21f1f9bede9e11af2256e4491895b065b3a9846",
+  "authority": "Research G3_HISTORY/MEDIA_LEDGER.md; MAX0 #2383 comment 7131270265; no rights/publication activation",
+  "summary": {
+    "priorDiscoveryRecords": 61,
+    "newAssetAddressRecords": 7,
+    "combinedDiscoveryRecords": 68,
+    "newVisuallyViewedDerivatives": 7,
+    "newOriginalsAcquired": 0,
+    "newActualVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "rows": [
+    {
+      "id": "V-G3-062",
+      "kind": "book-cover",
+      "title": "Why Are You Afraid?",
+      "author": "Darrell Harrison; Virgil Walker",
+      "publisher": "G3 Press",
+      "publicationYear": 2022,
+      "isbn": "9798985518702",
+      "source": "https://shop.g3min.org/products/why-are-you-afraid",
+      "assetUrl": "https://316publishing.com/cdn/shop/files/Why_are_you_afraid_1200x1200.jpg?v=1717613398",
+      "assetSource": "https://316publishing.com/products/copy-of-handbook-for-praying-scripture-featuring-the-legacy-standard-bible",
+      "corroboration": "https://g3min.org/book-review-why-are-you-afraid-by-darrell-harrison-and-virgil-walker/",
+      "format": "PRINT_COVER_RENDER",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Complete front-cover rendering on white field, dark sky, figure, title, authors, foreword credit Josh Buice, G3 Press mark.",
+      "placement": "HIGH: first-book announcement dated 2022; scheduled release Feb 14. Establish publishing activity, not proof of legal release date.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    },
+    {
+      "id": "V-G3-063",
+      "kind": "book-cover",
+      "title": "Musing on God's Music: Forming Hearts of Praise with the Psalms",
+      "author": "Scott Aniol",
+      "publisher": "G3 Press",
+      "publicationYear": 2023,
+      "isbn": "9798368970097",
+      "source": "https://www.storytel.com/tv/books/musing-on-gods-music-forming-hearts-of-praise-with-the-psalms-2559144",
+      "assetUrl": "https://m.media-amazon.com/images/I/518j2iEHwyL._SL500_.jpg",
+      "assetSource": "https://www.audible.com/pd/Musing-on-Gods-Music-Audiobook/B0CJVRJJQD",
+      "corroboration": "https://shop.g3min.org/collections/g3-press-books/products/musing-on-gods-music",
+      "format": "AUDIOBOOK_ART",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Square pale blue audiobook art; lyre on column, wreaths and decorative border, title and author visible.",
+      "placement": "MEDIUM: worship and audio publishing; not a print-cover witness. Print ISBN 9781959908036 is separately listed.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    },
+    {
+      "id": "V-G3-064",
+      "kind": "book-cover",
+      "title": "40 Days in Philippians: Finding Joy in Jesus",
+      "author": "Sean Cole",
+      "publisher": "G3 Press",
+      "publicationYear": 2023,
+      "isbn": "9781959908043",
+      "source": "https://shop.g3min.org/products/40-days-in-philippians",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/PhilippiansCover.jpg?v=1731608678&width=1080",
+      "assetSource": "https://shop.g3min.org/products/40-days-in-philippians",
+      "corroboration": "https://www.logos.com/product/376758/40-days-in-philippians-finding-joy-in-jesus",
+      "format": "CROPPED_PRINT_PREVIEW",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Yellow/white cover, wave motifs, title top partially cropped, author visible.",
+      "placement": "MEDIUM: devotional publishing; obtain uncropped artwork.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    },
+    {
+      "id": "V-G3-065",
+      "kind": "book-cover",
+      "title": "Dividing the Faithful: How a Little Book on Race Fractured a Movement Founded on Grace",
+      "author": "David Schrock",
+      "publisher": "G3 Press",
+      "publicationYear": 2023,
+      "isbn": "9781959908098",
+      "source": "https://shop.g3min.org/products/dividing-the-faithful",
+      "assetUrl": "https://316publishing.com/cdn/shop/files/dividing-the-faithful-david-schrock_700x700.jpg?v=1718814048",
+      "assetSource": "https://316publishing.com/products/dividing-the-faithful-by-david-schrock",
+      "corroboration": "https://www.abebooks.com/Dividing-Faithful-Little-Book-Race-Fractured/32367005820/bd",
+      "format": "ANGLED_PRINT_RENDER",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Angled physical-book rendering, red/orange title, terrain imagery, Christ Over All mark.",
+      "placement": "HIGH for publishing subject diversity only; not evidence of institutional endorsement of all arguments or subsequent crisis.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    },
+    {
+      "id": "V-G3-066",
+      "kind": "book-cover",
+      "title": "The War on Words: Ten Words Every Christian Should Fight For",
+      "author": "David de Bruyn",
+      "publisher": "G3 Press",
+      "publicationYear": 2023,
+      "isbn": "9781959908104",
+      "source": "https://shop.g3min.org/products/the-war-on-words",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/G3_WAR-WORDS_SINGLECOVER_o2.jpg?v=1732131666",
+      "assetSource": "https://shop.g3min.org/products/the-war-on-words",
+      "corroboration": "https://www.abebooks.fr/9781959908104/Words-Ten-Christian-Fight-Bruyn-1959908103/plp",
+      "format": "CROPPED_PRINT_PREVIEW",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Olive typographic field with words and distressed cream title; lower author/subtitle not visible in crop.",
+      "placement": "MEDIUM: cultural and linguistic themes; obtain full cover.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    },
+    {
+      "id": "V-G3-067",
+      "kind": "book-cover",
+      "title": "Galatians: Point-to-Point Bible Commentary",
+      "author": "Chipley McQueen Thornton",
+      "publisher": "G3 Press",
+      "publicationYear": null,
+      "isbn": "9798985518726",
+      "source": "https://shop.g3min.org/products/galatians",
+      "assetUrl": "https://316publishing.com/cdn/shop/files/galatians.jpg?v=1717612890",
+      "assetSource": "https://316publishing.com/products/galatians-point-to-point-bible-commentary-by-chipley-mcqueen-thornton",
+      "corroboration": "https://g3min.org/wp-content/uploads/Thornton-Galatians-Excerpt.pdf",
+      "format": "PRINT_COVER_RENDER",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Complete flat-looking cover on white field; deep green, gold rules, title/author, G3 mark.",
+      "placement": "HIGH: biblical commentary genre; catalogue edition year not established. PDF copyright 2022, different ISBN 9780999431740; do not merge editions.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    },
+    {
+      "id": "V-G3-068",
+      "kind": "book-cover",
+      "title": "Marriage to a Difficult Man: The Uncommon Union of Jonathan & Sarah Edwards",
+      "author": "Elisabeth D. Dodds",
+      "publisher": "G3 Press",
+      "publicationYear": 2023,
+      "isbn": "9781959908029",
+      "source": "https://shop.g3min.org/products/marriage-to-a-difficult-man",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/Difficult_Man_Cover_Single_image.jpg?v=1732128899",
+      "assetSource": "https://shop.g3min.org/products/marriage-to-a-difficult-man",
+      "corroboration": "https://books.google.com/books/about/Marriage_to_a_Difficult_Man.html?id=Mf3YzwEACAAJ",
+      "format": "CROPPED_PRINT_PREVIEW",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Sepia woodcut-style house, trees and horse; top title cropped, author and subtitle visible.",
+      "placement": "HIGH: reprint of historical Christian biography; not original 2023 authorship. G3 announcement of reissue and Google Books 2023 edition.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null
+    }
+  ],
+  "documentaryEvidence": [
+    {
+      "source": "https://g3min.org/book-review-why-are-you-afraid-by-darrell-harrison-and-virgil-walker/",
+      "observation": "Indexed publisher announcement calls the book first published by G3 Press and schedules release Feb 14 2022; independent proof of fulfillment not obtained.",
+      "importance": "High: founding publishing milestone; Research adoption required."
+    },
+    {
+      "source": "https://g3min.org/gloria-deo-journal-of-theology-now-available/",
+      "date": "2022-05-25",
+      "observation": "Indexed announcement attributed to Scott Aniol describes launch of volume 1; peer-reviewed journal, named editorial committee and six articles.",
+      "importance": "High: journal publishing separate from books."
+    },
+    {
+      "source": "https://g3min.org/gloria-deo-journal-of-theology/",
+      "volumes": [
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "issnOnline": "2771-6732",
+      "issnPrint": "2771-6724",
+      "observation": "Indexed journal page lists four annual volumes. Permission to print and digitally circulate unchanged publication with source acknowledgment; not a blanket license for isolated cover image, cropping, translation, other books or derivative artwork.",
+      "relatedPdf": "https://g3min.org/download/113100/?tmstv=1697760236",
+      "pdfAccess": "Retrieved indexed PDF text, but screenshot attempt redirected to Lumena Ministries. No PDF page image verified or acquired."
+    },
+    {
+      "source": "https://g3min.org/wp-content/uploads/Thornton-Galatians-Excerpt.pdf",
+      "observation": "Retrieved indexed title-page text identifies copyright 2022, G3 Press, ISBN 9780999431740, cover designer Joe Zarate; explicit all-rights-reserved wording. Screenshot attempt redirected to Lumena Ministries. Current shop barcode 9798985518726 differs. Do not assign designer to different edition or conflate ISBNs.",
+      "disposition": "Edition resolution HOLD."
+    },
+    {
+      "source": "https://shop.g3min.org/products/the-gospel-and-sexual-abuse",
+      "title": "The Gospel and Sexual Abuse",
+      "isbn": "9781959908159",
+      "year": 2023,
+      "corroboration": "https://bookshop.org/p/books/the-gospel-and-sexual-abuse-a-healing-balm-for-bruised-bodies-battered-minds-and-broken-hearts-t-samuel-nye/48edccbbf446ab97",
+      "observation": "Bibliographic lead only; no verified asset URL, not counted in visual records."
+    }
+  ],
+  "catalogueSourceDrift": {
+    "indexedShop": "https://shop.g3min.org/collections/g3-press-books",
+    "indexedProductCount": 61,
+    "warning": "Not unique historical titles, includes newer products/variants; no historical corpus total.",
+    "distributor": "https://316publishing.com/collections/g3-books",
+    "distributorObservation": "Collection body 12 listings; eight clicked collection-context product URLs returned 404. Search derivative previews still available. No current stock or rights claim.",
+    "redirectSample": "https://shop.g3min.org/collections/g3-press-books/products/musing-on-gods-music redirects to https://lumenapress.com/collections/g3-press-books/products/musing-on-gods-music (destination unavailable in retrieval); PDF screenshot redirects to Lumena Ministries. Indexed copy != live primary source."
+  },
+  "dedup": "Fetched all seven prior registries at exact prior HEAD; 61 unique IDs. Compared titles and exact asset URLs, no overlaps among 7 new records. Musing audiobook preview repeated by image search counted once. No pixel hash available.",
+  "selection": "Proposed editorial sequence: first book (Why Are You Afraid), biblical exposition (Galatians edition pending), worship and audio (Musing), devotional (Philippians), historical biography (Marriage), cultural debate (Schrock / de Bruyn). Select 3–4 rather than a wall of covers. Keep sensitive Nye subject separate from crisis section; avoid insinuation. Source links or original factual typography until rights cleared.",
+  "limitations": "Seven search previews inspected, no original binary download, contact sheet, rights clearance or outreach. No screenshot of PDF obtained; no raw PDF or cover committed. No product route changes."
+}

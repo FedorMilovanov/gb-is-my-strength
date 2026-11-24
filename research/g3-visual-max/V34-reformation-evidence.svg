@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 566" width="400" height="566" role="img" aria-labelledby="title desc">
+  <title id="title">Реформация, 9–11 мая 2024: три документальных свидетельства</title>
+  <desc id="desc">Регистрация G3 на Ticket Tailor сообщает о запланированных датах и площадке. Отчёт Three Sixteen Publishing от 5 июня 2024 подтверждает участие издательства. Годовой отчёт принимающей церкви от 2 февраля 2025 подтверждает проведение встречи 9–11 мая. Эти материалы не устанавливают посещаемость и полный состав докладчиков. Авторская схема, не архивная фотография.</desc>
+  <style>
+    svg{--paper:#faf7f0;--ink:#242b2b;--muted:#535b58;--rule:#b9b3a7;--gold:#735622;--teal:#245f58;--panel:#eae8df;--card:#f4f0e7}
+    @media(prefers-color-scheme:dark){svg{--paper:#202725;--ink:#f4f0e6;--muted:#c3c9c2;--rule:#666e63;--gold:#e5c37e;--teal:#9ed4c4;--panel:#2e3935;--card:#29312e}}
+    @media print{svg{--paper:#fff;--ink:#202525;--muted:#4b514c;--rule:#999;--gold:#735622;--teal:#245f58;--panel:#f0f0ed;--card:#fafafa}}
+    text{font-family:Arial,'DejaVu Sans',sans-serif;fill:var(--ink)}
+    .serif{font-family:Georgia,'DejaVu Serif',serif;font-weight:600}
+    .meta{fill:var(--gold);font-size:15px;font-weight:700;letter-spacing:1px}
+    .body{font-size:17px;fill:var(--muted)} .name{font-size:17px;font-weight:700} .date{font-size:16px;fill:var(--teal);font-weight:700}
+    .line{stroke:var(--rule);stroke-width:1} .card{fill:var(--card)} .dot{fill:var(--paper);stroke:var(--teal);stroke-width:2}
+  </style>
+  <rect width="400" height="566" rx="2" fill="var(--paper)"/>
+  <rect x="20" y="18" width="44" height="3" fill="var(--gold)"/>
+  <text x="20" y="42" class="meta">G3 · ИСТОРИЯ / 2024</text>
+  <text x="20" y="77" class="serif" font-size="27">От анонса</text>
+  <text x="20" y="109" class="serif" font-size="27">к свидетельству</text>
+  <text x="20" y="136" class="body">9–11 мая · The Reformation</text>
+  <path d="M20 151H380" class="line"/>
+  <path d="M32 176V425" stroke="var(--rule)" stroke-width="1.5" fill="none"/>
+  <circle cx="32" cy="181" r="6" class="dot"/>
+  <rect x="50" y="164" width="330" height="91" rx="2" class="card"/>
+  <text x="62" y="185" class="date">01 / ДО СОБЫТИЯ</text>
+  <text x="62" y="210" class="name">Регистрация G3</text>
+  <text x="62" y="234" class="body">План: даты и площадка.</text>
+  <circle cx="32" cy="287" r="6" class="dot"/>
+  <rect x="50" y="270" width="330" height="99" rx="2" class="card"/>
+  <text x="62" y="292" class="date">02 / 5 ИЮНЯ 2024</text>
+  <text x="62" y="318" class="name">Three Sixteen Publishing</text>
+  <text x="62" y="342" class="body">Отчёт издательства</text>
+  <text x="62" y="362" class="body">о собственном участии.</text>
+  <circle cx="32" cy="401" r="6" class="dot"/>
+  <rect x="50" y="384" width="330" height="99" rx="2" class="card"/>
+  <text x="62" y="406" class="date">03 / 2 ФЕВРАЛЯ 2025</text>
+  <text x="62" y="432" class="name">Countryside Bible Church</text>
+  <text x="62" y="456" class="body">Годовой отчёт: встреча</text>
+  <text x="62" y="476" class="body">проведена 9–11 мая.</text>
+  <rect x="20" y="499" width="360" height="49" rx="2" fill="var(--panel)"/>
+  <text x="30" y="519" font-size="15" font-weight="700">Граница свидетельств</text>
+  <text x="30" y="539" font-size="15" fill="var(--muted)">Не установлены посещаемость и состав.</text>
+</svg>

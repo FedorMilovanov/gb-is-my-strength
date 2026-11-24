@@ -1,0 +1,119 @@
+{
+  "wave": "V28",
+  "checkedOn": "2026-11-24",
+  "authority": "Research G3_HISTORY/AV_SESSION_INVENTORY_2026-11-24.md and MEDIA_LEDGER.md; MAX0 #2383 comment 7131270265",
+  "priorHead": "178ed28ad8f81b622a7601c9872371dc5234af07",
+  "summary": {
+    "priorDiscoveryRecords": 60,
+    "newAssetAddressRecords": 1,
+    "combinedDiscoveryRecords": 61,
+    "newVisuallyViewed": 0,
+    "newOriginalsAcquired": 0,
+    "newActualVideoFrames": 0,
+    "publicationEligible": 0,
+    "existingSessionsWithNewExactLocatorCrosswalk": 3
+  },
+  "regional2022": {
+    "source": "https://g3min.org/free-livestream-of-the-g3-regional-conference/",
+    "announcementDate": "2022-09-14",
+    "programDates": [
+      "2022-09-15",
+      "2022-09-16"
+    ],
+    "speakerArchive": "https://www.aomin.org/aoblog/category/road-trip/page/8/",
+    "originalLivestream": "https://vimeo.com/event/2428180/embed",
+    "livestreamObservation": "HTML response zero lines; no playback verified",
+    "sessions": [
+      {
+        "sessionId": "G3-AV-2022-WHITE-MANUSCRIPTS",
+        "exactVideo": "https://www.youtube.com/watch?v=XmlHYeT8vyc",
+        "sourcePage": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-making-sense-of-manuscripts-immanuel-bible-church-springfield-virginia-9-15-2022/",
+        "archivePostDate": "2022-09-15",
+        "scheduledEventDate": "2022-09-16",
+        "scheduleSlot": "Session 6",
+        "dateDisposition": "Schedule and post dates conflict; actual capture date unknown. Do not use archive post date as event date.",
+        "access": "Indexed YouTube title and publisher; no playback",
+        "alternate": "https://rumble.com/v1n1949-making-sense-of-manuscripts-james-white.html",
+        "alternateAccess": "Listing requires Premium; no access attempted."
+      },
+      {
+        "sessionId": "G3-AV-2022-WHITE-BIBLE",
+        "exactVideo": "https://www.youtube.com/watch?v=uTeLO-61FAA",
+        "archivePostDate": "2022-09-15",
+        "scheduledEventDate": null,
+        "dateDisposition": "Breakout not individually listed in main schedule; no exact capture day established.",
+        "access": "Participant archive link, direct fetch failed",
+        "alternateVideoIds": [
+          "lm0hHbpjbIE",
+          "68U0ZWaN_g8"
+        ],
+        "alternateDisposition": "Both indexed as G3 Ministries uploads Nov 2 2022, same title and description; edition relation and timing unknown. Not new session counts."
+      },
+      {
+        "sessionId": "G3-AV-2022-QA",
+        "exactVideo": "https://www.youtube.com/watch?v=KLvCYwdl5M4",
+        "archivePostDate": "2022-09-15",
+        "scheduledEventDate": "2022-09-15",
+        "scheduleSlot": "Session 3",
+        "scheduledPanelists": [
+          "Steven Lawson",
+          "Scott Aniol",
+          "Josh Buice",
+          "Darrell Harrison",
+          "Virgil Walker",
+          "James White"
+        ],
+        "access": "Participant archive link; direct fetch disabled.",
+        "dateDisposition": "Scheduled composition only; actual attendance and recording content not verified. Do not infer identity from images."
+      }
+    ]
+  },
+  "rows": [
+    {
+      "id": "V-G3-061",
+      "kind": "historical-announcement-image-lead",
+      "eventYear": 2022,
+      "source": "https://g3min.org/free-livestream-of-the-g3-regional-conference/",
+      "publicationDate": "2022-09-14",
+      "assetUrl": "https://g3min.org/wp-content/uploads/JT_Bible_FB_cover_1.jpg",
+      "observation": "CONTEMPORARY_ANNOUNCEMENT_BODY_READ_IMAGE_LINK_REDIRECT_TO_LUMENA",
+      "visual": null,
+      "creator": null,
+      "originalDimensions": null,
+      "placement": "H09 program context, not proof of event attendance or appearance",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "localBinary": null
+    }
+  ],
+  "thumbnailChecks": {
+    "method": "Attempted public standard thumbnail URLs through web retrieval, not downloads or verified frames",
+    "videoIds": [
+      "XmlHYeT8vyc",
+      "uTeLO-61FAA",
+      "KLvCYwdl5M4",
+      "XBdXKAKwb1g",
+      "WKeqskrPKfo"
+    ],
+    "result": "5/5 not accessible via retrieval. No asset count increase; no frame timecode."
+  },
+  "localCustody": {
+    "scope": "Read-only remote inventory of %LOCALAPPDATA%/G3Evidence and G3ResearchAV, extensions mp4/webm/mkv/mov/part/srt/json3 only.",
+    "observed": {
+      "completeVideoFiles": 0,
+      "partialPublisherMp3Bytes": 25967,
+      "qa2014CaptionBytes": 875800,
+      "piper2019CaptionBytes": 559686,
+      "washer2021AlternateCaptionBytes": 1006529,
+      "otherCaptionIds": [
+        "B_FBd9EWhJY",
+        "fPYDv3v7Gho",
+        "iDXBoK7X-zM"
+      ]
+    },
+    "limitations": "File listing only, not hashes or media content inspection; no claim about other directories or files. Initial command quoting error corrected with direct PowerShell command. No writes/download/ASR/CUDA."
+  },
+  "rightsDecision": "Originals/frames remain HOLD. Seek authorized original stills with exact session/edition/capture date, credit, web/PDF permission. No outreach sent.",
+  "handoff": "Research #1 may adopt exact 2022 IDs as edition metadata after independent review. MAX0 owns public article/claim activation. V28 does not modify existing canonical AV queue or production code.",
+  "limitations": "No verified playback, thumbnails, video frame, exact timestamps, or contact sheet. One new unavailable announcement asset locator only; no visual count inflation."
+}
