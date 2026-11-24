@@ -246,7 +246,7 @@ async function run(engine, name) {
   }
 }
 try{
-  server=spawn('python3',['-u','research/reader-w57-pilot/preview.py'],{
+  server=spawn(process.env.GB_READER_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),['-u','research/reader-w57-pilot/preview.py'],{
     cwd:ROOT,env:{...process.env,READER_W57_PORT:String(port),READER_W57_DIST:resolve(ROOT,'dist')},
     stdio:['ignore','pipe','pipe']});
   server.stderr.on('data',x=>console.error('W57_PREVIEW_ERROR '+String(x).slice(0,300)));
