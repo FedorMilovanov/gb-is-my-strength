@@ -40,6 +40,7 @@ const copy = async (from, to=from) => {
 console.log('EVIDENCE_DIR='+root);
 await symlink(join(repo,'node_modules'),join(root,'node_modules'),process.platform==='win32'?'junction':'dir');
 for (const path of ['src/components/journal/editorial','src/components/journal/JournalSourceReturn.astro','src/components/journal/journalEditorial.css','src/styles/editorial-edition.css','fonts']) await copy(path);
+await copy('research/news-visual-engineering/private-focus.css','src/news-private-focus.css');
 await copy('research/news-visual-engineering/exhibit-fixture.astro.txt','src/pages/index.astro');
 await copy('research/news-visual-engineering/exhibit-long-fixture.astro.txt','src/pages/long.astro');
 await writeFile(join(root,'package.json'),'{"type":"module","private":true}');

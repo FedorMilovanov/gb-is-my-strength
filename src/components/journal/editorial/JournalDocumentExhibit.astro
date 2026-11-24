@@ -84,8 +84,12 @@ const fmt = (value: string) => new Intl.DateTimeFormat('ru-RU', { dateStyle: 'lo
   .jdx-passage p:not(.jdx-locator) { margin: 0 0 .75rem; font: 400 calc(1rem * var(--gb-reader-font-scale, 1))/1.7 var(--je-body); }
   .jdx-citations { display: flex; flex-direction: column; align-items: flex-start; }
   .jdx-citation-locator { color: var(--je-muted); font-weight: 400; }
-  .jdx-passage a { max-width: 100%; display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
-  .jdx-passage a:focus-visible { outline: 2px solid var(--je-ink); outline-offset: 3px; border-radius: 2px; }
+  .jdx-passage a { max-width: 100%; display: inline-flex; align-items: center; min-height: 44px; min-width: 0; color: var(--je-gold); font: 600 .875rem/1.5 var(--je-ui); text-decoration: underline; }
+  @media screen {
+    .jdx-citations { gap: 4px; }
+    .jdx-passage a { padding: 6px; overflow-wrap: anywhere; border-radius: 2px; }
+    .jdx-passage a:focus-visible { outline: 2px solid var(--je-ink); outline-offset: -2px; }
+  }
   .jdx-commentary { margin-inline: clamp(1rem, 4cqi, 2rem); padding: .2rem 1.1rem .2rem 1rem; border-inline-start: 1px solid var(--je-rule); }
   .jdx-commentary dl { margin: 0; }
   .jdx-commentary div + div { border-block-start: 1px solid var(--je-rule); padding-block-start: .8rem; margin-block-start: .8rem; }

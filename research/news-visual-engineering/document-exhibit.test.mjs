@@ -170,7 +170,7 @@ for(const [label,xml,pages,format] of [
  ['invalid format',sheet(word()),1,'toString']
 ])test('paper bounds rejects '+label,()=>assert.throws(()=>validateWordBounds(xml,pages,format)));
 
-const validFocus={active:true,keyboard:true,targetInside:true,boundsInside:true,clipInside:true,clippingAncestors:[],indicatorVisible:true,outlineWidth:2,outlineStyle:'solid',outline:5,outlineColorVisible:true,unobscured:true,fragments:[{centerVisible:true},{centerVisible:true}],visible:true,scale:2,viewport:{width:320,height:640}};
+const validFocus={active:true,keyboard:true,targetInside:true,boundsInside:true,clipInside:true,clippingAncestors:[],indicatorVisible:true,outlineWidth:2,outlineStyle:'solid',outline:5,outlineOffset:3,outlineColorVisible:true,textClearance:true,neighborClearance:true,unobscured:true,fragments:[{centerVisible:true},{centerVisible:true}],visible:true,scale:2,viewport:{width:320,height:640}};
 test('focus witness accepts fully painted and unobscured 2x target',()=>assert.equal(assertFocusWitness(validFocus),validFocus));
 for(const [label,change] of [
  ['not native focus',s=>s.active=false],
@@ -178,7 +178,9 @@ for(const [label,change] of [
  ['missing painted indicator',s=>s.indicatorVisible=false],
  ['outline thinner than G3 standard',s=>s.outlineWidth=1],
  ['non-solid focus outline',s=>s.outlineStyle='auto'],
- ['outline offset leaves less than two painted pixels',s=>s.outline=1],
+ ['outline offset moves ring too far inward',s=>s.outlineOffset=-3],
+ ['outline crosses label',s=>s.textClearance=false],
+ ['outline crosses neighbor',s=>s.neighborClearance=false],
  ['transparent outline color',s=>s.outlineColorVisible=false],
  ['clipped focus bounds',s=>s.boundsInside=false],
  ['clipped by ancestor scrollport',s=>s.clipInside=false],
@@ -190,3 +192,5 @@ for(const [label,change] of [
  const invalid={...validFocus};change(invalid);
  assert.throws(()=>assertFocusWitness(invalid),/keyboard focus/);
 });
+
+test('focus witness accepts a full 2px inset ring only with verified label and neighbor clearance',()=>{const s={...validFocus,outline:0,outlineOffset:-2};assert.equal(assertFocusWitness(s),s);});

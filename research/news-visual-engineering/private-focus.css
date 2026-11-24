@@ -1,0 +1,23 @@
+/* Private fixture parity only: no public route imports this file.
+ * Keep the full 2px focus indicator inside the actual padded control.
+ * Bibliographic actions use the same wrapping/gap principle as G3. */
+@media screen {
+  .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]) {
+    display: inline-flex; align-items: center; min-height: 44px;
+    max-width: 100%; min-width: 0; padding: 6px;
+    white-space: normal; overflow-wrap: anywhere; border-radius: 2px;
+  }
+  .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]):focus-visible {
+    outline: 2px solid var(--je-ink); outline-offset: -2px;
+  }
+  .news-private-review .news-bib-actions {
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px;
+    margin-block-start: 12px;
+  }
+  .news-private-review .bibliography-item li + li { margin-block-start: 8px; }
+  .news-private-review .jdc-links { row-gap: 8px; }
+  .news-private-review .jhe-group li { padding-block: 8px; }
+}
+@media screen and (forced-colors: active) {
+  .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]):focus-visible { outline-color: Highlight; }
+}

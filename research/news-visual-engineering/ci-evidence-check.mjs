@@ -25,7 +25,7 @@ async function interactionEvidence(row,fixture,js,desktop,citations,external,ret
  assert.equal(i.tabs,citations+external+returns);assert.equal(i.citations,citations);assert.equal(i.external,external);assert.equal(i.returns,returns);
  assert.equal(i.reverse,true);assert.equal(i.scale,2);assert.deepEqual(i.viewport,{width:row.width,height:row.width<=430?640:768});assert.ok(Number.isInteger(i.scaledElements)&&i.scaledElements>0);
  assert.equal(i.focus.length,i.tabs);
- for(const state of i.focus){assert.ok(state.active===true&&state.keyboard===true&&state.visible===true&&state.targetInside===true&&state.boundsInside===true&&state.clipInside===true&&state.indicatorVisible===true&&state.outlineWidth>=2&&state.outlineStyle==='solid'&&state.outline>=2&&state.outlineColorVisible===true&&state.unobscured===true&&Array.isArray(state.fragments)&&state.fragments.length>0&&state.fragments.every(f=>f.centerVisible===true)&&state.scale===2);assert.deepEqual(state.viewport,i.viewport);}
+ for(const state of i.focus){assert.ok(state.active===true&&state.keyboard===true&&state.visible===true&&state.targetInside===true&&state.boundsInside===true&&state.clipInside===true&&state.indicatorVisible===true&&state.outlineWidth>=2&&state.outlineStyle==='solid'&&Number.isFinite(state.outlineOffset)&&state.outlineOffset>=-state.outlineWidth&&state.outlineColorVisible===true&&state.textClearance===true&&state.neighborClearance===true&&state.unobscured===true&&Array.isArray(state.fragments)&&state.fragments.length>0&&state.fragments.every(f=>f.centerVisible===true)&&state.scale===2);assert.deepEqual(state.viewport,i.viewport);}
  for(const suffix of ['citation-focus','return-focus','scale2-full','scale2-viewport'])await png(stem+'-'+suffix+'.png');
 }
 if(mode!=='generic'){

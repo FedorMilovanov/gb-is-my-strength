@@ -9,9 +9,11 @@ export const interactionTarget=(width,dark,js,desktop)=>width===320&&dark&&!js||
 export function assertFocusWitness(state,label='keyboard focus'){
   assert.ok(state.active,label+' did not receive native keyboard focus');
   assert.ok(state.keyboard,label+' is not :focus-visible');
-  assert.ok(state.outlineWidth>=2&&state.outlineStyle==='solid'&&state.outline>=2&&state.outlineColorVisible,
+  assert.ok(state.outlineWidth>=2&&state.outlineStyle==='solid'&&Number.isFinite(state.outlineOffset)&&state.outlineOffset>=-state.outlineWidth&&state.outlineColorVisible,
     label+' fails the existing G3 painted-outline contract');
   assert.ok(state.indicatorVisible,label+' has no painted focus indicator');
+  assert.ok(state.textClearance,label+' focus outline intersects the focused label');
+  assert.ok(state.neighborClearance,label+' focus outline intersects neighboring text');
   assert.ok(state.boundsInside,label+' focus indicator is clipped by viewport/header');
   assert.ok(state.clipInside,label+' focus indicator is clipped by an ancestor scrollport');
   assert.ok(Array.isArray(state.fragments)&&state.fragments.length>0&&state.fragments.every(fragment=>fragment.centerVisible===true),label+' actual link fragment is obscured');
@@ -66,7 +68,7 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
       const outline=Math.max(0,outlineWidth+outlineOffset);
       const outlineColorVisible=css.outlineColor!=='transparent'&&!/^rgba\([^)]*,\s*0(?:\.0+)?\s*\)$/u.test(css.outlineColor);
       const outlineStyle=css.outlineStyle;
-      const indicatorVisible=outlineWidth>=2&&outlineStyle==='solid'&&outline>=2&&outlineColorVisible;
+      const indicatorVisible=outlineWidth>=2&&outlineStyle==='solid'&&outlineOffset>=-outlineWidth&&outlineColorVisible;
       const paint={left:rect.left-outline,right:rect.right+outline,top:rect.top-outline,bottom:rect.bottom+outline};
       const header=document.querySelector('.mcp-top'),headerStyle=header&&getComputedStyle(header);
       const headerBottom=headerStyle&&headerStyle.display!=='none'&&headerStyle.visibility!=='hidden'&&Number(headerStyle.opacity)>0?Math.max(0,header.getBoundingClientRect().bottom):0;
@@ -81,6 +83,34 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
         return {rect:r.toJSON(),centerVisible:!!hit&&(hit===el||el.contains(hit)),hit:describe(hit)};
       });
       const centerVisible=fragments.length>0&&fragments.every(f=>f.centerVisible);
+      // Actual text ranges: the inset ring must not cross its own label or
+      // any neighbouring text, even when elementFromPoint reports success.
+      const textRects=node=>{
+        const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT),out=[];
+        while(walker.nextNode()){
+          const n=walker.currentNode;
+          if(!n.textContent.trim())continue;
+          const range=document.createRange();range.selectNodeContents(n);
+          for(const r of range.getClientRects())if(r.width>0&&r.height>0)out.push({rect:r.toJSON(),text:n.textContent.trim().slice(0,120),parent:n.parentElement});
+        }
+        return out;
+      };
+      const inset=Math.max(0,-outlineOffset);
+      const labelRects=textRects(el).map(({rect,text})=>({rect,text}));
+      const textClearance=labelRects.length>0&&labelRects.every(({rect:t})=>fragments.some(({rect:r})=>
+        t.left>=r.left+inset-1&&t.right<=r.right-inset+1&&t.top>=r.top+inset-1&&t.bottom<=r.bottom-inset+1));
+      const ringStrips=fragments.flatMap(({rect:r})=>{
+        const outer={left:r.left-outline,right:r.right+outline,top:r.top-outline,bottom:r.bottom+outline};
+        return [
+          {left:outer.left,right:outer.right,top:outer.top,bottom:outer.top+outlineWidth},
+          {left:outer.left,right:outer.right,top:outer.bottom-outlineWidth,bottom:outer.bottom},
+          {left:outer.left,right:outer.left+outlineWidth,top:outer.top,bottom:outer.bottom},
+          {left:outer.right-outlineWidth,right:outer.right,top:outer.top,bottom:outer.bottom}
+        ];
+      });
+      const intersects=(a,b)=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>.5&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>.5;
+      const neighborCollisions=textRects(el.closest('article')??document.body).filter(t=>!el.contains(t.parent)&&ringStrips.some(r=>intersects(r,t.rect))).map(({rect,text,parent})=>({rect,text,parent:describe(parent)}));
+      const neighborClearance=neighborCollisions.length===0;
       const clippingAncestors=[];
       for(let ancestor=el.parentElement;ancestor&&ancestor!==document.body&&ancestor!==document.documentElement;ancestor=ancestor.parentElement){
         const style=getComputedStyle(ancestor),r=ancestor.getBoundingClientRect();
@@ -94,7 +124,7 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
         if(clipped)clippingAncestors.push({tag:ancestor.tagName,id:ancestor.id,className:String(ancestor.className||''),clip});
       }
       const clipInside=clippingAncestors.length===0;
-      const samples=fragments.flatMap(({rect:r})=>[[r.left-outline+.5,(r.top+r.bottom)/2],[r.right+outline-.5,(r.top+r.bottom)/2],[(r.left+r.right)/2,r.top-outline+.5],[(r.left+r.right)/2,r.bottom+outline-.5]]);
+      const samples=ringStrips.map(r=>[(r.left+r.right)/2,(r.top+r.bottom)/2]);
       const overlayAt=(x,y)=>{
         if(x<0||y<0||x>=usableViewportWidth||y>=innerHeight)return false;
         const top=document.elementFromPoint(x,y);
@@ -108,10 +138,10 @@ export async function captureKeyboardScale(page,{url,dark,js,evidence,stem,scale
       return {
         active:document.activeElement===el,keyboard:el.matches(':focus-visible'),
         targetInside,boundsInside,clipInside,clippingAncestors,indicatorVisible,outlineWidth,outlineOffset,outline,outlineStyle,
-        outlineColor:css.outlineColor,outlineColorVisible,unobscured,fragments,overlayHits,
+        outlineColor:css.outlineColor,outlineColorVisible,unobscured,fragments,overlayHits,textClearance,neighborClearance,labelRects,neighborCollisions,
         target:{id:el.id,href:el.getAttribute('href'),text:el.textContent.trim().slice(0,240),rect:rect.toJSON(),scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom},
         activeElement:describe(document.activeElement),scrollY,scrollHeight:document.documentElement.scrollHeight,
-        visible:targetInside&&boundsInside&&clipInside&&indicatorVisible&&unobscured,
+        visible:targetInside&&boundsInside&&clipInside&&indicatorVisible&&unobscured&&textClearance&&neighborClearance,
         scale:2,viewport:{width:innerWidth,height:innerHeight},headerBottom,usableViewportWidth,paint
       };
     });
