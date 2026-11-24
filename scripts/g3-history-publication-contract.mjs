@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { G3_HISTORY_METADATA as history } from '../src/data/journal/g3HistoryMetadata.ts';
 import { G3_HISTORY_SOURCES as sources } from '../src/data/journal/g3HistorySources.ts';
 
+import { G3_EXPANSION_HANDOFF as expansion } from '../src/data/journal/g3ExpansionHandoff.ts';
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const json = p => JSON.parse(read(p));
@@ -33,6 +35,69 @@ test('Research #628 handoff is pinned, and the 2025–26 crisis seal is independ
   assert.ok(!oldCrisis.includes('G3-HIST-PUB-'), 'do not silently inflate old historical seal');
 });
 
+test('Adopted #632 text and catalogue intake has exact source anchors and separately adopted annual finance', () => {
+  assert.ok(expansion.researchHandoffUrl.includes('f49d20d31931ec389690b3033cefbb66cda67522'));
+  assert.deepEqual([...expansion.activeTextClaimIds], ['G3-HIST-PUB-10','G3-HIST-PUB-11']);
+  assert.deepEqual([...expansion.activeComponentClaimIds], ['G3-HIST-PUB-12','G3-PUB-017']);
+  assert.deepEqual([...expansion.pendingComponentClaimIds], []);
+  assert.deepEqual([...expansion.adoptedClaimIds], [...expansion.activeTextClaimIds,...expansion.activeComponentClaimIds,...expansion.pendingComponentClaimIds]);
+  assert.equal(expansion.rights, 'TEXTUAL_PARAPHRASE_LINK_AND_ORIGINAL_DATA_GRAPHICS_ONLY');
+  const expected = [
+    ['piper-2019','G3-HIST-PUB-10','https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions','#g3-year-2019'],
+    ['316-2024','G3-HIST-PUB-11','https://316publishing.com/blogs/blog/june-2024-the-lsb-ppr-conferences-a-new-susan-heck-bible-study-more','#g3-year-2024'],
+  ];
+  for (const [id,claim,url,returnHref] of expected) {
+    const source = bibliography.get(id);
+    assert.equal(source?.url,url);
+    assert.equal(source?.returnHref,returnHref);
+    assert.equal(source?.researchLocator,claim);
+    assert.ok(historicalText.includes(`cite('${id}')`));
+    assert.ok(historicalText.includes(`data-history-expansion-claim="${claim}"`));
+  }
+  assert.equal(sources.length,33);
+  assert.doesNotMatch(historicalText,/G3-PUB-017|PENDING_ADOPTION/);
+  assert.match(historicalText, /<G3SpeakerMatrix data=\{adoptedMatrixData\(\)\} claimId=\{adoptedMatrixClaim\}/);
+  for (const [year, url] of [[2018,'https://www.gnli.com/titles/2018-G3-Conference-or-G3-Ministries/2902'],[2021,'https://www.gnli.com/titles/2021-G3-National-Conference-or-G3-Ministries/2906']]) {
+    const source = bibliography.get('gnl-' + year);
+    assert.equal(source?.url,url);
+    assert.equal(source?.researchLocator,'G3-HIST-PUB-12');
+    assert.equal(source?.returnHref,'#g3-catalogue-matrix');
+    assert.ok(historicalText.includes(year + ": 'gnl-" + year + "'"));
+  }
+  const dir='src/components/journal/g3-visual/';
+  const base=json(dir+'matrix-data.json'), added=json(dir+'adopted-visual-data.json');
+  assert.equal(added.researchMerge,'f49d20d31931ec389690b3033cefbb66cda67522');
+  assert.equal(added.matrix.claimId,'G3-HIST-PUB-12');
+  const oldPairs=base.rows.flatMap(r=>r.years.map(y=>r.id+':'+y));
+  const newPairs=added.matrix.entries.map(r=>r.id+':'+r.year);
+  assert.equal(oldPairs.length,37);
+  assert.equal(newPairs.length,23);
+  assert.deepEqual(added.matrix.entries.filter(r=>r.year===2018).map(r=>r.id),['lawson','johnson','ascol','baucham','thomas','white','tripp','kruger','challies','miller','buice']);
+  assert.deepEqual(added.matrix.entries.filter(r=>r.year===2021).map(r=>r.id),['strachan','peace','aniol','coates','buck','thornton','lawson','riccardi','washer','baucham','white','johnson']);
+  assert.equal(new Set([...oldPairs,...newPairs]).size,60);
+  assert.equal(new Set([...base.rows.map(r=>r.id),...added.matrix.entries.map(r=>r.id)]).size,26);
+  assert.match(read(dir+'G3SpeakerMatrix.astro'),/Выборка из каталогов GNL; не полный список участников/);
+  assert.doesNotMatch(article,/PENDING_ADOPTION/);
+});
+
+test('R6 exact bounded Research adoption preserves all seven new source identities and four historical paragraphs', () => {
+  const r6=json('src/data/journal/g3R6Adopted.json');
+  assert.equal(r6.researchMerge,'efecb12fea0fcc481cf4930154dcae53d4e033f6');
+  assert.equal(r6.rights,'ORIGINAL_PARAPHRASE_AND_LINK_ONLY');
+  assert.equal(r6.deferred,'C-B');
+  assert.deepEqual(r6.projections.map(p=>p.id),['G3-HIST-PUB-13','G3-HIST-PUB-14','G3-HIST-PUB-15','G3-HIST-PUB-16','G3-PUB-018']);
+  for(const p of r6.projections.slice(0,4)) {
+    assert.ok(historicalText.includes('<p data-history-expansion-claim="'+p.id+'">'+p.readerSafeText+'</p>'));
+    for(const id of p.sources) {
+      const source=bibliography.get(id);
+      assert.equal(source?.url,r6.sources[id]);
+      assert.equal(source?.researchLocator,p.id);
+      assert.equal(source?.returnHref,p.id==='G3-HIST-PUB-16'?'#g3-year-2022':'#'+p.targetExistingAnchor);
+      assert.ok(historicalText.includes("cite('"+id+"')"));
+    }
+  }
+  assert.ok(read('src/components/journal/G3Dossier.astro').includes('<p data-publication-claims="G3-PUB-018">'+r6.projections[4].readerSafeText+'</p>'));
+});
 test('Reader copy has no draft overlays, forged audio access or hidden route', () => {
   assert.match(page, /<G3HistoryArticle\s*\/>/);
   assert.match(page, /data-pagefind-body/);
@@ -44,6 +109,7 @@ test('Reader copy has no draft overlays, forged audio access or hidden route', (
     assert.doesNotMatch(source, /data-research-candidates=/, `${name}: internal review ids should not surface in HTML`);
   }
   assert.ok(article.includes('Автор-редактор:'), 'preserve editorial attribution');
+  assert.doesNotMatch(article, /researchHandoffUrl|Принятый редакционный пакет Research|Основание источниковой сверки/u, 'internal handoff stays in metadata, not reader copy');
   assert.ok(!fs.existsSync(path.join(root, 'src/pages/_review/g3-history')), 'no unintended preview route');
 });
 
@@ -60,6 +126,11 @@ test('All prose citations and bibliography references resolve to a real source a
   }
   const cited = [...(article + '\n' + historicalText).matchAll(/cite\('([^']+)'\)/g)].map(x => x[1]);
   assert.ok(cited.length >= 18, 'do not regress source density');
+  assert.match(historicalText,/<G3HistoricalPanorama \/>/);
+  const atlas=read('src/components/journal/g3-graphics/G3HistoricalPanorama.astro');
+  const atlasKeys=[...atlas.matchAll(/historyCitation\('([^']+)'\)/g)].map(m=>m[1]);
+  assert.equal(atlasKeys.length,18);
+  for (const id of atlasKeys) assert.ok(bibliography.has(id),'atlas source missing: '+id);
   for (const id of cited) assert.ok(bibliography.has(id), `citation with no source: ${id}`);
   for (const id of ['invitation-2011','ascol-2018','gnl-2013','gnl-2019','gnl-2020','peters-2024'])
     assert.ok(cited.includes(id), `key adopted primary source lacks a nearby citation: ${id}`);
@@ -114,5 +185,10 @@ test('Built route is indexable, single-headed and has correct source anchors whe
   assert.ok(html.includes('data-pagefind-body'));
   assert.ok(html.includes('history-source-invitation-2011'));
   assert.ok(html.includes('history-source-ascol-2018'));
+  assert.equal((html.match(/id="cite-g3-matrix-[^"]+"/g)||[]).length,60,'all adopted catalogue pairs render once');
+  assert.equal((html.match(/id="history-source-gnl-2018"/g)||[]).length,1);
+  assert.equal((html.match(/id="history-source-gnl-2021"/g)||[]).length,1);
+  assert.equal((html.match(/data-publication-claims="G3-HIST-PUB-12"/g)||[]).length,1);
   assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('Не опубликовано'));
+  assert.doesNotMatch(html, /href=["'][^"']*github\.com\/FedorMilovanov\/Research\//i, 'no internal handoff anchor in public HTML');
 });
