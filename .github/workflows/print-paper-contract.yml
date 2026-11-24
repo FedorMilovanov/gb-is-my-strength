@@ -52,8 +52,11 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils python3-pil
-      - run: npm run strangler:build:production-like
+      - name: Build exact production-like dist
+        id: print_build
+        run: npm run strangler:build:production-like
       - name: Generate canonical reader PDF
+        id: canonical_pdf
         env:
           GB_READER_UI_ARTIFACT_DIR: reports/print-paper/canonical
         shell: bash
@@ -62,14 +65,17 @@ jobs:
           set -o pipefail
           node scripts/engine-sweep.mjs 2>&1 | tee reports/print-paper/canonical/engine-sweep.log
       - name: Audit canonical pages, palette and pagination
+        if: ${{ !cancelled() && (steps.canonical_pdf.outcome == 'success' || steps.canonical_pdf.outcome == 'failure') }}
         run: python3 scripts/print-paper-pdf-audit.py reports/print-paper/canonical/reader-print-a4.pdf --out reports/print-paper/canonical
       - name: Prove atomic and keep-with-next components across route families
         id: print_matrix
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
         env:
           GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-paper/matrix
         run: node scripts/print-pagination-contract.mjs
       - name: Prove both physical reversible-card states
         id: reversible_card
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
         env:
           GB_PRINT_REVERSIBLE_CARD_ARTIFACT_DIR: reports/print-paper/reversible-card
         run: node scripts/print-reversible-card-contract.mjs
