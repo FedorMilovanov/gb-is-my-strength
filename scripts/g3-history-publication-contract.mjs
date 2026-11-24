@@ -108,6 +108,11 @@ test('All prose citations and bibliography references resolve to a real source a
   }
   const cited = [...(article + '\n' + historicalText).matchAll(/cite\('([^']+)'\)/g)].map(x => x[1]);
   assert.ok(cited.length >= 18, 'do not regress source density');
+  assert.match(historicalText,/<G3HistoricalPanorama \/>/);
+  const atlas=read('src/components/journal/g3-graphics/G3HistoricalPanorama.astro');
+  const atlasKeys=[...atlas.matchAll(/historyCitation\('([^']+)'\)/g)].map(m=>m[1]);
+  assert.equal(atlasKeys.length,18);
+  for (const id of atlasKeys) assert.ok(bibliography.has(id),'atlas source missing: '+id);
   for (const id of cited) assert.ok(bibliography.has(id), `citation with no source: ${id}`);
   for (const id of ['invitation-2011','ascol-2018','gnl-2013','gnl-2019','gnl-2020','peters-2024'])
     assert.ok(cited.includes(id), `key adopted primary source lacks a nearby citation: ${id}`);

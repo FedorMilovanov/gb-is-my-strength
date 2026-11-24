@@ -47,6 +47,11 @@ assert.ok(annualRows.every(r => r[1]-r[2]===r[3]));
 assert.ok(expansion.activeComponentClaimIds.includes('G3-PUB-017'));
 const current = read('src/components/journal/G3Dossier.astro');
 const old = previous('src/components/journal/G3Dossier.astro');
+assert.match(current,/<G3ExpenseWaterfall total=\{financeDeltas\[0\].value\} conferences=\{financeDeltas\[1\].value\} advertising=\{financeDeltas\[2\].value\} \/>/);
+assert.match(current,/<G3EcosystemSpread \/>/);
+assert.doesNotMatch(current,/<JournalDataFigure\b/);
+const { financeModel } = await load('src/components/journal/g3-graphics/finance-model.mjs');
+assert.deepEqual(financeModel({total:1061800,conferences:817283,advertising:246511}).rows.map(r=>r.value),[817283,246511,-1994,1061800]);
 assert.match(current, /<G3AnnualFinance projection=\{adoptedAnnualFinance\(\)\} \/>/);
 const annualSource=read('src/components/journal/g3-visual/G3AnnualFinance.astro');
 assert.match(annualSource,/data-publication-claims=\{review \? undefined : "G3-PUB-017"\}/);
@@ -265,6 +270,15 @@ if (!process.argv.includes('--source-only')) {
       // branch is emitted: when dated correction records exist, the
       // "no material corrections" placeholder must NOT appear in dist.
       // Compare its real source-owned date and replacement text instead.
+      const waterfallSections=nodes.filter(node=>hasClass(node,'g3g-finance'));
+      assert.equal(waterfallSections.length,1,'one waterfall instead of duplicate comparison figures');
+      const waterfall=waterfallSections[0];
+      assert.equal(attr(waterfall,'data-publication-claims'),'G3-PUB-002');
+      assert.deepEqual(all(waterfall,node=>node.tagName==='td').map(cell=>Number(normalize(text(cell)).replace('−','-'))),[817283,246511,-1994,1061800]);
+      assert.equal(all(waterfall,node=>attr(node,'id')==='cite-finance-G3-S002-2').length,1,'preserve existing citation deep link');
+      const ecosystem=nodes.filter(node=>hasClass(node,'g3g-ecosystem'));
+      assert.equal(ecosystem.length,1);
+      assert.equal(all(ecosystem[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined).length,7);
       const annualSections=nodes.filter(node=>hasClass(node,'g3-annual-finance'));
       assert.equal(annualSections.length,1,'single adopted annual finance module');
       const annualSection=annualSections[0];
@@ -353,6 +367,12 @@ if (!process.argv.includes('--source-only')) {
         'internal Research links must not appear in public history');
       assert.equal(nodes.filter(node => hasClass(node, 'research-disclosure')).length, 0);
       assert.doesNotMatch(text(doc), /Принятый редакционный пакет Research|Основание источниковой сверки/u);
+      const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
+      assert.equal(atlas.length,1);
+      const atlasCitations=all(atlas[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined);
+      assert.equal(atlasCitations.length,18);
+      assert.equal(new Set(atlasCitations.map(node=>attr(node,'id'))).size,18);
+      for (const link of atlasCitations) assert.ok(byId(doc,attr(link,'href').slice(1)),'atlas citation has exact rendered destination');
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
       assert.equal(nodes.filter((node) => hasClass(node, 'article-header')).length, 1);

@@ -60,7 +60,9 @@ const report = { engine, suite, version: null, head: execFileSync('git', ['rev-p
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
-  ...['g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  ...['g3ExpansionHandoff.ts', 'g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
+  ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
@@ -197,6 +199,8 @@ const assertPublishedHistory = async (page, response) => {
   assert.equal(await page.locator('.g3-matrix[data-publication-claims="G3-HIST-PUB-12"]').count(),1);
   assert.equal(await page.locator('.g3-matrix .gm-row').count(),26);
   assert.equal(await page.locator('.g3-matrix [data-journal-citation]').count(),60);
+  assert.equal(await page.locator('.g3g-history').count(),1);
+  assert.equal(await page.locator('.g3g-history [data-journal-citation]').count(),18);
 };
 const assertAdoptedFinance = async (page) => {
   const annual=page.locator('.g3-annual-finance[data-publication-claims="G3-PUB-017"]');
@@ -206,10 +210,17 @@ const assertAdoptedFinance = async (page) => {
   assert.deepEqual(rows,[[2019,100,0,100,100],[2020,204510,29901,174609,174709],[2021,1471335,1054265,417070,591779],[2022,1735978,1010186,725792,1318931],[2023,1705689,2071986,-366297,1043850],[2024,1212253,1401429,-189176,854674],[2025,399645,950642,-550997,304459]]);
   assert.equal(await annual.locator('[data-journal-citation]').count(),2);
   assert.equal(await annual.locator('.gaf-hold').count(),0);
+  const waterfall=page.locator('.g3g-finance');
+  assert.equal(await waterfall.count(),1);
+  assert.equal(await waterfall.locator('#cite-finance-G3-S002-2').count(),1);
+  const deltas=await waterfall.locator('tbody td').evaluateAll(cells=>cells.map(cell=>Number(cell.textContent.replace(/\s+/gu,'').replace('−','-'))));
+  assert.deepEqual(deltas,[817283,246511,-1994,1061800]);
+  assert.equal(await page.locator('.g3g-ecosystem').count(),1);
+  assert.equal(await page.locator('.g3g-ecosystem [data-journal-citation]').count(),7);
 };
 const citationFor = (page, kind, second = false) => page.locator(kind === 'dossier'
-  ? second ? '#finance .je-data-figure [data-journal-citation]' : '#finance .source-note[data-journal-citation]'
-  : second ? '#g3-history [data-journal-citation]' : '#g3-growth [data-journal-citation][href="#history-source-challies"]');
+  ? second ? '#cite-finance-G3-S002-2' : '#finance .source-note[data-journal-citation]'
+  : second ? '#cite-g3-history-challies' : '#g3-growth [data-journal-citation][href="#history-source-challies"]');
 const sourceRoundTrip = async (page, citation, keyboard, onSource) => {
   const id = await citation.getAttribute('id');
   const hash = await citation.getAttribute('href');

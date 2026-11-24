@@ -6,6 +6,7 @@
  */
 import { historyCitation as cite } from '@/data/journal/g3HistorySources';
 import G3SpeakerMatrix from './g3-visual/G3SpeakerMatrix.astro';
+import G3HistoricalPanorama from './g3-graphics/G3HistoricalPanorama.astro';
 import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visual-inputs';
 ---
 <section id="g3-history" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-history-title">
@@ -28,6 +29,7 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
 <p class="je-history-footnote"><a id="cite-g3-history-challies" data-journal-citation href={cite('challies')}>Источник: Тим Чаллис, воспоминания участника</a></p>
     </div>
   </div>
+  <G3HistoricalPanorama />
 </section>
 
 <section id="g3-speakers" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-speakers-title">
