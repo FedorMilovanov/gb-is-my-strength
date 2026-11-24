@@ -1,0 +1,18 @@
+{
+  "geometry": {
+    "pass": 66,
+    "total": 66
+  },
+  "forced": {
+    "pass": 6,
+    "total": 6
+  },
+  "sourceReturn": {
+    "pass": 96,
+    "total": 96
+  },
+  "print": {
+    "pass": 6,
+    "total": 6
+  }
+}

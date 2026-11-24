@@ -1,0 +1,52 @@
+[
+  {
+    "file": "history-A4.pdf",
+    "pages": 2,
+    "textChars": [
+      1543,
+      1056
+    ],
+    "pass": true
+  },
+  {
+    "file": "history-Letter.pdf",
+    "pages": 2,
+    "textChars": [
+      1543,
+      1056
+    ],
+    "pass": true
+  },
+  {
+    "file": "ecosystem-A4.pdf",
+    "pages": 1,
+    "textChars": [
+      1489
+    ],
+    "pass": true
+  },
+  {
+    "file": "ecosystem-Letter.pdf",
+    "pages": 1,
+    "textChars": [
+      1489
+    ],
+    "pass": true
+  },
+  {
+    "file": "finance-A4.pdf",
+    "pages": 1,
+    "textChars": [
+      581
+    ],
+    "pass": true
+  },
+  {
+    "file": "finance-Letter.pdf",
+    "pages": 1,
+    "textChars": [
+      581
+    ],
+    "pass": true
+  }
+]
