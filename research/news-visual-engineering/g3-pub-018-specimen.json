@@ -1,0 +1,32 @@
+{
+  "status": "PRIVATE_REVIEW",
+  "productCommit": "8f9130a97a916e58c5dbac7ce169ee1b8b93d98f",
+  "productBlob": "ecae799c6be9ae6ad66cc905afd8a8372fb9f699",
+  "dossierBlob": "75935826aa1f622a85327ee8161f2ce2b098e036",
+  "researchCommit": "efecb12fea0fcc481cf4930154dcae53d4e033f6",
+  "researchBlob": "d7512eeb35591eea4ee3dc73c8046ca7eb23872f",
+  "claimId": "G3-PUB-018",
+  "readerSafeText": "Согласно заявлению совета G3 от 12 мая 2025 года, 4 мая пресвитеры Pray’s Mill предъявили Джошу Бьюсу доказательства связи с анонимными аккаунтами. После первоначального отрицания он признал своё участие. 8 мая совет единогласно принял его отставку с должности президента. В опубликованном 12 мая заявлении G3 объявила об отмене ближайшей национальной конференции и всех практикумов 2025 года и пообещала полностью вернуть регистрационные взносы.",
+  "sourceIdentity": "G3-S008",
+  "rights": "ORIGINAL_PARAPHRASE_AND_LINK_ONLY",
+  "exclusion": "Board statement attribution throughout. Announced cancellation and refund promise only; no actual refunds, all-year cancellation, independent guilt determination, or knowledge of each board member. Preserve PUB-005/006/007 and existing July9 paragraph.",
+  "sourceFamily": "G3 May12 board statement",
+  "locators": [
+    {
+      "key": "G3-S008",
+      "url": "https://web.archive.org/web/20250512232856id_/https://g3min.org/statement-regarding-josh-buice/",
+      "canonicalLocator": "Prior archive of May 12 board statement; retain canonical ledger coarse locator and existing seal",
+      "locatorState": "COARSE_LOCATOR_ONLY",
+      "label": "Архив заявления от 12 мая 2025 года · ранее зафиксированный общий локатор, не новая проверка"
+    },
+    {
+      "key": "buice-board-2025-reproduction",
+      "url": "https://the-end-time.org/2025/05/13/g3-president-josh-buice-resigns-amid-scandal/",
+      "canonicalLocator": "Explicit May12 Statement Regarding Josh Buice heading, May4/May8 paragraphs, cancellation/refund and board signature",
+      "locatorState": "EXACT_LOCATOR_VERIFIED",
+      "label": "Воспроизведение от 13 мая 2025 года · заголовок заявления от 12 мая, абзацы о 4 и 8 мая, отмене мероприятий и возврате взносов, подпись совета"
+    }
+  ],
+  "boundary": "Заявление самой G3, а не независимое расследование. Объявленные отмены и обещание возврата взносов не доказывают, что деньги были возвращены; заявление само по себе не устанавливает независимо виновность.",
+  "annotation": "Дата заявления, даты описанных событий и дата стороннего воспроизведения — разные вещи. Оба доступа относятся к одному заявлению совета, не к двум независимым свидетельствам."
+}

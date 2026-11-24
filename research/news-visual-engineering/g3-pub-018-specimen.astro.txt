@@ -1,0 +1,24 @@
+---
+import Exhibit from '../components/journal/editorial/JournalDocumentExhibit.astro';
+import SourceReturn from '../components/journal/JournalSourceReturn.astro';
+import {documentCitationId} from '../components/journal/editorial/document-exhibit-model.mjs';
+import specimen from '../specimen.json';
+import '../components/journal/journalEditorial.css';
+import '../../fonts/fonts.css';
+const { variant }=Astro.props;
+const before=variant==='before';
+const identity=specimen.sourceIdentity;
+const source={id:identity,href:'#src-G3-S008',label:'Заявление совета G3'};
+const authority={claims:[{id:specimen.claimId,references:specimen.locators.map(l=>({sourceId:identity,locator:l.label}))}],sources:[source]};
+const input={id:'g3-board-statement',mode:'editorial-paraphrase' as const,title:'Заявление совета G3 от 12 мая 2025 года',issuer:'Совет G3',deck:'Официальное заявление и его стороннее воспроизведение: один документ, одна семья свидетельств.',documentDate:'2025-05-12',publicationDate:'2025-05-12',captureDate:'2025-05-12',sections:[{id:'board-statement',heading:'Обстоятельства отставки и объявленные решения',summary:specimen.readerSafeText,claimId:specimen.claimId,sourceId:identity,locator:specimen.locators[0].label,significance:specimen.annotation,limitation:specimen.boundary}]};
+const fallback=before?'#cite-buice-G3-S008':`#${documentCitationId(input.id,'board-statement')}`;
+---
+<html lang="ru"><head><meta charset="utf-8"/><meta name="robots" content="noindex,nofollow"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>PRIVATE_REVIEW · G3-PUB-018</title></head>
+<body style="margin:0"><main class="journal-edition"><article data-journal-source-navigation style="max-width:1100px;margin:auto;padding:16px">
+<p class="review-label">PRIVATE_REVIEW · не для публикации · {before?'исходный абзац':'документальный разворот'}</p>
+<section id="buice" class="module" tabindex="-1"><div class="module-label">05 · Кризис 2025</div><div class="prose"><h2>Уход Джоша Бьюса и попытка продолжить работу</h2>
+{before ? <><p data-publication-claims={specimen.claimId}>{specimen.readerSafeText}</p><p>Важно сохранить источник утверждения: сведения о признании и обстоятельствах отставки в этой части исходят из заявления самой G3. Нельзя выдавать его за независимое расследование, которое проверило каждую деталь.</p><p class="source-note-paragraph"><a id="cite-buice-G3-S008" data-journal-citation class="source-note" href="#src-G3-S008">Официальные заявления G3 и даты назначений</a></p></> : <Exhibit {input} {authority}/>}
+</div></section>
+<section id="src-G3-S008" class="bibliography-item"><h2>Официальное заявление G3 о Josh Buice</h2><p>Одна семья свидетельств. Архивная запись не проверялась заново для этого макета. Стороннее воспроизведение датировано 13 мая 2025 года.</p><ul>{specimen.locators.map(l=><li><a href={l.url} rel="noopener noreferrer">{l.label}</a></li>)}</ul><SourceReturn href={fallback}/></section>
+</article></main></body></html>
+<style>.review-label{font:600 .8rem/1.5 var(--je-ui);color:var(--je-muted);border-bottom:1px solid var(--je-rule);padding-bottom:.75rem}.journal-edition .prose{max-width:none}</style>
