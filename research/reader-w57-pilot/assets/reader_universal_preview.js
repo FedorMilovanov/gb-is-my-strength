@@ -365,6 +365,16 @@
   const actions=shelf.querySelector('.np-u-native-toolrows');
   left.insertBefore(shelf,foot);
   actions.append(floater,bottom);
+  // The native tools shelf is hidden by ARGON product mode. Keep the actual
+  // menu/share/export owners in the permanent left utility row instead.
+  const utilityActions=Array.from(bottom.querySelectorAll(':scope > #hMobileMenuBtn,:scope > [data-action="share"],:scope > [data-action="print"]'));
+  if(utilityActions.length){
+    const utility=document.createElement('div');
+    utility.className='np-u-narrow-series-actions np-u-legacy-utility-actions';
+    utility.setAttribute('role','group');utility.setAttribute('aria-label','Меню сайта и действия с чтением');
+    left.insertBefore(utility,foot);
+    utility.append(...utilityActions);
+  }
   // ARGON LEFTNAV: the REAL Product Play, its rate buttons, a compact
   // audio caption and an inline speed chooser. All Product handlers persist.
   const playWrap=floater.querySelector('.gb-ember-playwrap');
@@ -871,11 +881,11 @@
   let slot=outline.querySelector(':scope > .np-u-narrow-series-actions');
   if(!footer)return;
   if(narrow){
-   const actions=Array.from(footer.querySelectorAll(':scope > [data-action="print"],:scope > [data-action="share"]'));
-   if(!slot&&actions.length===2){
+   const actions=Array.from(footer.querySelectorAll(':scope > #hMobileMenuBtn,:scope > [data-action="print"],:scope > [data-action="share"]'));
+   if(!slot&&actions.length>=2){
     slot=document.createElement('div');
     slot.className='np-u-narrow-series-actions';
-    slot.setAttribute('role','group');slot.setAttribute('aria-label','Действия с чтением');
+    slot.setAttribute('role','group');slot.setAttribute('aria-label','Меню сайта и действия с чтением');
     outline.querySelector('.np-u-left-foot').before(slot);
     for(const action of actions){
      const marker=document.createComment('original series action position');

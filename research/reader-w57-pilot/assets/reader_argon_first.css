@@ -247,7 +247,9 @@ body.np-u-preview.np-u-argon-shell > .page-wrap{
  font-size:10px;background:var(--np-u-paper);
  border-color:var(--np-u-rule);
 }
-/* Original native Share/Print controls remain available in the narrow ARGON rail. */
+/* Original native Menu/Share/Print controls remain available in the ARGON rail.
+   Legacy Product shelf is hidden at every desktop width, whereas series
+   restores the same nodes to its native footer above the narrow breakpoint. */
 #npUniversalDemo.np-u-argon .np-u-narrow-series-actions{
  display:flex;flex:none;align-items:center;justify-content:center;gap:8px;
  padding:5px 2px;border-top:1px solid var(--np-u-rule);background:var(--np-u-paper);
