@@ -1966,7 +1966,7 @@ async function auditGillGlossaryEligibility(browser) {
         article.innerHTML='<h2 id="a">A</h2><p id="wrap"><abbr id="first" class="gterm" data-term="key" tabindex="0">first<span class="gtip-brief">Definition</span></abbr></p><p id="wrap2"><abbr id="second" class="gterm" data-term="key" tabindex="0">second<span class="gtip-brief">Definition</span></abbr></p><h2 id="b">B</h2><abbr id="other" class="gterm" data-term="key" tabindex="0">other<span class="gtip-brief">Definition</span></abbr>';
       };
       await page.evaluate(setup);
-      await page.addScriptTag({content:"const article=document.querySelector('article'),sections=[{id:'a'},{id:'b'}],browserStore={active:0},pinnedLexiconIndex=null;const $=(q,s=document)=>s.querySelector(q),$=(q,s=document)=>[...s.querySelectorAll(q)];\n"+range+collector+resolver+"\nwindow.__gbEligibility={collectGlossaryTerms,resolveGlossaryAction};"});
+      await page.addScriptTag({content:"const article=document.querySelector('article'),sections=[{id:'a'},{id:'b'}],browserStore={active:0},pinnedLexiconIndex=null;const $=(q,s=document)=>s.querySelector(q),$$=(q,s=document)=>[...s.querySelectorAll(q)];\n"+range+collector+resolver+"\nwindow.__gbEligibility={collectGlossaryTerms,resolveGlossaryAction};"});
       const cases=[
         ['normal','none','first'],['excluded','exclude','second'],['class-excluded','class','second'],
         ['blank','blank','second'],['missing','missing','second'],['brief-class','brief-class','second'],
