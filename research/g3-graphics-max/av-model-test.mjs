@@ -19,4 +19,8 @@ test('missing reviewed source entry',()=>assert.equal(exhibitView({...v,publicat
 test('sparse source input fails closed',()=>assert.equal(exhibitView({...v,sourceLinks:Array(1)}),null));
 test('citation occurrence can vary without changing source identity',()=>assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],citationId:'cite-another-occurrence'}]}).sourceLinks[0].citationId,'cite-another-occurrence'));
 test('duplicate source identity even with new occurrence',()=>assert.equal(exhibitView({...v,sourceLinks:[v.sourceLinks[0],{...v.sourceLinks[0],citationId:'cite-other'}],publication:{...v.publication,sourceLinks:[v.publication.sourceLinks[0],v.publication.sourceLinks[0]]}}),null));
+test('non-string source fragment fails closed without throwing',()=>assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],href:Symbol('bad')}]}),null));
+test('coerced source fragment is not a reviewed string',()=>{const href=[v.sourceLinks[0].href];assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],href}],publication:{...v.publication,sourceLinks:[{...v.publication.sourceLinks[0],href}]}}),null)});
+test('non-string frame hash omits frame without throwing',()=>assert.equal(exhibitView({...v,frame:{...v.frame,sha256:Symbol('bad')}}).frame,null));
+test('coerced frame hash is not an approved hash string',()=>{const sha256=[v.frame.sha256];assert.equal(exhibitView({...v,frame:{...v.frame,sha256,rights:{...v.frame.rights,sha256}}}).frame,null)});
 console.log('AV_MODEL_PASS='+passes);
