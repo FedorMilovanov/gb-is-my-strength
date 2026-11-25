@@ -6,12 +6,12 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
 ---
 <div class="jn-slot" data-journal-narration data-pagefind-ignore data-tts-policy="exclude" hidden>
   <div class="jn-controls" role="group" aria-label="Озвучка основного текста">
+    <span class="jn-caption" aria-hidden="true">Озвучка</span>
     <button type="button" class="jn-play" data-fc-action="play" aria-label="Озвучить статью" aria-pressed="false">
       <span class="jn-dial" aria-hidden="true">
         <svg class="jn-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
         <svg class="jn-pause-icon" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
       </span>
-      <span data-jn-label aria-hidden="true">Слушать</span>
     </button>
     <select data-jn-rate aria-label="Скорость озвучки">
       {READER_SPEED_RATES.map(rate => <option value={rate}>{rate.toLocaleString('ru-RU')}×</option>)}
@@ -57,18 +57,20 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
     const play = slot.querySelector<HTMLButtonElement>('[data-fc-action="play"]');
     const stop = slot.querySelector<HTMLButtonElement>('[data-jn-stop]');
     const select = slot.querySelector<HTMLSelectElement>('[data-jn-rate]');
-    const label = slot.querySelector<HTMLElement>('[data-jn-label]');
     const status = slot.querySelector<HTMLElement>('[data-jn-status]');
-    if (!speech || !rate || !projection || !play || !stop || !select || !label || !status ||
+    if (!speech || !rate || !projection || !play || !stop || !select || !status ||
         projection.getRoot(document) !== main || !projection.getTtsSegments(document).length) return;
+    let started = false;
+    const syncDock = () => slot.toggleAttribute('data-jn-docked', started && slot.getBoundingClientRect().bottom <= 56);
     const sync = () => {
       const state = speech.getState();
       const active = ['starting', 'playing', 'paused'].includes(state.phase);
+      started ||= active;
       slot.toggleAttribute('data-jn-active', active);
+      syncDock();
       stop.disabled = !active;
       select.value = String(rate.read());
-      label.textContent = state.phase === 'playing' || state.phase === 'starting' ? 'Пауза' :
-        state.phase === 'paused' ? 'Продолжить' : 'Слушать';
+      play.title = play.getAttribute('aria-label') || 'Озвучить статью';
       status.textContent = state.phase === 'starting' ? 'Подготовка озвучки…' :
         state.phase === 'error' ? 'Не удалось воспроизвести. Повторите попытку.' :
         state.phase === 'complete' ? 'Озвучка завершена.' : '';
@@ -81,6 +83,13 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
     window.addEventListener('pageshow', sync);
     sync();
     slot.hidden = false;
+    // Observe the original placeholder, not the fixed controls. Docking is
+    // local presentation state only; stopping never strands keyboard focus
+    // on a control above the viewport.
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(syncDock, { rootMargin: '-56px 0px 0px 0px' });
+      observer.observe(slot);
+    } else window.addEventListener('scroll', syncDock, { passive: true });
   }
   // A failed capability import must not show a dead control or break reading.
   void mountNarration().catch(error => console.warn('[JournalNarration] unavailable', error));
@@ -90,6 +99,7 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
   .jn-slot { min-width: 0; max-width: 100%; min-height: 44px; }
   .jn-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; color: var(--je-ink); font: 600 .875rem/1.35 var(--je-ui); }
   .jn-controls :is(button, select) { min-height: 44px; min-width: 44px; max-width: 100%; color: var(--je-ink); background: var(--je-paper); font: inherit; border: 1px solid var(--je-rule); border-radius: 4px; cursor: pointer; }
+  .jn-caption { font-weight: 600; color: var(--je-muted); }
   .jn-controls button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 8px; }
   .jn-controls select { padding-inline: 5px; }
   .jn-controls :is(button, select):focus-visible { outline: 2px solid var(--je-gold); outline-offset: 2px; }
@@ -102,6 +112,6 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
   .jn-status { flex: 1 0 100%; color: var(--je-muted); font-weight: 400; overflow-wrap: anywhere; }
   .jn-status:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; }
   /* Same DOM controls stay reachable as the canonical narration follows text. */
-  .jn-slot[data-jn-active] .jn-controls { position: fixed; z-index: 900; inset-inline-end: max(12px, env(safe-area-inset-right)); inset-block-end: max(12px, env(safe-area-inset-bottom)); max-width: calc(100vw - 24px); padding: 7px; background: var(--je-paper); border: 1px solid var(--je-rule); box-shadow: 0 4px 18px #0002; border-radius: 6px; }
+  .jn-slot:is([data-jn-active], [data-jn-docked]) .jn-controls { position: fixed; z-index: 900; inset-inline-end: max(12px, env(safe-area-inset-right)); inset-block-end: max(12px, env(safe-area-inset-bottom)); max-width: calc(100vw - 24px); padding: 7px; background: var(--je-paper); border: 1px solid var(--je-rule); box-shadow: 0 4px 18px #0002; border-radius: 6px; }
   @media print { .jn-slot { display: none; } }
 </style>

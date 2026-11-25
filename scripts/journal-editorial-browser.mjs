@@ -60,7 +60,7 @@ const report = { engine, suite, version: null, head: execFileSync('git', ['rev-p
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
-  ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
+  ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalNarration.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3R6Adopted.json', 'g3ExpansionHandoff.ts', 'g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
   ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
   ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
@@ -69,6 +69,8 @@ const witnessFiles = [
   'src/styles/editorial-edition.css',
   'src/components/article-pilots/_shared/MobileChromePage.astro',
   'src/components/reader-platform/ReaderPreferencesHead.astro',
+  'src/components/reader-platform/ReaderSpeedContract.ts',
+  ...['reader-projection.js','reader-tts-defaults.js','reader-tts-click-guard.js','reader-tts-lifecycle.js','reader-tts.js','reader-tts-media-session.js'].map(name=>'src/runtime/'+name),
   'css/reader-preferences.css',
   'js/reader-preferences-head.js',
   'js/reader-preferences.js',
@@ -1274,6 +1276,49 @@ try {
         assert.equal(await rate.inputValue(),'1.25');
         await rate.selectOption(String(speech.rate));
         result.journalNarrationProjection= speech;
+        // Actual route + actual canonical TTS lifecycle; only the audio
+        // transport is deterministic. This is not an audible voice witness.
+        const speechContext=await contextFor(320,'light',{reducedMotion:'reduce'});
+        try {
+          const voicePage=await speechContext.newPage();
+          await voicePage.addInitScript(() => {
+            const fixture={speak:0,pause:0,resume:0,cancel:0,last:null};
+            window.__journalSpeechFixture=fixture;
+            Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class { constructor(text){this.text=text;} }});
+            Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
+              getVoices:()=>[],addEventListener:()=>{},
+              speak(u){fixture.last=u;fixture.speak++;u.onstart?.();},
+              pause(){fixture.pause++;},resume(){fixture.resume++;},cancel(){fixture.cancel++;}
+            }});
+            window.VoskTTSEngine={isSupported:()=>false,isReady:()=>false};
+          });
+          await ready(voicePage,route.url);
+          const slot=voicePage.locator('[data-journal-narration]');
+          const play=slot.locator('[data-fc-action="play"]'), stop=slot.locator('[data-jn-stop]');
+          await slot.waitFor({state:'visible'});
+          await play.focus(); await voicePage.keyboard.press('Enter');
+          await voicePage.waitForFunction(()=>window.GBReaderTTS?.getState().phase==='playing'&&window.__journalSpeechFixture.speak===1);
+          const first=await voicePage.evaluate(()=>({spoken:window.__journalSpeechFixture.last.text,title:document.querySelector('h1').textContent.replace(/\\s+/g,' ').trim()}));
+          assert.equal(first.spoken,first.title,'single canonical first narration segment');
+          await voicePage.evaluate(()=>window.__journalSpeechFixture.last.onboundary({charIndex:10}));
+          assert.ok(Number(await play.evaluate(el=>el.style.getPropertyValue('--p')))>0,'canonical progress ring receives progress');
+          await play.click();
+          await voicePage.waitForFunction(()=>window.GBReaderTTS.getState().phase==='paused');
+          assert.equal(await voicePage.evaluate(()=>window.__journalSpeechFixture.pause),1);
+          await play.click();
+          await voicePage.waitForFunction(()=>window.GBReaderTTS.getState().phase==='playing');
+          assert.equal(await voicePage.evaluate(()=>window.__journalSpeechFixture.resume),1);
+          await voicePage.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+          await voicePage.waitForFunction(()=>document.querySelector('[data-journal-narration]').hasAttribute('data-jn-docked'));
+          await stop.click();
+          assert.equal(await voicePage.evaluate(()=>window.GBReaderTTS.getState().phase),'idle');
+          assert.equal(await play.evaluate(el=>el===document.activeElement),true);
+          const geometry=await slot.locator('.jn-controls').evaluate(el=>({rect:el.getBoundingClientRect().toJSON(),w:innerWidth,h:innerHeight}));
+          assert.ok(geometry.rect.left>=0&&geometry.rect.right<=geometry.w&&geometry.rect.bottom<=geometry.h&&geometry.rect.top>=0,JSON.stringify(geometry));
+          await voicePage.emulateMedia({media:'print'});
+          assert.equal(await slot.isVisible(),false);
+          result.journalNarrationTransport={transport:'controlled Web Speech, not audible playback',firstSegment:true,playPauseResumeStop:true,progress:true,focus:true,geometry,printHidden:true};
+        } finally { await speechContext.close(); }
       }
       await page.evaluate(() => window.GBReaderPreferences.set({ fontScale: 1.4 }, { source: 'journal-qa' }));
       await page.evaluate(() => document.documentElement.style.fontSize = '200%');
