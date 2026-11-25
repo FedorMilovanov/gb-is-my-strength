@@ -23,7 +23,7 @@
 .reader-rail-more-sheet .reader-export-option small{color:inherit;opacity:.8}
 @media(forced-colors:active){.reader-export-menu{border:1px solid CanvasText}.reader-export-option:focus-visible{outline-color:Highlight}}
 @media print{
- .reader-export-menu,html body.np-u-preview > #npUniversalDemo,
+ .reader-export-menu,html body [data-print-policy="exclude"],html body.np-u-preview > #npUniversalDemo,
  html body.np-u-preview #npW57SelectionToolbar,html body.np-u-preview #npW57EdgeLayer,
  html body.np-u-preview .np-u-central-overview[data-np-u-central-overview=true],
  html body.np-u-preview .np-u-central-contents,
@@ -55,6 +55,10 @@
  html body article details:is(.shelf-about,[data-print-disclosure="editorial"]):not([data-print-policy="exclude"]) > summary + *{
   break-before:avoid-page;page-break-before:avoid;
  }
+ html body article .np-u-evidence-disclosure[data-print-disclosure="editorial"] .np-u-evidence-scroll{
+  overflow:visible!important;max-height:none!important;min-width:0!important;
+ }
+ html body article .np-u-evidence-disclosure[data-print-disclosure="editorial"] .np-u-evidence-mobile-hint{display:none!important}
  html body article :is(h5,h6){break-inside:avoid-page;page-break-inside:avoid}
  html body article table thead{display:table-header-group;break-inside:avoid-page;break-after:avoid-page}
  html body article table tbody > tr:first-child{break-before:avoid-page}

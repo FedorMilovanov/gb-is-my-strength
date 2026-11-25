@@ -568,6 +568,11 @@
     for (var i = 0; i < candidates.length; i++) {
       var node = candidates[i];
       if (closestAtomic(node)) continue;
+      if (node.matches && node.matches(EDITORIAL_DISCLOSURES) && node.querySelector('table')) {
+        mark(node, 'data-print-flow', 'splittable');
+        stats.splittable += 1;
+        continue;
+      }
       var table = node.matches && node.matches('table,.table-scroll');
       if (table) {
         markTable(node, pageHeight, stats);

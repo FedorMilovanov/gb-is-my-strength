@@ -68,6 +68,7 @@
    }
    const details=document.createElement('details');
    details.className='np-u-evidence-disclosure';
+   details.dataset.printDisclosure='editorial';
    const summary=document.createElement('summary');
    summary.className='np-u-evidence-disclosure__summary';
    const name=document.createElement('span');name.textContent=label;

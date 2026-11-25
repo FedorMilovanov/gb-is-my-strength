@@ -538,6 +538,7 @@ try {
           flow: node.getAttribute('data-print-flow') || '',
           breakInside: style.breakInside,
           height: Math.round(node.getBoundingClientRect().height),
+          atomicLimit: runtime.pageContentHeight * 0.84,
           initial,
           toggled
         };
@@ -587,8 +588,12 @@ try {
     if (id === 'gill-part1' && !(setup.flipCards || []).length) report.failures.push(`${id}: reversible-card fixture missing`);
     const badCards = (setup.flipCards || []).filter((item) => {
       const modes = [item.initial, item.toggled];
-      return item.flow !== 'atomic'
-        || !String(item.breakInside).includes('avoid')
+      const oversized=item.height>item.atomicLimit;
+      // A card taller than the printable budget must remain splittable:
+      // forcing it atomic cannot preserve its entire visible face on paper.
+      // All cards still have to expose exactly one static, untransformed face.
+      return item.flow !== (oversized?'splittable':'atomic')
+        || (oversized?item.breakInside!=='auto':!String(item.breakInside).includes('avoid'))
         || modes.some((mode) => mode.innerPosition !== 'static'
           || mode.innerTransform !== 'none'
           || mode.visibleFaces.length !== 1
