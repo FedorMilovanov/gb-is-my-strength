@@ -20,17 +20,12 @@ function publishedLabel(count: number) {
 }
 ---
 <section class="karty-hero" aria-labelledby="mapsTitle">
-  <div class="karty-hero__inner">
+  <div class="karty-hero-layout">
     <div class="karty-hero__copy">
-      <p class="karty-kicker">Премиальная витрина карт</p>
+      <p class="karty-kicker">География Священного Писания</p>
       <h1 id="mapsTitle">Библейские карты</h1>
       <div class="he" lang="he">מַפּוֹת</div>
-      <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло техническую проверку и обязательный ручной визуальный контроль.</p>
-      <div class="karty-hero__meta" role="group" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
-        <div class="karty-stat"><b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span></div>
-        <div class="karty-stat"><b>{auditCount}</b><span>на аудите</span></div>
-        <div class="karty-stat"><b>0</b><span>черновиков на витрине</span></div>
-      </div>
+      <p class="desc">Проследите библейские события на карте: от городов и рек до путей через пустыню. Каждая открытая карта сопровождается историческим контекстом и пояснениями к спорным местоположениям.</p>
     </div>
     <div class="karty-feature-list" data-karty-published-list>
       {publishedRecords.map((record) => {
@@ -57,5 +52,59 @@ function publishedLabel(count: number) {
         );
       })}
     </div>
+      <div class="karty-hero__meta" role="group" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
+        <div class="karty-stat"><b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span></div>
+        <div class="karty-stat"><b>{auditCount}</b><span>на аудите</span></div>
+        <div class="karty-stat"><b>0</b><span>черновиков на витрине</span></div>
+      </div>
   </div>
 </section>
+<style>
+  .karty-hero-layout {
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));
+    align-items:start;
+    gap:clamp(1rem,2.5vw,1.75rem);
+    padding:clamp(1.1rem,3vw,2rem);
+  }
+  .karty-hero-layout h1 {
+    font-size:clamp(2rem,4.15vw,3.5rem);
+    line-height:1.05;
+    hyphens:none;
+    overflow-wrap:normal;
+  }
+  .karty-hero-layout .he { direction:rtl; text-align:left; font-size:1.8rem; }
+  .karty-hero-layout .desc { font-family:"Source Sans 3",Inter,system-ui,sans-serif; font-size:1rem; line-height:1.65; }
+  .karty-feature-list { display:grid; gap:1rem; min-width:0; }
+  .karty-feature { min-height:300px; }
+  .karty-feature:focus-visible { outline:3px solid var(--kh-accent); outline-offset:4px; }
+  .karty-hero-layout .karty-hero__meta {
+    grid-column:1/-1;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));
+    margin-top:0;
+    padding-top:1rem;
+    border-top:1px solid var(--kh-line);
+  }
+  .karty-hero-layout .karty-stat {
+    padding:.5rem .65rem;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    display:flex;
+    align-items:center;
+    gap:.65rem;
+  }
+  .karty-hero-layout .karty-stat:last-child { grid-column:auto; }
+  .karty-hero-layout .karty-stat b { font-size:1.45rem; }
+  .karty-hero-layout .karty-stat span { font-size:.83rem; text-transform:none; letter-spacing:0; margin:0; line-height:1.3; }
+  @media(max-width:560px) {
+    .karty-hero-layout .karty-hero__meta { gap:.2rem; grid-template-columns:minmax(0,1fr); }
+    .karty-feature { min-height:250px; }
+  }
+  @media(prefers-reduced-motion:reduce) {
+    .karty-feature::before { transition:none; }
+    .karty-feature:hover::before { transform:none; filter:none; }
+  }
+</style>
