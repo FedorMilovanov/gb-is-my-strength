@@ -545,6 +545,10 @@ async function auditSeries(page, engine, origin, entry, viewport) {
 async function auditReaderMeasureCapacity(page, engine, origin, route) {
   const widths = [1024, 1280, 1359, 1360, 1440, 1599, 1600, 1920];
   const modes = [['narrow', 36], ['normal', 46], ['wide', 53]];
+  // Switch the outgoing document to explicit Classic before resizing. ARGON
+  // intentionally reloads on a real 1121px crossing; issuing goto immediately
+  // after resizing that document races its legitimate mode-change navigation.
+  await gotoClassic(page,engine,origin,route);
 
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });

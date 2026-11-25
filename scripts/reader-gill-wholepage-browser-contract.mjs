@@ -106,8 +106,10 @@ async function runAtlasMatrix(){
   for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
     const browser=await driver.launch();
     try{
-      for(const js of [false,true]){
-        const ctx=await browser.newContext({javaScriptEnabled:js,serviceWorkers:'block',reducedMotion:'reduce'});
+      // Each matrix width starts with a fresh fixed-size context. Resizing an
+      // outgoing ARGON document would legitimately reload it at the breakpoint.
+      for(const js of [false,true])for(const width of [390,1440]){
+        const ctx=await browser.newContext({viewport:{width,height:844},javaScriptEnabled:js,serviceWorkers:'block',reducedMotion:'reduce'});
         try{
           const page=await ctx.newPage(),errors=[];
           page.on('pageerror',e=>errors.push(e.message));
@@ -115,12 +117,12 @@ async function runAtlasMatrix(){
             const route=atlasExpected[index].href;
             const bytes=fs.readFileSync(path.join(dist,route.slice(1),'index.html'));
             const sha=createHash('sha256').update(bytes).digest('hex');
-            for(const width of [390,1440])for(const dark of [false,true]){
+            for(const dark of [false,true]){
               errors.length=0;
-              await page.setViewportSize({width,height:844});
               const response=await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:30000});
               assert.equal(response.status(),200);
               assert.ok((await response.body()).equals(bytes),'HTTP response differs from built dist');
+               assert.equal(await page.evaluate(()=>innerWidth),width,'fixed matrix viewport must match its label');
               await page.evaluate(async dark=>{
                 document.documentElement.classList.toggle('dark',dark);
                 await document.fonts.ready;
@@ -151,6 +153,7 @@ async function runAtlasMatrix(){
     }finally{await browser.close();}
   }
   assert.equal(rows.length,144);
+  assert.equal(new Set(rows.map(r=>[r.engine,r.index,r.width,r.dark,r.js].join(':'))).size,144,'all matrix cases must be distinct');
   console.log('GILL ATLAS EXACT DIST: 144/144 PASS; theme projection (not theme-control test)');
 }
 
