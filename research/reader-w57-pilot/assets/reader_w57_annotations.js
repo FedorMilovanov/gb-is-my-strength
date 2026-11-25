@@ -17,7 +17,8 @@
   };
   // The canonical Product library now owns capture, projection and exact
   // anchors at both widths. Do not revive a second W57 resolver here.
-  const {capture,resolve} = window.GBReaderAnchors || {};
+  const capture=(...args)=>window.GBReaderAnchors?.capture(...args);
+  const resolve=(...args)=>window.GBReaderAnchors?.resolve(...args);
   function start(){
     if(!document.body.classList.contains('np-w57-ready')||!window.GBHighlights)return false;
     if(window.__NP_W57_ANNOTATIONS__)return true;
@@ -141,9 +142,24 @@
       return missing;
     }
     function say(text){status.textContent=text;status.hidden=!text}
+    let rangeRepaintPending=false;
     function repaint(){
       const saved=entries();
       count.textContent=String(saved.length);
+      if(saved.length&&!window.GBReaderAnchors){
+        if(rangeRepaintPending)return;
+        rangeRepaintPending=true;
+        list.replaceChildren();
+        const message=document.createElement('li');message.className='np-w57-tool-help';
+        message.textContent='Загружаются привязки к тексту…';list.append(message);
+        window.GBHighlights.ensureRanges().then(()=>{
+          rangeRepaintPending=false;repaint();
+        },()=>{
+          rangeRepaintPending=false;
+          message.textContent='Не удалось загрузить привязки. Откройте раздел помет повторно.';
+        });
+        return;
+      }
       const missing=paint();list.replaceChildren();
       if(!saved.length){
         const msg=document.createElement('li');msg.className='np-w57-tool-help';
@@ -346,13 +362,30 @@
       const top=r.top-h-12>=8?r.top-h-12:Math.min(innerHeight-h-9,r.bottom+9);
       toolbar.style.left=left+'px';toolbar.style.top=Math.max(8,top)+'px';
     }
-    let selectFrame=0;
+    let selectFrame=0, selectionEpoch=0;
+    function dismissSelection(){
+      selectionEpoch++;
+      if(selectFrame)cancelAnimationFrame(selectFrame);
+      selectFrame=0;lastSelection=null;toolbar.hidden=true;
+    }
     function selectionChanged(){
+      const epoch=++selectionEpoch;
       if(selectFrame)cancelAnimationFrame(selectFrame);
       selectFrame=requestAnimationFrame(()=>{
         selectFrame=0;
         if(!toolbar.hidden&&toolbar.matches(':hover'))return;
-        showToolbar(capture(article));
+        if(window.GBReaderAnchors){showToolbar(capture(article));return}
+        const sel=window.getSelection();
+        if(!sel||sel.isCollapsed||!sel.rangeCount){dismissSelection();return}
+        const r=sel.getRangeAt(0),url=location.href;
+        const stamp=[r.startContainer,r.startOffset,r.endContainer,r.endOffset,r.toString()];
+        window.GBHighlights.ensureRanges().then(()=>{
+          const current=window.getSelection();
+          if(epoch!==selectionEpoch||url!==location.href||!article.isConnected||!current?.rangeCount||current.isCollapsed)return;
+          const live=current.getRangeAt(0);
+          if(!stamp.every((value,i)=>value===[live.startContainer,live.startOffset,live.endContainer,live.endOffset,live.toString()][i]))return;
+          showToolbar(capture(article));
+        }).catch(()=>{if(epoch===selectionEpoch)dismissSelection()});
       });
     }
     document.addEventListener('mouseup',e=>{
@@ -371,16 +404,16 @@
       },110);
     });
     document.addEventListener('keydown',e=>{
-      if(e.key==='Escape'&&!toolbar.hidden){toolbar.hidden=true;return}
+      if(e.key==='Escape'){dismissSelection();return}
       if((e.shiftKey&&e.key.startsWith('Arrow'))||e.key==='Shift'){
         clearTimeout(selectionTimer);
         selectionTimer=setTimeout(selectionChanged,120);
       }
     });
     document.addEventListener('pointerdown',e=>{
-      if(!toolbar.hidden&&!toolbar.contains(e.target)&&!article.contains(e.target))toolbar.hidden=true;
+      if(!toolbar.contains(e.target)&&!article.contains(e.target))dismissSelection();
     },true);
-    document.addEventListener('scroll',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
+    document.addEventListener('scroll',dismissSelection,{passive:true});
     toolbar.addEventListener('click',async e=>{
       const b=e.target.closest('[data-w57-action]');if(!b)return;
       const kind=b.dataset.w57Action;
@@ -530,7 +563,8 @@
     }
     window.addEventListener('storage',onExternalLibraryStorage);
     window.addEventListener('gb:library-committed',e=>onLibraryCommit(e.detail?.key));
-    window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
+    window.addEventListener('resize',dismissSelection,{passive:true});
+    section.addEventListener('toggle',()=>{if(section.open&&!window.GBReaderAnchors)repaint()});
     repaint();
     window.__NP_W57_ANNOTATIONS__={
       ready:true,version:1,refresh:repaint,
