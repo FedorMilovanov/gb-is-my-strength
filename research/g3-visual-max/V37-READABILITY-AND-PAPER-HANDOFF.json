@@ -1,0 +1,105 @@
+{
+  "wave": "V37",
+  "checkedOn": "2026-11-24",
+  "priorHead": "e38c11ec1614d9a0e1f8351234b60d32611393b0",
+  "authority": "MAX0 W21 #2383 comment 7135884805 and AuditRepo local execution resource protocol",
+  "status": "RESEARCH_HOLD",
+  "reviewed": {
+    "visual": "V34-reformation-evidence.svg at 05213943",
+    "graphics": "G38-THEMATIC-ATLAS.json and G39 handoff at efcf7623530eb70d7b02c8ee26a80b1afe37a52d #2381",
+    "canonical": "b3f4e00436fe8dd154694ea5a38d909353f9047e"
+  },
+  "critique": {
+    "prior": "Inspected actual V34 320px dark PNG: no clipping, but 17px SVG body rendered at 13.6px for 320px full-width, 12.24px at 288px usable width; fixed text and no source anchors.",
+    "revision": "Native responsive document rows, body 17 CSS px, 14px source links, compact rules and normal text wrapping. Visible boundary. No external asset, copied slide, logo, or JS. Original SVG preserved as review artifact; HTML preferred for reading, never show both.",
+    "visual": "Inspected actual full-page 320 dark and 1440 light screens and rendered A4 sheet. Hierarchy legible, no observed overlaps, text clipping or glyph loss. Mobile is long when prototype bibliography included; production reuse existing bibliography instead. Third citation focus ring shown after tested return. Print has lower-page whitespace (single standalone insert), not proof of article pagination. Desktop date 9–11 can wrap at dash; use nonbreaking date range in production."
+  },
+  "placement": {
+    "anchor": "g3-year-2024",
+    "sourceOccurrenceIds": [
+      "cite-g3-year-2024-reformation-2024",
+      "cite-g3-year-2024-316-2024"
+    ],
+    "existingSourceIds": [
+      "reformation-2024",
+      "316-2024"
+    ],
+    "newSource": {
+      "url": "https://sermons.countrysidebible.org/2025/20250202p-207656_slides.pdf#page=33",
+      "id": null,
+      "status": "Research adoption pending; no public ID allocated"
+    },
+    "rule": "Choose either compact evidence composition OR present May 2024 paragraph/registration pair; no appended repetitive explanation. Retain October event/venue discrepancy. Use existing JournalSourceReturn + canonical bibliography; unique source occurrence IDs after coordination. No local duplicate bibliography in production. No visible HOLD placeholder; omit graphic until new source accepted.",
+    "g38NonDuplication": "G38 reformation pair compares 2017 worship title against 2024 regional event, already repeats reformation-2024/316-2024 source family. If V37 accepted, omit that G38 pair from any integrated atlas or keep G38 internal only. Other G38 pairs are thematic, not event proof. G39 2018 spread unrelated, no V37 material there. Do not add a second timeline or overwrite 60-pair matrix."
+  },
+  "artifact": {
+    "html": "G3_V37_evidence.html",
+    "htmlSha256": "d9aac51adcf206072a41848bbf9db97748724df77a9f2816ac08a2bf9beec2ac",
+    "pdf": "G3_V37_evidence_A4.pdf",
+    "pdfSha256": "65563a9d13cb31a5d2bf55f509083c27245436d6d62c2c4d954028b23331d325",
+    "storage": "Owner chat sandbox artifacts, exact HTML and PDF delivered there; no binaries in Git; manifest records exact hashes.",
+    "screenshots": [
+      "G3_V37_320_dark.png",
+      "G3_V37_1440_light.png"
+    ],
+    "qa": {
+      "engine": "isolated Chromium, noJS",
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "cases": 8,
+      "passes": 8,
+      "overflow": 0,
+      "uniqueIds": true,
+      "validInternalLinks": true,
+      "sourceReturnRoundTrips": 24,
+      "externalRequests": 0,
+      "bodyFontPx": 17,
+      "physicalPdf": {
+        "format": "A4",
+        "pages": 1,
+        "dimensionsPt": [
+          594.96,
+          841.92
+        ],
+        "words": 125,
+        "linkAnnotations": 6,
+        "wordsOutsidePage": 0,
+        "finalHoldTextPresent": true,
+        "render": "PyMuPDF 1.5x, visually inspected"
+      },
+      "limits": "Standalone only, not routed Astro, no full PDF article, Firefox/WebKit/Letter not tested. Click source return tested, no complete axe/keyboard matrix; no release acceptance."
+    }
+  },
+  "selectiveIntake": {
+    "baseline": "V34 17-path list approved for research-only selection by MAX0 W21; no raw donor merge.",
+    "additionalReviewPaths": [
+      "research/g3-visual-max/V35-EARLY-PROGRAMME-RECOVERY.json",
+      "research/g3-visual-max/V36-WORSHIP-PHOTO-AND-2017-PROGRAMME.json",
+      "research/g3-visual-max/V37-READABILITY-AND-PAPER-HANDOFF.json"
+    ],
+    "status": "Proposed additions only; MAX0 approval required. Freeze V37 review artifact; no archive count expansion. All eight production overlaps excluded, retain main matrix.js."
+  },
+  "archive": {
+    "candidates": 78,
+    "everViewed": 52,
+    "rightsCleared": 0,
+    "earlyPhotos": "HOLD 2013–16",
+    "choir": "HOLD",
+    "rightsRequests": "drafts not sent"
+  },
+  "resource": {
+    "RDC": 0,
+    "ownerHeavyJobs": 0,
+    "CUDA": false,
+    "windowsWebKit": false
+  },
+  "limitations": "No new media search in this wave after W21 scope change; no new claim adoption, no product changes or deployment. Host report source pending."
+}

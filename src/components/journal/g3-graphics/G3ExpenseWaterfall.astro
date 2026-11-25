@@ -16,7 +16,7 @@ const model = financeModel(Astro.props);
       {model.rows.slice(0,3).map(row => <line class="g3g-connector" x1={row.x+90} x2={row.x+150} y1={row.endY} y2={row.endY}/>)}
       {model.rows.map(row => <g><rect class={`g3g-${row.kind}`} x={row.x} y={row.y} width="90" height={row.height}/><text x={row.x+45} y="293" text-anchor="middle">{row.short}</text></g>)}
       {model.rows.filter((_,index) => index!==2).map(row => <text class="g3g-value-label" x={row.x+45} y={row.y-9} text-anchor="middle">{row.display}</text>)}
-      {model.residual < 0 && <g><path class="g3g-annotation" d={`M${model.rows[2].x+45} ${model.rows[2].y} v-27`}/><text class="g3g-annotation-label" x={model.rows[2].x+45} y={model.rows[2].y-34} text-anchor="middle">{model.rows[2].display}</text></g>}
+      {model.residual < 0 && <g><path class="g3g-annotation" d={`M${model.rows[2].x+45} ${model.rows[2].y} v-20`}/><text class="g3g-annotation-label" x={model.rows[2].x+45} y={model.rows[2].y-34} text-anchor="middle">{model.rows[2].display}</text></g>}
     </svg>
   </div>
   </div>
@@ -24,5 +24,5 @@ const model = financeModel(Astro.props);
     <thead><tr><th scope="col">Статья расходов</th><th scope="col">Изменение, USD</th></tr></thead>
     <tbody>{model.rows.map((row,index) => <tr><th scope="row">{row.label}{index<3 && <small class="g3g-percent">{row.percent} от чистого изменения</small>}<span class="g3g-table-track" aria-hidden="true"><i class={`g3g-${row.kind}`} style={`left:${row.left}%;width:${row.width}%`}></i></span></th><td>{row.display}</td></tr>)}</tbody>
   </table>
-  <figcaption>Прочие категории* — вычисленная разность общего изменения и двух выделенных вкладов, не отдельная строка декларации. Отрицательная ступень показана в точном масштабе. <a class="g3g-source" id="cite-g3g-finance-irs" data-journal-citation href="#src-G3-S002">IRS Form 990, часть IX · FY2022–2023</a></figcaption>
+  <figcaption>Прочие категории* — вычисленная разность общего изменения и двух выделенных вкладов, не отдельная строка декларации. Отрицательная ступень показана в точном масштабе. <a class="g3g-source" id="cite-finance-G3-S002-2" data-journal-citation href="#src-G3-S002">IRS Form 990, часть IX · FY2022–2023</a></figcaption>
 </figure>
