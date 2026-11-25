@@ -1,4 +1,4 @@
-const VERSION = 20;
+const VERSION = 21;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -186,8 +186,13 @@ function nextTipId() {
   return document.getElementById(id) ? nextTipId() : id;
 }
 
+function getGlossaryTip(anchor) {
+  if (!anchor?.matches('.gterm')) return null;
+  return active?.anchor === anchor ? active.tip : anchor.querySelector('.gtip');
+}
+
 function inlineTip(anchor) {
-  if (anchor.matches('.gterm')) return anchor.querySelector('.gtip');
+  if (anchor.matches('.gterm')) return getGlossaryTip(anchor);
   if (anchor.matches('.fn-marker')) return anchor.querySelector('.tooltip');
   if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || scriptureTips.get(anchor) || createScriptureTip(anchor);
   return null;
@@ -214,8 +219,9 @@ function resetGlossaryTip(tip) {
   if (frame && expand) setGlossaryExpanded(tip, frame, expand, detail, false);
 }
 
-function prepareGlossaryTip(tip) {
+function prepareGlossaryTip(tip, anchor) {
   if (!tip?.classList.contains('gtip')) return;
+  window.SiteUtils?.decorateGlossaryTip?.(anchor, tip);
   let frame = tip.querySelector(':scope > .gtip-luxury');
   if (!frame) {
     frame = document.createElement('span');
@@ -259,8 +265,9 @@ function setTipInert(tip, inert) {
   else tip.removeAttribute('inert');
 }
 
-function prepareTip(tip) {
-  prepareGlossaryTip(tip);
+function prepareTip(tip, anchor) {
+  if (!tip) return null;
+  prepareGlossaryTip(tip, anchor);
   // A closed tip is a hidden panel: its links/buttons must not stay in the tab
   // order, otherwise its focusable descendants sit inside the marker's own
   // focusable control (axe nested-interactive). Open tips are un-inert below.
@@ -479,9 +486,8 @@ function openTooltip(anchor, reason = 'open') {
   if (reason === 'hover' && active && active.anchor !== anchor && active.reason !== 'hover'
     && pointerEpoch === active.pointerBaseline) return;
   cancelClose();
-  const tip = prepareTip(inlineTip(anchor));
-  if (!tip) return;
   if (active?.anchor === anchor) {
+    const tip = active.tip;
     active.reason = reason;
     active.pointerBaseline = pointerEpoch;
     active.hoverTransitUntil = 0;
@@ -494,6 +500,8 @@ function openTooltip(anchor, reason = 'open') {
     position(tip, anchor, true);
     return;
   }
+  const tip = prepareTip(inlineTip(anchor), anchor);
+  if (!tip) return;
   closeTooltip('replace');
   cancelClose();
 
@@ -541,7 +549,18 @@ function openTooltip(anchor, reason = 'open') {
     });
     tip.addEventListener('pointerleave', () => scheduleClose());
     tip.addEventListener('mouseleave', () => scheduleClose());
-    tip.addEventListener('click', (event) => event.stopPropagation());
+    tip.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (active?.tip !== tip || !event.target.closest?.('[data-tooltip-close]')) return;
+      event.preventDefault();
+      const record = active;
+      closeTooltip('button');
+      if (!record.mobile && record.anchor.isConnected) {
+        escapeSuppress = record.anchor;
+        record.anchor.focus({ preventScroll: true });
+        window.setTimeout(() => { if (escapeSuppress === record.anchor) escapeSuppress = null; }, 0);
+      }
+    });
   }
 
   if (active.mobile) {
@@ -570,11 +589,25 @@ function openTooltip(anchor, reason = 'open') {
 }
 
 function initializeAnchor(anchor) {
-  if (!(anchor instanceof Element) || anchor.dataset.gbTooltipReady === '1') return;
-  const tip = prepareTip(inlineTip(anchor));
+  if (!(anchor instanceof Element)) return;
+  if (anchor.dataset.gbTooltipReady === '1') {
+    if (anchor.matches('.gterm')) {
+      const tip = getGlossaryTip(anchor);
+      prepareGlossaryTip(tip, anchor);
+      if (active?.tip === tip && tip) {
+        for (const element of tip.querySelectorAll(':scope > .gtip-luxury, .gtip-detail-wrap')) {
+          active.geometryObserver?.observe(element);
+        }
+        scheduleGeometry(active, true);
+      }
+    }
+    return;
+  }
+  const tip = prepareTip(inlineTip(anchor), anchor);
   if (!tip) return;
   anchor.dataset.gbTooltipReady = '1';
   anchor.setAttribute('aria-expanded', 'false');
+  anchor.removeAttribute('aria-describedby');
   if (!anchor.hasAttribute('tabindex') && !anchor.matches('button, a[href], input, select, textarea')) anchor.tabIndex = 0;
   if (!anchor.hasAttribute('role') && !anchor.matches('button, a[href]')) anchor.setAttribute('role', 'button');
 
@@ -728,6 +761,7 @@ export function installArticleTooltips() {
   if (document.readyState === 'complete') retireLegacyTooltipOwners();
   else window.addEventListener('load', retireLegacyTooltipOwners, { once: true });
   window.SiteUtils.initGlossaryTooltips = initGlossaryTooltips;
+  window.SiteUtils.getGlossaryTip = getGlossaryTip;
   initInlineTooltips(document);
   document.addEventListener('gb:quiz-rendered', (event) => initInlineTooltips(event.detail?.root || document));
   document.addEventListener('pointermove', (event) => {
@@ -791,6 +825,6 @@ export function installArticleTooltips() {
     if (!active.anchor.isConnected) closeTooltip('detached');
     else position(active.tip, active.anchor, true);
   }, { passive: true, capture: true });
-  window.GBArticleTooltips = Object.freeze({ version: VERSION, owner: OWNER, init: initInlineTooltips, close: closeTooltip });
+  window.GBArticleTooltips = Object.freeze({ version: VERSION, owner: OWNER, init: initInlineTooltips, close: closeTooltip, getGlossaryTip, ownsTarget: (target) => Boolean(active?.tip.contains(target)) });
   return window.GBArticleTooltips;
 }
