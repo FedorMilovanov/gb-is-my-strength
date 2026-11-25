@@ -61,6 +61,41 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
     outline-offset: 2px;
     border-radius: .15rem;
   }
+  @media screen {
+    .lawson-term-return {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) .65rem;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 44px;
+      padding: .4rem .55rem;
+      color: var(--accent);
+      background: transparent;
+      border-radius: 2px;
+      font-weight: 600;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    .lawson-term-return::after {
+      content: '';
+      inline-size: .45rem;
+      block-size: .45rem;
+      border-block-start: 1.5px solid currentColor;
+      border-inline-end: 1.5px solid currentColor;
+      transform: rotate(45deg);
+      justify-self: center;
+    }
+    .lawson-term-return:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    @media (hover: hover) and (pointer: fine) {
+      .lawson-term-return:hover { text-decoration: underline; text-underline-offset: .2em; }
+    }
+  }
+  @media screen and (forced-colors: active) {
+    .lawson-term-return { color: LinkText; text-decoration: underline; }
+    .lawson-term-return:focus-visible { outline-color: Highlight; }
+  }
   @media (max-width: 1199px) {
     .lawson-term-popover {
       position: fixed;
@@ -143,11 +178,12 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
   });
   document.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
+    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const term = termFor(event.target);
     document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
       if (open !== term) closeTerm(open);
     });
-    if (!term || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (!term) return;
     if (event.target.closest('.lawson-term-return')) { closeTerm(term); return; }
     if (!event.target.closest('.lawson-term-label')) return;
     event.preventDefault();

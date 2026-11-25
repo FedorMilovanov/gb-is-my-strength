@@ -46,3 +46,13 @@ for(const href of ['/articles/','/articles/a/b/','/articles/../a/','/articles/a?
 // W8.5: validation defaults must match the Astro renderer (undefined only).
 for (const bad of [{variant:null},{headingLevel:null},{variant:null,companion:true},{variant:null,landingLead:true,media}]) test('reject explicit null '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));
 test('allow undefined renderer defaults',()=>assert.doesNotThrow(()=>check({...valid,variant:undefined,headingLevel:undefined,companion:true})));
+
+// W62: HTML time hours, unique responsive candidates, safe intrinsic dimensions.
+for(const bad of [
+  {publishedAt:'2026-11-24T24:00:00Z',publishedLabel:'24 November'},
+  {publishedAt:'2026-11-24T23:60:00Z',publishedLabel:'24 November'},
+  {media:{...media,webpSrcset:'/images/a.webp 640w, /images/a.webp 1200w'}},
+  {media:{...media,avifSrcset:'/images/a.avif 640w, /images/a.avif 1200w'}},
+  {media:{...media,width:1e100}}, {media:{...media,height:Number.MAX_SAFE_INTEGER+1}},
+]) test('W62 reject '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));
+test('W62 last valid clock second',()=>assert.doesNotThrow(()=>check({...valid,publishedAt:'2026-11-24T23:59:59Z',publishedLabel:'24 November'})));

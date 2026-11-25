@@ -28,7 +28,7 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
             ) : (
               <a href={source.href} rel="noopener noreferrer">{source.label}</a>
             )}
-            {source.videoHref && <span> · <a href={source.videoHref} rel="noopener noreferrer">{source.videoLabel ?? 'Исходная запись'}</a></span>}
+            {source.videoHref && <span class="lawson-bibliography__video"><span class="lawson-bibliography__separator" aria-hidden="true"> · </span><a href={source.videoHref} rel="noopener noreferrer">{source.videoLabel ?? 'Исходная запись'}</a></span>}
             <span class="lawson-bibliography__class">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
           </div>
         </div>

@@ -3,7 +3,7 @@ const text = (value) => typeof value === 'string' && value.trim().length > 0;
 const route = /^\/(?:journal\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)+|articles\/[a-z0-9]+(?:-[a-z0-9]+)*\/)$/;
 const image = /^\/images\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:avif|webp|png|jpe?g)$/i;
 function date(value) {
-  const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/);
+  const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/);
   if (!m || !Number.isFinite(Date.parse(value))) return false;
   const y=Number(m[1]), month=Number(m[2]), day=Number(m[3]);
   return month>=1 && month<=12 && day>=1 && day<=new Date(Date.UTC(y,month,0)).getUTCDate();
@@ -11,12 +11,14 @@ function date(value) {
 function srcset(value, extension) {
   if (typeof value !== 'string') return false;
   const widths = new Set();
+  const urls = new Set();
   return value.split(',').every(part => {
     const m=part.trim().match(/^(\S+) ([1-9]\d*)w$/);
     if (!m || !image.test(m[1]) || !m[1].toLowerCase().endsWith('.'+extension)) return false;
     const w=Number(m[2]);
-    if (!Number.isSafeInteger(w) || widths.has(w)) return false;
+    if (!Number.isSafeInteger(w) || widths.has(w) || urls.has(m[1])) return false;
     widths.add(w);
+    urls.add(m[1]);
     return true;
   });
 }
@@ -53,7 +55,7 @@ export function assertNewsStoryCard(card) {
   if (card.landingLead && (variant !== 'feature' || !card.media)) throw new Error('Landing image hook requires illustrated feature');
   const m=card.media;
   if (m !== undefined) {
-    if (!m || !text(m.alt) || !text(m.caption) || !sizes(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isInteger(m.width) || !Number.isInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
+    if (!m || !text(m.alt) || !text(m.caption) || !sizes(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isSafeInteger(m.width) || !Number.isSafeInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
     if (m.note !== undefined && !text(m.note)) throw new Error('Empty image caption note');
     const presentation = m.presentation;
     if (presentation !== undefined) {

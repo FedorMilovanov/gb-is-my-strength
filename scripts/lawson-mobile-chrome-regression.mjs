@@ -15,39 +15,58 @@
  */
 
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { readFile, stat, realpath } from 'node:fs/promises';
+import { join, resolve, sep, extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 
-const DIST = join(process.cwd(), 'dist');
-function routeFile(p){ const clean = decodeURIComponent(p.split('?')[0]).replace(/^\/+/,''); return join(DIST, clean, 'index.html'); }
-async function serve(){
-  const server = createServer(async (req,res)=>{
-    try{
-      const url = new URL(req.url||'/', 'http://127.0.0.1');
-      let pathname = url.pathname;
-      let file;
-      if (pathname.startsWith('/_astro/') || pathname.startsWith('/css/') || pathname.startsWith('/fonts/') || pathname.startsWith('/js/') || pathname.startsWith('/images/') || pathname.startsWith('/icons/')) {
-        file = join(DIST, pathname.replace(/^\/+/, ''));
-        if (!existsSync(file)) { const alt = join(process.cwd(), pathname.replace(/^\/+/, '')); if(existsSync(alt)) file=alt; else { res.writeHead(404); res.end('not found '+pathname); return; } }
-      } else {
-        file = routeFile(pathname);
-        try{ if((await stat(file)).isDirectory()) file=join(file,'index.html'); }catch{}
-        if(!existsSync(file)){ const alt=join(DIST, pathname.replace(/^\/+/, '')); if(existsSync(alt)) file=alt; else { res.writeHead(404); res.end('not found '+pathname); return; } }
-      }
+const DIST = resolve(process.cwd(), 'dist');
+const CONTENT_TYPES = {
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8', '.mjs': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8', '.wasm': 'application/wasm',
+  '.svg': 'image/svg+xml', '.webp': 'image/webp', '.avif': 'image/avif',
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.woff': 'font/woff',
+};
+async function resolveRequest(requestUrl, physicalRoot) {
+  const pathname = decodeURIComponent(new URL(requestUrl || '/', 'http://127.0.0.1').pathname);
+  if (pathname.includes('\\') || pathname.includes('\0')) return null;
+  const candidate = resolve(physicalRoot, '.' + pathname);
+  if (candidate !== physicalRoot && !candidate.startsWith(physicalRoot + sep)) return null;
+  for (const file of [candidate, join(candidate, 'index.html')]) {
+    try {
+      const physicalFile = await realpath(file);
+      if (physicalFile !== physicalRoot && !physicalFile.startsWith(physicalRoot + sep)) return null;
+      if ((await stat(physicalFile)).isFile()) return physicalFile;
+    } catch (error) { if (!['ENOENT','ENOTDIR','ELOOP'].includes(error?.code)) throw error; }
+  }
+  return null;
+}
+async function serve() {
+  const physicalRoot = await realpath(DIST);
+  if (!(await stat(physicalRoot)).isDirectory()) throw new Error('dist is not a directory');
+  const server = createServer(async (req, res) => {
+    try {
+      const file = await resolveRequest(req.url, physicalRoot);
+      if (!file) { res.writeHead(404); res.end('Not found'); return; }
       const data = await readFile(file);
-      const ext = pathname.split('.').pop();
-      let ct='text/html';
-      if(ext==='css') ct='text/css';
-      else if(ext==='js') ct='application/javascript';
-      else if(ext==='woff2') ct='font/woff2';
-      res.writeHead(200, {'content-type': ct, 'cache-control':'no-store'});
+      res.writeHead(200, { 'content-type': CONTENT_TYPES[extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-store' });
       res.end(data);
-    }catch(e){ res.writeHead(500); res.end(String(e)); }
+    } catch (error) {
+      res.writeHead(error instanceof URIError ? 400 : 500);
+      res.end('Static fixture request failed');
+    }
   });
-  await new Promise(r=>server.listen(0,'127.0.0.1',r));
-  return { server, origin:`http://127.0.0.1:${server.address().port}` };
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => { server.off('error', reject); resolve(); });
+  });
+  return { server, origin: `http://127.0.0.1:${server.address().port}` };
+}
+
+async function closeServer(server) {
+  await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 }
 
 const VIEWPORTS = [
@@ -62,19 +81,7 @@ const ROUTES = [
   '/articles/lot-i-sodom/',
 ];
 
-let failures = [];
-
-const { server, origin } = await serve();
-const browser = await chromium.launch({ args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
-
-for (const route of ROUTES) {
-  for (const vp of VIEWPORTS) {
-    const context = await browser.newContext({ viewport:{width:vp.w,height:vp.h}, isMobile:true, hasTouch:true });
-    const page = await context.newPage();
-    const response = await page.goto(origin+route, {waitUntil:'networkidle'});
-    if (!response?.ok()) throw new Error(`Route failed: ${route} (${response?.status()})`);
-    await page.waitForTimeout(600);
-    const result = await page.evaluate((lawson)=>{
+export function inspectMobileChrome(lawson) {
       const hmtop = document.querySelector('.hmtop');
       const hmbar = document.querySelector('.hmbar');
       const play = document.querySelector('.hm-ember');
@@ -200,25 +207,49 @@ for (const route of ROUTES) {
       }
 
       return { errors, topH: topRect?.height, bottomH: bottomRect?.height, playW: playRect?.width, badgeGap: playRect&&badgeRect?Math.abs(badgeRect.left-playRect.right):null };
-    }, route === ROUTES[0]);
+}
 
-    if (result.errors.length>0) {
-      failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
-      console.error(`❌ FAIL ${route} ${vp.w}x${vp.h}: ${result.errors.join('; ')} | topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
-    } else {
-      console.log(`✅ PASS ${route} ${vp.w}x${vp.h} topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
+async function main() {
+  const failures = [];
+  const { server, origin } = await serve();
+  let browser;
+  try {
+    browser = await chromium.launch({ args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
+    for (const route of ROUTES) {
+      for (const vp of VIEWPORTS) {
+        const context = await browser.newContext({ viewport:{width:vp.w,height:vp.h}, isMobile:true, hasTouch:true });
+        try {
+          const page = await context.newPage();
+          const response = await page.goto(origin+route, {waitUntil:'networkidle'});
+          if (!response?.ok()) throw new Error(`Route failed: ${route} (${response?.status()})`);
+          await page.waitForTimeout(600);
+          const result = await page.evaluate(inspectMobileChrome, route === ROUTES[0]);
+          if (result.errors.length>0) {
+            failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
+            console.error(`❌ FAIL ${route} ${vp.w}x${vp.h}: ${result.errors.join('; ')} | topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
+          } else {
+            console.log(`✅ PASS ${route} ${vp.w}x${vp.h} topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
+          }
+        } finally {
+          await context.close();
+        }
+      }
     }
-    await context.close();
+  } finally {
+    try {
+      await browser?.close();
+    } finally {
+      await closeServer(server);
+    }
+  }
+  if (failures.length>0) {
+    console.error(`\n${failures.length} invariant failures`);
+    process.exitCode = 1;
+  } else {
+    console.log('\nAll invariants PASS — no leaked menu, no ghost text, no oversized chrome, no second row, compact playback, no H1 clip, no overflow');
   }
 }
 
-await browser.close();
-server.close();
-
-if (failures.length>0) {
-  console.error(`\n${failures.length} invariant failures`);
-  process.exit(1);
-} else {
-  console.log('\nAll invariants PASS — no leaked menu, no ghost text, no oversized chrome, no second row, compact playback, no H1 clip, no overflow');
-  process.exit(0);
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main().catch((error) => { console.error(error); process.exitCode = 1; });
 }
