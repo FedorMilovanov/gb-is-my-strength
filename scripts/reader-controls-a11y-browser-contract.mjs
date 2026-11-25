@@ -1362,18 +1362,24 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
       if (await conceptGroup.count()) await conceptGroup.click();
       const termRows = await page.locator('#gbrMarginalia .gbr-marginalia-term > summary')
         .evaluateAll(nodes => {
-          // The Analytics title must preserve the real article spelling;
-          // canonical glossary keys intentionally normalize word case.
-          const sourceLabels = Array.from(document.querySelectorAll('article .gterm[data-term]'))
-            .map(term => {
-              const plain = term.cloneNode(true);
-              plain.querySelectorAll('.gtip,.btip,.tooltip,[hidden],[aria-hidden="true"]')
-                .forEach(child => child.remove());
-              return (plain.textContent || '').replace(/\s+/g, ' ').trim();
-            });
+          // The current lexicon projects canonical dictionary titles, not
+          // arbitrary inflections. Verify each visible row by its exact key
+          // against an eligible source occurrence and its existing definition.
+          const sources = Array.from(document.querySelectorAll('article .gterm[data-term]'))
+            .filter(term => !term.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]'))
+            .filter(term => {
+              const tip=window.SiteUtils?.getGlossaryTip?.(term)||term;
+              return !!tip.querySelector('.gtip-brief')?.textContent.trim();
+            })
+            .map(term => ({
+              key:term.dataset.term.trim(),
+              title:(term.dataset.termTitle||'').trim()||term.dataset.term.trim()
+            }));
           return nodes.map(node => ({
             label: node.textContent.trim(),
-            sourceMatch: sourceLabels.includes(node.textContent.trim()),
+            key:node.parentElement.dataset.termKey,
+            sourceMatch: sources.some(source => source.key===node.parentElement.dataset.termKey &&
+              source.title===node.textContent.trim()),
             fontPx: parseFloat(getComputedStyle(node).fontSize),
             height: node.getBoundingClientRect().height,
             width: node.getBoundingClientRect().width,
@@ -1384,7 +1390,8 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
       record(checks, caseId+'-analytics-term-readability',
         'Analytics term names use >=15px text, >=44px tap targets and do not resize the approved Gill sheet',
         Boolean(termRows.length > 0 &&
-          termRows.every(row => row.sourceMatch && row.fontPx >= 14.9 && row.height >= 43.9 &&
+          new Set(termRows.map(row=>row.key)).size===termRows.length &&
+          termRows.every(row => row.key && row.sourceMatch && row.fontPx >= 14.9 && row.height >= 43.9 &&
             row.scrollWidth <= row.width + 1) &&
           aligned(first.sheet, withTerms.sheet) &&
           aligned(first.footer, withTerms.footer) &&
@@ -1959,7 +1966,7 @@ async function auditGillGlossaryEligibility(browser) {
         article.innerHTML='<h2 id="a">A</h2><p id="wrap"><abbr id="first" class="gterm" data-term="key" tabindex="0">first<span class="gtip-brief">Definition</span></abbr></p><p id="wrap2"><abbr id="second" class="gterm" data-term="key" tabindex="0">second<span class="gtip-brief">Definition</span></abbr></p><h2 id="b">B</h2><abbr id="other" class="gterm" data-term="key" tabindex="0">other<span class="gtip-brief">Definition</span></abbr>';
       };
       await page.evaluate(setup);
-      await page.addScriptTag({content:"const article=document.querySelector('article'),sections=[{id:'a'},{id:'b'}],browserStore={active:0},pinnedLexiconIndex=null;const $=(q,s)=>[...s.querySelectorAll(q)];\n"+range+collector+resolver+"\nwindow.__gbEligibility={collectGlossaryTerms,resolveGlossaryAction};"});
+      await page.addScriptTag({content:"const article=document.querySelector('article'),sections=[{id:'a'},{id:'b'}],browserStore={active:0},pinnedLexiconIndex=null;const $=(q,s=document)=>s.querySelector(q),$=(q,s=document)=>[...s.querySelectorAll(q)];\n"+range+collector+resolver+"\nwindow.__gbEligibility={collectGlossaryTerms,resolveGlossaryAction};"});
       const cases=[
         ['normal','none','first'],['excluded','exclude','second'],['class-excluded','class','second'],
         ['blank','blank','second'],['missing','missing','second'],['brief-class','brief-class','second'],
