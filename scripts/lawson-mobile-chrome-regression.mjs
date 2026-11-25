@@ -15,12 +15,13 @@
  */
 
 import { createServer } from 'node:http';
-import { readFile, stat, realpath } from 'node:fs/promises';
+import { readFile, stat, realpath, mkdir } from 'node:fs/promises';
 import { join, resolve, sep, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 
 const DIST = resolve(process.cwd(), 'dist');
+const EVIDENCE_DIR = process.env.LAWSON_EVIDENCE_DIR ? resolve(process.env.LAWSON_EVIDENCE_DIR) : null;
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8', '.mjs': 'application/javascript; charset=utf-8',
@@ -257,6 +258,7 @@ async function inspectLawsonCards(page, capture) {
 
 async function main() {
   const failures = [];
+  if (EVIDENCE_DIR) await mkdir(EVIDENCE_DIR, { recursive: true });
   const { server, origin } = await serve();
   let browser;
   try {
@@ -271,7 +273,11 @@ async function main() {
           await page.waitForTimeout(600);
           const result = await page.evaluate(inspectMobileChrome, route === ROUTES[0]);
           if (route === ROUTES[0] && result.errors.length === 0) {
-            result.cards = await inspectLawsonCards(page);
+            if (EVIDENCE_DIR) await page.screenshot({ path: join(EVIDENCE_DIR, `lawson-${vp.w}x${vp.h}-initial.png`) });
+            result.cards = await inspectLawsonCards(page, EVIDENCE_DIR
+              ? kind => page.screenshot({ path: join(EVIDENCE_DIR, `lawson-${vp.w}x${vp.h}-${kind}.png`) })
+              : null);
+            console.log('Lawson native card evidence ' + JSON.stringify({viewport:vp,cards:result.cards}));
           }
           if (result.errors.length>0) {
             failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
