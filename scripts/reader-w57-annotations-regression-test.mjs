@@ -624,17 +624,18 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 // Painting must not traverse the entire article on a clean or positional-only page.
 {
  const start=highlights.indexOf('  function paintMarks() {');
- const end=highlights.indexOf('  /* mutateLibrary()',start);
+ const end=highlights.indexOf('  // One deferred repaint per frame',start);
  assert.ok(start>=0&&end>start,'paint source boundaries');
  const source=highlights.slice(start,end);
- function scene(rows,desktop=false){
+ function scene(rows,desktop=false,hasScope=true){
   let scans=0,placed=[],removed=[],resolved=0;
   const scope={};
   const CSS={highlights:{set:(key)=>placed.push(key),delete:key=>removed.push(key)}};
-  const document={body:{classList:{contains:()=>desktop}},querySelector:()=>scope};
-  const paint=new Function('window','CSS','document','textIndex','quotes','gbHighlightPath','location','MARK_COLORS','GBReaderAnchors','locate','gbHighlightKey','matchMedia','Highlight',source+'return paintMarks;')({CSS},CSS,document,()=>{scans++;return{}},()=>rows,x=>x.url,{href:'/a'},['amber','sage'],{resolution:()=>()=>{resolved++;return{}}},()=>({}),x=>x.id,()=>({matches:desktop}),function(){});
+  const document={body:{classList:{contains:()=>desktop}},querySelector:()=>hasScope?scope:null};
+  const paint=new Function('window','CSS','document','textIndex','quotes','gbHighlightPath','location','MARK_COLORS','GBReaderAnchors','locate','gbHighlightKey','matchMedia','Highlight','cancelScheduledPaint',source+'return paintMarks;')({CSS},CSS,document,()=>{scans++;return{}},()=>rows,x=>x.url,{href:'/a'},['amber','sage'],{resolution:()=>()=>{resolved++;return{}}},()=>({}),x=>x.id,()=>({matches:desktop}),function(){},()=>{});
   const result=paint();return {scans,resolved,placed,removed,painted:result.painted,ids:[...result.placed]};
  }
+ const departed=scene([],false,false);assert.equal(departed.scans,0);assert.deepEqual(departed.removed,['gb-hl-amber','gb-hl-sage']);
  const clean=scene([]);
  assert.equal(clean.scans,0);assert.equal(clean.painted,0);assert.deepEqual(clean.removed,['gb-hl-amber','gb-hl-sage']);
  const positional={id:'p',url:'/a',color:'amber',annotation:{version:1,anchor:{}}};
@@ -728,4 +729,39 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const dockSource=readFileSync(resolve(root,'js/reader-library-dock.js'),'utf8');
  const dock=new Function('window',dockSource.replace(/export function/g,'function')+'return contextFromSelection;')({GBReaderAnchors:api});
  assert.deepEqual(dock(sel,'beta gamma'),capture.context,'dock compatibility delegates to canonical projection');
+}
+
+ // W61: coalesce scheduled painting without changing synchronous public API.
+{
+ const from=highlights.indexOf('  let paintFrame = null;');
+ const to=highlights.indexOf('  /* Мобильный вход',from);
+ assert.ok(from>=0&&to>from);
+ let frames=new Map(),next=0,paints=0,cancelled=0,handlers={};
+ const target={addEventListener:(event,fn)=>{handlers[event]=fn}};
+ const api=new Function('window','document','requestAnimationFrame','cancelAnimationFrame','paintMarks','QUOTES_KEY','HTMLDetailsElement',
+  highlights.slice(from,to)+'return {schedulePaint,cancelScheduledPaint};')(target,target,fn=>{frames.set(++next,fn);return next},id=>{cancelled++;frames.delete(id)},()=>paints++,'quotes',class{});
+ const flush=()=>{const ready=[...frames.values()];frames.clear();ready.forEach(fn=>fn());};
+ handlers['gb:library-committed']({detail:{key:'notes'}});assert.equal(frames.size,0);
+ handlers['gb:library-committed']({detail:{key:'quotes'}});
+ handlers.storage({key:'quotes'});handlers.resize();api.schedulePaint();
+ assert.equal(frames.size,1);assert.equal(paints,0);flush();assert.equal(paints,1);
+ api.schedulePaint();api.cancelScheduledPaint();assert.equal(cancelled,1);assert.equal(frames.size,0);flush();assert.equal(paints,1);
+ api.schedulePaint();flush();assert.equal(paints,2,'new independent invalidation is not lost');
+ assert.match(highlights,/function paintMarks\(\) \{\s*cancelScheduledPaint\(\);/,'immediate painting consumes queued repaint');
+}
+
+ // W61: ordinary mouse clicks are not selection intent; touch prewarm stays.
+{
+ const start=highlights.indexOf('  // Prewarm long-press on touch/pen');
+ const end=highlights.indexOf('  const api =',start);
+ assert.ok(start>=0&&end>start);
+ let handlers={},loads=0,captures=0,attaches=0;
+ const doc={addEventListener:(name,fn)=>{handlers[name]=fn}};
+ new Function('document','loadSelectionController','rememberSelection','attachSelection','setTimeout',highlights.slice(start,end))(doc,()=>loads++,()=>captures++,()=>attaches++,fn=>fn());
+ const target={closest:()=>true};
+ handlers.pointerdown({pointerType:'mouse',target});assert.equal(loads,0);
+ handlers.pointerdown({pointerType:'touch',target});assert.equal(loads,1);
+ handlers.pointerdown({pointerType:'pen',target});assert.equal(loads,2);
+ handlers.mouseup();handlers.touchend();handlers.selectionchange();
+ assert.equal(captures,3);assert.equal(attaches,3);
 }

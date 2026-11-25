@@ -252,6 +252,9 @@ async function checkTransientFocus(name,driver,base) {
         await page.locator('#gb-hl-fab.gb-hl-fab--docked').waitFor({state:'visible'});
         // Cold fixture has no reading-resume state and no user selection.
         assert.equal(moduleRequests.filter(p=>/reader-library-(selection|presenter|record-transactions|v3)\.js$/.test(p)).length,0,'cold page must not request action/presenter modules before selection');
+        await page.locator('#demo').click();
+        await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,0,'ordinary mouse click does not request selection actions');
         await select('more');
         const note=page.locator(surface==='native'?'#ss-note':'#gb-hl-selbar-note');
         await note.waitFor({state:'visible'});

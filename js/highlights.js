@@ -446,7 +446,7 @@
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
     window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
-    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); });
+    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); schedulePaint(); });
     document.addEventListener('gb:mobile-fallback-ready', dock);
     window.addEventListener('resize', dock, { passive: true });
     attachSelection();
@@ -710,9 +710,13 @@
   }
 
   function paintMarks() {
+    cancelScheduledPaint();
     if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0, placed: new Set() };
     const scope = document.querySelector('article.article-body') || document.querySelector('article') || document.querySelector('main');
-    if (!scope) return { supported: true, painted: 0, placed: new Set() };
+    if (!scope) {
+      for (const color of MARK_COLORS) CSS.highlights.delete('gb-hl-' + color);
+      return { supported: true, painted: 0, placed: new Set() };
+    }
     let index = null, resolve;
     const groups = new Map();
     const placed = new Set();
@@ -743,20 +747,26 @@
     return { supported: true, painted, placed };
   }
 
-  /* mutateLibrary() публикует событие на window, поэтому слушаем именно window:
-     удаление пометы через библиотеку обязано снять подсветку в тексте. */
-  window.addEventListener('gb:library-committed', (e) => {
-    if (!e || !e.detail || e.detail.key === QUOTES_KEY) setTimeout(paintMarks, 0);
+  // One deferred repaint per frame; an immediate API repaint consumes it.
+  let paintFrame = null;
+  function cancelScheduledPaint() {
+    if (paintFrame !== null) cancelAnimationFrame(paintFrame);
+    paintFrame = null;
+  }
+  function schedulePaint() {
+    if (paintFrame !== null) return;
+    paintFrame = requestAnimationFrame(() => {
+      paintFrame = null;
+      paintMarks();
+    });
+  }
+  window.addEventListener('gb:library-committed', e => {
+    if (!e?.detail || e.detail.key === QUOTES_KEY) schedulePaint();
   });
-  window.addEventListener('storage', (e) => { if (e && e.key === QUOTES_KEY) paintMarks(); });
-  window.addEventListener('resize', () => requestAnimationFrame(paintMarks), { passive:true });
-  // Restore the correct face's annotations when a Gill bilingual original
-  // opens/closes, including after a fresh reload with the original closed.
-  document.addEventListener('toggle', (event) => {
-    if (event.target instanceof HTMLDetailsElement &&
-        event.target.matches('details.mq-translation-flip')) {
-      requestAnimationFrame(paintMarks);
-    }
+  window.addEventListener('storage', e => { if (e?.key === QUOTES_KEY) schedulePaint(); });
+  window.addEventListener('resize', schedulePaint, {passive:true});
+  document.addEventListener('toggle', e => {
+    if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();
   }, true);
 
   /* Мобильный вход в пометы. На страницах серий js/site.js не подключается,
@@ -785,14 +795,15 @@
       }).catch(() => { selectionLoad = null; return null; });
     return selectionLoad;
   }
-  // Capture intent ahead of long-press/drag; keyboard selection is covered by
-  // selectionchange. Capture remains synchronous even while UI is loading.
+  // Prewarm long-press on touch/pen; a normal mouse click needs no module.
+  // Keyboard and drag selection load on selectionchange; end events retry.
   document.addEventListener('pointerdown', e => {
-    if (e.target.closest?.('article, main [data-pagefind-body], .article-body')) loadSelectionController();
+    if (['touch','pen'].includes(e.pointerType) && e.target.closest?.('article, main [data-pagefind-body], .article-body')) loadSelectionController();
   }, {passive:true});
-  document.addEventListener('mouseup', () => setTimeout(rememberSelection, 25));
-  document.addEventListener('touchend', () => setTimeout(rememberSelection, 60), { passive: true });
-  document.addEventListener('selectionchange', () => { rememberSelection(); attachSelection(); });
+  const captureSelection = () => { rememberSelection(); attachSelection(); };
+  document.addEventListener('mouseup', () => setTimeout(captureSelection, 25));
+  document.addEventListener('touchend', () => setTimeout(captureSelection, 60), { passive: true });
+  document.addEventListener('selectionchange', captureSelection);
   document.addEventListener('click', (e) => {
     if (e.target.closest('#selection-share-popup')) attachSelection();
   });
@@ -820,7 +831,7 @@
     create();
     setTimeout(attachSelection, 500);
     setTimeout(dock, 1200);
-    setTimeout(paintMarks, 900);
+    setTimeout(schedulePaint, 900);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();

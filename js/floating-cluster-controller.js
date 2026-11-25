@@ -1722,15 +1722,17 @@
     // Gill sheet on breakpoint cross. Cheap and universal — protects every
     // series (Gill/Сердце/Баптисты/pastor) and every future one, not just
     // the two overlays audited today.
-    var deskMq = window.matchMedia && window.matchMedia('(min-width:64em)');
+    // Native Gill chrome switches at 85em (not the earlier 64em
+    // typography/rail-detail breakpoint). Keep the subscription in the
+    // controller's cleanup registry so a re-init cannot retain old owners.
+    var deskMq = window.matchMedia && window.matchMedia('(min-width:85em)');
     if (deskMq && deskMq.addEventListener) {
-      deskMq.addEventListener('change', function () {
-        qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open').forEach(function (ov) {
+      addCleanListener(deskMq, 'change', function () {
+        [seriesToc, partToc, settingsOverlay].forEach(function (ov) {
+          if (!ov || !ov.classList.contains('is-open')) return;
           if (ov === settingsOverlay) closeGillSheet(ov, false, 'breakpoint');
           else closeOverlay(ov, 'breakpoint', false);
         });
-        qsa('[aria-expanded="true"][data-gill-settings-open]')
-          .forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
       });
     }
 

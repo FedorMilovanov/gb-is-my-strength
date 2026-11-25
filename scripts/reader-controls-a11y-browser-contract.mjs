@@ -1456,6 +1456,85 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
   }
 }
 
+async function auditGillChromeBreakpoint(browser, origin, kind) {
+  const caseId = 'gill-native-breakpoint-' + kind;
+  const checks = [];
+  const ctx = await browser.newContext({
+    viewport: { width: 1023, height: 844 }, serviceWorkers: 'block',
+    reducedMotion: 'reduce'
+  });
+  try {
+    const page = await ctx.newPage();
+    await gotoNativeReader(page, origin + '/articles/dzhon-gill-chast-2-uchenyi/', { waitUntil: 'load' });
+    const selector = kind === 'settings' ? '#gillSettingsOverlay' : '#partTocOverlay';
+    const opener = kind === 'settings' ? '#mobSettingsBtn' : '#mobPartTocBtn';
+    const state = () => page.evaluate(({ selector, opener }) => {
+      const panel = document.querySelector(selector);
+      const trigger = document.querySelector(opener);
+      const visible = el => Boolean(el && el.getClientRects().length &&
+        getComputedStyle(el).visibility !== 'hidden');
+      return { open:panel?.classList.contains('is-open'), hidden:panel?.getAttribute('aria-hidden'),
+        triggerExpanded:trigger?.getAttribute('aria-expanded'), compact:visible(trigger),
+        rail:visible(document.getElementById('railSettingsBtn')),
+        desktop:matchMedia('(min-width:85em)').matches,
+        locked:document.documentElement.getAttribute('data-scroll-locked') === '1',
+        count:Number(document.documentElement.getAttribute('data-overlay-count') || 0),
+        focusInside:Boolean(panel?.contains(document.activeElement)) };
+    }, { selector, opener });
+    await page.locator(opener).click();
+    await page.locator(selector+'.is-open').waitFor({ state:'visible',timeout:8000 });
+    const first = await state();
+    await page.setViewportSize({ width:1024,height:844 });
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const tablet = await state();
+    await page.setViewportSize({ width:1359,height:844 });
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const edge = await state();
+    record(checks,caseId+'-compact-retained',
+      '1023→1024→1359 retains the same open compact panel and its scroll lock',
+      [first,tablet,edge].every(x => x.open && x.locked && x.compact && !x.desktop && x.count === 1),
+      {first,tablet,edge});
+    await page.setViewportSize({ width:1360,height:844 });
+    await page.waitForFunction(sel => !document.querySelector(sel)?.classList.contains('is-open'),selector,{timeout:8000});
+    const desktop = await state();
+    record(checks,caseId+'-desktop-cleanup',
+      '1359→1360 closes native sheet, clears lock/ARIA, and leaves no focus inside hidden panel',
+      desktop.desktop && desktop.rail && !desktop.compact && !desktop.open &&
+      desktop.hidden === 'true' && desktop.triggerExpanded === 'false' &&
+      !desktop.locked && desktop.count === 0 && !desktop.focusInside,
+      desktop);
+    if (kind === 'settings') {
+      await page.locator('#railSettingsBtn').click();
+      await page.locator(selector+'.is-open').waitFor({ state:'visible',timeout:8000 });
+      const reopened = await state();
+      await page.setViewportSize({ width:1359,height:844 });
+      await page.waitForFunction(sel => !document.querySelector(sel)?.classList.contains('is-open'),selector,{timeout:8000});
+      const compact = await state();
+      record(checks,caseId+'-compact-cleanup',
+        'desktop settings close on return to compact mode without stale lock or focus',
+        reopened.open && reopened.locked && compact.compact && !compact.desktop &&
+        !compact.open && compact.hidden === 'true' && compact.triggerExpanded === 'false' &&
+        !compact.locked && compact.count === 0 && !compact.focusInside,
+        {reopened,compact});
+    }
+    await page.setViewportSize({ width:1023,height:844 });
+    await page.locator(opener).click();
+    await page.locator(selector+'.is-open').waitFor({ state:'visible',timeout:8000 });
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(sel => !document.querySelector(sel)?.classList.contains('is-open'),selector,{timeout:8000});
+    const last = await state();
+    record(checks,caseId+'-reopen-after-crossing',
+      'native opener works again and Escape releases its single lock',
+      !last.open && !last.locked && last.count === 0 && last.hidden === 'true' &&
+      last.triggerExpanded === 'false' && !last.focusInside,last);
+    return {caseId,checks};
+  } catch (error) {
+    record(checks,caseId+'-exception','breakpoint scenario completes',false,
+      {message:String(error.stack || error).slice(0,1300)});
+    return {caseId,checks};
+  } finally { await ctx.close(); }
+}
+
 async function auditGillTooltipSelection(browser, origin) {
   const caseId = 'gill-tooltip-selection-halo';
   const checks = [];
@@ -1538,6 +1617,7 @@ try {
   for (const [width, dark] of [[320,false],[390,false],[390,true],[526,false],[526,true]]) cases.push(await auditGillDualProgress(browser, origin, width, dark));
   for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
   cases.push(await auditGillNestedScrollLock(browser, origin));
+  for (const kind of ['toc','settings']) cases.push(await auditGillChromeBreakpoint(browser, origin, kind));
   cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));
   for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[844,390,true],[960,390,false],[961,390,false],[1024,390,false],[1024,390,true],[1359,390,false],[1359,390,true],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
