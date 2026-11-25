@@ -25,7 +25,7 @@ const paths: Record<GillSeriesPageId, string> = {
             <svg class="atlas-branch" viewBox="0 0 48 16" preserveAspectRatio="none" focusable="false"><path d="M0 8H48" vector-effect="non-scaling-stroke" /></svg>
             <svg class="atlas-dot" viewBox="0 0 20 20" focusable="false"><circle cx="10" cy="10" r="4"/><circle class="atlas-halo" cx="10" cy="10" r="8"/></svg>
           </span>
-          <a class="atlas-node" href={item.href} aria-current={item.id === current ? 'page' : undefined}>
+          <a class="atlas-node" href={item.href} tabindex="0" aria-current={item.id === current ? 'page' : undefined}>
             <svg class="atlas-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d={paths[item.id]}/></svg>
             <span class="atlas-details">
               <span class="atlas-mark">{item.mark.kind === 'roman' ? item.mark.value : item.id === 'context' ? 'Введение' : 'Справочный раздел'}</span>
