@@ -66,6 +66,18 @@ const witnessFiles = [
   ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
   'src/components/journal/editorial/JournalCompactDocumentIndex.astro',
+  'src/styles/editorial-edition.css',
+  'src/components/article-pilots/_shared/MobileChromePage.astro',
+  'src/components/reader-platform/ReaderPreferencesHead.astro',
+  'css/reader-preferences.css',
+  'js/reader-preferences-head.js',
+  'js/reader-preferences.js',
+  'js/reader-state.js',
+  'public/images/journal/g3-ministries-cover-1200.avif',
+  'public/images/journal/g3-ministries-cover-1200.webp',
+  'public/images/journal/g3-ministries-cover-640.avif',
+  'public/images/journal/g3-ministries-cover-640.webp',
+  'public/images/journal/g3-ministries-og-1200x630.webp',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-atlas-contrast-review.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
 for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
@@ -1189,6 +1201,41 @@ try {
             try {
               await page.setViewportSize({width:768,height:1024});
               item.g44Tablet=await g44RouteWitness(page,javaScriptEnabled,name+'-768x1024');
+            } finally { await page.setViewportSize(originalViewport); }
+          }
+          // Real route breakpoint regression: establish focus before resize.
+          // No forced post-resize focus or synthetic change event.
+          if (width === 1440 && height === 480 && theme === 'light') {
+            item.tocBreakpointFocus = [];
+            const originalViewport = page.viewportSize();
+            try {
+              const targets = [
+                ['first', toc.locator('nav a').first(), true],
+                ['last', toc.locator('nav a').last(), true],
+                ['outside', middle, false],
+                ['summary', summary, false],
+              ];
+              for (const [label, target, descendant] of targets) {
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await settleWithoutScripts(page);
+                assert.equal(await toc.evaluate(el => el.open), true);
+                await target.focus();
+                assert.equal(await target.evaluate(el => el === document.activeElement), true, label + ' initial focus');
+                await page.setViewportSize({ width: 1023, height: 768 });
+                await settleWithoutScripts(page);
+                const expected = javaScriptEnabled && descendant ? summary : target;
+                const compactOpen = await toc.evaluate(el => el.open);
+                const compactFocus = await expected.evaluate(el => el === document.activeElement);
+                assert.equal(compactOpen, !javaScriptEnabled, label + ' compact state');
+                assert.equal(compactFocus, true, label + ' compact focus');
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await settleWithoutScripts(page);
+                const desktopOpen = await toc.evaluate(el => el.open);
+                const desktopFocus = await expected.evaluate(el => el === document.activeElement);
+                assert.equal(desktopOpen, true, label + ' desktop state');
+                assert.equal(desktopFocus, true, label + ' desktop focus');
+                item.tocBreakpointFocus.push({ label, compactOpen, compactFocus, desktopOpen, desktopFocus });
+              }
             } finally { await page.setViewportSize(originalViewport); }
           }
           assert.deepEqual(item.runtime, []);

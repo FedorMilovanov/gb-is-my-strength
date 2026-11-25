@@ -54,7 +54,15 @@ const { entries, label = 'В этом материале', summaryId, initialCom
     contents.dataset.journalContentsBound = 'true';
     const compact = window.matchMedia('(max-width: 1023px)');
     const summary = contents.querySelector('summary');
-    const syncLayout = () => { contents.open = !compact.matches; };
+    const syncLayout = () => {
+      // Move focus before the compact disclosure hides its focused descendant.
+      // Leave unrelated focus alone; native focus may scroll the summary into view.
+      if (compact.matches && contents.open && summary &&
+          contents.contains(document.activeElement) && !summary.contains(document.activeElement)) {
+        summary.focus();
+      }
+      contents.open = !compact.matches;
+    };
     syncLayout();
     compact.addEventListener('change', syncLayout);
     contents.addEventListener('click', (event) => {
