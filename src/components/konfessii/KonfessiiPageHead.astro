@@ -113,9 +113,15 @@ a.card:hover .cta::before{opacity:.42}
 @keyframes liveShimmer{0%,100%{box-shadow:0 12px 38px rgba(0,0,0,.42),inset 0 0 0 1px rgba(232,200,121,.035),0 0 0 1px var(--gold)}50%{box-shadow:0 12px 38px rgba(0,0,0,.42),inset 0 0 0 1px rgba(232,200,121,.06),0 0 14px rgba(232,200,121,.28)}}
 .intro{max-width:76ch;margin:0;padding:0 0 14px;color:var(--muted);font-size:15px;line-height:1.8;text-align:left}
 .intro b{color:var(--txt);font-weight:600}
-footer.k{padding:30px 0 30px;text-align:center;font-size:11px;color:#98a1ad;letter-spacing:.08em}
-footer.k a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
-footer.k a:hover{color:var(--gold)}
+header.k .back{min-height:44px;flex-shrink:0}
+.konfessii-main nav[aria-label="Библейские инструменты"] .back{display:inline-flex;min-height:44px}
+footer.k{padding:24px 0 30px;border-top:1px solid var(--line);color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;font-size:14px;line-height:1.5}
+footer.k p{margin:0;max-width:42ch}
+footer.k nav{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+footer.k a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:var(--gold);font-weight:600;text-decoration:none}
+footer.k a:hover{color:var(--txt)}
+footer.k a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:2px}
+@media(max-width:700px){footer.k{flex-direction:column;align-items:flex-start;gap:8px}}
 @media(max-width:700px){.hero{padding:28px 0 18px}.grid{grid-template-columns:minmax(0,1fr);gap:12px}.grid .card.live{display:flex;flex-direction:column}.card .body{padding:18px 16px}.card.soon .badge{margin-left:16px}.crumb{font-size:10px;letter-spacing:.07em}header.k{padding-top:18px;gap:10px}.back{flex-shrink:0}}
 @media(prefers-reduced-motion:reduce){
   .card,.card:hover,.card .art svg,.card:hover .art svg,.card .cta::before,.card .cta::after,.back{transition:none!important}
