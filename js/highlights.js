@@ -256,7 +256,7 @@
     const intent = clearIntent;
     try {
       if(window.GBLibraryStorage?.version!==1)
-        await import('/js/reader-library-storage.js?v=74af6e6a');
+        await import('/js/reader-library-storage.js?v=c6707892');
       if (intent !== clearIntent) return libraryFailure('storage-changed');
       const owner=window.GBLibraryStorage;
       if(owner?.version!==1||typeof owner[method]!=='function')return libraryFailure('lock-unavailable');
@@ -371,8 +371,8 @@
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
       presenterPromise = Promise.all([
-        import('/js/reader-library-presenter.js?v=35ef9be2'),
-        import('/js/reader-library-v3.js?v=39300423'),
+        import('/js/reader-library-presenter.js?v=729e4f90'),
+        import('/js/reader-library-v3.js?v=fd607dd1'),
       ]).then(([module,researchModule]) => {
           if (!view) {
             view = module.createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch:researchModule.createLibraryResearch,isOpen});
@@ -449,7 +449,7 @@
     document.addEventListener('pointerdown', pendingPointerChanged, true);
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
-    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); schedulePaint(); });
+    document.addEventListener('astro:page-load', () => { dock(); warmReading(); sync(); attachSelection(); schedulePaint(); });
     document.addEventListener('gb:mobile-fallback-ready', dock);
     window.addEventListener('resize', dock, { passive: true });
     attachSelection();
@@ -558,13 +558,18 @@
     focusReturn = null;
   }
   function sync() { if (fab) { const count=quotes().length+notes().length+favorites().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
-  let dockImpl, dockLoad;
+  let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise;
+  function warmReading() {
+    if (warmReadingPromise || !shouldWarmReading?.()) return;
+    warmReadingPromise = import('/js/reader-library-v3.js?v=fd607dd1')
+      .then(research=>research.warmReadingProgress({isOpen,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}}))
+      .catch(()=>{warmReadingPromise=null;});
+  }
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
-    dockLoad ||= import('/js/reader-library-dock.js?v=adffc6aa')
-      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); if (m.shouldWarmReading()) import('/js/reader-library-v3.js?v=39300423')
-        .then(research=>research.warmReadingProgress({isOpen,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}})).catch(()=>{}); })
+    dockLoad ||= import('/js/reader-library-dock.js?v=f730766c')
+      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); shouldWarmReading=m.shouldWarmReading; warmReading(); })
       .catch(() => { dockLoad = null; });
   }
   function render() { view?.render(); }
@@ -694,6 +699,7 @@
       hideToast();
       document.getElementById('gb-hl-toast')?.replaceChildren();
     }
+    if (e.key === 'gb-library-reading-v1') warmReading();
     if (cleared || e.key === QUOTES_KEY) schedulePaint();
     if (cleared || [QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync();
   }
@@ -727,7 +733,7 @@
     }).catch(() => { /* failed mount is retried on the next selection */ });
   }
   function loadSelectionController() {
-    return selectionLoad ||= import('/js/reader-library-selection.js?v=1778ffcd')
+    return selectionLoad ||= import('/js/reader-library-selection.js?v=b301d44f')
       .catch(() => { selectionLoad = null; return null; });
   }
   // Prewarm long-press on touch/pen; a normal mouse click needs no module.

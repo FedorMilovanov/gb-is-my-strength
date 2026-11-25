@@ -67,6 +67,27 @@ async function test(engine,driver,base){
  assert.equal(await page.locator('.gb-hl-daily').count(),0,'suppressed quotes survive reload');
  assert.deepEqual(errors,[]);
  console.log('PASS '+engine+' exact resume anchor and permanent daily exclusions');
+ // A previously untracked route becomes active from a second tab. It must
+ // start progress tracking without opening a library or constructing its DOM.
+ const cold=await ctx.newPage(), coldRequests=[];
+ cold.on('request',req=>coldRequests.push(new URL(req.url()).pathname));
+ await cold.goto(base+'/articles/cold-progress/');
+ await cold.locator('#gb-hl-fab').waitFor();
+ assert.equal(coldRequests.filter(p=>p.endsWith('/reader-library-v3.js')).length,0,'untracked route stays cold');
+ const warmResponse=cold.waitForEvent('response',{predicate:r=>new URL(r.url()).pathname.endsWith('/reader-library-v3.js'),timeout:5000});
+ const committed=await page.evaluate(()=>window.GBHighlights.mutateLibrary(['gb-library-reading-v1'],stores=>{
+   const key='gb-library-reading-v1';
+   return {changes:{[key]:{...stores[key],'/articles/cold-progress':{state:'reading',title:'Cold',updatedAt:Date.now(),anchor:'',ratio:0}}}};
+ }));
+ assert.equal(committed.ok,true);
+ await (await warmResponse).finished();
+ await cold.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await cold.evaluate(()=>window.scrollTo(0,1080));
+ await cold.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/cold-progress']?.anchor==='second',null,{timeout:5000});
+ assert.equal(await cold.locator('#gb-hl-backdrop').count(),0);
+ assert.equal(coldRequests.filter(p=>p.endsWith('/reader-library-presenter.js')).length,0);
+ await cold.close();
+ console.log('PASS '+engine+' cross-tab cold reading activation without presenter');
  }finally{await ctx.close();await browser.close();}
 }
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));
