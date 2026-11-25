@@ -221,6 +221,36 @@ try {
       await page.locator('#npUEdgeToggle').click();
       await assertArgonScriptureActivation(page, page.locator('article .bref[data-ref]').nth(1), { keyboard: false });
       console.log('PASS default ARGON scripture keyboard and pointer activation');
+      // The parents article's first citation sits deep in the article. Its
+      // scroll-state publication may arrive after keyboard activation.
+      // Also force a real passive section change while the picker has focus.
+      const parents = await context.newPage();
+      await parents.setViewportSize({ width: 1440, height: 900 });
+      await parents.goto(base + ROUTES[1][0], { waitUntil: 'networkidle', timeout: 40_000 });
+      await assertArgonScriptureActivation(parents, parents.locator('article .bref[data-ref]').first());
+      await parents.waitForFunction(() => window.ReaderState.getSnapshot()?.phase === 'active-section' &&
+        document.getElementById('npUFollowChapter')?.textContent !== 'Раздел ' + window.__NP_UNIVERSAL_PREVIEW__.groups[0].roman,
+        null, { timeout: 10000 });
+      const selected = await parents.evaluate(() => {
+        const pick = document.getElementById('npUScripturePick');
+        window.__teenStudyPicker = pick;
+        const ref = pick.value;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return ref;
+      });
+      await parents.waitForFunction(() => window.ReaderState.getSnapshot()?.phase === 'before-content' &&
+        document.getElementById('npUFollowChapter')?.textContent === 'Раздел ' + window.__NP_UNIVERSAL_PREVIEW__.groups[0].roman,
+        null, { timeout: 10000 });
+      assert.deepEqual(await parents.evaluate(() => {
+        const pick = document.getElementById('npUScripturePick');
+        return { sameNode: pick === window.__teenStudyPicker, focused: pick === document.activeElement, ref: pick.value };
+      }), { sameNode: true, focused: true, ref: selected }, 'passive section change preserves the live focused scripture instrument');
+      await parents.locator('#npUFollowToggle').focus();
+      await parents.waitForFunction(() => document.getElementById('npUScripturePick') !== window.__teenStudyPicker &&
+        document.activeElement?.id === 'npUFollowToggle', null, { timeout: 5000 });
+      assert.equal(await parents.locator('#npUScripturePick').count(), 1, 'deferred section projection replaces only the released instrument');
+      await parents.close();
+      console.log('PASS scripture live focus continuity and deferred section refresh');
     } finally { await context.close(); }
   }
 

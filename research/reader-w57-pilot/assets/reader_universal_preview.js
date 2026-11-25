@@ -1327,6 +1327,18 @@
   const researchNumbers={section:'01',scripture:'02',notes:'03',figures:'04',outline:'05',sources:'06',series:'07'};
   let shortExpanded=true,focusedModule=null;
   const pinnedMarkup=new Map();
+  let deferredScripture=null;
+  // A passive reading-state change must not detach a control the reader is
+  // using. The newest section projection waits until focus leaves the tool.
+  function flushDeferredScripture(force=false){
+   const pending=deferredScripture;
+   if(!pending||(!force&&pending.live.contains(document.activeElement)))return;
+   deferredScripture=null;
+   if(!pending.live.isConnected||pinnedMarkup.has('scripture'))return;
+   pending.live.replaceWith(pending.fresh);
+   syncModuleFocus();
+   renderScriptureAt(pending.fresh,0);
+  }
   let pinnedLexiconIndex=null, lexiconStamp='', lexiconFrame=0;
   const pinnable=new Set(['scripture','lexicon','section']);
   function sectionCard(title,inner,open=true,metadata='',kind='section'){
@@ -1570,7 +1582,7 @@
   return !!target?.closest('.gterm')||[...record.addedNodes,...record.removedNodes].some(el=>
    el.nodeType===1&&(el.matches('.gterm')||el.querySelector('.gterm')));
  }
- function makeSection(index){
+ function makeSection(index,preserveStudyFocus=false){
   const group=sections[index],data=getGroupMaterial(index);
   const excerpt=t=>'<blockquote class="np-u-quotation">'+escape(t.length>450?t.slice(0,447).trimEnd()+'…':t)+'</blockquote>';
   const snippets=data.extracts.length?excerpt(data.extracts[0]):'';
@@ -1723,10 +1735,27 @@
     const live=sectionHost.querySelector('.np-u-research-module[data-np-u-module="'+kind+'"]');
     if(live)pinnedMarkup.set(kind,live.outerHTML);
    }
-   sectionHost.innerHTML=html;
+   const liveScripture=preserveStudyFocus&&sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
+   let keptScripture=liveScripture&&liveScripture.contains(document.activeElement)?liveScripture:null;
+   deferredScripture=null;
+   if(keptScripture){
+    const template=document.createElement('template');template.innerHTML=html;
+    const fresh=template.content.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
+    if(fresh){
+     const children=[...template.content.children],at=children.indexOf(fresh);
+     // Keep the live DOM node connected: even moving it through a fragment
+     // would reset focus and dismiss the browser's native select.
+     for(const node of [...sectionHost.childNodes])if(node!==keptScripture)node.remove();
+     for(const node of children.slice(0,at))sectionHost.insertBefore(node,keptScripture);
+     for(const node of children.slice(at+1))sectionHost.append(node);
+     if(!pinnedMarkup.has('scripture'))deferredScripture={live:keptScripture,fresh};
+    }else keptScripture=null;
+   }
+   if(!keptScripture)sectionHost.innerHTML=html;
    // A pinned research instrument preserves its original chapter's content
    // while the other windows follow the reader's current position.
    for(const [kind,markup] of pinnedMarkup){
+    if(kind==='scripture'&&keptScripture)continue;
     const fresh=sectionHost.querySelector('.np-u-research-module[data-np-u-module="'+kind+'"]');
     if(fresh)fresh.outerHTML=markup;
    }
@@ -1737,7 +1766,7 @@
    peek.dataset.npUGoto=group.id;
    syncModuleFocus();
    const scriptureModule=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
-   if(scriptureModule&&!pinnedMarkup.has('scripture'))renderScriptureAt(scriptureModule,0);
+   if(scriptureModule!==keptScripture&&scriptureModule&&!pinnedMarkup.has('scripture'))renderScriptureAt(scriptureModule,0);
    const sourceIndex=sections.length?index:0;
   $$('.np-u-group',root).forEach((el,i)=>el.classList.toggle('is-current',i===sourceIndex));
   $$('.np-u-spine-item',root).forEach(el=>el.classList.toggle('is-current',el.dataset.npUGoto===group.id));
@@ -1751,10 +1780,10 @@
    $('#npUOtherHost',root).innerHTML=html;
    syncModuleFocus();
   }
- function show(i){
+ function show(i,preserveStudyFocus=false){
   if(i<0||i>=sections.length)return;
   if(i!==browserStore.active){
-   browserStore.active=i;makeSection(i);recordHistory(i);
+   browserStore.active=i;makeSection(i,preserveStudyFocus);recordHistory(i);
    // Argon BookTOC: follow the current chapter and collapse unrelated branches.
    $$('.np-u-group',root).forEach((group,j)=>{
     const branch=group.querySelector('.np-u-sub');
@@ -1767,7 +1796,7 @@
    });
   }
  }
- function updateScroll(state){if(followEnabled)show(currentGroupIndex(state));}
+ function updateScroll(state){if(followEnabled)show(currentGroupIndex(state),true);}
  function navigate(id){
   const el=document.getElementById(id);
   if(!el)return;
@@ -2045,6 +2074,7 @@
  // Product's original tooltip markup remains untouched and is read-only.
  function activateScriptureCitation(citation,keyboard){
   if(!citation||!article.contains(citation)||pinnedMarkup.has('scripture'))return false;
+  flushDeferredScripture(true);
   const ref=citation.dataset.ref;
   let mod=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
   let pick=mod?.querySelector('[data-np-u-scripture-picker]');
@@ -2197,7 +2227,10 @@
  const glossaryReady=new MutationObserver(records=>{if(records.some(glossaryMutation))scheduleLexiconRefresh();});
  glossaryReady.observe(article,{subtree:true,childList:true,characterData:true,attributes:true,
   attributeFilter:['data-term','data-term-title','data-category','data-reader-exclude','class'],attributeOldValue:true});
- sectionHost.addEventListener('focusout',scheduleLexiconRefresh);
+ sectionHost.addEventListener('focusout',event=>{
+  scheduleLexiconRefresh();
+  if(deferredScripture?.live.contains(event.target))requestAnimationFrame(()=>flushDeferredScripture());
+ });
  window.addEventListener('pagehide',event=>{
   if(lexiconFrame)cancelAnimationFrame(lexiconFrame);
   lexiconFrame=0;
