@@ -829,6 +829,9 @@ try {
   }
   // Protected Nagornaya: clean physical PDFs for the existing raster/semantic gate.
   report.nagornayaFormats = [];
+  report.nagornayaOverlayPrint = [];
+  const ngOverlayDir = join(OUT, 'nagornaya-open-overlays');
+  await mkdir(ngOverlayDir, { recursive: true });
   for (const format of ['A4', 'Letter']) {
     for (const javaScriptEnabled of [true, false]) {
       for (const width of [390, 1240]) {
@@ -851,6 +854,44 @@ try {
           const pdf = join(formatDir, name + '.pdf');
           await page.pdf({ path: pdf, format, printBackground: true, preferCSSPageSize: true });
           const paper = paperFormatWitness(pdf, format);
+          // One physical Letter/mobile baseline is sufficient for the two
+          // previously untracked locks. Never add these PDFs to format inventory.
+          if (format === 'Letter' && javaScriptEnabled && width === 390) {
+            const baselineText = execFileSync('pdftotext', ['-enc', 'UTF-8', '-layout', pdf, '-']);
+            const state = (owner, opener) => page.evaluate(({ owner, opener }) => ({
+              owners: window.OverlayRuntime?.snapshot().map(layer => layer.ownerId) || [],
+              sources: Object.keys(window.SiteUtils?._scrollLockSources || {}).sort(),
+              root: document.documentElement.getAttribute('data-scroll-locked'),
+              position: getComputedStyle(document.body).position,
+              expanded: document.querySelector(opener).getAttribute('aria-expanded'),
+              ownerOpen: window.OverlayRuntime?.isOpen(owner) === true
+            }), { owner, opener });
+            for (const [owner, opener] of [['nagornaya-btoc', '#barSectionBtn'], ['nagornaya-menu', '#menuBtn']]) {
+              await page.locator(opener).click();
+              await page.waitForFunction(owner => window.OverlayRuntime?.isOpen(owner) &&
+                document.documentElement.getAttribute('data-scroll-locked') === '1', owner);
+              const before = await state(owner, opener);
+              if (!before.ownerOpen || before.owners.length !== 1 || before.owners[0] !== owner ||
+                  before.sources.length !== 1 || before.sources[0] !== 'overlay:' + owner ||
+                  before.position !== 'fixed' || before.expanded !== 'true')
+                throw new Error('Nagornaya overlay owner mismatch: ' + JSON.stringify(before));
+              const lockedPdf = join(ngOverlayDir, owner + '.pdf');
+              await page.pdf({ path: lockedPdf, format, printBackground: true, preferCSSPageSize: true });
+              const lockedText = execFileSync('pdftotext', ['-enc', 'UTF-8', '-layout', lockedPdf, '-']);
+              const after = await state(owner, opener);
+              const sameText = baselineText.equals(lockedText);
+              const sameState = JSON.stringify(before) === JSON.stringify(after);
+              const lockedPaper = paperFormatWitness(lockedPdf, format);
+              report.nagornayaOverlayPrint.push({ owner, sameText, sameState, before, after, paper: lockedPaper });
+              if (!sameText || !sameState || lockedPaper.failures.length || lockedPaper.total !== paper.total)
+                report.failures.push('Nagornaya open overlay print changed text, state or physical format: ' + owner);
+              await page.keyboard.press('Escape');
+              await page.waitForFunction(({owner,opener}) => !window.OverlayRuntime.isOpen(owner) &&
+                !document.documentElement.hasAttribute('data-scroll-locked') &&
+                document.querySelector(opener).getAttribute('aria-expanded') === 'false' &&
+                document.activeElement === document.querySelector(opener), { owner, opener });
+            }
+          }
           // Inspect the actual owner after the physical PDF was generated.
           // No injected CSS and no screen/print emulation before PDF capture.
           await page.emulateMedia({ media: 'print' });
@@ -875,6 +916,7 @@ try {
     }
   }
   if (report.nagornayaFormats.length !== 8) report.failures.push('Nagornaya physical matrix incomplete');
+  if (report.nagornayaOverlayPrint.length !== 2) report.failures.push('Nagornaya overlay physical matrix incomplete');
 
   // W42 privacy: real Product Library, fresh contexts, synthetic private
   // data only. Physical PDFs must match a clean same-route baseline.
