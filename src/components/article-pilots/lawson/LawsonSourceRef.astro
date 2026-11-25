@@ -16,7 +16,7 @@ const source = lawsonSource(id);
     <strong>{source.label}</strong>
     <span>{source.proves}</span>
     {source.boundary && <span class="lawson-source-boundary"><b>Предел вывода:</b> {source.boundary}</span>}
-    <a href={source.href} rel="noopener noreferrer">Открыть источник ↗</a>
+    <a href={source.href} rel="noopener noreferrer">{source.destinationLabel ?? 'Открыть источник ↗'}</a>
     <a class="lawson-source-bibliography" href={`#source-${source.id}`}>К записи в библиографии</a>
   </span>
 </span>
