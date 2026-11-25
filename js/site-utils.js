@@ -553,6 +553,9 @@
     overlayRestoreGeneration += 1;
     record.open = true;
     record.sequence = ++overlaySequence;
+    var sequence = record.sequence;
+    var generation = overlayRestoreGeneration;
+    var initialFocus = document.activeElement;
     if (record.element) {
       record.element.setAttribute('aria-hidden', 'false');
       record.element.removeAttribute('inert');
@@ -567,7 +570,16 @@
     }
     syncOverlayDiagnostics();
     var target = firstOverlayFocus(record);
-    if (target) setTimeout(function () { if (record.open) overlayFocus(target); }, 0);
+    if (target) setTimeout(function () {
+      // A closed/reopened owner, a newer layer or a deliberate focus change
+      // supersedes the initial focus request, even before its first timer.
+      if (!record.open || record.sequence !== sequence ||
+          generation !== overlayRestoreGeneration || topOverlayRecord() !== record) return;
+      var active = document.activeElement;
+      if (active && active !== initialFocus && active !== document.body &&
+          active !== document.documentElement) return;
+      overlayFocus(target);
+    }, 0);
     return { ownerId: record.ownerId, element: record.element, sequence: record.sequence };
   }
 
