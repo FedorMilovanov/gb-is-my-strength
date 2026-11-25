@@ -508,14 +508,33 @@ async function captureWideHistoryEvidence(page, name) {
     try { await operation(); }
     catch (error) { failures.push({ label, message: error.message }); }
   };
+  const contextShot = async (label, selector, suffix) => {
+    await capture(label + suffix, async () => {
+      await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
+      await settleWithoutScripts(page);
+      await shot(page, name + '-' + label + suffix, { fullPage: false });
+    });
+  };
   const contextShots = async (suffix) => {
-    for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
-      await capture(label + suffix, async () => {
-        await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
-        await settleWithoutScripts(page);
-        await shot(page, name + '-' + label + suffix, { fullPage: false });
-      });
-    }
+    for (const [label, selector] of [
+      ['atlas','.g3g-history'], ['legend','.g3g-map-key'], ['map-list-end','.g3g-atlas-list > li:last-child'],
+      ['g44','#g3-2018-document-index']
+    ]) await contextShot(label, selector, suffix);
+    await capture('chronology' + suffix, async () => {
+      const chronology = page.locator('.g3g-history .g3g-chron-details');
+      const summary = chronology.locator('summary');
+      const wasOpen = await chronology.evaluate(el=>el.open);
+      try {
+        if (!wasOpen) await summary.click();
+        assert.equal(await chronology.evaluate(el=>el.open),true,'native chronology must open for visual evidence');
+        await page.mouse.move(0,0);
+        await contextShot('chronology-first','.g3g-history .g3g-timeline > li:first-child',suffix);
+        await contextShot('chronology-last','.g3g-history .g3g-timeline > li:last-child',suffix);
+      } finally {
+        if ((await chronology.evaluate(el=>el.open))!==wasOpen) await summary.click();
+        assert.equal(await chronology.evaluate(el=>el.open),wasOpen,'restore chronology after evidence');
+      }
+    });
   };
   const original = await page.evaluate(() => {
     const style = document.documentElement.style;
@@ -817,7 +836,7 @@ try {
   // Keep normal viewport captures with neighbouring prose and sticky chrome.
   if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
     report.wideHistory = [];
-    for (const width of [390,430,768,1024,1440,1920]) for (const theme of ['light','dark']) {
+    for (const width of [390,430,768,1023,1024,1440,1920]) for (const theme of ['light','dark']) {
       const viewport = { width, height: width <= 430 ? 844 : 900 };
       const context = await contextFor(width, theme, { viewport });
       const page = await context.newPage();
@@ -829,7 +848,18 @@ try {
         await assertPublishedHistory(page, response);
         // Capture both clean composition states before any geometry/action
         // assertion can abort the case. Capture errors still fail the report.
-        item.captureProblems = await captureWideHistoryEvidence(page,name);
+        // Visual interactions run in a fresh context, never in the keyboard witness.
+        const captureContext = await contextFor(width, theme, { viewport });
+        item.captureProblems = [];
+        try {
+          const capturePage = await captureContext.newPage();
+          await ready(capturePage, routes.find(route => route.kind === 'history').url);
+          item.captureProblems = await captureWideHistoryEvidence(capturePage,name);
+        } catch (error) {
+          item.captureProblems.push({label:'capture-context',message:error.message});
+        } finally {
+          await captureContext.close();
+        }
         for (const problem of item.captureProblems)
           report.problems.push(name + ': capture ' + problem.label + ': ' + problem.message);
         item.normal = await wideHistoryGeometry(page);
