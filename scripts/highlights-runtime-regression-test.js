@@ -107,10 +107,13 @@ assert.match(source, /const FAVORITES_KEY = 'gb-favorites'/, 'canonical favorite
 assert.match(source, /window\.GBFavoriteStore/, 'read articles through native favorite-store API when available');
 assert.match(source, /window\.GBHighlights = api/, 'legacy public API is maintained');
 assert.match(source, /window\.GBReaderLibrary = api/, 'unified reader library API exposed');
-const mobileBarStart = source.indexOf('function mobileSelectionBar()');
-const mobileBarEnd = source.indexOf('\n  function hide()', mobileBarStart);
+// The selection controller is a genuinely lazy owner, not the bootstrap.
+const selectionSource = fs.readFileSync(path.resolve(__dirname,'..','js/reader-library-selection.js'),'utf8');
+const presenterSource = fs.readFileSync(path.resolve(__dirname,'..','js/reader-library-presenter.js'),'utf8');
+const mobileBarStart = selectionSource.indexOf('function mobileSelectionBar()');
+const mobileBarEnd = selectionSource.indexOf('\n  function hide()', mobileBarStart);
 assert.ok(mobileBarStart >= 0 && mobileBarEnd > mobileBarStart, 'mobile selection toolbar owner exists');
-const mobileBarSource = source.slice(mobileBarStart, mobileBarEnd);
+const mobileBarSource = selectionSource.slice(mobileBarStart, mobileBarEnd);
 assert.match(mobileBarSource, /b\.addEventListener\('mousedown',\s*\(event\)\s*=>\s*event\.preventDefault\(\)/,
   'mouse down preserves text selection before toolbar click');
 assert.match(mobileBarSource, /b\.addEventListener\('pointerdown',\s*rememberSelection\)/,
@@ -122,11 +125,11 @@ assert.doesNotMatch(source.slice(rememberStart, rememberEnd), /\bpreventDefault\
   'selection snapshot handler must not cancel pointer/touch compatibility clicks');
 assert.doesNotMatch(mobileBarSource, /addEventListener\(['"]touchstart['"]/,
   'touchstart must remain uncancelled so mobile compatibility clicks reach toolbar buttons');
-assert.match(source, /setAttribute\('aria-hidden', 'false'\)/, 'modal open exposes its dialog');
-assert.match(source, /setAttribute\('aria-hidden', 'true'\)/, 'modal close hides its dialog');
-assert.match(source, /removeAttribute\('inert'\)/, 'opening modal restores interactions');
-assert.match(source, /setAttribute\('inert', ''\)/, 'closed modal is inert');
-assert.match(source, /gb-hl-quote.*is-collapsed|is-collapsed/, 'long text collapses');
+assert.match(presenterSource, /setAttribute\('aria-hidden', 'false'\)/, 'modal open exposes its dialog');
+assert.match(presenterSource, /setAttribute\('aria-hidden', 'true'\)/, 'modal close hides its dialog');
+assert.match(presenterSource, /removeAttribute\('inert'\)/, 'opening modal restores interactions');
+assert.match(presenterSource, /setAttribute\('inert', ''\)/, 'closed modal is inert');
+assert.match(presenterSource, /gb-hl-quote.*is-collapsed|is-collapsed/, 'long text collapses');
 const css = fs.readFileSync(path.resolve(__dirname, '..', 'css/highlights-runtime.css'), 'utf8');
 assert.match(css, /prefers-reduced-motion/, 'reduced-motion users do not get forced animation');
 assert.match(css, /#gb-hl-fab-count\s*\{[^}]*display:\s*none;/, 'library count dot must stay visually hidden');
@@ -136,15 +139,17 @@ assert.match(toastCss[1], /z-index:\s*var\(--z-toast-high,\s*9998\)/,
   'highlight toast stays above transient tips and below modal layers');
 assert.match(toastCss[1], /width:\s*max-content/,
   'centered highlight toast must not shrink to half the mobile viewport');
-assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиотека — сохранено ' \+ all\(\)\.length\)/, 'accessible library total must stay available');
+assert.match(source, /const count\s*=\s*quotes\(\)\.length\s*\+\s*notes\(\)\.length\s*\+\s*favorites\(\)\.length/, 'count covers all three canonical collections without materializing display rows');
+assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиотека — сохранено ' \+ count\)/, 'accessible library total must stay available');
 
 // Position-safe native painting regression: same phrase on two pages, repeated
 // text within one page, a changed source block and W57-owned anchors.
 const locateStart = source.indexOf('  const REGEXP_SPECIAL =');
-const locateEnd = source.indexOf('\n  async function saveMarker(', locateStart);
+const locateEnd = source.indexOf('\n  // One deferred repaint', locateStart);
 assert.ok(locateStart >= 0 && locateEnd > locateStart, 'native mark resolver remains a single source owner');
 let articleText = 'Начало Бог благ конец. Далее Бог благ снова.';
 let savedMarks = [];
+let desktopW57 = false, positionalResolutions = 0;
 const paintRegistry = new Map();
 const paintLocation = { origin: 'https://gospod-bog.ru', href: 'https://gospod-bog.ru/articles/a/' };
 const painting = {
@@ -154,9 +159,12 @@ const painting = {
   gbHighlightPath: api.path, gbHighlightKey: api.key,
   MARK_COLORS: ['amber', 'sage', 'blue', 'lime', 'rose'],
   quotes: () => savedMarks,
+  cancelScheduledPaint() {},
+  matchMedia: () => ({matches:desktopW57}),
   textIndex: () => ({ raw: articleText, nodes: [{ node: { textContent: articleText }, start: 0 }] }),
   document: {
-    querySelector: () => ({ tagName: 'ARTICLE' }),
+    body: {classList:{contains:name=>name==='np-w57-ready'&&desktopW57}},
+    querySelector: selector => selector.includes('#npUResearch') ? (desktopW57 ? {} : null) : ({tagName:'ARTICLE'}),
     createRange: () => ({
       setStart(_node, offset) { this.start = offset; },
       setEnd(_node, offset) { this.end = offset; },
@@ -167,11 +175,13 @@ const painting = {
   Highlight: class { constructor(...ranges) { this.ranges = ranges; } },
 };
 painting.window = { CSS: painting.CSS };
-painting.GBReaderAnchors = { resolve: () => null };
+painting.GBReaderAnchors = { resolution: () => anchor => { positionalResolutions++; return {toString:()=>anchor.exact}; } };
 vm.createContext(painting);
 vm.runInContext(source.slice(locateStart, locateEnd) +
   '\nthis.paintAPI = { locate, paintMarks };', painting);
-const paintOnce = (marks, text = 'Начало Бог благ конец. Далее Бог благ снова.', href = 'https://gospod-bog.ru/articles/a/') => {
+const paintOnce = (marks, text = 'Начало Бог благ конец. Далее Бог благ снова.', href = 'https://gospod-bog.ru/articles/a/', desktop = false) => {
+  desktopW57 = desktop;
+  positionalResolutions = 0;
   articleText = text;
   savedMarks = marks;
   paintLocation.href = href;
@@ -194,10 +204,14 @@ assert.equal(paintOnce([{ ...firstMark, before: '', after: '' }]).painted, 0,
   'ambiguous legacy first-match must remain unresolved');
 assert.equal(paintOnce([firstMark], 'Заменено Бог благ конец. Далее Бог благ снова.').painted, 0,
   'changed source context cannot reattach the marker to another quote');
-assert.equal(paintOnce([{ ...firstMark, annotation: {
+const positionalMark = { ...firstMark, annotation: {
   version: 1, kind: 'marker', color: 'amber',
   anchor: { blockIndex: 0, start: 7, end: 15, exact: 'Бог благ' },
-} }]).painted, 0, 'W57 positional annotation is painted only by the W57 resolver');
+} };
+assert.equal(paintOnce([positionalMark]).painted, 1, 'native Classic painter uses the canonical positional resolver');
+assert.equal(positionalResolutions,1);
+assert.equal(paintOnce([positionalMark],undefined,undefined,true).painted,0,'ARGON Desktop owns its positional annotation, not the native painter');
+assert.equal(positionalResolutions,0,'desktop guard avoids a second resolver call');
 
 // Positional W57 anchors must never jump to a coincidental paragraph after the
 // identified source changes. In an id-less relocation, accept only a unique
