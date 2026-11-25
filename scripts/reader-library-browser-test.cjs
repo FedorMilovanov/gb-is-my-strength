@@ -37,7 +37,8 @@ const server = http.createServer((req, res) => {
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
       url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' ||
-      url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js') {
+      url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js' ||
+      url.pathname === '/js/reader-library-ranges.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));
@@ -457,6 +458,7 @@ async function checkVisibleLegacy(name, driver, base) {
     const errors=[];page.on('pageerror',err=>errors.push(err.message));
     await page.goto(base+'/articles/sample/');
     await page.waitForFunction(()=>!!window.GBHighlights);
+    await page.evaluate(()=>window.GBHighlights.ensureRanges());
     const results=await page.evaluate(()=>{
       const article=document.querySelector('article');
       article.innerHTML=`<p id="visible">Начало. Видимая фраза. Конец.</p>

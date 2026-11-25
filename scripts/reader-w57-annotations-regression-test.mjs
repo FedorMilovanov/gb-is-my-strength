@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const file=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57_annotations.js'),'utf8');
 const highlights=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+const ranges=readFileSync(resolve(root,'js/reader-library-ranges.js'),'utf8');
 const presenterSource=readFileSync(resolve(root,'js/reader-library-presenter.js'),'utf8');
 const selectionActionSource=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
 const preview=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
@@ -108,9 +109,9 @@ const ambiguous=makeFixture({notes:[
  {id:'orphan-b',quoteId:'quote-1',text:'Второй текст'}]});
 assert.equal(ambiguous.api.linkedNote(ambiguous.record),null,
  'multiple legacy notes must not be silently assigned to one quote');
-assert.match(highlights,/function resolve\(article,anchor\)/,
+assert.match(ranges,/function resolve\(article,anchor\)/,
  'the Product shared Reader owns the only positional range resolver');
-assert.match(file,/const \{capture,resolve\}\s*=\s*window\.GBReaderAnchors\s*\|\|\s*\{\}/,
+assert.match(file,/const capture=\(\.\.\.args\)=>window\.GBReaderAnchors\?\.capture\(\.\.\.args\)/,
  'W57 annotations consume the shared positional anchor API');
 // Product selection bar and the native popup must both associate notes only
 // with an already-saved exact source occurrence, not a repeated text string.
@@ -126,15 +127,15 @@ assert.equal((readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8'
 assert.doesNotMatch(file,/function resolve\(article,anchor\)/,
  'W57 must not fork a stale second copy of the resolver');
 // Persist the same DOM-author-visible offset mapping on capture and resolve.
-assert.equal((highlights.match(/function visibleProjection\(/g)||[]).length,1,
+assert.equal(((highlights+ranges).match(/function visibleProjection\(/g)||[]).length,1,
  'single visible-author-text projection owner is required');
-assert.match(highlights,/GBReaderAnchors\.visibleProjection\(scope,true\)/,
+assert.match(ranges,/GBReaderAnchors\.visibleProjection\(scope,true\)/,
  'legacy text index must delegate to the canonical visible projection');
-assert.match(highlights,/projection:'reader-visible-v1'/,
+assert.match(ranges,/projection:'reader-visible-v1'/,
  'new anchored quotes must record their coordinate system');
-assert.match(highlights,/\.gtip,\.btip,\.tooltip/,
+assert.match(ranges,/\.gtip,\.btip,\.tooltip/,
  'glossary/tooltip prose must not be included in saved citations');
-assert.doesNotMatch(highlights,/const source=block\.textContent\|\|''/,
+assert.doesNotMatch(ranges,/const source=block\.textContent\|\|''/,
  'raw block textContent must never become the quoted text');
 assert.match(file,/next\.some\(x=>x\?\.id===record\.id\)/,
  'insertion success must be tested by identity, not list length');
@@ -628,10 +629,10 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 
 // Painting must not traverse the entire article on a clean or positional-only page.
 {
- const start=highlights.indexOf('  function paintMarks() {');
- const end=highlights.indexOf('  // One deferred repaint per frame',start);
+ const start=ranges.indexOf('  function paintMarks() {');
+ const end=ranges.indexOf('  return Object.freeze({GBReaderAnchors, textIndex',start);
  assert.ok(start>=0&&end>start,'paint source boundaries');
- const source=highlights.slice(start,end);
+ const source=ranges.slice(start,end);
  function scene(rows,desktop=false,hasScope=true){
   let scans=0,placed=[],removed=[],resolved=0;
   const scope={};
@@ -700,8 +701,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 
  // W58: actual anchor resolution reuses a projection only inside one synchronous batch.
 {
- const from=highlights.indexOf('  const GBReaderAnchors = (() => {');
- const to=highlights.indexOf('  window.GBReaderAnchors = GBReaderAnchors;',from);
+ const from=ranges.indexOf('  const GBReaderAnchors = (() => {');
+ const to=ranges.indexOf('  /* Цветные пометы:',from);
  assert.ok(from>=0&&to>from);
  let inventories=0,walks=0,styles=0;
  const leaf={nodeValue:'Alpha beta gamma delta',parentElement:null};
@@ -710,7 +711,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  inline.parentElement=block;leaf.parentElement=inline;
  const article={querySelectorAll:()=>{inventories++;return[block]},querySelector:()=>block};
  const document={createTreeWalker:()=>{walks++;let n=0;return{nextNode:()=>n++===0?leaf:null}},createRange:()=>({setStart(node,offset){this.start=offset},setEnd(node,offset){this.end=offset}})};
- const api=new Function('document','NodeFilter','CSS','getComputedStyle','normalizeText',highlights.slice(from,to)+'return GBReaderAnchors;')(document,{SHOW_TEXT:4},{escape:x=>x},()=>{styles++;return{display:'inline',visibility:'visible'}},x=>String(x??'').replace(/\\s+/g,' ').trim());
+ const api=new Function('document','NodeFilter','CSS','getComputedStyle','normalizeText',ranges.slice(from,to)+'return GBReaderAnchors;')(document,{SHOW_TEXT:4},{escape:x=>x},()=>{styles++;return{display:'inline',visibility:'visible'}},x=>String(x??'').replace(/\\s+/g,' ').trim());
  const anchor={blockId:'p1',blockIndex:0,start:6,end:10,exact:'beta',prefix:'Alpha ',suffix:' gamma'};
  const batch=api.resolution(article);
  assert.deepEqual([batch(anchor).start,batch(anchor).end],[6,10]);
@@ -741,8 +742,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 
  // W59: capture and context share one actual visible projection; dock is not needed.
 {
- const from=highlights.indexOf('  const GBReaderAnchors = (() => {');
- const to=highlights.indexOf('  window.GBReaderAnchors = GBReaderAnchors;',from);
+ const from=ranges.indexOf('  const GBReaderAnchors = (() => {');
+ const to=ranges.indexOf('  /* Цветные пометы:',from);
  assert.ok(from>=0&&to>from);
  let walks=0;
  const prose='Alpha beta gamma delta';
@@ -754,7 +755,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  // Block closest resolves authored paragraph except exclusion checks.
  block.closest=selector=>selector==='p,li,blockquote'||selector==='p,li,blockquote,.manuscript-quote--bilingual'?block:null;
  const doc={createTreeWalker:()=>{walks++;let n=0;return{nextNode:()=>n++===0?leaf:null}},createRange:()=>({setStart(){},collapse(){}})};
- const api=new Function('document','NodeFilter','window','location','innerHeight','normalizeText','getComputedStyle',highlights.slice(from,to)+'return GBReaderAnchors;')(doc,{SHOW_TEXT:4},{getSelection:()=>sel},{pathname:'/a'},844,x=>String(x??'').replace(/\\s+/g,' ').trim(),()=>({display:'block',visibility:'visible'}));
+ const api=new Function('document','NodeFilter','window','location','innerHeight','normalizeText','getComputedStyle',ranges.slice(from,to)+'return GBReaderAnchors;')(doc,{SHOW_TEXT:4},{getSelection:()=>sel},{pathname:'/a'},844,x=>String(x??'').replace(/\\s+/g,' ').trim(),()=>({display:'block',visibility:'visible'}));
  const capture=api.capture(article,'beta gamma');
  assert.equal(capture.text,'beta gamma');assert.equal(capture.anchor.start,6);assert.equal(capture.anchor.end,16);
  assert.deepEqual(capture.context,{before:'Alpha ',after:' delta'});assert.equal(walks,1,'capture and context one tree traversal');
@@ -853,8 +854,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  function fixture(){
    const imports=[],attrs=new Map();let mounts=0,failMount=false;
    const module={createLibraryView(){mounts++;if(failMount)throw Error('mount');return {overlay:{},editorController:{}}}};
-   const api=new Function('load','deps',source.replace('function loadPresenter() {','fab=deps.fab; const {penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,isOpen}=deps; function loadPresenter() {')+'return {loadPresenter,published:()=>presenter};')(
-    path=>new Promise((resolve,reject)=>imports.push({path,resolve,reject})),{fab:{setAttribute:(k,v)=>attrs.set(k,v)}});
+   const api=new Function('load','deps',source.replace('function loadPresenter() {','fab=deps.fab; const {penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,isOpen,ensureRanges}=deps; function loadPresenter() {')+'return {loadPresenter,published:()=>presenter};')(
+    path=>new Promise((resolve,reject)=>imports.push({path,resolve,reject})),{fab:{setAttribute:(k,v)=>attrs.set(k,v)},ensureRanges:()=>Promise.resolve({})});
    return {api,imports,module,mounts:()=>mounts,attrs,setFailure:value=>failMount=value};
  }
  const f=fixture(),p=f.api.loadPresenter(),q=f.api.loadPresenter();
@@ -1178,14 +1179,14 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  function scene(){
    let pending=[],live=false,loads=0,creates=0,attaches=0,places=0,failAttach=false;
    const window={getSelection:()=>live?{isCollapsed:false,rangeCount:1,toString:()=> 'long selected text'}:null};
-   const names='MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes'.split(',');
-   const deps=names.map(n=>n==='normalizeText'?s=>s:()=>{});
+   const names='MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes,ensureRanges'.split(',');
+   const deps=names.map(n=>n==='normalizeText'?s=>s:n==='ensureRanges'?()=>Promise.resolve({}):()=>{});
    const load=()=>{loads++;return new Promise((resolve,reject)=>pending.push({resolve,reject}))};
    const module={createSelectionController(){creates++;return {attachSelection(){attaches++;if(failAttach)throw Error('mount');},placeSelectionBar(){places++}}}};
    const api=new Function('window','load',...names,src.slice(a,b).replace(/\bimport\(/g,'load(')+'return {attachSelection,loadSelectionController};')(window,load,...deps);
    return {api,pending,module,live:v=>live=v,fail:v=>failAttach=v,stats:()=>[loads,creates,attaches,places]};
  }
- const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve()};
+ const flush=async()=>{for(let i=0;i<10;i++)await Promise.resolve()};
  const s=scene(),pre=s.api.loadSelectionController();
  s.pending[0].resolve(s.module);await pre;await flush();assert.deepEqual(s.stats(),[1,0,0,0]);
  s.live(true);s.api.attachSelection();s.api.attachSelection();await flush();assert.deepEqual(s.stats(),[1,1,1,1]);

@@ -123,7 +123,8 @@ async function run(engine, name) {
     await ready(A);
     // Prepare an actual anchored quote in a disposable browser profile.
     // Persistent edits below are made by REAL UI controls in the two tabs.
-    const seeded = await A.evaluate(({qid,nid,initial}) => {
+    const seeded = await A.evaluate(async ({qid,nid,initial}) => {
+      await window.GBHighlights.ensureRanges();
       const article = window.GBReaderContract?.articleRoot?.(document);
       if (!article || !window.GBReaderAnchors?.capture) throw Error('Canonical anchor owner missing');
       // Use the canonical authored-block list. An arbitrary first paragraph

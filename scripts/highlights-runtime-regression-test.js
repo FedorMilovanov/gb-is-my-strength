@@ -144,8 +144,9 @@ assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиоте�
 
 // Position-safe native painting regression: same phrase on two pages, repeated
 // text within one page, a changed source block and W57-owned anchors.
-const locateStart = source.indexOf('  const REGEXP_SPECIAL =');
-const locateEnd = source.indexOf('\n  // One deferred repaint', locateStart);
+const ranges = fs.readFileSync(path.resolve(__dirname,'..','js/reader-library-ranges.js'),'utf8');
+const locateStart = ranges.indexOf('  const REGEXP_SPECIAL =');
+const locateEnd = ranges.indexOf('\n  return Object.freeze({GBReaderAnchors, textIndex', locateStart);
 assert.ok(locateStart >= 0 && locateEnd > locateStart, 'native mark resolver remains a single source owner');
 let articleText = 'Начало Бог благ конец. Далее Бог благ снова.';
 let savedMarks = [];
@@ -175,12 +176,12 @@ const painting = {
   Highlight: class { constructor(...ranges) { this.ranges = ranges; } },
 };
 painting.window = { CSS: painting.CSS };
-const makeRangeStart=source.indexOf('  function makeRange('),makeRangeEnd=source.indexOf('  function contextBlock(',makeRangeStart);
+const makeRangeStart=ranges.indexOf('  function makeRange('),makeRangeEnd=ranges.indexOf('  function contextBlock(',makeRangeStart);
 assert.ok(makeRangeStart>=0&&makeRangeEnd>makeRangeStart);
-const canonicalMakeRange=new Function('document',source.slice(makeRangeStart,makeRangeEnd)+'return makeRange;')(painting.document);
+const canonicalMakeRange=new Function('document',ranges.slice(makeRangeStart,makeRangeEnd)+'return makeRange;')(painting.document);
 painting.GBReaderAnchors = { makeRange:canonicalMakeRange,resolution: () => anchor => { positionalResolutions++; return {toString:()=>anchor.exact}; } };
 vm.createContext(painting);
-vm.runInContext(source.slice(locateStart, locateEnd) +
+vm.runInContext(ranges.slice(locateStart, locateEnd) +
   '\nthis.paintAPI = { locate, paintMarks };', painting);
 const paintOnce = (marks, text = 'Начало Бог благ конец. Далее Бог благ снова.', href = 'https://gospod-bog.ru/articles/a/', desktop = false) => {
   desktopW57 = desktop;
@@ -212,7 +213,7 @@ assert.equal(paintOnce([{...overlapMark,after:'конец.'}],'Контекст 
 assert.equal(paintOnce([overlapMark],'   аба   ').painted,1,'leading whitespace is not a second match');
 assert.equal(paintRegistry.get('gb-hl-amber').ranges[0].toString(),'аба','canonical offset mapping excludes surrounding spaces');
 const disconnected={text:'аба',segments:[{node:null,start:0,end:3}]};
-const brokenRange=new Function('document',source.slice(makeRangeStart,makeRangeEnd)+'return makeRange;')({createRange(){return{setStart(){throw Error('detached')}}}});
+const brokenRange=new Function('document',ranges.slice(makeRangeStart,makeRangeEnd)+'return makeRange;')({createRange(){return{setStart(){throw Error('detached')}}}});
 assert.equal(brokenRange(disconnected,0,3),null,'invalid DOM range fails closed');
 assert.equal(paintOnce([firstMark], 'Заменено Бог благ конец. Далее Бог благ снова.').painted, 0,
   'changed source context cannot reattach the marker to another quote');
@@ -228,8 +229,8 @@ assert.equal(positionalResolutions,0,'desktop guard avoids a second resolver cal
 // Positional W57 anchors must never jump to a coincidental paragraph after the
 // identified source changes. In an id-less relocation, accept only a unique
 // match whose full original block fingerprint and local context both survive.
-const anchorSourceStart = source.indexOf('  function normalizeText(value)');
-const anchorSourceEnd = source.indexOf('\n  function gbHighlightPath(item)', anchorSourceStart);
+const anchorSourceStart = ranges.indexOf('  const GBReaderAnchors = (() => {');
+const anchorSourceEnd = ranges.indexOf('  /* Цветные пометы:', anchorSourceStart);
 assert.ok(anchorSourceStart >= 0 && anchorSourceEnd > anchorSourceStart,
   'shared positional anchor resolver remains extractable');
 function makeAnchorBlock(id, text) {
@@ -272,7 +273,7 @@ const anchorContext = {
   getComputedStyle: () => ({ display: 'block', visibility: 'visible' }),
 };
 vm.createContext(anchorContext);
-vm.runInContext(source.slice(anchorSourceStart, anchorSourceEnd), anchorContext);
+vm.runInContext(source.slice(start,source.indexOf('  let rangeRuntime',start))+ranges.slice(anchorSourceStart, anchorSourceEnd)+'\nwindow.GBReaderAnchors=GBReaderAnchors;', anchorContext);
 const positional = anchorContext.window.GBReaderAnchors;
 assert.ok(positional && typeof positional.resolve === 'function', 'shared positional resolver is exposed');
 const normalizeAnchorBlock = (value) => String(value).replace(/\s+/g, ' ').trim();

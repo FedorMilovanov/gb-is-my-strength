@@ -1004,7 +1004,8 @@ try {
       // Reuse actual visible selection + canonical anchor seed from the
       // existing two-tab contract; all data stays in a disposable profile.
 
-    const seeded = await page.evaluate(({qid,nid,initial}) => {
+    const seeded = await page.evaluate(async ({qid,nid,initial}) => {
+      await window.GBHighlights.ensureRanges();
       const article = window.GBReaderContract?.articleRoot?.(document);
       if (!article || !window.GBReaderAnchors?.capture) throw Error('Canonical anchor owner missing');
       // Use the canonical authored-block list. An arbitrary first paragraph
