@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 globalThis.location={origin:'https://gospod-bog.ru'};
 const source=fs.readFileSync(path.join(root,'js/reader-library-v3.js'),'utf8');
-const {safeTags,boundedTags,safeMerge,validateBackup,atomicImport,serializeCurrent,mutateResearch,appendTag,changeReading,updateProgress,updateRevisit,validateRecovery,serializeRecovery,atomicRecovery}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {safeTags,boundedTags,safeMerge,validateBackup,atomicImport,serializeCurrent,mutateResearch,appendTag,changeReading,updateProgress,updateRevisit,validateRecovery,serializeRecovery,atomicRecovery}=await import(pathToFileURL(path.join(root,'js/reader-library-v3.js')).href);
 const labels=Array.from({length:20},(_,i)=>'Тема '+(i+1));
 assert.deepEqual(boundedTags(['Тема 1',...labels]),labels);
 assert.deepEqual(safeTags(['Новая','НОВАЯ']),['Новая']);
@@ -145,7 +145,7 @@ corrupt.install();await assert.rejects(serializeCurrent(),/Экспорт отм
 refused.install();await assert.rejects(serializeCurrent(),/Экспорт отменён/);assert.deepEqual(refused.snapshot(),refusedBefore);
 assert.equal((await mutateResearch('tags',map=>appendTag(map,'note:42','refused'))).ok,false);
 assert.deepEqual(refused.snapshot(),refusedBefore);
-assert.doesNotMatch(source,/localStorage\.(?:setItem|removeItem)\s*\(/,'v3 has no raw storage writer');
+assert.doesNotMatch(source+'\n'+fs.readFileSync(path.join(root,'js/reader-library-research-core.js'),'utf8'),/localStorage\.(?:setItem|removeItem)\s*\(/,'research UI and core have no raw storage writer');
 
 // Exact recovery is separate from merge import. Preserve even invalid legacy
 // rows and envelope metadata; refuse different existing sections or bad JSON.

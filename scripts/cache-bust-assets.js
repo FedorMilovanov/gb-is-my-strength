@@ -41,6 +41,7 @@ const ASSETS = [
   'js/reader-library-selection.js',
   'js/reader-library-presenter.js',
   'js/reader-library-v3.js',
+  'js/reader-library-research-core.js',
   'js/reader-library-dock.js',
   'js/search.js',
   'js/sw-register.js',

@@ -372,7 +372,7 @@
     if (!presenterPromise) {
       presenterPromise = Promise.all([
         import('/js/reader-library-presenter.js?v=729e4f90'),
-        import('/js/reader-library-v3.js?v=fd607dd1'),
+        import('/js/reader-library-v3.js?v=54f97aa3'),
       ]).then(([module,researchModule]) => {
           if (!view) {
             view = module.createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch:researchModule.createLibraryResearch,isOpen});
@@ -561,7 +561,7 @@
   let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise;
   function warmReading() {
     if (warmReadingPromise || !shouldWarmReading?.()) return;
-    warmReadingPromise = import('/js/reader-library-v3.js?v=fd607dd1')
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=4f56696b')
       .then(research=>research.warmReadingProgress({isOpen,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}}))
       .catch(()=>{warmReadingPromise=null;});
   }

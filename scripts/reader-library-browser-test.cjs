@@ -36,7 +36,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
-      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js' ||
+      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' ||
       url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
@@ -253,7 +253,7 @@ async function checkTransientFocus(name,driver,base) {
         await page.goto(base+'/articles/selection-'+surface+'/',{waitUntil:'load'});
         await page.locator('#gb-hl-fab.gb-hl-fab--docked').waitFor({state:'visible'});
         // Cold fixture has no reading-resume state and no user selection.
-        assert.equal(moduleRequests.filter(p=>/reader-library-(selection|presenter|record-transactions|v3)\.js$/.test(p)).length,0,'cold page must not request action/presenter modules before selection');
+        assert.equal(moduleRequests.filter(p=>/reader-library-(selection|presenter|record-transactions|v3|research-core)\.js$/.test(p)).length,0,'cold page must not request action/presenter modules before selection');
         await page.locator('#demo').click();
         await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
         assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,0,'ordinary mouse click does not request selection actions');

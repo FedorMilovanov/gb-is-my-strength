@@ -44,12 +44,16 @@ async function test(engine,driver,base){
  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/library-progress-demo']?.anchor==='third',null,{timeout:5000});
  assert.equal(await page.locator('#gb-hl-backdrop').count(),0,'warm progress must not construct the library DOM');
  assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-presenter.js')).length,0,'warm progress must not request the presenter');
- page.off('request',trackResume);
- console.log('PASS '+engine+' warm progress without presenter request or DOM');
+ assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-v3.js')).length,0,'warm progress must not request the research UI');
+ assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-research-core.js')).length,1,'warm progress requests one shared core');
+ console.log('PASS '+engine+' warm progress without presenter/research UI request or DOM');
  // Revisit a quote, suppress it permanently, then verify it will not reappear.
  await page.locator('#gb-hl-fab').click();
  await page.locator('#gb-hl-backdrop.is-open').waitFor();
  await page.locator('.gb-hl-daily').waitFor();
+ assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-research-core.js')).length,1,'opening panel reuses the warmed core module');
+ assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-v3.js')).length,1,'opening panel loads research UI once');
+ page.off('request',trackResume);
  assert.equal(await page.locator('.gb-hl-daily').count(),1);
  const first=await page.locator('[data-research-action=never-quote]').getAttribute('data-value');
  await page.locator('[data-research-action=never-quote]').click();
@@ -73,8 +77,8 @@ async function test(engine,driver,base){
  cold.on('request',req=>coldRequests.push(new URL(req.url()).pathname));
  await cold.goto(base+'/articles/cold-progress/');
  await cold.locator('#gb-hl-fab').waitFor();
- assert.equal(coldRequests.filter(p=>p.endsWith('/reader-library-v3.js')).length,0,'untracked route stays cold');
- const warmResponse=cold.waitForEvent('response',{predicate:r=>new URL(r.url()).pathname.endsWith('/reader-library-v3.js'),timeout:5000});
+ assert.equal(coldRequests.filter(p=>/reader-library-(v3|research-core|presenter)\.js$/.test(p)).length,0,'untracked route stays cold');
+ const warmResponse=cold.waitForEvent('response',{predicate:r=>new URL(r.url()).pathname.endsWith('/reader-library-research-core.js'),timeout:5000});
  const committed=await page.evaluate(()=>window.GBHighlights.mutateLibrary(['gb-library-reading-v1'],stores=>{
    const key='gb-library-reading-v1';
    return {changes:{[key]:{...stores[key],'/articles/cold-progress':{state:'reading',title:'Cold',updatedAt:Date.now(),anchor:'',ratio:0}}}};
@@ -85,7 +89,7 @@ async function test(engine,driver,base){
  await cold.evaluate(()=>window.scrollTo(0,1080));
  await cold.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/cold-progress']?.anchor==='second',null,{timeout:5000});
  assert.equal(await cold.locator('#gb-hl-backdrop').count(),0);
- assert.equal(coldRequests.filter(p=>p.endsWith('/reader-library-presenter.js')).length,0);
+ assert.equal(coldRequests.filter(p=>/reader-library-(presenter|v3)\.js$/.test(p)).length,0);
  await cold.close();
  console.log('PASS '+engine+' cross-tab cold reading activation without presenter');
  }finally{await ctx.close();await browser.close();}

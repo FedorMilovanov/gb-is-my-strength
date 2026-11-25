@@ -23,6 +23,7 @@ const transactionsPath = path.join(root, 'js/reader-library-record-transactions.
 const presenterPath = path.join(root, 'js/reader-library-presenter.js');
 const researchPath = path.join(root, 'js/reader-library-v3.js');
 const dockPath = path.join(root, 'js/reader-library-dock.js');
+const corePath = path.join(root, 'js/reader-library-research-core.js');
 const highlightsPath = path.join(root, 'js/highlights.js');
 const swPath = path.join(root, 'sw.js');
 assert(fs.existsSync(presenterPath), 'lazy presenter must be published in dist');
@@ -61,5 +62,11 @@ assert(fs.readFileSync(highlightsPath,'utf8').includes('reader-library-dock.js?v
   'bootstrap must import correct dock revision');
 assert(fs.readFileSync(swPath,'utf8').includes('reader-library-dock.js?v=' + dockVersion),
   'SW must precache dock revision');
-console.log('lazy presenter + research + dock exact versions and offline precache PASS');
+assert(fs.existsSync(corePath), 'lightweight research core must be in published dist');
+const coreVersion=crypto.createHash('md5').update(fs.readFileSync(corePath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath,'utf8').includes('reader-library-research-core.js?v='+coreVersion),'warm bootstrap imports exact research core revision');
+assert(fs.readFileSync(researchPath,'utf8').includes('reader-library-research-core.js?v='+coreVersion),'research UI uses the same exact core revision');
+assert(fs.readFileSync(swPath,'utf8').includes('reader-library-research-core.js?v='+coreVersion),'SW precaches exact shared core revision for offline reading');
+assert(fs.statSync(corePath).size<=10000,'warm research core stays within 10 KB raw budget');
+console.log('lazy presenter + research + core + dock exact versions and offline precache PASS');
 console.log('allPages',pages.length,'reader article coverage PASS');

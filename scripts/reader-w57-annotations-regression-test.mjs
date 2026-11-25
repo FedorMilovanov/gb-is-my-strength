@@ -875,10 +875,12 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  // must not consume the one-time resume intent before successful setup.
  {
   const researchSource=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
-  const from=researchSource.indexOf('let readingProgress;');
+  const coreSource=readFileSync(resolve(root,'js/reader-library-research-core.js'),'utf8');
+  const from=researchSource.indexOf('export function createLibraryResearch(');
   const to=researchSource.indexOf('// Pure fail-closed backup contract functions',from);
-  assert.ok(from>=0&&to>from);
-  const body=researchSource.slice(from,to).replace(/export function/g,'function');
+  const coreFrom=coreSource.indexOf('let readingProgress;'),coreTo=coreSource.indexOf('export { KEYS',coreFrom);
+  assert.ok(from>=0&&to>from&&coreFrom>=0&&coreTo>coreFrom);
+  const body=(coreSource.slice(coreFrom,coreTo)+researchSource.slice(from,to)).replace(/export function/g,'function');
   for(const fault of ['dom:click','dom:change','dom:keydown','global:scroll','global:pagehide','global:load','global:storage','global:gb:library-committed',null]){
    const listeners=[];let sessionReads=0,fail=fault;
    const window={addEventListener(type,fn,opts={}){
@@ -979,8 +981,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 // W248: the document-lifetime progress owner flushes only real scroll intent,
 // cancels stale status updates, and never attributes a scroll to another route.
 {
- const source=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
- const a=source.indexOf('let readingProgress;'),b=source.indexOf('export function createLibraryResearch(',a);
+ const source=readFileSync(resolve(root,'js/reader-library-research-core.js'),'utf8');
+ const a=source.indexOf('let readingProgress;'),b=source.indexOf('export { KEYS',a);
  assert.ok(a>=0&&b>a);
  const handlers=new Map(),timers=new Map();let next=0,writes=[],opened=false;
  const record={state:'reading',anchor:'saved',ratio:.7,updatedAt:1};
