@@ -12,4 +12,11 @@ for(const [name,mutation] of Object.entries({'frame wrong session':{sessionId:'O
 test('paraphrase distinct',()=>{assert.equal(exhibitView(paraphraseFixture(v)).textMode,'attributed-paraphrase')});
 test('changed reviewed paraphrase',()=>assert.equal(exhibitView({...paraphraseFixture(v),paraphrase:'OTHER'}),null));
 test('hour and subsecond time',()=>{assert.equal(clock(3600000),'1:00:00');assert.equal(clock(18001,true),'00:19')});
+test('accepted source id cannot point at another valid fragment',()=>assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],href:'#src-OTHER'}]}),null));
+test('accepted source label cannot be replaced',()=>assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],label:'OTHER'}]}),null));
+test('old id-only approval fails closed',()=>assert.equal(exhibitView({...v,publication:{...v.publication,sourceLinks:undefined,sourceIds:['TEST-SOURCE']}}),null));
+test('missing reviewed source entry',()=>assert.equal(exhibitView({...v,publication:{...v.publication,sourceLinks:Array(1)}}),null));
+test('sparse source input fails closed',()=>assert.equal(exhibitView({...v,sourceLinks:Array(1)}),null));
+test('citation occurrence can vary without changing source identity',()=>assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],citationId:'cite-another-occurrence'}]}).sourceLinks[0].citationId,'cite-another-occurrence'));
+test('duplicate source identity even with new occurrence',()=>assert.equal(exhibitView({...v,sourceLinks:[v.sourceLinks[0],{...v.sourceLinks[0],citationId:'cite-other'}],publication:{...v.publication,sourceLinks:[v.publication.sourceLinks[0],v.publication.sourceLinks[0]]}}),null));
 console.log('AV_MODEL_PASS='+passes);
