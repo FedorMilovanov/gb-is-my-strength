@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
 import { assertArgonScriptureActivation } from './lib/reader-scripture-owner-browser.mjs';
@@ -15,7 +18,30 @@ import {
 const require = createRequire(import.meta.url);
 const { sanitizePublicScriptureIndex } = require('./public-scripture-index.js');
 
-const BASE = process.env.BASE || 'http://127.0.0.1:4179';
+let BASE = process.env.BASE || 'http://127.0.0.1:4179';
+const localDist=process.argv.includes('--dist');
+const DIST=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../dist');
+async function serveDist(){
+  assert(fs.existsSync(path.join(DIST,'data/scripture-search-index.json')),'build production-like dist first');
+  const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json',
+    '.svg':'image/svg+xml','.woff2':'font/woff2','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg'};
+  const server=http.createServer((req,res)=>{
+    try{
+      let file=path.resolve(DIST,'.'+decodeURIComponent(new URL(req.url,'http://127.0.0.1').pathname));
+      if(file!==DIST&&!file.startsWith(DIST+path.sep))throw Error('outside dist');
+      if(fs.statSync(file).isDirectory())file=path.join(file,'index.html');
+      if(!fs.statSync(file).isFile())throw Error('not file');
+      res.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});
+      fs.createReadStream(file).pipe(res);
+    }catch{res.writeHead(404);res.end('not found')}
+  });
+  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve)});
+  BASE='http://127.0.0.1:'+server.address().port;
+  return server;
+}
+async function isolateLocalTelemetry(page){
+  if(localDist)await page.route('https://mdd.yandex.net/',r=>r.fulfill({status:204,body:''}));
+}
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HELD_REFERENCE = '2 Тимофею 2:14–15';
 const HELD_CORPUS_PATH = '/data/bible/kassian/2timofeyu.json';
@@ -161,8 +187,12 @@ const expectedPublicHeldReference = sanitizePublicScriptureIndex({
   references: [heldIndexReference],
 }).references[0];
 
-const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
+const server=localDist?await serveDist():null;
+let browser;
+try {
+browser = await chromium.launch({ headless: true });
+const page = await browser.newPage({ viewport: { width: 1366, height: 900 }, serviceWorkers: 'block' });
+await isolateLocalTelemetry(page);
 const pageErrors = [];
 const consoleErrors = [];
 page.on('pageerror', (error) => pageErrors.push(String(error?.message || error)));
@@ -309,7 +339,8 @@ try {
   // Deep-scroll mobile regression: the fixed-body scroll lock must not move
   // the Scripture card outside the visible viewport; second tap, Escape
   // and outside tap must each close one owner without reopening it.
-  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  await isolateLocalTelemetry(mobile);
   try {
     const mobileErrors = [];
     mobile.on('pageerror', (error) => mobileErrors.push(String(error.message || error)));
@@ -355,6 +386,7 @@ try {
   }
 
   const study = await browser.newPage({ viewport: { width: 1366, height: 900 }, serviceWorkers: 'block' });
+  await isolateLocalTelemetry(study);
   try {
     const errors=[];
     study.on('pageerror',error=>errors.push(String(error)));
@@ -386,5 +418,8 @@ try {
   assert.deepEqual(consoleErrors, [], `unexpected console errors: ${consoleErrors.join(' | ')}`);
   console.log(`Scripture rights-safe projection/browser/public-index contract passed for held ${HELD_REFERENCE}`);
 } finally {
-  await browser.close();
+  await page.close();
+}
+} finally {
+  try { await browser?.close(); } finally { if(server)await new Promise(r=>server.close(r)); }
 }
