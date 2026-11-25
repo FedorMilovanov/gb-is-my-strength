@@ -38,7 +38,7 @@ export const ASSET_VERSIONS = {
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': '342fd8ee',
   'js/site-utils.js': '1d1c72c3',
-  'js/site.js': '6a544551',
+  'js/site.js': '90db3daa',
   'js/sw-register.js': '921dd6a2',
   'js/vosk-custom-terms.json': 'bf5ae0e3',
   'js/vosk-stress-lookup.js': '2c33f2e9',
