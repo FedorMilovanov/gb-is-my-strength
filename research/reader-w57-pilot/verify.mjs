@@ -48,7 +48,7 @@ assert.ok(semanticContract.includes("version:'1.1.0',articleRoot,inspect"),
 assert.ok(preview.includes('const readerState=window.ReaderState'), 'pilot must consume canonical ReaderState');
 assert.match(preview,/readerState\.subscribe\(updateScroll/, 'pilot follow state must subscribe to core');
 assert.doesNotMatch(preview,/innerHeight\s*\*\s*\.3\b|browserStore\.frame/, 'no independent W57 scrollspy');
-assert.ok(preview.includes('if(!event.persisted)unsubscribeReadingState()'), 'BFCache keeps the presenter subscription');
+assert.match(preview, /window\.addEventListener\('pagehide',event=>\{[^}]*if\(!event\.persisted\)\{unsubscribeReadingState\(\);glossaryReady\.disconnect\(\);\}/, 'BFCache retains presenter and glossary observer; permanent departure disposes both');
 assert.ok(preview.includes('const article=c.articleRoot(document)'),
  'preview must use the same source root as annotations');
 assert.ok(preview.includes("article.setAttribute('data-reader-projection','')"),
