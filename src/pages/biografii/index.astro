@@ -85,7 +85,7 @@ import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMe
           </p>
           <hr class="h-rule" aria-hidden="true" />
 
-          <figure class="bio-cover" aria-label="Библиотека биографий: открытая Библия, перья, свеча и витражное окно">
+          <figure class="bio-library-cover" aria-label="Библиотека биографий: открытая Библия, перья, свеча и витражное окно">
             <picture>
               <source type="image/webp"
                       srcset="../images/og-biografii-600w.webp 600w,
@@ -97,9 +97,8 @@ import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMe
                    width="1200" height="630"
                    decoding="async" loading="eager" fetchpriority="high" />
             </picture>
-            <figcaption class="bio-cover__caption">
+            <figcaption class="bio-library-cover__caption">
               <span>Библиотека раздела</span>
-              <span class="dot" aria-hidden="true"></span>
               <span>«Поминайте наставников ваших…» — Евр. 13:7</span>
             </figcaption>
           </figure>
@@ -113,3 +112,14 @@ import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMe
     </div>
   </body>
 </html>
+
+<style>
+.bio-library-cover{margin:var(--s-6,24px) 0 0;border:1px solid #574637;border-radius:14px;overflow:hidden;background:#2b2118;box-shadow:0 12px 36px -16px rgba(0,0,0,.45),0 2px 6px -2px rgba(0,0,0,.2)}
+.bio-library-cover picture{display:block}
+.bio-library-cover img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:contain}
+.bio-library-cover__caption{display:flex;flex-wrap:wrap;align-items:baseline;gap:.25rem 1rem;padding:.8rem 1rem;margin:0;font:normal .875rem/1.55 var(--font-serif,Georgia,serif);color:#f3efe7;text-align:start;background:#2b2118}
+.bio-library-cover__caption span{min-width:0;max-width:100%;color:inherit}
+.bio-library-cover__caption span:first-child{font-weight:600;color:#edc780}
+@media(max-width:480px){.bio-library-cover{border-radius:10px}.bio-library-cover__caption{flex-direction:column;gap:.25rem;padding:.7rem .85rem}}
+@media print{.bio-library-cover{break-inside:avoid;box-shadow:none;border-color:#bbb;background:#fff}.bio-library-cover__caption,.bio-library-cover__caption span:first-child{background:#fff;color:#111}}
+</style>
