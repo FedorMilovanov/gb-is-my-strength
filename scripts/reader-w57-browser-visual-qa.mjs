@@ -121,9 +121,14 @@ async function sectionFollowChecks(browser,name){
    await page.waitForFunction(({id,index})=>{
     const link=document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]');
     const group=window.__NP_UNIVERSAL_PREVIEW__.groups[index];
-    const label=document.querySelector('#npUFollowChapter');
+    // W55 moved history/library into the follow row and hid its duplicate
+    // chapter label. The visible thought-module summary now owns the numeral.
+    const legacy=document.querySelector('#npUFollowChapter');
+    const summary=document.querySelector('#npUSectionHost [data-np-u-module="section"] > details > summary');
     return link?.dataset.npUGoto===id&&link.getClientRects().length>0&&
-     label?.getClientRects().length>0&&label.textContent==='Раздел '+group.roman;
+     legacy?.hidden&&legacy.textContent==='Раздел '+group.roman&&
+     summary?.getClientRects().length>0&&
+     summary.textContent.replace(/\s+/g,' ').includes(group.roman+' / '+window.__NP_UNIVERSAL_PREVIEW__.groups.length);
    },{id,index:expected},{timeout:5000});
    assert.equal(await active().count(),1);
    assert.equal(await active().getAttribute('data-np-u-goto'),id);
@@ -681,12 +686,23 @@ try{
   // instead use the author-visible textual projection.
   const paragraph=await saltersParagraph(d.page);
   await paragraph.locator('.gterm[data-term="диссентер"] .gtip').waitFor({state:'attached',timeout:15000});
+  // Let the source scroll settle before selecting. The annotation controller
+  // intentionally dismisses its toolbar on scroll; a selection created in the
+  // same task as scrollIntoView races that queued scroll event on Linux.
+  await paragraph.scrollIntoViewIfNeeded();
+  await d.page.evaluate(async selector=>{
+   document.querySelector(selector).scrollIntoView({block:'center',behavior:'instant'});
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  },SALTERS_PARAGRAPH);
+  await d.page.waitForFunction(selector=>{
+   const r=document.querySelector(selector)?.getBoundingClientRect();
+   return r&&r.top<innerHeight&&r.bottom>0;
+  },SALTERS_PARAGRAPH);
   const fixture=await d.page.evaluate(selector=>{
    const block=document.querySelector(selector);
    if(!block)return{error:'Authored Salters source paragraph missing'};
    const term=block.querySelector('.gterm[data-term="диссентер"]');
    if(!term)return{error:'Gill glossary gterm/gtip absent'};
-   block.scrollIntoView({block:'center',behavior:'instant'});
    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT),nodes=[];let n;
    while((n=walker.nextNode()))nodes.push(n);
    const start=nodes.find(x=>term.contains(x)&&!x.parentElement.closest('.gtip,.tooltip'));
@@ -716,7 +732,7 @@ try{
   assert.ok(fixture.raw.length>fixture.expected.length+20,
    'fixture must demonstrably include hidden glossary in native Range.toString');
   assert.ok(fixture.expected.length>=6,'visible authored passage too short');
-  await d.page.waitForTimeout(420);
+  await d.page.locator('#npW57SelectionToolbar').waitFor({state:'visible',timeout:5000});
   assert.equal(await d.page.locator('#npW57SelectionToolbar').isVisible(),true,
    'contextual actions should appear on genuine visible glossary-adjacent selection');
   const before=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
@@ -738,6 +754,19 @@ try{
   await snap(d.page,'desktop-glossary-visible');
   await d.page.reload({waitUntil:'domcontentloaded'});
   await d.page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready===true);
+  // Shell readiness is deliberately earlier than lazy range restoration.
+  // Require the actual saved record's rendered row AND its exact highlight;
+  // a genuinely orphaned record must still fail rather than be retried away.
+  await d.page.waitForFunction(id=>{
+   const row=[...document.querySelectorAll('#npW57NotesList li[data-id]')].find(el=>el.dataset.id===id);
+   const record=JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').find(x=>x.id===id);
+   const group=CSS.highlights?.get('np-w57-'+record?.annotation?.kind+'-'+record?.annotation?.color);
+   return !!row&&!!window.GBReaderAnchors&&!!group&&[...group].some(r=>{
+    const article=window.GBReaderContract?.articleRoot?.(document);
+    const expected=article&&window.GBReaderAnchors.resolve(article,record.annotation.anchor);
+    return !!expected&&window.GBReaderAnchors.sameRange(r,expected);
+   });
+  },record.id,{timeout:10000});
   const restored=await d.page.evaluate(id=>({
    saved:JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').some(x=>x.id===id),
    unresolved:window.__NP_W57_ANNOTATIONS__?.orphanCount?.(),
