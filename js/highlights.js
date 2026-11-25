@@ -186,7 +186,7 @@
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
       presenterPromise = Promise.all([
-        import('/js/reader-library-presenter.js?v=729e4f90'),
+        import('/js/reader-library-presenter.js?v=df7edaea'),
         import('/js/reader-library-v3.js?v=54f97aa3'),
         ensureRanges(),
       ]).then(([module,researchModule,{currentTitle,uid}]) => {
