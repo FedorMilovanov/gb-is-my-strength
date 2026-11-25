@@ -17,7 +17,8 @@
 .journal-edition .je-history-year-mark time { color: var(--je-gold); font: 600 41px/1 var(--je-serif); letter-spacing: -.04em; font-variant-numeric: lining-nums; }
 .journal-edition .je-history-year-mark > span { color: var(--je-muted); font: 600 11px/1.5 var(--je-ui); letter-spacing: .07em; text-transform: uppercase; }
 .journal-edition .je-history-year-text h3 { margin: 0 0 15px; color: var(--je-ink); font: 600 25px/1.3 var(--je-serif); letter-spacing: -.015em; text-wrap: pretty; }
-.journal-edition .je-history-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; padding: 8px 0 0; margin: 28px 0 0; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); }
+.journal-edition .je-history-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; padding: 8px 0 0; margin: 28px 0 0; }
+@media screen { .journal-edition .je-history-projects { border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); } }
 .journal-edition .je-history-projects > div { padding: 18px 0 23px; border-bottom: 1px solid var(--je-rule); }
 .journal-edition .je-history-projects dt { color: var(--je-ink); font: 600 22px/1.3 var(--je-serif); }
 .journal-edition .je-history-projects dd { margin: 8px 0 0; color: var(--je-muted); font: 14px/1.6 var(--je-ui); }

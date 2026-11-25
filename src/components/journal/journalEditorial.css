@@ -96,14 +96,15 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .timeline h3 { margin: 0 0 10px; font: 600 23px/1.3 var(--je-serif); }
 .journal-edition .timeline p { margin: 0 0 10px; color: var(--je-ink); font: 16px/1.75 var(--je-body); hyphens: auto; }
 .journal-edition .sensitive-module { border-left: 2px solid var(--je-soft-gold); padding-left: 24px; }
-.journal-edition .unknown-module { margin-top: 30px; padding: 30px; background: var(--je-paper-raised); border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); }
+.journal-edition .unknown-module { margin-top: 30px; padding: 30px; background: var(--je-paper-raised); }
 .journal-edition .research-disclosure { margin: 25px 0 0; border-block: 1px solid var(--je-rule); color: var(--je-muted); font: 14px/1.7 var(--je-ui); }
 .journal-edition .research-disclosure summary { cursor: pointer; padding-block: 17px; color: var(--je-ink); font-weight: 600; }
 .journal-edition .research-disclosure p { margin: 0 0 15px; }
 .journal-edition .research-disclosure a { color: var(--je-gold); }
 
 /* Original data comparison. Never a stacked chart implying unproved arithmetic. */
-.journal-edition .je-data-figure { margin: 30px 0 0; padding: 26px 28px; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); background: var(--je-paper-raised); }
+.journal-edition .je-data-figure { margin: 30px 0 0; padding: 26px 28px; background: var(--je-paper-raised); }
+@media screen { .journal-edition :is(.unknown-module, .je-data-figure) { border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); } }
 .journal-edition .je-data-figure-heading h3 { margin: 0 0 6px; font: 600 25px/1.3 var(--je-serif); }
 .journal-edition .je-data-figure-heading p { margin: 0; color: var(--je-muted); font: 12px/1.5 var(--je-ui); }
 .journal-edition .je-data-figure dl { margin: 24px 0 21px; }

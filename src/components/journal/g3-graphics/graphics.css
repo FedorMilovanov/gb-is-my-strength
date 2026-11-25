@@ -133,7 +133,8 @@ html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
  .g3g.g3g-history .g3g-deck{font-size:calc(1rem * var(--gb-reader-font-scale,1));max-width:68ch}
  .g3g.g3g-history :is(.g3g-atlas-list p,.g3g-era-ribbon p,.g3g-note,.g3g-map-key,.g3g-atlas-map figcaption,.g3g-event-kind){font-size:calc(.875rem * var(--gb-reader-font-scale,1))}
  .g3g.g3g-history .g3g-era-years{font-size:calc(1.1875rem * var(--gb-reader-font-scale,1))}
- .g3g.g3g-history .g3g-timeline time{font-size:calc(1.0625rem * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history .g3g-timeline li{grid-template-columns:minmax(50px,max-content) minmax(0,1fr)}
+ .g3g.g3g-history .g3g-timeline time{font-size:calc(1.0625rem * var(--gb-reader-font-scale,1));white-space:nowrap;overflow-wrap:normal;word-break:normal;hyphens:none}
  .g3g.g3g-history .g3g-source{display:inline-flex;gap:.5rem;align-items:center;max-width:100%;min-width:0;padding:6px 2px;font-size:calc(.875rem * var(--gb-reader-font-scale,1));text-decoration:none}
  .g3g.g3g-history .g3g-source::after{content:'';flex:none;inline-size:.5rem;block-size:.5rem;border-block-start:1.5px solid currentColor;border-inline-end:1.5px solid currentColor;transform:rotate(45deg)}
  .g3g.g3g-history .g3g-source:focus-visible{outline-offset:-2px}

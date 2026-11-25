@@ -573,6 +573,47 @@ async function captureWideHistoryEvidence(page, name) {
   return failures;
 }
 
+async function historyChronologyGeometry(page) {
+  const details = page.locator('.g3g-history .g3g-chron-details');
+  const summary = details.locator('summary');
+  const wasOpen = await details.evaluate(el => el.open);
+  const scroll = await page.evaluate(() => ({x:scrollX,y:scrollY}));
+  try {
+    if (!wasOpen) await summary.click();
+    assert.equal(await details.evaluate(el => el.open), true, 'chronology must be visible');
+    await settleWithoutScripts(page);
+    const result = await details.evaluate(root => ({
+      scale: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-font-scale') || '1'),
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      open: root.open,
+      rows: Array.from(root.querySelectorAll('.g3g-timeline > li')).map(li => {
+        const t = li.querySelector('time'), text = t.nextElementSibling;
+        const range = document.createRange(); range.selectNodeContents(t);
+        const boxes = Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
+        const bounds = li.getBoundingClientRect(), copy = text.getBoundingClientRect();
+        return { year:t.textContent.trim(), font:parseFloat(getComputedStyle(t).fontSize),
+          lines:boxes.length, contained:boxes.every(r => r.left >= bounds.left - 1 && r.right <= bounds.right + 1),
+          separated:boxes.every(r => r.right <= copy.left + 1) };
+      }),
+      projects: (() => {
+        const el = document.querySelector('.je-history-projects');
+        if (!el) return null;
+        const css = getComputedStyle(el);
+        return [css.borderBlockStartWidth, css.borderBlockEndWidth];
+      })()
+    }));
+    assert.deepEqual(result.rows.map(row => row.year), ['2011','2013','2014','2015','2016','2017','2018','2019','2020','2021','2023','2024']);
+    assert.ok(result.rows.every(row => row.lines === 1 && row.contained && row.separated), 'chronology years must remain single-line and clear of prose: ' + JSON.stringify(result.rows));
+    assert.deepEqual(result.projects, ['2px','1px'], 'history projects screen borders');
+    return result;
+  } finally {
+    if ((await details.evaluate(el => el.open)) !== wasOpen) await summary.click();
+    assert.equal(await details.evaluate(el => el.open), wasOpen, 'restore chronology after geometry');
+    await page.evaluate(({x,y}) => window.scrollTo({left:x,top:y,behavior:'instant'}),scroll);
+    await settleWithoutScripts(page);
+  }
+}
+
 async function wideHistoryGeometry(page) {
   const state = await page.evaluate(() => {
     const rect = el => el.getBoundingClientRect().toJSON();
@@ -876,11 +917,15 @@ try {
         for (const problem of item.captureProblems)
           report.problems.push(name + ': capture ' + problem.label + ': ' + problem.message);
         item.normal = await wideHistoryGeometry(page);
+        item.chronologyNormal = await historyChronologyGeometry(page);
         item.atlasSourceActions = await atlasSourceActions(page);
         if (width <= 430) item.sourceActions = await standaloneSourceActions(page,'history');
         await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
         await settleWithoutScripts(page);
         item.scaled = await wideHistoryGeometry(page);
+        item.chronologyScaled = await historyChronologyGeometry(page);
+        assert.equal(item.chronologyScaled.scale, 2);
+        assert.ok(item.chronologyScaled.rows.every((row,i) => Math.abs(row.font - 2 * item.chronologyNormal.rows[i].font) < .25), 'chronology dates must follow 200% Reader scale');
         item.scaledAtlasSourceActions = await atlasSourceActions(page);
         assert.equal(item.scaled.scale,2);
         assert.ok(item.scaled.atlasTextSizes.every((size,i)=>Math.abs(size-item.normal.atlasTextSizes[i]*2)<.25),'atlas text alternative must follow 200% Reader scale');
