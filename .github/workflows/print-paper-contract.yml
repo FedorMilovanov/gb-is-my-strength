@@ -32,6 +32,7 @@ on:
       - 'scripts/print-pagination-contract.mjs'
       - 'scripts/print-pagination-raster-audit.py'
       - 'scripts/print-reversible-card-contract.mjs'
+      - 'scripts/reader-mobile-print-lock-browser-contract.cjs'
       - '.github/workflows/print-paper-contract.yml'
   workflow_dispatch:
 
@@ -68,14 +69,25 @@ jobs:
       - run: npm ci
       - name: Validate print geometry ownership
         run: node scripts/check-print-geometry-contract.js
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils python3-pil
       - name: Build exact production-like dist
         id: print_build
         run: npm run strangler:build:production-like
+      - name: Prove lossless mobile overlay print and restoration
+        id: mobile_overlay_print
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
+        env:
+          GB_MOBILE_PRINT_ARTIFACT_DIR: reports/print-paper/mobile-overlay
+        shell: bash
+        run: |
+          mkdir -p reports/print-paper/mobile-overlay
+          set -o pipefail
+          node scripts/reader-mobile-print-lock-browser-contract.cjs --dist 2>&1 | tee reports/print-paper/mobile-overlay/contract.log
       - name: Generate canonical reader PDF
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
         id: canonical_pdf
         env:
           GB_READER_UI_ARTIFACT_DIR: reports/print-paper/canonical
