@@ -455,7 +455,7 @@ async function atlasSourceActions(page, forced = false) {
 async function rejectBrokenSourceActions(page) {
   const first = page.locator('#' + historyActionIds[0]);
   const results = [];
-  for (const [name, value] of [['display','none'],['visibility','hidden'],['opacity','0'],['pointer-events','none']]) {
+  for (const [name, value] of [['display','none'],['visibility','hidden'],['opacity','0'],['pointer-events','none'],['text-decoration','underline']]) {
     const prior = await first.evaluate((el, prop) => ({ value:el.style.getPropertyValue(prop), priority:el.style.getPropertyPriority(prop) }), name);
     try {
       await first.evaluate((el, [prop, val]) => el.style.setProperty(prop,val,'important'), [name,value]);
@@ -479,6 +479,28 @@ async function rejectBrokenSourceActions(page) {
   }
   assert.equal((await standaloneSourceActions(page,'history')).length,33,'restore original source inventory');
   return results;
+}
+// Check the approved hover affordance separately from the strict resting oracle.
+async function sourceActionHoverWitness(page) {
+  if (!await page.evaluate(()=>matchMedia('(hover: hover) and (pointer: fine)').matches)) return { supported:false };
+  const ids=[historyActionIds[0],'cite-r6-challies-2018-video','cite-g3g-history-1'];
+  const results=[];
+  try {
+    for(const id of ids) {
+      const link=page.locator('#'+id);
+      await page.mouse.move(0,0);
+      const before=await link.evaluate(el=>({hovered:el.matches(':hover'),decoration:getComputedStyle(el).textDecorationLine}));
+      assert.ok(!before.hovered && !before.decoration.includes('underline'),id+' rest');
+      await link.hover();
+      const hover=await link.evaluate(el=>({hovered:el.matches(':hover'),decoration:getComputedStyle(el).textDecorationLine}));
+      assert.ok(hover.hovered && hover.decoration.includes('underline'),id+' native hover');
+      await page.mouse.move(0,0);
+      const after=await link.evaluate(el=>({hovered:el.matches(':hover'),decoration:getComputedStyle(el).textDecorationLine}));
+      assert.deepEqual(after,before,id+' restored rest');
+      results.push({id,before,hover,after});
+    }
+  } finally { await page.mouse.move(0,0); }
+  return {supported:true,results};
 }
 async function wideHistoryGeometry(page) {
   const state = await page.evaluate(() => {
@@ -790,6 +812,7 @@ try {
           await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','1'));
           await settleWithoutScripts(page);
           item.negativeSourceActions = await rejectBrokenSourceActions(page);
+          item.sourceActionHover = await sourceActionHoverWitness(page);
           const atlasChronology = page.locator('.g3g-history .g3g-chron-details');
           assert.equal(await atlasChronology.evaluate(el=>el.open),false,'native closed chronology baseline');
           item.atlasNativeReturns = [await sourceRoundTrip(page,page.locator('#cite-g3g-history-1'),true)];
