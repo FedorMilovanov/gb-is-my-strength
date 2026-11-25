@@ -30,3 +30,18 @@ export function assertJournalDocumentMetadata(metadata: JournalDocumentMetadata)
     }
   }
 }
+
+/** Only admitted public Journal routes have a breadcrumb trail. */
+export function journalBreadcrumbItems(canonical: string) {
+  const home = 'https://gospod-bog.ru/';
+  const journal = home + 'journal/';
+  const dossier = journal + 'dossiers/g3/';
+  const history = dossier + 'history/';
+  const trail = [['Главная', home], ['Журнал', journal]];
+  if (canonical === dossier || canonical === history) trail.push(['Досье G3', dossier]);
+  if (canonical === history) trail.push(['История G3 (2011–2024)', history]);
+  if (canonical !== journal && canonical !== dossier && canonical !== history) {
+    throw new Error('JournalDocumentHead: unregistered breadcrumb canonical');
+  }
+  return trail.map(([name, item], index) => ({ '@type': 'ListItem', position: index + 1, name, item }));
+}

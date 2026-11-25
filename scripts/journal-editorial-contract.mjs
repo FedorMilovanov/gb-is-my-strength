@@ -153,6 +153,36 @@ function assertG44Dist(doc) {
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const load = (name) => import(pathToFileURL(path.join(root, name)).href);
+
+const { journalBreadcrumbItems } = await load('src/components/journal/journalDocumentMetadata.ts');
+// Independent expected vectors: do not derive expectations from the production helper.
+const breadcrumbVectors = new Map([
+  ['https://gospod-bog.ru/journal/', [
+    ['Главная', 'https://gospod-bog.ru/'], ['Журнал', 'https://gospod-bog.ru/journal/'],
+  ]],
+  ['https://gospod-bog.ru/journal/dossiers/g3/', [
+    ['Главная', 'https://gospod-bog.ru/'], ['Журнал', 'https://gospod-bog.ru/journal/'],
+    ['Досье G3', 'https://gospod-bog.ru/journal/dossiers/g3/'],
+  ]],
+  ['https://gospod-bog.ru/journal/dossiers/g3/history/', [
+    ['Главная', 'https://gospod-bog.ru/'], ['Журнал', 'https://gospod-bog.ru/journal/'],
+    ['Досье G3', 'https://gospod-bog.ru/journal/dossiers/g3/'],
+    ['История G3 (2011–2024)', 'https://gospod-bog.ru/journal/dossiers/g3/history/'],
+  ]],
+]);
+const expectedBreadcrumbItems = canonical => breadcrumbVectors.get(canonical).map(([name, item], index) => ({ '@type': 'ListItem', position: index + 1, name, item }));
+for (const canonical of breadcrumbVectors.keys()) {
+  assert.deepEqual(journalBreadcrumbItems(canonical), expectedBreadcrumbItems(canonical), 'breadcrumb source drift: ' + canonical);
+}
+for (const canonical of [
+  'https://gospod-bog.ru/journal/fake/',
+  'https://gospod-bog.ru/journal/dossiers/g3/other/',
+  'https://example.com/journal/',
+  'http://gospod-bog.ru/journal/',
+  'https://gospod-bog.ru/journal/?preview=1',
+  'https://gospod-bog.ru/journal/dossiers/g3/history/#intro',
+]) assert.throws(() => journalBreadcrumbItems(canonical), /unregistered breadcrumb canonical/);
+
 const { G3_PRODUCT_METADATA: metadata } = await load('src/data/journal/g3ProductMetadata.ts');
 const { JOURNAL_PRODUCT_METADATA: journal } = await load('src/data/journal/journalProductMetadata.ts');
 const { G3_HISTORY_METADATA: history } = await load('src/data/journal/g3HistoryMetadata.ts');
@@ -343,6 +373,9 @@ if (!process.argv.includes('--source-only')) {
     assert.match(attr(metas('name', 'robots')[0], 'content'), /^index, follow/);
     const graphs = nodes.filter((node) => node.tagName === 'script' && attr(node, 'type') === 'application/ld+json').map((node) => JSON.parse(text(node)));
     const entities = graphs.flatMap((graph) => graph['@graph'] || [graph]);
+    const breadcrumbs = entities.filter((item) => item['@type'] === 'BreadcrumbList');
+    assert.equal(breadcrumbs.length, 1, `exactly one BreadcrumbList at ${route}`);
+    assert.deepEqual(breadcrumbs[0].itemListElement, expectedBreadcrumbItems(data.canonical), `breadcrumb dist drift at ${route}`);
     const entity = entities.filter((item) => item['@type'] === type);
     assert.equal(entity.length, 1, `exactly one ${type} schema at ${route}`);
     assert.equal(entity[0].headline, data.title);
