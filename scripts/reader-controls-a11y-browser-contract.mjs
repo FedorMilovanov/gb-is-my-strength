@@ -1795,6 +1795,158 @@ async function auditGillActivationFocusDeparture(browser) {
   } finally {await ctx.close();}
 }
 
+// The consumers must project the same hydrated canonical identity and title.
+ // This isolated real-DOM test is complementary to authored route parity.
+async function auditGillLexiconProjection(browser) {
+  const caseId = 'gill-lexicon-canonical-projection';
+  const checks = [];
+  const mobileSource = fs.readFileSync(path.join(ROOT,'src/components/article-pilots/gill-series/GillMobileMarginalia.astro'),'utf8');
+  const desktopSource = fs.readFileSync(path.join(ROOT,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
+  const extract=(source,start,end)=>{
+    const a=source.indexOf(start),b=source.indexOf(end,a);
+    assert.ok(a>=0&&b>a,'lexicon projection source required: '+start);
+    return source.slice(a,b);
+  };
+  const mobile=extract(mobileSource,'  function uniqueBy(','  function researchData() {');
+  const desktop=extract(desktopSource,' const glossaryOccurrenceIds=',' function getGroupMaterial(index){');
+  for(const [width,height] of [[390,844],[1440,900]]) {
+    const ctx=await browser.newContext({viewport:{width,height},serviceWorkers:'block'});
+    const id=caseId+'-'+width;
+    try {
+      const page=await ctx.newPage();
+      await page.setContent('<article><p></p></article>');
+      await page.evaluate(()=>{
+        const definitions=[
+          ['диссентер','Диссентер','Диссентеры',''],
+          ['диссентер','Диссентер','диссентеров','Определение'],
+          ['диссентер','Диссентер','диссентерами','Повтор'],
+          ['one','Общее','one','Первое'],['two','Общее','two','Второе'],
+          ['баптист','Баптист','баптистских','Определение'],
+          ['песнь песней','Песнь Песней','Песнь песней','Определение'],
+          ['Heilsgeschichte','Heilsgeschichte','Heilsgeschichte','History'],
+          ['fallback',' ','inflection','Definition']
+        ];
+        const p=document.querySelector('article p');
+        for(const [key,title,prose,brief] of definitions){
+          const term=document.createElement('abbr');
+          term.className='gterm';term.dataset.term=key;term.dataset.termTitle=title;
+          term.append(document.createTextNode(prose));
+          const tip=document.createElement('span');tip.className='gtip-brief';tip.textContent=brief;
+          term.append(tip);p.append(term);
+        }
+      });
+      await page.addScriptTag({content:"const text=e=>(e?.textContent||'').replace(/\\s+/g,' ').trim();\n"+mobile+desktop+
+        "\nwindow.__gbLexProjection=()=>({collectTerms,termTitle,collectGlossaryTerms,glossaryOccurrences});"});
+      const result=await page.evaluate(()=>{
+        const {collectTerms,termTitle,collectGlossaryTerms,glossaryOccurrences}=window.__gbLexProjection();
+        const article=document.querySelector('article');
+        const items=[...article.querySelectorAll('.gterm')];
+        const sourceBefore=article.innerHTML;
+        const classic=collectTerms(items).map(termTitle);
+        const argon=collectGlossaryTerms(items);
+        const selected=argon.find(x=>x.title==='Баптист');
+        const target=glossaryOccurrences.get(selected.index);
+        const unchanged=sourceBefore===article.innerHTML;
+        const inserted=items[0].cloneNode(true);
+        inserted.dataset.term='new';inserted.dataset.termTitle='New';
+        inserted.querySelector('.gtip-brief').textContent='New';
+        article.prepend(inserted);
+        const updated=collectGlossaryTerms([...article.querySelectorAll('.gterm')]);
+        return {classic,argon:argon.map(x=>x.title),firstValid:argon[0].brief==='Определение',
+          distinct:argon.filter(x=>x.title==='Общее').length===2,unchanged,
+          stableTarget:glossaryOccurrences.get(selected.index)===target&&updated[0].title==='New'};
+      });
+      const expected=['Диссентер','Общее','Общее','Баптист','Песнь Песней','Heilsgeschichte','fallback'];
+      record(checks,id+'-parity','both consumers preserve canonical title and identity, not visible inflection',
+        JSON.stringify(result.classic)===JSON.stringify(expected)&&JSON.stringify(result.argon)===JSON.stringify(expected),result);
+      record(checks,id+'-valid-dedupe','empty definition never shadows valid duplicate and distinct IDs can share title',
+        result.firstValid&&result.distinct,result);
+      record(checks,id+'-source-target','source is unmodified; a new preceding occurrence cannot redirect old action',
+        result.unchanged&&result.stableTarget,result);
+    } catch(error) {
+      record(checks,id+'-exception','lexicon projection completes',false,{message:String(error.stack||error).slice(0,1300)});
+    } finally {await ctx.close();}
+  }
+  return {caseId,checks};
+}
+
+// Fault-injected late title change on the authored route. This does not
+// assert editorial correctness of the synthetic witness title.
+async function auditGillLateLexicon(browser, origin, desktop) {
+  const caseId='gill-late-lexicon-'+(desktop?'argon':'classic');
+  const checks=[];
+  const ctx=await browser.newContext({viewport:desktop?{width:1440,height:900}:{width:390,height:844},
+    isMobile:!desktop,hasTouch:!desktop,serviceWorkers:'block',reducedMotion:'reduce'});
+  try {
+    const page=await ctx.newPage();
+    const url=origin+'/articles/dzhon-gill-chast-2-uchenyi/';
+    if(desktop){
+      await page.goto(url,{waitUntil:'load'});
+      await page.waitForFunction(()=>window.__NP_UNIVERSAL_PREVIEW__?.ready===true,null,{timeout:15000});
+      await page.evaluate(()=>window.__NP_UNIVERSAL_PREVIEW__.openResearchForAnnotation());
+    }else{
+      await gotoNativeReader(page,url,{waitUntil:'load'});
+      await page.locator('#mobPartTocBtn').click();
+      await page.locator('#gbrMarginaliaTab').click();
+    }
+    const approved=JSON.parse(fs.readFileSync(path.join(ROOT,'data/glossary.json'),'utf8'));
+    const invalid=Object.entries(approved).filter(([,entry])=>typeof entry?.displayTitle!=='string'||!entry.displayTitle.trim());
+    record(checks,caseId+'-title-schema','canonical glossary entries have explicit nonblank display titles',
+      Object.keys(approved).length>0&&invalid.length===0,{count:Object.keys(approved).length,invalid:invalid.map(([key])=>key)});
+    const expectedTitles=Object.fromEntries(Object.entries(approved).map(([key,entry])=>[key,entry.displayTitle]));
+    const served=await page.evaluate(async()=>{const response=await fetch('/data/glossary.json',{cache:'no-store'});if(!response.ok)throw new Error('Glossary HTTP '+response.status);return response.json();});
+    record(checks,caseId+'-served-authority','served dictionary matches exact source authority',
+      JSON.stringify(served)===JSON.stringify(approved),{sourceCount:Object.keys(approved).length,servedCount:Object.keys(served).length});
+    await page.waitForFunction(expected=>{
+      const terms=[...document.querySelectorAll('article .gterm[data-term]')].filter(el=>Object.hasOwn(expected,el.dataset.term)&&el.querySelector('.gtip-brief')?.textContent?.trim());
+      return terms.length>0&&terms.every(el=>el.dataset.termTitle===expected[el.dataset.term]);
+    },expectedTitles,{timeout:10000});
+    const authority=await page.evaluate(({desktop,expectedTitles})=>{
+      const terms=[...document.querySelectorAll('article .gterm[data-term]')].filter(el=>Object.hasOwn(expectedTitles,el.dataset.term)&&el.querySelector('.gtip-brief')?.textContent?.trim());
+      const known=new Set(terms.map(el=>expectedTitles[el.dataset.term]));
+      const labels=desktop?[...document.querySelectorAll('[data-np-u-lex-entry] h4')]:[...document.querySelectorAll('#gbrMarginalia .gbr-marginalia-term summary')];
+      return {count:terms.length,wrong:terms.filter(el=>el.dataset.termTitle!==expectedTitles[el.dataset.term]).map(el=>el.dataset.term),
+        labels:labels.map(el=>el.textContent),unknown:labels.filter(el=>!known.has(el.textContent)).map(el=>el.textContent)};
+    },{desktop,expectedTitles});
+    record(checks,caseId+'-canonical-headings','hydrated terms and rendered lexicon headings use the approved dictionary',
+      authority.count>0&&authority.wrong.length===0&&authority.labels.length>0&&authority.unknown.length===0,authority);
+    const before=await page.evaluate(({desktop})=>{
+      const group=desktop?document.querySelector('[data-np-u-module="lexicon"]'):
+        document.querySelector('#gbrMarginalia .gbr-marginalia-term')?.closest('.gbr-marginalia-group');
+      const peer=desktop?document.querySelector('[data-np-u-module="scripture"]'):
+        [...document.querySelectorAll('#gbrMarginalia .gbr-marginalia-group')].find(g=>g.querySelector('summary strong')?.textContent==='Писание');
+      const label=desktop?group?.querySelector('[data-np-u-lex-entry] h4')?.textContent:
+        group?.querySelector('.gbr-marginalia-term summary')?.textContent;
+      if(!group||!peer||!label)return {error:'Missing existing lexicon or scripture peer'};
+      const source=[...document.querySelectorAll('article .gterm[data-term]')].filter(e=>e.dataset.termTitle===label&&e.querySelector('.gtip-brief')?.textContent?.trim());
+      if(!source.length)return {error:'Missing source term'};
+      window.__gbLexLateWitness={peer,group,source};
+      document.activeElement?.blur();
+      for(const el of source)el.dataset.termTitle=label+' · TEST';
+      return {label,expected:label+' · TEST',sources:source.length};
+    },{desktop});
+    if(before.error)throw new Error(before.error);
+    await page.waitForFunction(({desktop,expected})=>{
+      const labels=desktop?[...document.querySelectorAll('[data-np-u-lex-entry] h4')]:
+        [...document.querySelectorAll('#gbrMarginalia .gbr-marginalia-term summary')];
+      return labels.some(el=>el.textContent===expected);
+    },{desktop,expected:before.expected},{timeout:8000});
+    const result=await page.evaluate(({desktop})=>{
+      const w=window.__gbLexLateWitness;
+      const peer=desktop?document.querySelector('[data-np-u-module="scripture"]'):
+        [...document.querySelectorAll('#gbrMarginalia .gbr-marginalia-group')].find(g=>g.querySelector('summary strong')?.textContent==='Писание');
+      return {samePeer:peer===w.peer,groupConnected:w.group.isConnected,
+        sourceConnected:w.source.every(el=>el.isConnected)};
+    },{desktop});
+    record(checks,caseId+'-partial-hydration','existing lexicon reacts to late title mutation without rebuilding scripture or article',
+      result.samePeer&&result.groupConnected&&result.sourceConnected,{before,result});
+    return {caseId,checks};
+  }catch(error){
+    record(checks,caseId+'-exception','authored late lexicon scenario completes',false,{message:String(error.stack||error).slice(0,1300)});
+    return {caseId,checks};
+  }finally{await ctx.close();}
+}
+
 async function auditGillTooltipSelection(browser, origin) {
   const caseId = 'gill-tooltip-selection-halo';
   const checks = [];
@@ -1881,6 +2033,8 @@ try {
   cases.push(await auditGillPendingActivation(browser, origin));
   cases.push(await auditGillActivationTeardown(browser));
   cases.push(await auditGillActivationFocusDeparture(browser));
+  cases.push(await auditGillLexiconProjection(browser));
+  for(const desktop of [false,true]) cases.push(await auditGillLateLexicon(browser,origin,desktop));
   cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));
   for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[480,320,false],[568,320,false],[568,320,true],[639,360,false],[640,360,false],[667,375,false],[768,320,false],[768,320,true],[844,390,false],[844,390,true],[960,390,false],[961,390,false],[1024,390,false],[1024,390,true],[1359,390,false],[1359,390,true],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));

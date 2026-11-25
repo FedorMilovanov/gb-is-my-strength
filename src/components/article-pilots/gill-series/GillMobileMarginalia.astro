@@ -79,6 +79,26 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
       return true;
     });
   }
+  // Glossary hydration owns canonical identity and the published title.
+  // Visible prose is an inflected occurrence, never a lexicon heading.
+  function termKey(el) { return (el.dataset.term || '').trim(); }
+  function termTitle(el) { return (el.dataset.termTitle || '').trim() || termKey(el); }
+  function collectTerms(items) {
+    return uniqueBy(items.filter(function (el) {
+      return !!termKey(el) && !!text(el.querySelector('.gtip-brief'));
+    }), termKey);
+  }
+  function lexiconData(active, end) {
+    var all = Array.from(article.querySelectorAll('.gterm[data-term]')).filter(function (el) {
+      return !el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]');
+    });
+    var terms = collectTerms(all.filter(function (el) {
+      return !active || (!!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && (!end || !!(el.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING)));
+    }));
+    return terms.length ? { terms: terms, termScope: 'В текущем разделе' }
+      : { terms: collectTerms(all), termScope: 'Из всей статьи' };
+  }
   function researchData() {
     if (!article) return null;
     var headings = Array.from(article.querySelectorAll('h2[id]'));
@@ -101,16 +121,9 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     }
     var paras = elements('p,blockquote').filter(function (p) { return visibleText(p).length >= 95; });
     var refs = elements('button.bref[data-ref]');
-    var terms = uniqueBy(elements('.gterm[data-term]'), function (el) { return (el.dataset.termTitle || el.dataset.term || '').toLocaleLowerCase('ru'); })
-      .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); });
+    var lexicon = lexiconData(active, end);
     var notes = elements('.fn-marker,.footnote-ref,[data-footnote-ref]').filter(function (el) { return !!el.id || !!el.dataset.noteOrdinal; });
     var refScope = 'В текущем разделе';
-    var termScope = 'В текущем разделе';
-    if (!terms.length) {
-      terms = uniqueBy(Array.from(article.querySelectorAll('.gterm[data-term]')), function (el) { return (el.dataset.termTitle || el.dataset.term || '').toLocaleLowerCase('ru'); })
-        .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); });
-      termScope = 'Из всей статьи';
-    }
     var aliasToBook = new Map(JSON.parse(content.dataset.bookIds).map(function (entry) {
       return [entry[0].toLocaleLowerCase('ru').replace(/[.\s]/g, ''), entry[1]];
     }));
@@ -156,7 +169,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
       addPassages(citations(corpus));
       refScope = 'Из всей статьи';
     }
-    return { active: active, paras: paras.slice(0,3), refs: passages, terms: terms, notes: notes, refScope: refScope, termScope: termScope };
+    return { active: active, end: end, paras: paras.slice(0,3), refs: passages, terms: lexicon.terms, notes: notes, refScope: refScope, termScope: lexicon.termScope };
   }
   var scriptureSelection = '';
   var scriptureRailObserver = null;
@@ -212,10 +225,75 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   }
   window.addEventListener('storage', onMarksStorage);
   window.addEventListener('gb:library-committed', onMarksStorage);
+  var lexiconGroup = null, lexiconContext = null, lexiconSignature = '', lexiconFrame = 0, lexiconSources = [];
+  function lexiconStamp(data) {
+    return JSON.stringify([data.termScope, data.terms.map(function (el) {
+      return [termKey(el), termTitle(el), el.dataset.category || '', text(el.querySelector('.gtip-brief')), text(el.querySelector('.gtip-papyrus'))];
+    })]);
+  }
+  function renderLexiconGroup(lex, data) {
+    var summary = lex.firstElementChild;
+    summary.querySelector('span').textContent = String(data.terms.length);
+    var expanded = new Set(Array.from(lex.querySelectorAll('.gbr-marginalia-term[open]'), function (el) { return el.dataset.termKey; }));
+    while (lex.lastElementChild !== summary) lex.lastElementChild.remove();
+    if (data.terms.length) {
+      lex.appendChild(node('p','gbr-marginalia-empty',data.termScope));
+      data.terms.forEach(function (source) {
+        var item = node('details', 'gbr-marginalia-term');
+        item.dataset.termKey = termKey(source);
+        item.open = expanded.has(item.dataset.termKey);
+        item.appendChild(node('summary', '', termTitle(source)));
+        var body = node('div', 'gbr-marginalia-term-body');
+        if (source.dataset.category) body.appendChild(node('span', 'gbr-marginalia-category', source.dataset.category));
+        body.appendChild(node('p', '', text(source.querySelector('.gtip-brief'))));
+        var detail = text(source.querySelector('.gtip-papyrus'));
+        if (detail) body.appendChild(node('p', 'gbr-marginalia-detail', detail));
+        action(body, 'Показать в статье ↗', source);
+        item.appendChild(body); lex.appendChild(item);
+      });
+    } else lex.appendChild(node('p', 'gbr-marginalia-empty', 'В статье пока нет опубликованных определений.'));
+    lexiconSources = data.terms.slice();
+    return lexiconStamp(data);
+  }
+  function scheduleLexiconRefresh() {
+    if (lexiconFrame || panel.hidden || !lexiconGroup || !lexiconGroup.isConnected) return;
+    lexiconFrame = requestAnimationFrame(function () {
+      lexiconFrame = 0;
+      if (panel.hidden || !lexiconGroup || !lexiconGroup.isConnected || !lexiconContext) return;
+      var data = lexiconData(lexiconContext.active, lexiconContext.end);
+      var sameSources = data.terms.length === lexiconSources.length &&
+        data.terms.every(function (el, index) { return el === lexiconSources[index]; });
+      if ((sameSources && lexiconStamp(data) === lexiconSignature) || lexiconGroup.contains(document.activeElement)) return;
+      lexiconSignature = renderLexiconGroup(lexiconGroup, data);
+    });
+  }
+  // Source mutations only; never rebuild Scripture, notes or scroll state.
+  function glossaryMutation(record) {
+    var target = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+    if (target && target.closest('.gterm')) return true;
+    return Array.from(record.addedNodes || []).concat(Array.from(record.removedNodes || [])).some(function (el) {
+      return el.nodeType === 1 && (el.matches('.gterm') || el.querySelector('.gterm'));
+    });
+  }
+  var lexiconObserver = new MutationObserver(function (records) {
+    if (records.some(glossaryMutation)) scheduleLexiconRefresh();
+  });
+  if (article) lexiconObserver.observe(article, { subtree: true, childList: true, characterData: true,
+    attributes: true, attributeFilter: ['data-term','data-term-title','data-category'] });
+  panel.addEventListener('focusout', scheduleLexiconRefresh);
+  window.addEventListener('pagehide', function (event) {
+    if (lexiconFrame) cancelAnimationFrame(lexiconFrame);
+    lexiconFrame = 0;
+    if (!event.persisted) lexiconObserver.disconnect();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) scheduleLexiconRefresh();
+  });
   function render() {
     if (scriptureRailObserver) scriptureRailObserver.disconnect();
     scriptureRailObserver = null;
     content.replaceChildren();
+    lexiconGroup = null; lexiconContext = null; lexiconSources = [];
     var data = researchData();
     if (!data) {
       content.appendChild(node('p', 'gbr-marginalia-empty', 'Для этой страницы исследовательские материалы пока недоступны.'));
@@ -354,21 +432,9 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
         window.requestAnimationFrame(updateArrows);
       }
     }
-    var lex = group('Понятия', String(data.terms.length));
-    if (data.terms.length) {
-      lex.appendChild(node('p','gbr-marginalia-empty',data.termScope));
-      data.terms.forEach(function (source) {
-        var item = node('details', 'gbr-marginalia-term');
-        item.appendChild(node('summary', '', visibleText(source) || source.dataset.termTitle || source.dataset.term));
-        var body = node('div', 'gbr-marginalia-term-body');
-        if (source.dataset.category) body.appendChild(node('span', 'gbr-marginalia-category', source.dataset.category));
-        body.appendChild(node('p', '', text(source.querySelector('.gtip-brief'))));
-        var detail = text(source.querySelector('.gtip-papyrus'));
-        if (detail) body.appendChild(node('p', 'gbr-marginalia-detail', detail));
-        action(body, 'Показать в статье ↗', source);
-        item.appendChild(body); lex.appendChild(item);
-      });
-    } else lex.appendChild(node('p', 'gbr-marginalia-empty', 'В статье пока нет опубликованных определений.'));
+    lexiconGroup = group('Понятия', String(data.terms.length));
+    lexiconContext = { active: data.active, end: data.end };
+    lexiconSignature = renderLexiconGroup(lexiconGroup, data);
     var sourceGroup = group('Ход текста', data.paras.length ? 'Исходные фрагменты' : 'Без фрагментов');
     data.paras.forEach(function (p, i) {
       var quote = node('div', 'gbr-marginalia-evidence');

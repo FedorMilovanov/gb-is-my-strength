@@ -1090,6 +1090,30 @@
    .forEach(node=>node.remove());
   return clone.textContent.replace(/\s+/g,' ').trim();
  }
+ // Keep canonical glossary identity separate from the display title and
+ // from the particular DOM occurrence used by "Найти в тексте".
+ const glossaryOccurrenceIds=new WeakMap(),glossaryOccurrences=new Map();
+ let nextGlossaryOccurrence=0;
+ function glossaryOccurrence(el){
+  if(!glossaryOccurrenceIds.has(el))glossaryOccurrenceIds.set(el,nextGlossaryOccurrence++);
+  const id=glossaryOccurrenceIds.get(el);
+  glossaryOccurrences.set(id,el);
+  return id;
+ }
+ function collectGlossaryTerms(items,limit=Infinity){
+  const seen=new Set(),terms=[];
+  for(const el of items){
+   const key=(el.dataset.term||'').trim();
+   const title=(el.dataset.termTitle||'').trim()||key;
+   const brief=el.querySelector('.gtip-brief')?.textContent?.replace(/\s+/g,' ').trim()||'';
+   if(!key||!brief||seen.has(key)||el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]'))continue;
+   seen.add(key);
+   terms.push({title,brief,detail:el.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',
+    category:el.dataset.category||'',index:glossaryOccurrence(el)});
+   if(terms.length>=limit)break;
+  }
+  return terms;
+ }
  function getGroupMaterial(index){
   const group=sections[index],start=document.getElementById(group.id),end=sections[index+1]?document.getElementById(sections[index+1].id):null;
   const allPars=$$('p,blockquote',article);
@@ -1107,17 +1131,7 @@
   // Real Product glossary terms, never illustrative/fabricated terms from
   // the standalone ARGON demo. Brief definitions retain their source text.
   const allTerms=$$('.gterm[data-term]',article);
-  const seenTerms=new Set();
-  const terms=allTerms.filter(el=>inRange(el,start,end)).map(el=>({
-   title:el.dataset.termTitle||el.dataset.term||'',
-   brief:el.querySelector('.gtip-brief')?.textContent?.replace(/\s+/g,' ').trim()||'',
-   detail:el.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',
-   category:el.dataset.category||'',index:allTerms.indexOf(el)
-  })).filter(term=>{
-   const key=term.title.toLocaleLowerCase('ru');
-   if(!term.brief||seenTerms.has(key))return false;
-   seenTerms.add(key);return true;
-  });
+  const terms=collectGlossaryTerms(allTerms.filter(el=>inRange(el,start,end)));
   const figuresAll=$$('figure',article);
   const figures=figuresAll.filter(el=>inRange(el,start,end)).map(el=>{
     const caption=el.querySelector('figcaption')?.textContent?.replace(/\s+/g,' ').trim()||'';
@@ -1135,40 +1149,16 @@
  // from later sections, visibly marked as drawn from the whole article.
  const articleStudyRefs=[...new Set($$('button.bref[data-ref]',article)
   .map(el=>el.dataset.ref).filter(Boolean))].slice(0,12);
- let allGlossaryTerms=$$('.gterm[data-term]',article);
  const articleStudyTerms=[];
- const studySeen=new Set();
  function collectArticleTerms(){
-  allGlossaryTerms=$$('.gterm[data-term]',article);
-  for(const el of allGlossaryTerms){
-   const title=el.dataset.termTitle||el.dataset.term||'';
-   const brief=el.querySelector('.gtip-brief')?.textContent?.replace(/\s+/g,' ').trim()||'';
-   const key=title.toLocaleLowerCase('ru');
-   if(!title||!brief||studySeen.has(key))continue;
-   studySeen.add(key);
-   articleStudyTerms.push({title,brief,
-    detail:el.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',
-    category:el.dataset.category||'',index:allGlossaryTerms.indexOf(el)});
-   if(articleStudyTerms.length>=12)break;
+  for(const [id,source] of glossaryOccurrences){
+   if(!article.contains(source)||!source.matches('.gterm[data-term]'))glossaryOccurrences.delete(id);
   }
+  const terms=collectGlossaryTerms($$('.gterm[data-term]',article),12);
+  articleStudyTerms.splice(0,articleStudyTerms.length,...terms);
   return articleStudyTerms.length;
  }
  collectArticleTerms();
- // Product's glossary can upgrade asynchronously after the opt-in Reader
- // starts. Observe the SOURCE once and refresh the research view exactly
- // when authentic definitions become available; no polling and no fake data.
- if(!articleStudyTerms.length){
-  const refreshGlossary=()=>{
-   if(collectArticleTerms()){
-    glossaryReady.disconnect();
-    if(browserStore.active>=0)makeSection(browserStore.active);
-   }
-  };
-  const glossaryReady=new MutationObserver(refreshGlossary);
-  glossaryReady.observe(article,{subtree:true,childList:true,characterData:true});
-  requestAnimationFrame(refreshGlossary);
- }
-
  // Original ARGON's "Коротко" and "Полное оглавление" live IN the book folio.
  // An authored summary remains the canonical DOM and disclosure owner; only
  // articles without an authored summary may receive source-derived extracts.
@@ -1325,6 +1315,7 @@
   const researchNumbers={section:'01',scripture:'02',notes:'03',figures:'04',outline:'05',sources:'06',series:'07'};
   let shortExpanded=true,focusedModule=null;
   const pinnedMarkup=new Map();
+  let pinnedLexiconIndex=null, lexiconStamp='', lexiconFrame=0;
   const pinnable=new Set(['scripture','lexicon','section']);
   function sectionCard(title,inner,open=true,metadata='',kind='section'){
    // The module has the same primary visual hierarchy as the ORIGINAL
@@ -1472,6 +1463,61 @@
   return notes.every((note,i)=>nodes[i].text.length===note.len&&
    editorialTextChecksum(nodes[i].text)===note.hash)?notes:null;
  }
+ function lexiconContent(studyTerms,lexiconScope){
+  const lex=studyTerms.map((term,i)=>
+   '<div class="np-u-lexicon-entry" data-np-u-lex-entry="'+term.index+'"'+(i?' hidden':'')+'>'+
+     '<div class="np-u-lexicon-kicker">'+escape(term.category)+'</div>'+
+     '<h4>'+escape(term.title)+'</h4><p>'+escape(term.brief)+'</p>'+
+     (term.detail?'<details open class="np-u-lex-definition"><summary>Определение и границы понятия</summary><p>'+escape(term.detail)+'</p></details>':'')+
+     '<button type="button" data-np-u-term-index="'+term.index+'">Найти в тексте ↗</button></div>').join('');
+  const lexContent=studyTerms.length?
+   '<p class="np-u-research-data-caption">'+lexiconScope+'</p>'+
+   '<div class="np-u-study-picker"><label for="npULexiconPick">Богословское понятие</label>'+
+    '<div class="np-u-study-picker-row"><select id="npULexiconPick" data-np-u-lex-picker aria-label="Выбрать понятие">'+
+      studyTerms.map(term=>'<option value="'+term.index+'">'+escape(term.title)+'</option>').join('')+
+    '</select><span class="np-u-study-picker-counter" data-np-u-lex-count>1 / '+studyTerms.length+'</span>'+
+    '<button type="button" data-np-u-lex-step="-1" aria-label="Предыдущее понятие">‹</button>'+
+    '<button type="button" data-np-u-lex-step="1" aria-label="Следующее понятие">›</button></div></div>'+
+    '<div class="np-u-lexicon-list">'+lex+'</div>':
+    '<p class="np-u-muted">В этом разделе нет отмеченных терминов.</p>';
+  return lexContent;
+ }
+ function refreshLexicon(){
+  const module=sectionHost.querySelector('.np-u-research-module[data-np-u-module="lexicon"]');
+  if(!module||browserStore.active<0)return;
+  const body=module.querySelector('.np-u-window-body');
+  if(!body||body.contains(document.activeElement))return;
+  const index=pinnedLexiconIndex??browserStore.active;
+  const group=sections[index],start=document.getElementById(group.id),end=sections[index+1]?document.getElementById(sections[index+1].id):null;
+  collectArticleTerms();
+  const local=collectGlossaryTerms($$('.gterm[data-term]',article).filter(el=>inRange(el,start,end)));
+  const terms=local.length?local:articleStudyTerms;
+  const scope=local.length?'Понятия текущего раздела':'Понятия из всей статьи';
+  const stamp=JSON.stringify([scope,terms]);
+  if(stamp===lexiconStamp)return;
+  const previous=body.querySelector('[data-np-u-lex-picker]')?.value;
+  const disclosure=new Map([...body.querySelectorAll('[data-np-u-lex-entry]')].map(el=>[el.dataset.npULexEntry,el.querySelector('details')?.open]));
+  body.innerHTML=lexiconContent(terms,scope);
+  const meta=module.querySelector('.np-u-window-meta');
+  if(meta)meta.textContent=terms.length?String(terms.length):'—';
+  for(const el of body.querySelectorAll('[data-np-u-lex-entry]')){
+   const detail=el.querySelector('details');
+   if(detail&&disclosure.has(el.dataset.npULexEntry))detail.open=disclosure.get(el.dataset.npULexEntry);
+  }
+  const picker=body.querySelector('[data-np-u-lex-picker]');
+  if(picker)renderLexiconAt(module,Math.max(0,[...picker.options].findIndex(opt=>opt.value===previous)));
+  if(pinnedMarkup.has('lexicon'))pinnedMarkup.set('lexicon',module.outerHTML);
+  lexiconStamp=stamp;
+ }
+ function scheduleLexiconRefresh(){
+  if(lexiconFrame)return;
+  lexiconFrame=requestAnimationFrame(()=>{lexiconFrame=0;refreshLexicon();});
+ }
+ function glossaryMutation(record){
+  const target=record.target.nodeType===1?record.target:record.target.parentElement;
+  return !!target?.closest('.gterm')||[...record.addedNodes,...record.removedNodes].some(el=>
+   el.nodeType===1&&(el.matches('.gterm')||el.querySelector('.gterm')));
+ }
  function makeSection(index){
   const group=sections[index],data=getGroupMaterial(index);
   const excerpt=t=>'<blockquote class="np-u-quotation">'+escape(t.length>450?t.slice(0,447).trimEnd()+'…':t)+'</blockquote>';
@@ -1497,7 +1543,7 @@
   // section has no tags, show sourced article-wide research immediately
   // rather than three empty windows. Provenance is displayed explicitly.
   const studyRefs=data.refs.length?data.refs:articleStudyRefs;
-  const studyTerms=data.terms.length?data.terms:articleStudyTerms;
+  const studyTerms=data.terms.length?data.terms:(collectArticleTerms(),articleStudyTerms);
   const scriptureScope=data.refs.length?'Места текущего раздела':'Из других разделов этой статьи';
   const lexiconScope=data.terms.length?'Понятия текущего раздела':'Понятия из всей статьи';
   const scriptureContent=studyRefs.length
@@ -1517,23 +1563,8 @@
     '<button type="button" data-np-u-scripture-copy>Копировать текст</button></div>'
    :'<p class="np-u-muted">В этом разделе нет размеченных ссылок на Писание.</p>';
   html+=sectionCard('Писание',scriptureContent,!!studyRefs.length,studyRefs.length?String(studyRefs.length):'—','scripture');
-  const lex=studyTerms.map((term,i)=>
-   '<div class="np-u-lexicon-entry" data-np-u-lex-entry="'+term.index+'"'+(i?' hidden':'')+'>'+
-     '<div class="np-u-lexicon-kicker">'+escape(term.category)+'</div>'+
-     '<h4>'+escape(term.title)+'</h4><p>'+escape(term.brief)+'</p>'+
-     (term.detail?'<details open class="np-u-lex-definition"><summary>Определение и границы понятия</summary><p>'+escape(term.detail)+'</p></details>':'')+
-     '<button type="button" data-np-u-term-index="'+term.index+'">Найти в тексте ↗</button></div>').join('');
-  const lexContent=studyTerms.length?
-   '<p class="np-u-research-data-caption">'+lexiconScope+'</p>'+
-   '<div class="np-u-study-picker"><label for="npULexiconPick">Богословское понятие</label>'+
-    '<div class="np-u-study-picker-row"><select id="npULexiconPick" data-np-u-lex-picker aria-label="Выбрать понятие">'+
-      studyTerms.map(term=>'<option value="'+term.index+'">'+escape(term.title)+'</option>').join('')+
-    '</select><span class="np-u-study-picker-counter" data-np-u-lex-count>1 / '+studyTerms.length+'</span>'+
-    '<button type="button" data-np-u-lex-step="-1" aria-label="Предыдущее понятие">‹</button>'+
-    '<button type="button" data-np-u-lex-step="1" aria-label="Следующее понятие">›</button></div></div>'+
-    '<div class="np-u-lexicon-list">'+lex+'</div>':
-    '<p class="np-u-muted">В этом разделе нет отмеченных терминов.</p>';
-  html+=sectionCard('Лексикон',lexContent,!!studyTerms.length,studyTerms.length?String(studyTerms.length):'—','lexicon');
+  html+=sectionCard('Лексикон',lexiconContent(studyTerms,lexiconScope),!!studyTerms.length,studyTerms.length?String(studyTerms.length):'—','lexicon');
+  if(!pinnedMarkup.has('lexicon'))lexiconStamp=JSON.stringify([lexiconScope,studyTerms]);
   // ARGON's three argument views. Never generate a theological conclusion:
   // all statements and links below come from the already published chapter.
   const argumentTabs='<div class="np-u-thought-tabs" role="tablist" aria-label="Способы изучения раздела">'+
@@ -1834,6 +1865,7 @@
    const module=target.closest('.np-u-research-module');
    if(pinnedMarkup.has(pin)){
     pinnedMarkup.delete(pin);
+    if(pin==='lexicon')pinnedLexiconIndex=null;
     makeSection(browserStore.active);
    }else if(module){
     module.dataset.npUPinned='true';
@@ -1841,6 +1873,7 @@
     target.setAttribute('aria-label','Снять закрепление '+module.querySelector('summary strong')?.textContent);
     target.title='Снять закрепление';
     pinnedMarkup.set(pin,module.outerHTML);
+    if(pin==='lexicon')pinnedLexiconIndex=browserStore.active;
    }
    return;
   }
@@ -1917,8 +1950,10 @@
   }
   const termIndex=target.dataset.npUTermIndex;
   if(termIndex!==undefined){
-   const source=$$('.gterm[data-term]',article)[Number(termIndex)];
-   if(source){closeMobile();source.scrollIntoView({behavior:'instant',block:'center'});source.focus?.({preventScroll:true});}
+   const source=glossaryOccurrences.get(Number(termIndex));
+   if(source&&article.contains(source)&&source.matches('.gterm[data-term]')){
+    closeMobile();source.scrollIntoView({behavior:'instant',block:'center'});source.focus?.({preventScroll:true});
+   }
    return;
   }
   const ref=target.dataset.npURef;
@@ -2048,7 +2083,16 @@
  const unsubscribeReadingState=readerState.subscribe(updateScroll,{immediate:false});
  // Keep the subscription on BFCache entry; only a permanently leaving
  // document relinquishes the presenter subscription.
- window.addEventListener('pagehide',event=>{if(!event.persisted)unsubscribeReadingState();});
+ const glossaryReady=new MutationObserver(records=>{if(records.some(glossaryMutation))scheduleLexiconRefresh();});
+ glossaryReady.observe(article,{subtree:true,childList:true,characterData:true,attributes:true,
+  attributeFilter:['data-term','data-term-title','data-category']});
+ sectionHost.addEventListener('focusout',scheduleLexiconRefresh);
+ window.addEventListener('pagehide',event=>{
+  if(lexiconFrame)cancelAnimationFrame(lexiconFrame);
+  lexiconFrame=0;
+  if(!event.persisted){unsubscribeReadingState();glossaryReady.disconnect();}
+ });
+ window.addEventListener('pageshow',event=>{if(event.persisted)scheduleLexiconRefresh();});
  window.__NP_UNIVERSAL_PREVIEW__={
   ready:true,source:'real-article',kind:model.kind,counts:model.counts,
   groups:sections.map(s=>({id:s.id,roman:s.numeral})),
