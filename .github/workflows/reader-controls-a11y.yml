@@ -44,6 +44,7 @@ on:
       - "scripts/reader-library-short-viewport-browser-contract.mjs"
       - "scripts/reader-library-tag-integrity-contract.mjs"
       - "js/reader-library-v3.js"
+      - "js/reader-library-research-core.js"
       - "js/reader-library-storage.js"
       - "js/reader-library-presenter.js"
       - "js/reader-library-record-transactions.js"
@@ -52,6 +53,7 @@ on:
       - "scripts/reader-library-browser-test.cjs"
       - "research/reader-w57-pilot/assets/reader_w57_annotations.js"
       - "scripts/reader-library-v3-browser-test.cjs"
+      - "scripts/reader-library-v3-progress-test.cjs"
       - "scripts/reader-w57-annotations-regression-test.mjs"
       - "scripts/reader-w57-two-tab-browser-contract.mjs"
       - "src/lib/reader-semantic-snapshot.mjs"
@@ -100,6 +102,7 @@ on:
       - "scripts/reader-library-short-viewport-browser-contract.mjs"
       - "scripts/reader-library-tag-integrity-contract.mjs"
       - "js/reader-library-v3.js"
+      - "js/reader-library-research-core.js"
       - "js/reader-library-storage.js"
       - "js/reader-library-presenter.js"
       - "js/reader-library-record-transactions.js"
@@ -108,6 +111,7 @@ on:
       - "scripts/reader-library-browser-test.cjs"
       - "research/reader-w57-pilot/assets/reader_w57_annotations.js"
       - "scripts/reader-library-v3-browser-test.cjs"
+      - "scripts/reader-library-v3-progress-test.cjs"
       - "scripts/reader-w57-annotations-regression-test.mjs"
       - "scripts/reader-w57-two-tab-browser-contract.mjs"
       - "src/lib/reader-semantic-snapshot.mjs"
@@ -163,6 +167,8 @@ jobs:
           node --check scripts/reader-library-short-viewport-browser-contract.mjs
           node --check scripts/reader-library-tag-integrity-contract.mjs
           node --check js/reader-library-storage.js
+          node --check js/reader-library-research-core.js
+          node --check scripts/reader-library-v3-progress-test.cjs
           node --check scripts/reader-library-v3-browser-test.cjs
           node scripts/reader-library-tag-integrity-contract.mjs
           node --check scripts/reader-w57-annotations-regression-test.mjs
@@ -195,6 +201,16 @@ jobs:
             printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
             node scripts/reader-library-browser-test.cjs
           } 2>&1 | tee reports/reader-library-browser-test.log
+
+      - name: Run exact-head reading progress and lazy boundary contract
+        if: ${{ !cancelled() && steps.reader_dependencies.outcome == 'success' }}
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            node scripts/reader-library-v3-progress-test.cjs
+          } 2>&1 | tee reports/reader-library-v3-progress-test.log
 
       - name: Build production-like dist
         id: reader_build
@@ -247,6 +263,7 @@ jobs:
             reports/reader-library-premium-browser-contract.log
             reports/reader-library-browser-test.log
             reports/reader-library-v3-browser-test.log
+            reports/reader-library-v3-progress-test.log
             reports/reader-library-v3/**
             reports/shared-play-and-series-number-browser-contract.log
             reports/reader-mobile-canonical-browser-contract.log
