@@ -442,6 +442,7 @@
     fab.addEventListener('click', () => open(fab));
     document.addEventListener('keydown', keydown);
     document.addEventListener('focusin', pendingFocusChanged);
+    document.addEventListener('pointerdown', pendingPointerChanged, true);
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
     document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); schedulePaint(); });
@@ -480,6 +481,13 @@
   }
   function pendingFocusChanged() {
     if (opening && !isOpen() && !ownsPendingFocus()) cancelPending(false);
+  }
+  function pendingPointerChanged(event) {
+    // WebKit may dispatch a real click without moving focus to its button.
+    if (!opening || isOpen()) return;
+    if (pendingTrigger !== document.body && pendingTrigger !== document.documentElement &&
+        pendingTrigger?.contains?.(event.target)) return;
+    cancelPending(false);
   }
   function restoreReadingFocus(preferred) {
     const candidates = [preferred, fab, document.getElementById('npULibraryButton'), document.querySelector('article.article-body h1, article h1, main h1')];

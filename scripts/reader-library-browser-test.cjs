@@ -221,7 +221,7 @@ async function checkGbs2(name, driver, url) {
 // of OS-native long-press selection or physical Android/iOS coverage.
 async function checkTransientFocus(name,driver,base) {
   const browser=await driver.launch({headless:true}), failures=[];
-  const cases=['close','cancel','failure','unrelated-escape','unrelated-reject','unrelated-resolve','note-B','fab'];
+  const cases=['close','cancel','failure','unrelated-escape','unrelated-reject','unrelated-resolve','unrelated-pointer-escape','unrelated-pointer-reject','unrelated-pointer-resolve','note-B','fab'];
   let passes=0;
   try {
     for(const surface of ['native','fallback']) for(const termination of cases) {
@@ -234,8 +234,10 @@ async function checkTransientFocus(name,driver,base) {
       const errors=[],moduleRequests=[];
       page.on('pageerror',e=>errors.push(e.message));
       page.on('request',req=>{const path=new URL(req.url()).pathname;if(path.startsWith('/js/reader-library-'))moduleRequests.push(path);});
-      const rejected=['failure','unrelated-reject'].includes(termination);
+      const rejected=['failure','unrelated-reject','unrelated-pointer-reject'].includes(termination);
       const unrelated=termination.startsWith('unrelated-');
+      const pointer=termination.startsWith('unrelated-pointer-');
+      let expectedUnrelatedFocus;
       const select=async id=>page.evaluate(id=>{
         const range=document.createRange();range.selectNodeContents(document.getElementById(id));
         const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
@@ -267,9 +269,18 @@ async function checkTransientFocus(name,driver,base) {
         clearTimeout(timer);
         assert.equal(requested,1,'one real presenter request');
         if(unrelated){
-          await page.locator('#qa-unrelated').click();
-          await page.waitForFunction(()=>document.activeElement?.id==='qa-unrelated');
-          if(termination==='unrelated-escape'){
+          if(pointer){
+            await page.locator('#qa-unrelated').click();
+            // WebKit intentionally may leave BODY focused after a pointer click.
+            expectedUnrelatedFocus=await page.evaluate(()=>document.activeElement.id);
+            assert.ok(expectedUnrelatedFocus==='qa-unrelated'||expectedUnrelatedFocus==='','pointer focus is engine-dependent');
+            assert.notEqual(await page.locator('#gb-hl-fab').getAttribute('aria-busy'),'true','unrelated pointer cancels pending before presenter returns');
+          } else {
+            await page.locator('#qa-unrelated').focus();
+            await page.waitForFunction(()=>document.activeElement?.id==='qa-unrelated');
+            expectedUnrelatedFocus='qa-unrelated';
+          }
+          if(termination.endsWith('-escape')){
             await page.evaluate(()=>window.addEventListener('keydown',e=>{if(e.key==='Escape')window.qaEscapePrevented=e.defaultPrevented;},{once:true}));
             await page.keyboard.press('Escape');
             assert.equal(await page.evaluate(()=>window.qaEscapePrevented),false,'unrelated Escape not consumed');
@@ -279,7 +290,7 @@ async function checkTransientFocus(name,driver,base) {
           if(failedRequest)await failedRequest;
           else await page.locator('#gb-hl-backdrop[inert]').waitFor({state:'attached'});
           await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true');
-          assert.equal(await page.evaluate(()=>document.activeElement.id),'qa-unrelated');
+          assert.equal(await page.evaluate(()=>document.activeElement.id),expectedUnrelatedFocus);
           assert.equal(await page.locator('#gb-hl-panel').isVisible(),false);
         } else if(termination==='cancel') {
           await page.keyboard.press('Escape');
@@ -308,7 +319,7 @@ async function checkTransientFocus(name,driver,base) {
           lock:document.body.classList.contains('no-scroll'),expanded:document.getElementById('gb-hl-fab').getAttribute('aria-expanded'),
           busy:[...document.querySelectorAll('#ss-note,#gb-hl-selbar-note,#gb-hl-fab')].some(e=>e.getAttribute('aria-busy')==='true')}));
         assert.equal(after.visible,true);assert.equal(after.lock,false);assert.equal(after.expanded,'false');assert.equal(after.busy,false);
-        if(unrelated)assert.equal(after.id,'qa-unrelated');
+        if(unrelated)assert.equal(after.id,expectedUnrelatedFocus);
         else if(termination==='fab')assert.equal(after.id,'gb-hl-fab');
         else if(termination==='note-B')assert.equal(after.id,'demo','latest text owns return focus');
         else assert.ok(after.id==='more'||after.tag==='H1','stable authored reading target: '+JSON.stringify(after));
