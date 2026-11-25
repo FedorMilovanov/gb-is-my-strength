@@ -54,7 +54,16 @@ const { entries, label = 'В этом материале', summaryId, initialCom
     contents.dataset.journalContentsBound = 'true';
     const compact = window.matchMedia('(max-width: 1023px)');
     const summary = contents.querySelector('summary');
+    let pendingFocus: AbortController | null = null;
+    let pendingFrame = 0;
+    const cancelPendingFocus = () => {
+      pendingFocus?.abort();
+      pendingFocus = null;
+      if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+      pendingFrame = 0;
+    };
     const syncLayout = () => {
+      cancelPendingFocus();
       // Move focus before the compact disclosure hides its focused descendant.
       // Leave unrelated focus alone; native focus may scroll the summary into view.
       if (compact.matches && contents.open && summary &&
@@ -68,14 +77,33 @@ const { entries, label = 'В этом материале', summaryId, initialCom
     contents.addEventListener('click', (event) => {
       if (event.defaultPrevented || event.button !== 0 || event.ctrlKey ||
           event.metaKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
+      cancelPendingFocus();
       const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
       if (!link || !compact.matches) return;
-      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      let id: string;
+      try { id = decodeURIComponent(link.hash.slice(1)); } catch { return; }
+      const target = document.getElementById(id);
       if (!target) return;
       contents.open = false;
-      // Native anchor navigation owns the URL/scroll. Move focus out of the
-      // newly closed disclosure, preserving the native scroll destination.
-      window.requestAnimationFrame(() => { target.focus({ preventScroll: true }); });
+      // Native fragment navigation owns URL, scrolling and usually focus.
+      // A fallback is only valid for the same intent and an unclaimed focus.
+      const intent = new AbortController();
+      pendingFocus = intent;
+      const signal = intent.signal;
+      document.addEventListener('focusin', (focusEvent) => {
+        if (focusEvent.target !== target && focusEvent.target !== link && focusEvent.target !== document.body) cancelPendingFocus();
+      }, { signal });
+      document.addEventListener('pointerdown', cancelPendingFocus, { signal, capture: true });
+      document.addEventListener('keydown', cancelPendingFocus, { signal, capture: true });
+      pendingFrame = window.requestAnimationFrame(function restoreNativeFocus() {
+        pendingFrame = 0;
+        if (pendingFocus !== intent) return;
+        const active = document.activeElement;
+        cancelPendingFocus();
+        if (!compact.matches || contents.open || !target.isConnected || location.hash !== link.hash) return;
+        if (active === target || (active !== document.body && active !== link)) return;
+        target.focus({ preventScroll: true });
+      });
     });
     // Firefox can focus a valid TOC link while leaving part of its painted
     // focus ring below the native scrollport (especially at 320x390).
@@ -100,6 +128,7 @@ const { entries, label = 'В этом материале', summaryId, initialCom
     });
     contents.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape' || !compact.matches || !contents.open) return;
+      cancelPendingFocus();
       contents.open = false;
       summary?.focus();
     });

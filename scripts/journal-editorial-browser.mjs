@@ -385,6 +385,26 @@ function g44MeasureFocus(root){
     scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom};
 }
 
+// Standalone links must retain a distinct action cue without a resting
+// underline wall. Inspect real computed geometry and forced-color recovery.
+async function standaloneSourceActions(page, kind, forced = false) {
+  const selector = kind === 'history'
+    ? '.je-history-footnote > a, .jcdi-records a[data-journal-citation]'
+    : '.je-contents-jump, .je-contents > .je-contents-return, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref';
+  const rows = await page.locator(selector).evaluateAll(nodes => nodes.filter(el => el.getClientRects().length > 0).map(el => {
+    const style = getComputedStyle(el), arrow = getComputedStyle(el, '::after'), rect = el.getBoundingClientRect();
+    return { id: el.id, href: el.getAttribute('href'), height: rect.height, left: rect.left, right: rect.right,
+      viewport: document.documentElement.clientWidth, decoration: style.textDecorationLine,
+      arrow: arrow.content !== 'none' && arrow.borderTopStyle === 'solid' && arrow.borderRightStyle === 'solid' };
+  }));
+  assert.ok(rows.length >= 7, kind + ' standalone action inventory');
+  for (const row of rows) {
+    assert.ok(row.height >= 43.5 && row.left >= -1 && row.right <= row.viewport + 1, JSON.stringify(row));
+    assert.ok(row.arrow, 'missing standalone action cue: ' + JSON.stringify(row));
+    assert.equal(row.decoration.includes('underline'), forced, 'resting/forced-color action cue: ' + JSON.stringify(row));
+  }
+  return rows;
+}
 async function g44RouteWitness(page, js, name, controlOnly=false) {
   const index=page.locator('#g3-2018-document-index'), toc=page.locator('[data-journal-contents]');
   assert.equal(await index.count(),1);
@@ -1236,6 +1256,56 @@ try {
                 assert.equal(desktopFocus, true, label + ' desktop focus');
                 item.tocBreakpointFocus.push({ label, compactOpen, compactFocus, desktopOpen, desktopFocus });
               }
+              if (route.kind === 'dossier') {
+                item.compactOnlyFocus = [];
+                for (const [label, target] of [['jump', page.locator('.je-contents-jump')], ['return', toc.locator('.je-contents-return')]]) {
+                  for (const key of ['Tab', 'Shift+Tab']) {
+                    await page.setViewportSize({ width: 1023, height: 768 });
+                    await settleWithoutScripts(page);
+                    if (label === 'return' && !await toc.evaluate(el => el.open)) await summary.click();
+                    await target.focus();
+                    assert.equal(await target.evaluate(el => el === document.activeElement), true);
+                    await page.setViewportSize({ width: 1024, height: 768 });
+                    await settleWithoutScripts(page);
+                    assert.equal(await target.evaluate(el => el === document.activeElement && el.getClientRects().length > 0), true, label + ' retained focus');
+                    await page.keyboard.press(key);
+                    await settleWithoutScripts(page);
+                    assert.equal(await target.isVisible(), false, label + ' hides after native departure');
+                    assert.equal(await page.evaluate(() => document.activeElement !== document.body), true, label + ' native departure');
+                    item.compactOnlyFocus.push({ label, key, retained: true, departed: true });
+                  }
+                }
+              }
+              if (javaScriptEnabled) {
+                await page.setViewportSize({ width: 1023, height: 768 });
+                await settleWithoutScripts(page);
+                if (!await toc.evaluate(el => el.open)) await summary.click();
+                const link = toc.locator('nav a').first();
+                const hash = await link.getAttribute('href');
+                // Same-task competing focus: use the actual bound click handler
+                // and native fragment navigation, not a copied implementation.
+                await link.evaluate((el, outsideId) => {
+                  el.click();
+                  document.getElementById(outsideId).focus();
+                }, await middle.getAttribute('id'));
+                await settleWithoutScripts(page);
+                assert.equal(new URL(page.url()).hash, hash);
+                assert.equal(await middle.evaluate(el => el === document.activeElement), true, 'queued focus must not override newer intent');
+                item.staleTocFocus = true;
+                if (!await toc.evaluate(el => el.open)) await summary.click();
+                const last = toc.locator('nav a').last();
+                const lastHash = await last.getAttribute('href');
+                await link.evaluate((el, nextHash) => {
+                  const disclosure = el.closest('details');
+                  el.click();
+                  disclosure.open = true;
+                  Array.from(disclosure.querySelectorAll('nav a')).find(a => a.getAttribute('href') === nextHash).click();
+                }, lastHash);
+                await settleWithoutScripts(page);
+                assert.equal(new URL(page.url()).hash, lastHash);
+                assert.equal(await page.locator(lastHash).evaluate(el => el === document.activeElement), true, 'new activation must own native focus');
+                item.supersededTocFocus = true;
+              }
             } finally { await page.setViewportSize(originalViewport); }
           }
           assert.deepEqual(item.runtime, []);
@@ -1402,6 +1472,7 @@ try {
           await settleMobile();
           await page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth').scrollIntoViewIfNeeded();
           await settleMobile();
+          item.standaloneSourceActions = await standaloneSourceActions(page, route.kind);
           const links = await nav.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
           item.phase = 'native Tab to return link';
           const nativeReturn = route.kind === 'dossier' ? toc.locator('.je-contents-return') : null;
@@ -1540,7 +1611,8 @@ try {
               }) };
           });
           assert.equal(item.state.active, true);
-          assert.equal(item.state.links.length, 4, 'one four-link navigation owner');
+          assert.equal(item.state.links.length, 3, 'one three-link Journal navigation owner');
+          assert.equal(await page.locator('.je-masthead__navigation > a.je-masthead__home[href="/"]').count(), 1, 'separate main-site return');
           assert.equal(item.state.links.filter((link) => link.current).length, 1);
           assert.notEqual(item.state.expected.canvas, item.state.expected.highlight);
           for (const link of item.state.links) {
@@ -1548,6 +1620,7 @@ try {
             assert.equal(link.border, link.current ? item.state.expected.highlight : item.state.expected.canvas,
               'Forced colors must distinguish the current section, not underline every link equally');
           }
+          if (width < 1024 && route.kind !== 'journal') item.standaloneSourceActions = await standaloneSourceActions(page, route.kind, true);
           await shot(page, name);
           const current = page.locator('.je-masthead__nav a[aria-current]');
           await current.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');

@@ -147,6 +147,12 @@ jobs:
             --stop-on-first-error=${{ matrix.engine == 'firefox' }} \
             --axe="${G3_AXE_PATH}" --widths=1440 --heights=390,480 \
             --output=reports/g3-history-mobile-${{ matrix.engine }}/desktop-short
+          if [[ "${{ matrix.engine }}" == chromium ]]; then
+            node scripts/journal-editorial-browser.mjs \
+              --origin=http://127.0.0.1:4177 --browser=chromium --suite=forced-colors \
+              --axe="${G3_AXE_PATH}" \
+              --output=reports/g3-history-mobile-chromium/forced-colors
+          fi
       - name: Retain exact-head browser JSON and real screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
