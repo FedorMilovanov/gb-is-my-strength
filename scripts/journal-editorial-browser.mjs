@@ -1618,13 +1618,18 @@ try {
                 const hash = await link.getAttribute('href');
                 // Same-task competing focus: use the actual bound click handler
                 // and native fragment navigation, not a copied implementation.
-                await link.evaluate((el, outsideId) => {
+                item.staleTocFocusTrace = await link.evaluate((el, outsideId) => {
+                  const sample = () => ({id:document.activeElement?.id, tag:document.activeElement?.tagName, hash:location.hash});
+                  const before = sample();
                   el.click();
+                  const afterActivation = sample();
                   document.getElementById(outsideId).focus();
+                  return {before,afterActivation,afterCompetingFocus:sample(),outsideId};
                 }, await middle.getAttribute('id'));
                 await settleWithoutScripts(page);
+                item.staleTocFocusTrace.settled = await page.evaluate(() => ({id:document.activeElement?.id,tag:document.activeElement?.tagName,hash:location.hash}));
                 assert.equal(new URL(page.url()).hash, hash);
-                assert.equal(await middle.evaluate(el => el === document.activeElement), true, 'queued focus must not override newer intent');
+                assert.equal(await middle.evaluate(el => el === document.activeElement), true, 'queued focus must not override newer intent: '+JSON.stringify(item.staleTocFocusTrace));
                 item.staleTocFocus = true;
                 if (!await toc.evaluate(el => el.open)) await summary.click();
                 const last = toc.locator('nav a').last();
