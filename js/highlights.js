@@ -252,7 +252,7 @@
   // Capture intent before either lazy module starts loading. The storage
   // owner independently protects the period spent waiting for its lock.
   let clearIntent = 0;
-  const receiptIntents = new WeakMap();
+  const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
   window.addEventListener('storage', e => {
     if (e.storageArea === localStorage && e.key === null) clearIntent++;
   });
@@ -278,9 +278,13 @@
   let recordTransactions, recordTransactionsLoad;
   async function transactionCall(method,...args) {
     const intent = clearIntent;
+    const receipt = method === 'restoreDeleted' ? args[0] : null;
+    if (method === 'restoreDeleted') {
+      if (receiptIntents.get(receipt) !== intent) return libraryFailure('storage-changed');
+      if (restoringReceipts.has(receipt)) return libraryFailure('restore-pending');
+      restoringReceipts.add(receipt);
+    }
     try {
-      if (method === 'restoreDeleted' && receiptIntents.get(args[0]) !== intent)
-        return libraryFailure('storage-changed');
       if(!recordTransactions) {
         recordTransactionsLoad ||= import('/js/reader-library-record-transactions.js?v=ecb28bb6')
           .then(m=>m.createRecordTransactions({mutateLibrary,libraryFailure,gbHighlightKey,NOTES_KEY,QUOTES_KEY,LIMIT_NOTES,LIMIT_QUOTES}))
@@ -289,8 +293,10 @@
       }
       if (intent !== clearIntent) return libraryFailure('storage-changed');
       const result = await recordTransactions[method](...args);
+      if (receipt && result.ok) receiptIntents.delete(receipt);
       return result.ok && intent !== clearIntent ? libraryFailure('storage-changed') : result;
     } catch { return libraryFailure('lock-unavailable'); }
+    finally { if (receipt) restoringReceipts.delete(receipt); }
   }
   function restoreDeleted(receipt, copyId = null) {
     return transactionCall('restoreDeleted',receipt,copyId);
@@ -335,11 +341,6 @@
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
   }
   function currentTitle() { return normalizeText(document.title.replace(/\s*[·—|].*$/, '')) || 'Статья'; }
-  function fragment(text) {
-    const words = normalizeText(text).split(/\s+/);
-    return words.length <= 14 ? 'text=' + encodeURIComponent(text)
-      : 'text=' + encodeURIComponent(words.slice(0, 6).join(' ')) + ',' + encodeURIComponent(words.slice(-6).join(' '));
-  }
   let lastSelection = { text: '', anchor: '', url: '' };
   function rememberSelection() {
     const selection = window.getSelection && window.getSelection();
@@ -364,10 +365,6 @@
   function selection() {
     rememberSelection();
     return lastSelection.url === location.href ? lastSelection : { text: '', anchor: '', url: '' };
-  }
-  function sourceUrl(selected) {
-    return location.origin + location.pathname + '#' +
-      (selected.anchor ? encodeURIComponent(selected.anchor) : '') + ':~:' + fragment(selected.text);
   }
   function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
 
@@ -730,23 +727,24 @@
      одно хранилище, те же функции сохранения, что и у десктопного попапа. */
   let selectionController, selectionLoad;
   function hide() { selectionController?.hide(); }
+  function hasSelection() {
+    const sel = window.getSelection?.();
+    return !!(sel && !sel.isCollapsed && sel.rangeCount && normalizeText(sel.toString()).length >= 8);
+  }
   function attachSelection() {
     if (selectionController) { selectionController.attachSelection(); return; }
-    const sel = window.getSelection?.();
-    if (!sel || sel.isCollapsed || !sel.rangeCount || normalizeText(sel.toString()).length < 8) return;
-    loadSelectionController();
+    if (!hasSelection()) return;
+    loadSelectionController().then(module => {
+      if (!module || selectionController || !hasSelection()) return;
+      const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes});
+      controller.attachSelection();
+      selectionController = controller;
+      controller.placeSelectionBar();
+    }).catch(() => { /* failed mount is retried on the next selection */ });
   }
   function loadSelectionController() {
-    if (selectionController) return Promise.resolve(selectionController);
-    selectionLoad ||= import('/js/reader-library-selection.js?v=1778ffcd')
-      .then(module => {
-        const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,sourceUrl,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes});
-        controller.attachSelection();
-        selectionController = controller;
-        controller.placeSelectionBar();
-        return controller;
-      }).catch(() => { selectionLoad = null; return null; });
-    return selectionLoad;
+    return selectionLoad ||= import('/js/reader-library-selection.js?v=1778ffcd')
+      .catch(() => { selectionLoad = null; return null; });
   }
   // Prewarm long-press on touch/pen; a normal mouse click needs no module.
   // Keyboard and drag selection load on selectionchange; end events retry.

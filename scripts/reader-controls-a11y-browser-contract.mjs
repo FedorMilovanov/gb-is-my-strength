@@ -1940,6 +1940,42 @@ async function auditGillLateLexicon(browser, origin, desktop) {
     },{desktop});
     record(checks,caseId+'-partial-hydration','existing lexicon reacts to late title mutation without rebuilding scripture or article',
       result.samePeer&&result.groupConnected&&result.sourceConnected,{before,result});
+    if(desktop){
+      const chosen=await page.evaluate(()=>{
+        const module=document.querySelector('[data-np-u-module="lexicon"]');
+        const picker=module.querySelector('[data-np-u-lex-picker]');
+        if(picker.options.length<2)throw new Error('Need at least two canonical terms');
+        picker.selectedIndex=1;
+        picker.dispatchEvent(new Event('change',{bubbles:true}));
+        const opt=picker.selectedOptions[0],key=opt.dataset.npULexKey;
+        if(!key)throw new Error('Missing canonical key on picker');
+        const entry=[...module.querySelectorAll('[data-np-u-lex-entry]')].find(e=>e.dataset.npULexEntry===opt.value);
+        const detail=entry.querySelector('details');
+        if(detail)detail.open=false;
+        const replaced=[...document.querySelectorAll('article .gterm[data-term]')].filter(e=>e.dataset.term===key);
+        if(!replaced.length)throw new Error('Missing exact occurrence for replacement');
+        const replacements=replaced.map(e=>{const next=e.cloneNode(true);e.replaceWith(next);return next;});
+        window.__gbLexReplacement={module,replaced,replacements};
+        document.activeElement?.blur();
+        return {key,oldIndex:opt.value,hasDetail:!!detail};
+      });
+      await page.waitForFunction(({oldIndex,key})=>{
+        const picker=document.querySelector('[data-np-u-module="lexicon"] [data-np-u-lex-picker]');
+        return [...picker.options].some(o=>o.dataset.npULexKey===key&&o.value!==oldIndex);
+      },chosen,{timeout:8000});
+      const rebound=await page.evaluate(({key,oldIndex,hasDetail})=>{
+        const w=window.__gbLexReplacement;
+        const picker=w.module.querySelector('[data-np-u-lex-picker]');
+        const opt=picker.selectedOptions[0];
+        const entry=[...w.module.querySelectorAll('[data-np-u-lex-entry]')].find(e=>e.dataset.npULexEntry===opt.value);
+        return {selected:opt.dataset.npULexKey===key,changed:opt.value!==oldIndex,
+          disclosure:!hasDetail||entry?.querySelector('details')?.open===false,
+          action:entry?.querySelector('[data-np-u-term-index]')?.dataset.npUTermIndex===opt.value,
+          oldDetached:w.replaced.every(e=>!e.isConnected),newConnected:w.replacements.every(e=>e.isConnected)};
+      },chosen);
+      record(checks,caseId+'-replacement','semantic selection and disclosure survive replacement while jump receives a new occurrence',
+        Object.values(rebound).every(Boolean),{chosen,rebound});
+    }
     return {caseId,checks};
   }catch(error){
     record(checks,caseId+'-exception','authored late lexicon scenario completes',false,{message:String(error.stack||error).slice(0,1300)});

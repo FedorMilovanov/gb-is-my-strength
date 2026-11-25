@@ -1,7 +1,16 @@
 /* Native selection surface. The synchronous anchor and transaction API remain in highlights.js. */
   const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
   const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
-export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,sourceUrl,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes}) {
+export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes}) {
+  function fragment(text) {
+    const words = normalizeText(text).split(/\s+/);
+    return words.length <= 14 ? 'text=' + encodeURIComponent(text)
+      : 'text=' + encodeURIComponent(words.slice(0, 6).join(' ')) + ',' + encodeURIComponent(words.slice(-6).join(' '));
+  }
+  function sourceUrl(selected) {
+    return location.origin + location.pathname + '#' +
+      (selected.anchor ? encodeURIComponent(selected.anchor) : '') + ':~:' + fragment(selected.text);
+  }
   // Both touch selection-bar notes and the native selection popup share
   // exactly one positional quote association. Text-only equivalence is never
   // sufficient: repeated words and old legacy links are ambiguous.

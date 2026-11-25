@@ -1114,3 +1114,94 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const a5=scene(),t=a5.start();a5.finish();await t;
  a5.status('newer status');[...a5.timers.values()][0]();assert.equal(a5.hidden(),0);assert.equal(a5.messages.at(-1),'newer status');
 }
+
+// W71: prewarming fetches the module, not a DOM/event owner. Live selection
+// is checked again after import; failed attach can retry without another fetch.
+{
+ const src=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+ const a=src.indexOf('  let selectionController, selectionLoad;'),b=src.indexOf('  // Prewarm long-press',a);
+ assert.ok(a>=0&&b>a);
+ function scene(){
+   let pending=[],live=false,loads=0,creates=0,attaches=0,places=0,failAttach=false;
+   const window={getSelection:()=>live?{isCollapsed:false,rangeCount:1,toString:()=> 'long selected text'}:null};
+   const names='MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes'.split(',');
+   const deps=names.map(n=>n==='normalizeText'?s=>s:()=>{});
+   const load=()=>{loads++;return new Promise((resolve,reject)=>pending.push({resolve,reject}))};
+   const module={createSelectionController(){creates++;return {attachSelection(){attaches++;if(failAttach)throw Error('mount');},placeSelectionBar(){places++}}}};
+   const api=new Function('window','load',...names,src.slice(a,b).replace(/\bimport\(/g,'load(')+'return {attachSelection,loadSelectionController};')(window,load,...deps);
+   return {api,pending,module,live:v=>live=v,fail:v=>failAttach=v,stats:()=>[loads,creates,attaches,places]};
+ }
+ const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve()};
+ const s=scene(),pre=s.api.loadSelectionController();
+ s.pending[0].resolve(s.module);await pre;await flush();assert.deepEqual(s.stats(),[1,0,0,0]);
+ s.live(true);s.api.attachSelection();s.api.attachSelection();await flush();assert.deepEqual(s.stats(),[1,1,1,1]);
+ s.api.attachSelection();assert.deepEqual(s.stats(),[1,1,2,1]);
+ const t=scene();t.live(true);t.api.attachSelection();t.live(false);t.pending[0].resolve(t.module);await flush();assert.deepEqual(t.stats(),[1,0,0,0]);
+ t.live(true);t.api.attachSelection();await flush();assert.deepEqual(t.stats(),[1,1,1,1]);
+ const f=scene();f.live(true);f.api.attachSelection();f.pending[0].reject(Error('offline'));await flush();assert.deepEqual(f.stats(),[1,0,0,0]);
+ f.api.attachSelection();f.fail(true);f.pending[1].resolve(f.module);await flush();assert.deepEqual(f.stats(),[2,1,1,0]);
+ f.fail(false);f.api.attachSelection();await flush();assert.deepEqual(f.stats(),[2,2,2,1]);
+}
+// W71: text fragment construction is only owned by the lazy selection module.
+{
+ const src=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
+ const a=src.indexOf('  function fragment(text)'),b=src.indexOf('  // Both touch selection-bar notes',a);
+ assert.ok(a>=0&&b>a);
+ const fn=new Function('location','normalizeText',src.slice(a,b)+'return sourceUrl;')({origin:'https://example.test',pathname:'/article'},s=>String(s).replace(/\s+/g,' ').trim());
+ assert.equal(fn({anchor:'a b',text:'short text'}),'https://example.test/article#a%20b:~:text=short%20text');
+ const words=Array.from({length:15},(_,i)=>'word'+(i+1)).join(' ');
+ assert.equal(fn({anchor:'',text:words}),'https://example.test/article#:~:text=word1%20word2%20word3%20word4%20word5%20word6,word10%20word11%20word12%20word13%20word14%20word15');
+}
+
+// W72: a successful Undo consumes its local receipt; concurrent retries
+// cannot queue the same receipt, while a failed attempt may be retried.
+{
+ const src=readFileSync(resolve(root,'src/runtime/favorite-store.js'),'utf8');
+ const a=src.indexOf('  // Local Undo receipts'),b=src.indexOf('  function get(',a);
+ const c=src.indexOf('  async function restore('),d=src.indexOf('  async function toggle(',c);
+ assert.ok(a>=0&&b>a&&c>=0&&d>c);
+ function scene(){
+   let rows=[],writes=0,held=null,fail=false;
+   const localStorage={getItem:()=>JSON.stringify(rows)};
+   const receipt={path:'/a',entry:{path:'/a'},index:0};
+   const owner={version:1,async mutateLibrary(keys,prepare){
+     if(held)await held;
+     if(fail)return {ok:false,reason:'capacity'};
+     const result=prepare({f:rows});
+     if(result.reason)return {ok:false,reason:result.reason};
+     if(result.changes?.f){rows=result.changes.f;writes++;}
+     return {ok:true,...result.result};
+   }};
+   const api=new Function('window','localStorage','STORAGE_KEY','MAX_ITEMS','rawPath','match','finish',
+    src.slice(a,b)+src.slice(c,d)+'return {transact,restore};')({GBLibraryStorage:owner},localStorage,'f',50,x=>x?.path,(rows,p)=>rows.filter(x=>x.path===p),result=>({saved:result.ok,error:result.reason,receipt:result.receipt}));
+   return {api,receipt,issue:()=>api.transact(()=>({changes:{},result:{receipt}})),remove:()=>{rows=[];},writes:()=>writes,hold:p=>held=p,fail:v=>fail=v};
+ }
+ const f=scene();await f.issue();assert.equal((await f.api.restore(f.receipt)).saved,true);
+ f.remove();assert.equal((await f.api.restore(f.receipt)).error,'storage-changed');assert.equal(f.writes(),1);
+ const t=scene();const transferred={...t.receipt};assert.equal((await t.api.restore(transferred)).saved,true);
+ t.remove();assert.equal((await t.api.restore(transferred)).error,'storage-changed');assert.equal(t.writes(),1);
+ const p=scene();await p.issue();let release;p.hold(new Promise(resolve=>release=resolve));
+ const pending=p.api.restore(p.receipt);assert.equal((await p.api.restore(p.receipt)).error,'restore-pending');release();
+ assert.equal((await pending).saved,true);assert.equal(p.writes(),1);
+ const r=scene();await r.issue();r.fail(true);assert.equal((await r.api.restore(r.receipt)).error,'capacity');
+ r.fail(false);assert.equal((await r.api.restore(r.receipt)).saved,true);assert.equal(r.writes(),1);
+}
+// W72: main library consumes only its own successfully restored receipt.
+{
+ const src=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+ const a=src.indexOf('  function libraryFailure('),b=src.indexOf('  // Invalid historical rows',a);
+ assert.ok(a>=0&&b>a);
+ let result={ok:true},writes=0,release,held=null;
+ const receipt={key:'q',entry:{id:'a'}};
+ const owner={version:1,mutateLibrary:async()=>({ok:true,receipt})};
+ const win={GBLibraryStorage:owner,addEventListener(){}};
+ const domain={restoreDeleted:async()=>{writes++;if(held)await held;return result}};
+ const api=new Function('window','localStorage','load','gbHighlightKey','NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',
+  src.slice(a,b).replace(/\bimport\(/g,'load(')+'return {mutateLibrary,restoreDeleted};')(win,{},async()=>({createRecordTransactions:()=>domain}),()=>'', 'n','q',500,200);
+ await api.mutateLibrary([],()=>{});
+ result={ok:false,reason:'capacity'};assert.equal((await api.restoreDeleted(receipt)).reason,'capacity');
+ result={ok:true};held=new Promise(resolve=>release=resolve);
+ const pending=api.restoreDeleted(receipt);
+ assert.equal((await api.restoreDeleted(receipt)).reason,'restore-pending');release();assert.equal((await pending).ok,true);
+ assert.equal((await api.restoreDeleted(receipt)).reason,'storage-changed');assert.equal(writes,2);
+}

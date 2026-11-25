@@ -1108,7 +1108,7 @@
    const brief=el.querySelector('.gtip-brief')?.textContent?.replace(/\s+/g,' ').trim()||'';
    if(!key||!brief||seen.has(key)||el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]'))continue;
    seen.add(key);
-   terms.push({title,brief,detail:el.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',
+   terms.push({key,title,brief,detail:el.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',
     category:el.dataset.category||'',index:glossaryOccurrence(el)});
    if(terms.length>=limit)break;
   }
@@ -1423,6 +1423,8 @@
   const pick=module?.querySelector('[data-np-u-lex-picker]');
   if(!pick||!pick.options.length)return;
   const i=Math.max(0,Math.min(index,pick.options.length-1));
+  // Serialize the selected option in the existing pinned markup snapshot.
+  for(const [j,option] of [...pick.options].entries())option.defaultSelected=j===i;
   pick.selectedIndex=i;
   const counter=module.querySelector('[data-np-u-lex-count]');
   if(counter)counter.textContent=(i+1)+' / '+pick.options.length;
@@ -1465,7 +1467,7 @@
  }
  function lexiconContent(studyTerms,lexiconScope){
   const lex=studyTerms.map((term,i)=>
-   '<div class="np-u-lexicon-entry" data-np-u-lex-entry="'+term.index+'"'+(i?' hidden':'')+'>'+
+   '<div class="np-u-lexicon-entry" data-np-u-lex-entry="'+term.index+'" data-np-u-lex-key="'+escape(term.key)+'"'+(i?' hidden':'')+'>'+
      '<div class="np-u-lexicon-kicker">'+escape(term.category)+'</div>'+
      '<h4>'+escape(term.title)+'</h4><p>'+escape(term.brief)+'</p>'+
      (term.detail?'<details open class="np-u-lex-definition"><summary>Определение и границы понятия</summary><p>'+escape(term.detail)+'</p></details>':'')+
@@ -1474,7 +1476,7 @@
    '<p class="np-u-research-data-caption">'+lexiconScope+'</p>'+
    '<div class="np-u-study-picker"><label for="npULexiconPick">Богословское понятие</label>'+
     '<div class="np-u-study-picker-row"><select id="npULexiconPick" data-np-u-lex-picker aria-label="Выбрать понятие">'+
-      studyTerms.map(term=>'<option value="'+term.index+'">'+escape(term.title)+'</option>').join('')+
+      studyTerms.map(term=>'<option value="'+term.index+'" data-np-u-lex-key="'+escape(term.key)+'">'+escape(term.title)+'</option>').join('')+
     '</select><span class="np-u-study-picker-counter" data-np-u-lex-count>1 / '+studyTerms.length+'</span>'+
     '<button type="button" data-np-u-lex-step="-1" aria-label="Предыдущее понятие">‹</button>'+
     '<button type="button" data-np-u-lex-step="1" aria-label="Следующее понятие">›</button></div></div>'+
@@ -1495,17 +1497,17 @@
   const scope=local.length?'Понятия текущего раздела':'Понятия из всей статьи';
   const stamp=JSON.stringify([scope,terms]);
   if(stamp===lexiconStamp)return;
-  const previous=body.querySelector('[data-np-u-lex-picker]')?.value;
-  const disclosure=new Map([...body.querySelectorAll('[data-np-u-lex-entry]')].map(el=>[el.dataset.npULexEntry,el.querySelector('details')?.open]));
+  const previous=body.querySelector('[data-np-u-lex-picker]')?.selectedOptions[0]?.dataset.npULexKey;
+  const disclosure=new Map([...body.querySelectorAll('[data-np-u-lex-entry]')].map(el=>[el.dataset.npULexKey,el.querySelector('details')?.open]));
   body.innerHTML=lexiconContent(terms,scope);
   const meta=module.querySelector('.np-u-window-meta');
   if(meta)meta.textContent=terms.length?String(terms.length):'—';
   for(const el of body.querySelectorAll('[data-np-u-lex-entry]')){
    const detail=el.querySelector('details');
-   if(detail&&disclosure.has(el.dataset.npULexEntry))detail.open=disclosure.get(el.dataset.npULexEntry);
+   if(detail&&disclosure.has(el.dataset.npULexKey))detail.open=disclosure.get(el.dataset.npULexKey);
   }
   const picker=body.querySelector('[data-np-u-lex-picker]');
-  if(picker)renderLexiconAt(module,Math.max(0,[...picker.options].findIndex(opt=>opt.value===previous)));
+  if(picker)renderLexiconAt(module,Math.max(0,[...picker.options].findIndex(opt=>opt.dataset.npULexKey===previous)));
   if(pinnedMarkup.has('lexicon'))pinnedMarkup.set('lexicon',module.outerHTML);
   lexiconStamp=stamp;
  }

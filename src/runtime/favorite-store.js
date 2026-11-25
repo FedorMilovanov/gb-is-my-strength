@@ -198,7 +198,7 @@ import '../../js/reader-library-storage.js';
   // Local Undo receipts are capabilities scoped to the observed clear epoch.
   // A transferred receipt cannot prove an epoch after this tab observes clear.
   let clearGeneration = 0;
-  const receiptIntents = new WeakMap();
+  const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
   async function transact(prepare) {
     const generation = clearGeneration;
     const owner=window.GBLibraryStorage;
@@ -298,7 +298,11 @@ import '../../js/reader-library-storage.js';
     const issued = receiptIntents.get(receipt);
     if (issued !== undefined ? issued !== clearGeneration : clearGeneration !== 0)
       return {saved:false,error:'storage-changed'};
-    const result=await transact(rows=>{
+    if (restoringReceipts.has(receipt)) return {saved:false,error:'restore-pending'};
+    restoringReceipts.add(receipt);
+    let result;
+    try {
+      result=await transact(rows=>{
       // remove() always writes a collection, even when its last row is removed.
       // Absence therefore cannot be the post-delete state of a valid Undo.
       if (localStorage.getItem(STORAGE_KEY) === null) return {reason:'storage-changed'};
@@ -306,7 +310,9 @@ import '../../js/reader-library-storage.js';
       if(rows.length>=MAX_ITEMS)return {reason:'capacity'};
       const next=rows.slice();next.splice(Math.min(Math.max(0,receipt.index),next.length),0,entry);
       return {changes:{[STORAGE_KEY]:next},result:{item:entry}};
-    });
+      });
+      if (result.ok) receiptIntents.set(receipt,-1);
+    } finally { restoringReceipts.delete(receipt); }
     return finish(result,'restore',path,options.source||'api');
   }
   async function toggle(input = {}, options = {}) {
