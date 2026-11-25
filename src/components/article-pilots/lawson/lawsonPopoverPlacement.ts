@@ -13,11 +13,35 @@ export function resolveLawsonPopover(anchor: Box, viewport: Box, size: Size, gap
   return { side, left, top, width, height, maxHeight };
 }
 
-/** Only desktop collision positioning; native mobile sheet and print remain CSS-owned. */
+/** Reserve the canonical mobile chrome's full layout height, even while its
+ * top bar animates out of view. This prevents a visible card from jumping or
+ * becoming obscured when that bar returns. Safe-area padding is already in
+ * the measured border box; CSS retains its own fallback for missing chrome. */
+export function resolveLawsonMobileClearance(topHeight: number, bottomHeight: number, gap: number) {
+  return {
+    top: Math.max(0, topHeight) + gap,
+    bottom: Math.max(0, bottomHeight) + gap,
+  };
+}
+
+/** Article-local geometry only; mobile sheet/print presentation remains CSS-owned. */
 export function placeLawsonPopover(anchor: HTMLElement, card: HTMLElement, gap: number) {
   const scrollTop = card.scrollTop;
   for (const key of ['left', 'top', 'bottom', 'max-height', 'max-width']) card.style.removeProperty(key);
-  if (card.hidden || !matchMedia('(min-width: 1200px)').matches) return true;
+  for (const key of ['--lawson-popover-chrome-top', '--lawson-popover-chrome-bottom']) card.style.removeProperty(key);
+  if (card.hidden) return true;
+  if (!matchMedia('(min-width: 1200px)').matches) {
+    const shell = document.querySelector('[data-mobile-chrome][data-mobile-chrome-engine="article"]');
+    const top = shell?.querySelector<HTMLElement>('[data-mobile-topbar]');
+    const bottom = shell?.querySelector<HTMLElement>('[data-mobile-bottombar]');
+    // offsetHeight intentionally excludes translateY but includes border and safe area.
+    const clearance = resolveLawsonMobileClearance(top?.offsetHeight ?? 0, bottom?.offsetHeight ?? 0, Math.max(gap, .5 * parseFloat(getComputedStyle(document.documentElement).fontSize)));
+    card.style.setProperty('--lawson-popover-chrome-top', `${clearance.top}px`);
+    card.style.setProperty('--lawson-popover-chrome-bottom', `${clearance.bottom}px`);
+    const rect = card.getBoundingClientRect();
+    card.scrollTop = scrollTop;
+    return rect.width > 0 && rect.height > 0 && rect.top >= clearance.top - 1;
+  }
   // Measure the actual absolute-position containing block, rather than assuming
   // the anchor and its inline wrapper share an origin (wrapped text may not).
   const inset = 16;
@@ -35,6 +59,7 @@ export function placeLawsonPopover(anchor: HTMLElement, card: HTMLElement, gap: 
   card.style.maxWidth = `${Math.max(0, viewport.right - viewport.left)}px`;
   const natural = card.getBoundingClientRect();
   const result = resolveLawsonPopover(anchorBox, viewport, natural, gap);
+  if (result.maxHeight <= 0 || result.width <= 0) return false;
   card.style.maxHeight = `${Math.min(natural.height, result.maxHeight)}px`;
   // The actual constrained height accounts for padding, borders and overflow.
   const constrained = card.getBoundingClientRect();
@@ -42,5 +67,9 @@ export function placeLawsonPopover(anchor: HTMLElement, card: HTMLElement, gap: 
   card.style.left = `${result.left - constrained.left}px`;
   card.style.top = `${targetTop - constrained.top}px`;
   card.scrollTop = scrollTop;
-  return true;
+  // Borders/padding can exceed the available space even with max-height set.
+  const final = card.getBoundingClientRect();
+  return final.width > 0 && final.height > 0 &&
+    final.left >= viewport.left - 1 && final.right <= viewport.right + 1 &&
+    final.top >= viewport.top - 1 && final.bottom <= viewport.bottom + 1;
 }

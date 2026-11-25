@@ -101,9 +101,11 @@ if (!label.trim() || !/^lawson-glossary-[a-z]+(?:-[a-z]+)*$/.test(targetId)) {
       position: fixed;
       left: 1rem;
       right: 1rem;
-      bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+      --lawson-popover-bottom: max(calc(4.5rem + env(safe-area-inset-bottom, 0px)), var(--lawson-popover-chrome-bottom, 0px));
+      --lawson-popover-top: max(calc(.5rem + env(safe-area-inset-top, 0px)), var(--lawson-popover-chrome-top, 0px));
+      bottom: var(--lawson-popover-bottom);
       width: auto;
-      max-height: max(5rem, calc(100dvh - 6.5rem - env(safe-area-inset-bottom, 0px)));
+      max-height: max(0px, calc(100dvh - var(--lawson-popover-bottom) - var(--lawson-popover-top)));
     }
   }
   @media print {
