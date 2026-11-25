@@ -89,8 +89,17 @@ main :global(.bio-study-list .h-article-card:focus-visible){
 }
 @media(max-width:480px){
   main :global(.bio-study-list .h-article-card){
-    grid-template-columns:minmax(0,1fr);gap:12px;padding:14px;
+    grid-template-columns:minmax(0,7rem) minmax(0,1fr);gap:8px 12px;padding:14px;
   }
-  main :global(.bio-study-list .h-article-thumb){aspect-ratio:40/21}
+  main :global(.bio-study-list .h-article-thumb){grid-column:1;aspect-ratio:40/21}
+  main :global(.bio-study-list .h-article-body){display:contents}
+  main :global(.bio-study-list .h-article-kicker){
+    grid-column:2;align-self:center;margin:0;overflow-wrap:break-word;
+  }
+  main :global(.bio-study-list .h-article-title),
+  main :global(.bio-study-list .h-article-meta),
+  main :global(.bio-study-list .h-article-abstract){
+    grid-column:1/-1;margin:0;min-width:0;
+  }
 }
 </style>
