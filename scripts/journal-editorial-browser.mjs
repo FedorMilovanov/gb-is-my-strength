@@ -502,6 +502,19 @@ async function sourceActionHoverWitness(page) {
   } finally { await page.mouse.move(0,0); }
   return {supported:true,results};
 }
+// Direct process.exit bypasses the outer finally. Retain explicitly partial
+// mobile evidence before any forced termination and before risky teardown.
+function writeMobileCheckpoint({ name, item, reason, exitCode = null }) {
+  const checkpoint = path.join(output,'mobile-checkpoint.json');
+  const payload = { head:report.head, worktree:report.worktree, engine, suite,
+    browserVersion:report.version, sourceSha256:report.sourceSha256,
+    complete:false, reason, exitCode, completedRows:report.mobileFocus.length,
+    expectedRows:routes.filter(route=>route.kind!=='journal').length * mobileWidths.length * mobileHeights.length * 4,
+    rows:report.mobileFocus, problems:report.problems,
+    activeCase:{name,item,rowRetained:report.mobileFocus.includes(item)} };
+  fs.writeFileSync(checkpoint+'.tmp',JSON.stringify(payload,null,2)+'\n');
+  fs.renameSync(checkpoint+'.tmp',checkpoint);
+}
 async function captureWideHistoryEvidence(page, name) {
   const failures = [];
   const capture = async (label, operation) => {
@@ -1620,6 +1633,7 @@ try {
           const diagnostic = { head: report.head, engine, name, item, timeoutMs: 75_000 };
           fs.writeFileSync(path.join(output, 'after', `${name}-watchdog.json`), JSON.stringify(diagnostic, null, 2) + '\n');
           console.error(`FAIL ${name}: 75s mobile-case watchdog in phase ${item.phase}; diagnostic JSON retained`);
+          writeMobileCheckpoint({name,item,reason:'watchdog',exitCode:124});
           process.exit(124);
         }, 75_000);
         const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
@@ -1842,6 +1856,7 @@ try {
           await shot(page, `${name}-failure`, { timeout: 8000 }).catch(() => {});
         } finally {
           report.mobileFocus.push(item);
+          writeMobileCheckpoint({name,item,reason:'teardown-pending'});
           // Firefox may retain a native disclosure/scroll task after an assertion
           // failure. A hung teardown must fail closed, not monopolize CI for 55m.
           let teardownTimeout;
@@ -1852,12 +1867,18 @@ try {
             ]);
           } catch (closeError) {
             console.error(`FAIL ${name}: ${closeError.message}; diagnostic JSON retained`);
+            item.teardownFailure=closeError.message;
+            report.problems.push(`${name}: ${closeError.message}`);
+            writeMobileCheckpoint({name,item,reason:'teardown-failure',exitCode:1});
             process.exit(1);
           } finally {
             clearTimeout(teardownTimeout);
             clearTimeout(watchdog);
           }
-          if (stopOnFirstError && item.failure) process.exit(1);
+          if (stopOnFirstError && item.failure) {
+            writeMobileCheckpoint({name,item,reason:'fail-fast',exitCode:1});
+            process.exit(1);
+          }
         }
       }
   // Agent4/#2339 confirmed this on selected Agent8: forced colors exposes all
@@ -2017,6 +2038,7 @@ try {
 } finally {
   await browser.close();
   fs.writeFileSync(path.join(output, `browser-${engine}.json`), JSON.stringify(report, null, 2) + '\n');
+  if (['full','mobile'].includes(suite)) fs.rmSync(path.join(output,'mobile-checkpoint.json'),{force:true});
 }
 console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.mobileFocus.length} mobile-focus + ${report.forcedColors.length} forced-colors + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
 if (report.problems.length) { console.error(report.problems.join('\n')); process.exitCode = 1; }
