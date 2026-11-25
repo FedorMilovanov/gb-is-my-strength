@@ -28,6 +28,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
+const engineSource = fs.readFileSync(path.join(ROOT, 'js', 'vosk-tts-engine.js'), 'utf8');
+const workerPaths = [...engineSource.matchAll(/\bvar WORKER_SRC = '([^']+)';/g)];
+assert.equal(workerPaths.length, 1, 'unique engine worker URL');
+const workerPath = workerPaths[0][1];
+assert.match(workerPath, /^\/js\/vosk-tts-worker\.js\?v=[a-f0-9]{8}$/);
+const workerRevision = require('node:crypto').createHash('md5')
+  .update(fs.readFileSync(path.join(ROOT, 'js', 'vosk-tts-worker.js'))).digest('hex').slice(0, 8);
+assert.equal(workerPath, '/js/vosk-tts-worker.js?v=' + workerRevision, 'engine uses current worker bytes');
 // The real worker contract requires the SOURCE tree, not the built dist:
 // asset revision literals (?v=hex8) are baked at build time, so a fresh engine
 // edit served from a stale dist would break witness isolation.
@@ -118,13 +126,13 @@ async function newEnginePage(context) {
 }
 
 async function readWorkerInitCount(page) {
-  return page.evaluate(() => new Promise((resolve, reject) => {
+  return page.evaluate(workerPath => new Promise((resolve, reject) => {
     const timeout = setTimeout(() => { port.close(); reject(new Error('counters timeout')); }, 3000);
     // Chromium keys SharedWorker instances by the FULL script URL, query
     // included: the engine opens '/js/vosk-tts-worker.js?v=<hex8>', so a bare
     // '/js/vosk-tts-worker.js' connection spawns a second worker and would
     // read a fresh zero counter. Mirror the engine's ?v= URL exactly.
-    const port = new SharedWorker('/js/vosk-tts-worker.js?v=d5850c06', 'gb-vosk-tts').port;
+    const port = new SharedWorker(workerPath, 'gb-vosk-tts').port;
     port.onmessage = (event) => {
       if (event.data && event.data.type === 'counters') {
         clearTimeout(timeout);
@@ -133,7 +141,7 @@ async function readWorkerInitCount(page) {
       }
     };
     port.postMessage({ type: 'dump-counters' });
-  }));
+  }), workerPath);
 }
 
 (async () => {
