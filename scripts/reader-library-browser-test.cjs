@@ -32,20 +32,25 @@ const gbsHtml = html.replace('</head>',
   '<style>.hmbar{display:none!important}.gbs2-bbar{position:fixed;bottom:12px;left:12px;right:12px;min-height:62px;padding:10px 12px;background:#fff4e9;z-index:2000;border:1px solid #a77d67;border-radius:22px;display:block}.gb-mobile-fallback-controls{position:fixed!important;left:50%!important;bottom:90px!important;z-index:2102!important;display:flex!important;align-items:center!important;gap:4px!important;transform:translateX(-50%)!important;min-height:44px;padding:4px 8px;background:#f7f0e9;border-radius:999px}@media(min-width:900px){.gb-mobile-fallback-controls{display:none!important}}@media(min-width:1200px){.gbs2-bbar{display:none}}</style></head>')
   .replace('</body>', '<button type="button" id="gbs2Bbar" class="gbs2-bbar">Оглавление серии</button><div class="gb-mobile-fallback-controls" data-fc-root role="region" aria-label="Быстрые действия чтения"><button type="button" class="gb-ember" aria-label="Слушать">▶</button><button type="button" class="gb-save" aria-label="Сохранить">☆</button></div></body>');
 
+const w57Html=html.replace('<body>','<body class="np-w57-ready">')
+  .replace('<main>','<main class="np-u-reader-main">')
+  .replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>','')
+  .replace('</body>','<aside id="npUResearch"><div class="np-u-right-scroll"></div></aside><script>window.GBReaderContract={articleRoot:()=>document.querySelector("article")};</script><script src="/research/reader-w57-pilot/assets/reader_w57_annotations.js"></script></body>');
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
       url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' ||
       url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js' ||
-      url.pathname === '/js/reader-library-ranges.js') {
+      url.pathname === '/js/reader-library-ranges.js' || url.pathname === '/research/reader-w57-pilot/assets/reader_w57_annotations.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));
   } else {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     const transientHtml = html.replace('</head>', '<style>#selection-share-popup[aria-hidden="true"]{display:none}</style></head>').replace('<main>', '<button id="qa-unrelated" type="button">Другое действие</button><main>');
-    res.end(url.pathname === '/baptisty-rossii/' ? gbsHtml :
+    res.end(url.pathname === '/articles/selection-argon/' ? w57Html :
+      url.pathname === '/baptisty-rossii/' ? gbsHtml :
       url.pathname === '/articles/selection-native/' ? transientHtml :
       url.pathname === '/articles/selection-fallback/' ? transientHtml.replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>', '') : html);
   }
@@ -526,6 +531,64 @@ async function checkVisibleLegacy(name, driver, base) {
   }finally{await browser.close();}
 }
 
+async function checkColdRanges(name,driver,base) {
+  const browser=await driver.launch({headless:true});
+  try {
+    for(const argon of [false,true]){
+      const context=await browser.newContext({viewport:{width:argon?1440:390,height:844}});
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      let release,started,rangeRequests=0;
+      const gate=new Promise(r=>release=r),request=new Promise(r=>started=r);
+      await page.route('**/js/reader-library-ranges.js?*',async route=>{
+        rangeRequests++;started();await gate;await route.continue();
+      });
+      try{
+        await page.goto(base+(argon?'/articles/selection-argon/':'/articles/selection-fallback/'));
+        await page.locator('#gb-hl-fab').waitFor();
+        if(argon)await page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
+        // Allow the normal scheduled startup repaint to run on a clean page.
+        await page.waitForTimeout(1100);
+        assert.equal(rangeRequests,0,'clean reader does not fetch range runtime');
+        assert.equal(await page.evaluate(()=>!!window.GBReaderAnchors),false);
+        const select=id=>page.evaluate(id=>{
+          const p=document.getElementById(id),range=document.createRange();
+          range.selectNodeContents(p);
+          const selection=window.getSelection();
+          selection.removeAllRanges();selection.addRange(range);
+          document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+          return range.toString();
+        },id);
+        let expected=await select('demo');
+        await Promise.race([request,page.waitForTimeout(5000).then(()=>{throw Error('range request not started')})]);
+        assert.equal(rangeRequests,1);
+        if(argon){
+          await page.keyboard.press('Escape');
+          release();
+          await page.waitForFunction(()=>!!window.GBReaderAnchors);
+          await page.waitForTimeout(200);
+          assert.equal(await page.locator('#npW57SelectionToolbar').isVisible(),false,'Escape cancels deferred first gesture');
+          expected=await select('more');
+          await page.locator('#npW57SelectionToolbar').waitFor({state:'visible'});
+          await page.locator('[data-w57-action=quote]').click();
+        }else{
+          release();
+          await page.locator('#gb-hl-selbar[data-open=true]').waitFor({state:'visible'});
+          await page.locator('#gb-hl-selbar-quote').click();
+        }
+        await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').length===1);
+        const row=await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1'))[0]);
+        assert.equal(row.text,expected);
+        assert.equal(row.annotation?.version,1,'first selection must retain positional identity');
+        assert.equal(row.annotation.anchor.exact,expected);
+        assert.equal(rangeRequests,1,'one module instance across native and ARGON actions');
+        assert.deepEqual(errors,[]);
+        console.log('PASS',name,argon?'ARGON cancelled cold gesture and new exact selection':'native first cold gesture exact selection');
+      }finally{release();await context.close()}
+    }
+  }finally{await browser.close()}
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -540,6 +603,7 @@ async function checkVisibleLegacy(name, driver, base) {
       await run(name+' native dock focus',()=>checkNativeDockFocus(name,browser,new URL(url).origin));
       await run(name+' storage and selection races',()=>checkStorageAndSelectionRaces(name,browser,new URL(url).origin));
       await run(name+' legacy visible projection',()=>checkVisibleLegacy(name,browser,new URL(url).origin));
+      await run(name+' cold range readiness',()=>checkColdRanges(name,browser,new URL(url).origin));
     }
     console.log('Reader Library browser groups: '+passed+'/'+total);
     assert.deepEqual(failures,[],'browser integration failures');
