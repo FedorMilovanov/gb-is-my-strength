@@ -81,6 +81,35 @@ function visible(el) {
         assert.strictEqual(state.clusterFontCount, 0, `part ${part} @ ${width}: cloned font controls must be removed`);
         assert.strictEqual(state.visibleEmbers, 1, `part ${part} @ ${width}: competing visible Play controls`);
         assert.strictEqual(state.visibleSaves, 1, `part ${part} @ ${width}: competing visible Save controls`);
+        // Screen visibility is a CSS-owned state, not an inline important
+        // escape hatch which could override the physical print contract.
+        const snapshot = () => page.evaluate(() => {
+          const bar = document.getElementById('bottomBar');
+          const overlay = document.getElementById('btocOverlay');
+          return {
+            bar: getComputedStyle(bar).display,
+            overlay: getComputedStyle(overlay).display,
+            inline: [bar, overlay].map(el => el.style.getPropertyValue('display')),
+            main: document.querySelector('#main-content').getClientRects().length > 0,
+            cluster: bar.querySelectorAll('.nag-bar-controls').length
+          };
+        });
+        const screen = await snapshot();
+        assert.deepStrictEqual(screen, { bar: 'block', overlay: 'block', inline: ['', ''], main: true, cluster: 1 });
+        await page.locator('#barSectionBtn').click();
+        await page.waitForFunction(() => {
+          const panel = document.getElementById('btocPanel');
+          const r = panel.getBoundingClientRect();
+          return r.top < innerHeight - 30 && r.bottom > 0 &&
+            getComputedStyle(document.getElementById('btocOverlay')).opacity === '1';
+        });
+        await page.locator('#btocClose').click();
+        await page.waitForFunction(() => !document.body.classList.contains('ng-toc-lock') &&
+          !document.documentElement.hasAttribute('data-scroll-locked'));
+        await page.emulateMedia({ media: 'print' });
+        assert.deepStrictEqual(await snapshot(), { bar: 'none', overlay: 'none', inline: ['', ''], main: true, cluster: 1 });
+        await page.emulateMedia({ media: 'screen' });
+        assert.deepStrictEqual(await snapshot(), screen, 'screen controls restored without duplicate cluster');
       }
     }
 
