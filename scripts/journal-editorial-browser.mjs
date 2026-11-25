@@ -415,6 +415,36 @@ async function standaloneSourceActions(page, kind, forced = false) {
   }
   return rows;
 }
+// Adversarial checks run on the real routed page AFTER visual capture, in a
+// discarded context. Restore each mutation before the next independent case.
+async function rejectBrokenSourceActions(page) {
+  const first = page.locator('#' + historyActionIds[0]);
+  const results = [];
+  for (const [name, value] of [['display','none'],['visibility','hidden'],['opacity','0'],['pointer-events','none']]) {
+    const prior = await first.evaluate((el, prop) => ({ value:el.style.getPropertyValue(prop), priority:el.style.getPropertyPriority(prop) }), name);
+    try {
+      await first.evaluate((el, [prop, val]) => el.style.setProperty(prop,val,'important'), [name,value]);
+      await assert.rejects(standaloneSourceActions(page,'history'), { name:'AssertionError' }, 'hidden/noninteractive source must fail: '+name);
+      results.push(name);
+    } finally {
+      await first.evaluate((el, [prop, prior]) => { if(prior.value)el.style.setProperty(prop,prior.value,prior.priority);else el.style.removeProperty(prop); }, [name,prior]);
+    }
+  }
+  for (const attr of ['inert','aria-hidden','data-id-probe']) {
+    const original = await first.evaluate((el, attr) => attr==='data-id-probe'?el.id:el.getAttribute(attr),attr);
+    try {
+      await first.evaluate((el, attr) => { if(attr==='data-id-probe')el.id='missing-source-id-probe';else el.setAttribute(attr,'true'); },attr);
+      await assert.rejects(standaloneSourceActions(page,'history'), { name:'AssertionError' }, 'incomplete/noninteractive source must fail: '+attr);
+      results.push(attr);
+    } finally {
+      // The exact element is still in place even when its ID was mutated.
+      if(attr==='data-id-probe')await page.locator('#missing-source-id-probe').evaluate((el,id)=>el.id=id,original);
+      else await first.evaluate((el,[attr,original])=>{if(original===null)el.removeAttribute(attr);else el.setAttribute(attr,original);},[attr,original]);
+    }
+  }
+  assert.equal((await standaloneSourceActions(page,'history')).length,33,'restore original source inventory');
+  return results;
+}
 async function wideHistoryGeometry(page) {
   const state = await page.evaluate(() => {
     const rect = el => el.getBoundingClientRect().toJSON();
@@ -431,6 +461,7 @@ async function wideHistoryGeometry(page) {
       paragraph: rect(story.querySelector('#g3-year-2018 .je-history-text > p')), frame, painted,
       paintedWidth: Math.max(0, Math.min(frame.right, painted.right) - Math.max(frame.left, painted.left)),
       labelSize: parseFloat(getComputedStyle(label).fontSize) * Math.hypot(matrix.a, matrix.b),
+      atlasTextSizes: [atlas.querySelector('.g3g-map-key'),atlas.querySelector('.g3g-atlas-list h5'),atlas.querySelector('.g3g-atlas-list a')].map(el=>parseFloat(getComputedStyle(el).fontSize)),
       markers: svg.querySelectorAll('.g3g-atlas-marker > *').length,
       mapLinks: atlas.querySelectorAll('.g3g-atlas-list a').length,
       allAtlasLinks: Array.from(atlas.querySelectorAll('a[data-journal-citation]')).map(a => a.id),
@@ -685,6 +716,7 @@ try {
         const response = await ready(page, routes.find(route => route.kind === 'history').url);
         await assertPublishedHistory(page, response);
         item.normal = await wideHistoryGeometry(page);
+        if (width <= 430) item.sourceActions = await standaloneSourceActions(page,'history');
         await shot(page, name + '-full', { fullPage: true });
         for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
           await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
@@ -695,10 +727,16 @@ try {
         await settleWithoutScripts(page);
         item.scaled = await wideHistoryGeometry(page);
         assert.equal(item.scaled.scale,2);
+        assert.ok(item.scaled.atlasTextSizes.every((size,i)=>Math.abs(size-item.normal.atlasTextSizes[i]*2)<.25),'atlas text alternative must follow 200% Reader scale');
         for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
           await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
           await settleWithoutScripts(page);
           await shot(page, name + '-' + label + '-200pct', { fullPage: false });
+        }
+        if (width===390 && theme==='light') {
+          await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','1'));
+          await settleWithoutScripts(page);
+          item.negativeSourceActions = await rejectBrokenSourceActions(page);
         }
         assert.deepEqual(item.runtime, []);
         console.log('PASS '+name);
