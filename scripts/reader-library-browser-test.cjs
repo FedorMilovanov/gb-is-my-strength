@@ -326,6 +326,42 @@ async function checkTransientFocus(name,driver,base) {
   assert.deepEqual(failures,[],'transient focus failures');
 }
 
+// A real focused button must survive reparenting in either direction,
+// without stealing unrelated focus or focusing a newly inert destination.
+async function checkNativeDockFocus(name, driver, base) {
+  const browser = await driver.launch({headless:true});
+  try {
+    for (const mode of ['herm','gill','legacy','fallback','grok']) {
+      for (const direction of ['into','out','unrelated','same','inert']) {
+        const page = await browser.newPage({viewport:{width:390,height:844}});
+        try {
+          const fixture = base + '/__qa-dock-focus/';
+          await page.route(fixture, route => route.fulfill({contentType:'text/html',body:'<button id="other">Other</button><div id="hosts"></div><button id="gb-hl-fab">Library</button>'}));
+          await page.goto(fixture);
+          const result = await page.evaluate(async ({mode,direction}) => {
+            const {dockLibraryFab:dock} = await import('/js/reader-library-dock.js');
+            const fab=document.getElementById('gb-hl-fab'), other=document.getElementById('other');
+            const host=document.createElement('div');
+            host.className={herm:'hmbar',gill:'mobile-bottom-bar',legacy:'bottom-bar-inner',fallback:'gb-mobile-fallback-controls',grok:'hrail--grok'}[mode];
+            host.innerHTML=mode==='grok'?'<div class="hrail-bottom"></div>':mode==='herm'||mode==='gill'?'<div class="reader-mobile-action-cluster"><button data-reader-pdf>PDF</button></div>':mode==='legacy'?'<button id="barShareBtn">Share</button>':'';
+            document.getElementById('hosts').append(host);
+            if(direction==='out'||direction==='same') dock(fab);
+            (direction==='unrelated'?other:fab).focus();
+            // Retire the host without hiding it first: isolate the actual DOM move,
+            // rather than an earlier browser blur caused by CSS display:none.
+            if(direction==='out') host.className='retired-host';
+            if(direction==='inert') host.inert=true;
+            dock(fab);
+            return {focus:document.activeElement.id,expected:direction==='unrelated'?'other':direction==='inert'?'':'gb-hl-fab',host:direction==='out'?fab.parentElement===document.body:host.contains(fab)};
+          },{mode,direction});
+          assert.equal(result.focus,result.expected,name+' '+mode+' '+direction+' focus');
+          assert.equal(result.host,true,name+' '+mode+' '+direction+' host');
+        } finally { await page.close(); }
+      }
+    }
+  } finally { await browser.close(); }
+}
+
 // W73: real same-origin tabs, the actual shared Web Lock and the native
 // selection surface. No user data: all keys belong to a disposable context.
 async function checkStorageAndSelectionRaces(name,driver,base) {
@@ -411,6 +447,7 @@ async function checkStorageAndSelectionRaces(name,driver,base) {
       for (const width of [320, 390]) await run(name+' '+width,()=>check(name,browser,url,width));
       await run(name+' GBS2',()=>checkGbs2(name,browser,url.replace('/articles/sample/','/baptisty-rossii/')));
       if(name!=='firefox') await run(name+' transient focus',()=>checkTransientFocus(name,browser,new URL(url).origin));
+      await run(name+' native dock focus',()=>checkNativeDockFocus(name,browser,new URL(url).origin));
       await run(name+' storage and selection races',()=>checkStorageAndSelectionRaces(name,browser,new URL(url).origin));
     }
     console.log('Reader Library browser groups: '+passed+'/'+total);

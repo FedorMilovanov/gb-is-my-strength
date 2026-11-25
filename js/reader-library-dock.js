@@ -34,9 +34,15 @@ export function dockLibraryFab(fab) {
     fab.style.bottom = '';
     if (!host) host = document.body;
     else fab.classList.add('gb-hl-fab--docked', cls);
+    const focused = document.activeElement === fab;
     if (before?.parentNode === host) {
       if (fab.nextElementSibling !== before) host.insertBefore(fab, before);
     } else if (fab.parentNode !== host || fab.nextElementSibling) host.append(fab);
+    if (focused && (document.activeElement === document.body || document.activeElement === document.documentElement) &&
+        fab.isConnected && !fab.disabled && fab.getClientRects().length &&
+        !fab.closest('[hidden],[inert],[aria-hidden="true"]') && getComputedStyle(fab).visibility === 'visible') {
+      fab.focus({preventScroll:true});
+    }
   }
 
 
