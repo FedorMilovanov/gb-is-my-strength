@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { assertArgonScriptureActivation } from './lib/reader-scripture-owner-browser.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium, firefox, webkit } = require('playwright');
@@ -192,7 +193,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 850 }, locale: 'ru-RU' });
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(String(error)));
-  const response = await page.goto(base + ROUTE, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const response = await page.goto(base + ROUTE + '?reader-pilot=0', { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForTimeout(900);
   record('document:status', response?.status() === 200, response?.status() ?? null);
 
@@ -257,8 +258,17 @@ try {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(220);
   record('scripture:escape-closes', !(await page.locator('.gb-floating-tip.is-open').count()), null);
-  record('runtime:no-page-errors', pageErrors.length === 0, pageErrors);
   await page.close();
+  const study = await browser.newPage({ viewport: { width: 1280, height: 850 }, locale: 'ru-RU', serviceWorkers: 'block' });
+  study.on('pageerror', error => pageErrors.push(String(error)));
+  try {
+    await study.goto(base + ROUTE, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const evidence = await assertArgonScriptureActivation(study, study.locator('article .bref[data-ref]').first());
+    record('scripture:default-argon-study', true, evidence);
+  } catch (error) {
+    record('scripture:default-argon-study', false, String(error));
+  } finally { await study.close(); }
+  record('runtime:no-page-errors', pageErrors.length === 0, pageErrors);
 } finally {
   await browser?.close().catch(() => {});
   await new Promise((resolve) => server.close(resolve));

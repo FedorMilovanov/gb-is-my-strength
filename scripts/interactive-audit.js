@@ -543,7 +543,7 @@ async function checkGlossary(browser) {
 }
 
 async function checkHermenevtikaFootnotes(browser) {
-  const desktop = await openPage(browser, HERMENEUTIKA_URL, { width: 1280, height: 850 });
+  const desktop = await openPage(browser, HERMENEUTIKA_URL + '?reader-pilot=0', { width: 1280, height: 850 });
   const staticState = await desktop.evaluate((expected) => {
     function numberOf(marker) {
       return Array.from(marker.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\s+/g, '').trim();
@@ -719,6 +719,13 @@ async function checkHermenevtikaFootnotes(browser) {
   if (!ordinaryState.tipOpen || !ordinaryState.expandedScripture) push('hermenevtika-ordinary-scripture-tooltip-broken', HERMENEUTIKA_URL, ordinaryState);
   await desktop.keyboard.press('Escape');
   await desktop.close();
+  const study = await openPage(browser, HERMENEUTIKA_URL, { width: 1280, height: 850 });
+  try {
+    const { assertArgonScriptureActivation } = await import('./lib/reader-scripture-owner-browser.mjs');
+    await assertArgonScriptureActivation(study, study.locator('article .bref[data-ref]').first());
+  } catch (error) {
+    push('hermenevtika-argon-scripture-study-broken', HERMENEUTIKA_URL, String(error));
+  } finally { await study.close(); }
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const resp = await mobile.goto(BASE + HERMENEUTIKA_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });

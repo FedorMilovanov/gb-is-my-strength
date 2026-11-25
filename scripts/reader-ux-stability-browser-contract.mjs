@@ -8,6 +8,10 @@ import http from 'node:http';
 import { chromium, firefox, webkit } from 'playwright';
 
 const ROOT=path.resolve('dist');
+const epochs=[...fs.readFileSync('src/runtime/article-tooltips.js','utf8').matchAll(/^const VERSION\s*=\s*(\d+)\s*;/gm)];
+assert.equal(epochs.length,1,'unique canonical tooltip epoch');
+const TOOLTIP_VERSION=Number(epochs[0][1]);
+assert.ok(TOOLTIP_VERSION>=20,'tooltip owner epoch must not regress');
 const REPORTS=path.resolve('reports/reader-ux-stability');
 const ROUTE='/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
@@ -35,17 +39,20 @@ async function tocAndTooltip(driver,name,origin){
   const browser=await driver.launch({headless:true});
   try {
     const p=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference',serviceWorkers:'block'});
-    await p.goto(origin+ROUTE,{waitUntil:'domcontentloaded',timeout:30000});
+    await p.goto(origin+ROUTE+'?reader-pilot=0',{waitUntil:'domcontentloaded',timeout:30000});
+    await p.waitForFunction(()=>window.GBArticleTooltips?.version&&window.GBReaderState,null,{timeout:12000});
     await p.waitForFunction(()=>document.querySelector('.grok-toc li.grok-row'),null,{timeout:12000});
     const runtime=await p.evaluate(()=>({
       tooltip:window.GBArticleTooltips?.version||0,
+      owner:window.GBArticleTooltips?.owner, marker:document.documentElement.dataset.gbArticleTooltipsVersion,
+      classic:!window.__NP_UNIVERSAL_PREVIEW__&&new URLSearchParams(location.search).get('reader-pilot')==='0',
       reader:typeof (window.GBReaderState?.getSnapshot||window.GBReaderState?.get),
       rows:document.querySelectorAll('.grok-toc li.grok-row').length,
       scripts:[...document.scripts].map(x=>x.src).filter(x=>x.includes('reader')||x.includes('article'))
     }));
     console.log('UX_RUNTIME',name,JSON.stringify(runtime));
     check(name,'canonical tooltip and ReaderState mounted',
-      runtime.tooltip===20 && runtime.reader==='function',runtime);
+      runtime.tooltip===TOOLTIP_VERSION && runtime.owner==='article-inline-tooltip' && runtime.marker===String(TOOLTIP_VERSION) && runtime.classic && runtime.reader==='function',runtime);
     const sub1=p.locator('.grok-row--sub[data-grok-heading] > .grok-entry > a').first();
     const sub2=p.locator('.grok-row--sub[data-grok-heading] > .grok-entry > a').nth(1);
     await sub1.click();
@@ -167,7 +174,8 @@ async function library(driver,name,origin,width,height){
         {path:'/articles/seed-2/',title:'Saved source',description:'Favorite',addedAt:1781100000050}]));
     },q);
     const p=await ctx.newPage();
-    await p.goto(origin+ROUTE,{waitUntil:'domcontentloaded',timeout:30000});
+    await p.goto(origin+ROUTE+'?reader-pilot=0',{waitUntil:'domcontentloaded',timeout:30000});
+    await p.waitForFunction(()=>window.GBArticleTooltips?.version&&window.GBReaderState,null,{timeout:12000});
     const fab=p.locator('#gb-hl-fab');
     await fab.waitFor({state:'visible',timeout:12000});
     await fab.click();
