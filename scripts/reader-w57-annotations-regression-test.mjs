@@ -822,8 +822,9 @@ console.log('W40: 6/6 Undo integrity cases PASS');
    const overlay=node();overlay.querySelector=id=>{if(!nodes.has(id))nodes.set(id,node());return nodes.get(id)};overlay.remove=()=>removed++;
    const panel=node(),list=node(),titleCount=node(),search=node(),sourceSelect=node(),status=node(),editor=node(),textArea=node();
    const items=[{id:'q'}],research={reconcileTopic(){},resetFilters(){resets++}};
-   const factory=new Function('createLibraryPanel','createLibraryEditor','renderList','renderItem','handleLibraryClick','exportMarkdown',source+'return createLibraryView;')(
-     ()=>({overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}),
+   const document=node();
+   const factory=new Function('document','createLibraryPanel','createLibraryEditor','renderList','renderItem','handleLibraryClick','exportMarkdown',source+'return createLibraryView;')(
+     document,()=>({overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}),
      options=>{if(fail==='editor')throw Error('init failed');editorOptions=options;return {showEditor(){shownNote++},hideEditor(){},saveNote(){},deleteItem(){},clearUndo(){}}},
      state=>{snapshots.push({tab:state.tab,filter:state.filter,term:state.searchTerm,shown:state.shown});return state.filter},
      ()=>{},(_,a)=>{actions=a},()=>exported++);
