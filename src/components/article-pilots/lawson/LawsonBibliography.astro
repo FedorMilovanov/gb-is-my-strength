@@ -16,7 +16,7 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
   </p>
   <ol>
     {LAWSON_SOURCES.map((source) => (
-      <li id={`source-${source.id}`}>
+      <li id={`source-${source.id}`} tabindex="-1">
         <div class="lawson-bibliography__head">
           <span class="lawson-bibliography__num">{source.n}</span>
           <div>
