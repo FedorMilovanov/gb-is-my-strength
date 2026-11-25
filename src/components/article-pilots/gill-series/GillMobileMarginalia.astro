@@ -1084,4 +1084,34 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
       min-height:0;
     }
   }
+  /* Short landscape: reserve useful reading space without changing the
+     fixed tab/foot geometry or the normal portrait/desktop sheet. */
+  @media screen and (min-width:40em) and (max-width:84.999em) and (orientation:landscape) and (max-height:500px) {
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay {
+      padding-block:max(4px, env(safe-area-inset-top, 0px)) 4px !important;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet {
+      height:min(95vh, 100%);
+      height:min(95dvh, 100%);
+      max-height:100%;
+      box-sizing:border-box;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__head--grid {
+      grid-template-columns:44px minmax(0, 1fr) !important;
+      padding-block:4px !important;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__head--grid .back {
+      width:44px !important;
+      height:44px !important;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__reading-progress {
+      padding-block:2px 3px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__progress-caption {
+      margin-bottom:3px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbr-marginalia-tabs {
+      padding-block:4px;
+    }
+  }
 </style>

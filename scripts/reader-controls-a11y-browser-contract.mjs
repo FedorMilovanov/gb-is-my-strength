@@ -1373,6 +1373,31 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
         unfolded.tocOverflow === 'auto' && unfolded.toc?.clientH > 45 &&
         unfolded.xOverflow === 0),
       { first, returned, unfolded });
+    // W210: short landscape must leave a meaningful scrolling reading area,
+    // not just barely clear the historical >45px geometry floor.
+    if (width >= 640 && width < 1360 && width > height && height >= 390 && height <= 500) {
+      const targets = await page.evaluate(() => {
+        const root = document.getElementById('partTocOverlay');
+        const controls = [...root.querySelectorAll('.toc-sheet__head .back, [role="tab"], .gbat-foot button')];
+        return controls.map(node => {
+          const r = node.getBoundingClientRect();
+          const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return { label: node.id || node.getAttribute('aria-label') || node.textContent.trim(),
+            width: r.width, height: r.height, hit: Boolean(hit && node.contains(hit)),
+            inside: r.top >= 0 && r.left >= 0 && r.bottom <= innerHeight + .8 && r.right <= innerWidth + .8 };
+        });
+      });
+      record(checks, caseId+'-short-landscape-reading-area',
+        'both panels have >=100px usable scroll viewport; header, tabs and footer controls remain visible and hittable',
+        Boolean(first.toc?.clientH >= 100 && research.research?.clientH >= 100 &&
+          expanded.research?.clientH >= 100 && unfolded.toc?.clientH >= 100 &&
+          expanded.research.scrollH > expanded.research.clientH &&
+          unfolded.toc.scrollH > unfolded.toc.clientH &&
+          unfolded.sheet?.y >= -.8 && unfolded.sheet?.bottom <= height + .8 &&
+          targets.length === 6 && targets.every(t => t.height >= 43.9 && t.hit && t.inside) &&
+          targets.slice(0,3).every(t => t.width >= 43.9)),
+        { first, research, expanded, unfolded, targets });
+    }
     await page.keyboard.press('Escape');
     await page.waitForTimeout(800);
     const closed = await read();
@@ -1490,7 +1515,7 @@ try {
   cases.push(await auditGillNestedScrollLock(browser, origin));
   cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));
-  for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[1024,390,false],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
+  for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[844,390,true],[960,390,false],[961,390,false],[1024,390,false],[1024,390,true],[1359,390,false],[1359,390,true],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {
