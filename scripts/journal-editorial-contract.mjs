@@ -123,8 +123,8 @@ function assertG44Dist(doc) {
   const pinnedOwner=one(pinned,n=>hasClass(n,'je-history-text'),'pinned prose owner');
   const baselineParagraphs=pinnedOwner.childNodes.filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote')).map(n=>g44VisibleText(text(n)));
   assert.equal(baselineParagraphs.length,3);
-  assert.deepEqual(paragraphs.map(n=>g44VisibleText(text(n))),baselineParagraphs,'three immutable paragraphs');
-  assert.equal(one(section,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-13','PUB13 exactly once'),paragraphs[2]);
+  assert.deepEqual(paragraphs.map(n=>g44VisibleText(text(n))),[baselineParagraphs[2],baselineParagraphs[0],baselineParagraphs[1]],'same three immutable paragraphs in chronological editorial order');
+  assert.equal(one(section,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-13','PUB13 exactly once'),paragraphs[0]);
   const index=id(section,'g3-2018-document-index');
   assert.equal(index.parentNode,prose);
   assert.equal(attr(section,'data-editorial-measure'),'feature','G44 explicit wide admission');
@@ -133,7 +133,7 @@ function assertG44Dist(doc) {
   const grid=one(doc,n=>attr(n,'data-editorial-layout')==='wide','one existing wide editorial grid');
   assert.deepEqual(all(grid,n=>attr(n,'data-editorial-measure')==='feature').map(n=>attr(n,'id')),['g3-history','g3-year-2018'],'only the first two approved feature chapters');
   assert.equal(all(grid,n=>attr(n,'data-editorial-measure')==='wide').length,0,'no premature additional wide modules');
-  assert.equal(paragraphs[2],(prose.childNodes||[]).filter(n=>n.tagName).at(-2),'index follows original narrative');
+  assert.equal(paragraphs[2],(prose.childNodes||[]).filter(n=>n.tagName).at(-2),'index follows reordered complete narrative');
   assert.equal(g44VisibleText(text(one(index,n=>n.tagName==='h3','index heading'))),g44VisibleText('Две линии одного года'));
   const groups=all(index,n=>hasClass(n,'jcdi-group'));
   assert.equal(groups.length,3);
@@ -579,6 +579,12 @@ if (!process.argv.includes('--source-only')) {
           assert.ok(byId(doc,'cite-r6-'+id));
         }
       }
+      const yearList=byId(doc,'g3-later-conferences');
+      assert.deepEqual(all(yearList,n=>n.tagName==='li'&&/^g3-year-\\d{4}$/.test(attr(n,'id')||'')).map(n=>attr(n,'id')),['g3-year-2019','g3-year-2020','g3-year-2021','g3-year-2022','g3-year-2023','g3-year-2024'],'historical conference chronology includes 2021');
+      const christYear=byId(doc,'g3-year-2021');
+      assert.equal(all(christYear,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-14').length,1,'2021 testimony belongs to its chronological chapter');
+      assert.equal(all(christYear,n=>attr(n,'id')==='cite-r6-crotts-2021').length,1,'2021 source remains next to testimony');
+      assert.equal(all(byId(doc,'g3-growth'),n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-15').length,1,'network account remains in institutional growth');
       assertG44Dist(doc);
       const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
       assert.equal(atlas.length,1);
