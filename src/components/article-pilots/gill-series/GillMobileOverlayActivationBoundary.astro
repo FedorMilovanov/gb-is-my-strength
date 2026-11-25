@@ -65,7 +65,7 @@
       !trigger.closest('[inert],[hidden],[aria-hidden="true"]') &&
       getComputedStyle(trigger).visibility === 'visible';
 
-    const replayNativeActivation = (ticket) => {
+    const replayNativeActivation = (ticket: number) => {
       if (!pending || ticket !== generation) return;
       cancelPending();
       if (!canActivate()) return;
@@ -95,9 +95,10 @@
 
     // A deferred native click belongs only to this activation, not a
     // later mode, another control, Escape or a subsequent page lifecycle.
+    const isTriggerTarget = (target: EventTarget | null) => target instanceof Node && trigger.contains(target);
     desktop.addEventListener('change', cancelPending, { signal });
     document.addEventListener('click', (event) => {
-      if (pending && !trigger.contains(event.target)) cancelPending();
+      if (pending && !isTriggerTarget(event.target)) cancelPending();
     }, { capture: true, signal });
     document.addEventListener('keydown', (event) => {
       if (pending && (event.key === 'Escape' || event.key === 'Esc')) cancelPending();
@@ -105,7 +106,7 @@
     // Tab and Shift+Tab remain native. Cancel only on a real departure
     // to another element; touch activation need not focus the trigger.
     document.addEventListener('focusin', (event) => {
-      if (pending && !trigger.contains(event.target) &&
+      if (pending && !isTriggerTarget(event.target) &&
           event.target !== document.body && event.target !== document.documentElement) {
         cancelPending();
       }
