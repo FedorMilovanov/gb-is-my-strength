@@ -2909,15 +2909,18 @@
         // rail is a curated subset and may target a paragraph. Derive the rail
         // index from its own real targets and the shared scroll snapshot instead
         // of requiring reader.sectionId to be one of the represented rows.
-        // 140px is the canonical Gill anchor offset used by rail navigation and
-        // the pre-v16 live traversal contract.
-        var railLine = scrollY + 140;
+        // Preserve the historical reading line, but native fragment navigation
+        // also applies scroll-padding plus the individual target's scroll-margin.
+        // A target at that resting position must not leave its predecessor active.
+        var scrollRoot = document.scrollingElement || document.documentElement;
+        var scrollPadding = parseFloat(getComputedStyle(scrollRoot).scrollPaddingTop) || 0;
         var activeIdx = phase === 'after-content' ? represented.length - 1 : 0;
         if (phase !== 'before-content' && phase !== 'after-content') {
           for (var ri = 0; ri < represented.length; ri++) {
             var targetTop = represented[ri].target.getBoundingClientRect().top + (window.scrollY || 0);
+            var scrollMargin = parseFloat(getComputedStyle(represented[ri].target).scrollMarginTop) || 0;
+            var railLine = scrollY + Math.max(140, scrollPadding + scrollMargin);
             if (targetTop <= railLine + 2) activeIdx = ri;
-            else break;
           }
         }
         represented.forEach(function (row, idx) {
