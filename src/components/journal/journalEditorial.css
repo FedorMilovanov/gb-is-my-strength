@@ -222,8 +222,10 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
      scrollY by 6px on summary.focus() even before the first Tab.
      Keep focus within the nested scrollport without moving the reader. */
   .journal-edition .journal-dossier-shell:not(.je-history-article) .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 0; }
-  /* History's wider grid has a separate native focus witness: reserve the
-     measured 8px top clipping plus the painted 2px outline, without JS. */
+  /* History: keep the Firefox start clearance but provide physical room for
+     that margin. The previous 8px padding + 2px disclosure border let native
+     Chromium/WebKit summary focus move the root when the margin was 12px. */
+  .journal-edition .je-history-article .je-editorial-rail__scrollport { padding-block-start: 14px; }
   .journal-edition .je-history-article .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 12px; }
   /* A clear 3px focus outline fits short-window scroll edges better than a
      detached 3px+4px ring; unlike clipping, this remains fully painted. */

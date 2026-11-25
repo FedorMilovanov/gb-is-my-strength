@@ -78,9 +78,18 @@ export async function reviewAtlasContrast(page,reviews,{short=false}={}){
     const paper=parse(getComputedStyle(svg).backgroundColor),panel=land?parse(getComputedStyle(land).fill):null;
     let parent=e,flat=true,htmlBackground=null;
     while(parent){const st=getComputedStyle(parent);flat&&=Number(st.opacity)===1&&st.filter==='none'&&st.mixBlendMode==='normal'&&st.backgroundImage==='none';if(!htmlBackground){const color=parse(st.backgroundColor);if(color)htmlBackground=color;}parent=parent.parentElement;}
-    const r=e.getBoundingClientRect(),s=svg.getBoundingClientRect();const inset=Math.min(1,r.width/4,r.height/4);const xs=[r.left+inset,(r.left+r.right)/2,r.right-inset],ys=[r.top+inset,(r.top+r.bottom)/2,r.bottom-inset];const hit=[];
+    const r=e.getBoundingClientRect(),s=svg.getBoundingClientRect();
+    // A circular marker's bounding-box corners are transparent. Verify the
+    // real number's text Range (all nine hit points), not the empty corners.
+    let probe=r,markerText=null,markerTextValid=true;
+    if(kind==='marker'){
+     const range=document.createRange();range.selectNodeContents(e);
+     probe=range.getBoundingClientRect();markerText=probe.toJSON();
+     markerTextValid=range.getClientRects().length===1&&probe.width>0&&probe.height>0&&probe.left>=r.left&&probe.right<=r.right&&probe.top>=r.top&&probe.bottom<=r.bottom;
+    }
+    const inset=Math.min(1,probe.width/4,probe.height/4);const xs=[probe.left+inset,(probe.left+probe.right)/2,probe.right-inset],ys=[probe.top+inset,(probe.top+probe.bottom)/2,probe.bottom-inset];const hit=[];
     for(const x of xs)for(const y of ys){const h=document.elementFromPoint(x,y);hit.push({x,y,ok:!!h&&(html?e.contains(h):svg.contains(h)),target:h?.tagName,className:h?.getAttribute('class')});}
-    const bounds=r.width>0&&r.height>0&&r.left>=0&&r.top>=0&&r.right<=document.documentElement.clientWidth+1&&r.bottom<=innerHeight+1&&(html||(r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1));
+    const bounds=markerTextValid&&r.width>0&&r.height>0&&r.left>=0&&r.top>=0&&r.right<=document.documentElement.clientWidth+1&&r.bottom<=innerHeight+1&&(html||(r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1));
     const intersections=[];let stateGlyphReviews=[];
     if(kind==='finance'){
      // Test filled and stroked geometry, including zero-height grid/connector lines.
@@ -122,7 +131,7 @@ export async function reviewAtlasContrast(page,reviews,{short=false}={}){
      }
      stateGlyphReviews=glyphReviews;
     }
-    return {fg,paper,panel,htmlBackground,flat,bounds,hit,intersections,glyphReviews:stateGlyphReviews,ratios:kind==='svg'?[contrast(fg,paper),contrast(fg,panel)]:[contrast(fg,htmlBackground),...intersections.map(x=>x.ratio)],rect:r.toJSON()};
+    return {fg,paper,panel,htmlBackground,flat,bounds,hit,intersections,glyphReviews:stateGlyphReviews,ratios:kind==='svg'?[contrast(fg,paper),contrast(fg,panel)]:[contrast(fg,htmlBackground),...intersections.map(x=>x.ratio)],rect:r.toJSON(),markerText};
    },item.kind);
    if(state.bounds&&state.hit.every(x=>x.ok))break;
   }
