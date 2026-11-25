@@ -32,3 +32,9 @@ test('reject out-of-period 9999',()=>assert.throws(()=>group([a,b,c],[{...sel[0]
 test('reject unrepresented declared year',()=>assert.throws(()=>group([a,b,c],[{...sel[0],years:[2011,2012,2014]}])));
 test('reject reversed declared years',()=>assert.throws(()=>group([a,b,c],[{...sel[0],years:[2014,2011]}])));
 test('reject duplicate declared years',()=>assert.throws(()=>group([a,b,c],[{...sel[0],years:[2011,2011,2014]}])));
+
+// Missing array entries must not disappear through sparse Array.map/some.
+test('reject entirely sparse selection',()=>assert.throws(()=>group([a,b,c],Array(1))));
+test('reject missing group after valid group',()=>assert.throws(()=>group([a,b,c],[sel[0],,])));
+test('reject missing row after valid row',()=>assert.throws(()=>group([a,b,c],[{...sel[0],rows:[...sel[0].rows,,]}])));
+test('reject missing selected year',()=>assert.throws(()=>group([a,b,c],[{...sel[0],years:[...sel[0].years,,]}])));

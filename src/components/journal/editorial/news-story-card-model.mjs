@@ -6,7 +6,10 @@ function date(value) {
   const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/);
   if (!m || !Number.isFinite(Date.parse(value))) return false;
   const y=Number(m[1]), month=Number(m[2]), day=Number(m[3]);
-  return month>=1 && month<=12 && day>=1 && day<=new Date(Date.UTC(y,month,0)).getUTCDate();
+  // Date.UTC remaps years 00–99 into 1900–1999; use the authored Gregorian year.
+  const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return month>=1 && month<=12 && day>=1 && day<=days[month-1];
 }
 function srcset(value, extension) {
   if (typeof value !== 'string') return false;

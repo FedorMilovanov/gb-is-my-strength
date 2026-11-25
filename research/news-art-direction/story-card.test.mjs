@@ -56,3 +56,7 @@ for(const bad of [
   {media:{...media,width:1e100}}, {media:{...media,height:Number.MAX_SAFE_INTEGER+1}},
 ]) test('W62 reject '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...bad})));
 test('W62 last valid clock second',()=>assert.doesNotThrow(()=>check({...valid,publishedAt:'2026-11-24T23:59:59Z',publishedLabel:'24 November'})));
+
+// Gregorian boundary parity with Journal document metadata; no Date.UTC year remapping.
+for (const day of ['0000-02-29','0004-02-29','0099-02-28','2000-02-29','2024-02-29']) test('accept Gregorian '+day,()=>assert.doesNotThrow(()=>check({...valid,publishedAt:day+'T00:00:00Z',publishedLabel:'Test date'})));
+for (const day of ['0001-02-29','0100-02-29','1900-02-29','2026-02-30']) test('reject Gregorian '+day,()=>assert.throws(()=>check({...valid,publishedAt:day+'T00:00:00Z',publishedLabel:'Test date'})));
