@@ -569,8 +569,19 @@ if (!process.argv.includes('--source-only')) {
       const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
       assert.equal(atlas.length,1);
       const atlasCitations=all(atlas[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined);
-      assert.equal(atlasCitations.length,18);
-      assert.equal(new Set(atlasCitations.map(node=>attr(node,'id'))).size,18);
+      // Independent reviewed evidence binding: a real bibliography destination
+      // is not sufficient if it belongs to another historical event.
+      const expectedAtlasSourceIds = [
+        'challies', 'ascol-2018', 'reformation-2024', 'cessationist-2024',
+        'peters-2024', 'invitation-2011', 'challies', 'gnl-2014', 'gnl-2015',
+        'gnl-2016', 'gnl-2017', 'statement-2018', 'gnl-2019', 'gnl-2020',
+        'aniol-2021', 'announcement-2023', 'reformation-2024', 'cessationist-2024',
+      ];
+      const expectedAtlasBindings = expectedAtlasSourceIds.map((sourceId,i)=>[
+        `cite-g3g-history-${i+1}`, `#history-source-${sourceId}`,
+      ]);
+      assert.deepEqual(atlasCitations.map(link=>[attr(link,'id'),attr(link,'href')]),
+        expectedAtlasBindings,'atlas ordered citation ID/source identity must survive layout changes');
       for (const link of atlasCitations) assert.ok(byId(doc,attr(link,'href').slice(1)),'atlas citation has exact rendered destination');
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
