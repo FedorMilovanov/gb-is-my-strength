@@ -1,0 +1,113 @@
+{
+  "wave": "V26",
+  "checkedOn": "2026-11-24",
+  "authority": "Research G3_HISTORY/MEDIA_LEDGER.md; VISUAL MAX donor #2383, MAX0 directive 7131270265. Discovery only; no activation.",
+  "priorHead": "4d6cd7933604c2b9d5ffaf92b4f288f3bd608560",
+  "summary": {
+    "priorDiscoveryRecords": 53,
+    "newRecords": 2,
+    "combinedDiscoveryRecords": 55,
+    "newVisuallyViewedDerivatives": 2,
+    "newOriginalsAcquired": 0,
+    "newVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "rows": [
+    {
+      "id": "V-G3-054",
+      "kind": "book-cover",
+      "publicationYear": 2022,
+      "title": "Stand: Christianity vs. Social Justice",
+      "author": "Jon Benzinger",
+      "publisher": "G3 Press",
+      "isbn": "9798985518733",
+      "source": "https://316publishing.com/products/stand-christianity-vs-social-justice-by-jon-benzinger",
+      "publisherListing": "https://shop.g3min.org/products/stand",
+      "contemporaryAnnouncement": "https://g3min.org/new-book-stand-christianity-vs-social-justice/",
+      "announcementDate": "2022-07-11",
+      "assetUrl": "https://316publishing.com/cdn/shop/files/Stand_1200x1200.jpg?v=1717613092",
+      "observation": "VISUALLY_VIEWED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Complete portrait-format cover within square white field: dark rocks, figure, cloudy mountain landscape, prominent STAND title and author credit.",
+      "placement": "G3 Press publishing ecosystem; secondary cover, paired with theological and devotional publications, not a crisis illustration.",
+      "priority": "medium",
+      "rights": "PERMISSION_REQUIRED",
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null,
+      "publicationEligible": false,
+      "caption": "Джон Бензингер. Stand: Christianity vs. Social Justice. G3 Press, 2022. Изображение обложки из каталога 316 Publishing."
+    },
+    {
+      "id": "V-G3-055",
+      "kind": "book-cover",
+      "publicationYear": 2023,
+      "title": "Citizens & Exiles: Christian Faithfulness in God's Two Kingdoms",
+      "author": "Scott Aniol",
+      "publisher": "G3 Press",
+      "isbn": "9781959908135",
+      "source": "https://shop.g3min.org/collections/g3-press-books?page=3",
+      "corroboration": "https://www.scottaniol.com/publications/",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/G3_CE_COVER_PRINTSINGLE.jpg?v=1731949895&width=1080",
+      "observation": "VISUALLY_VIEWED_CROPPED_SEARCH_DERIVATIVE",
+      "previewPixels": [
+        512,
+        512
+      ],
+      "visual": "Cropped square preview shows contrasting modern building and church cityscape with a central white divider, subtitle and author. Full title not visible in preview; bibliographic identity corroborated by author listing and ISBN retailer record.",
+      "placement": "G3 Press publishing ecosystem; contrast with other 2022–2023 titles; obtain complete uncropped cover before layout.",
+      "priority": "high",
+      "rights": "PERMISSION_REQUIRED",
+      "creator": null,
+      "localBinary": null,
+      "originalDimensions": null,
+      "publicationEligible": false,
+      "caption": "Скотт Аниол. Citizens & Exiles: Christian Faithfulness in God's Two Kingdoms. G3 Press, 2023. Обложка из издательского каталога."
+    }
+  ],
+  "documentaryLeadsNotCountedAsImages": [
+    {
+      "source": "https://g3min.org/limited-seats-remain-g3-conference/",
+      "date": "2012-10-11",
+      "access": "Body read on returned page.",
+      "value": "Contemporary early registration schedule for inaugural event: early $120, then $139, $159, $220, $300. Remaining seats stated as fewer than 400; not evidence of total attendance. Useful original typographic document reconstruction after Research adoption."
+    },
+    {
+      "source": "https://afajournal.org/past-issues/2016/november/g3-conference-to-celebrate-reformation/",
+      "date": "2016-11",
+      "access": "Body read.",
+      "value": "Contemporary third-party 2017 announcement names location, dates, proposed speakers, exhibits and bookstore; no event photograph inspected. Supports V-G3-042 provenance, not extra asset."
+    },
+    {
+      "source": "https://g3min.org/tag/advent/",
+      "date": "2022-11-08",
+      "access": "Indexed tag entry.",
+      "value": "Two Advent/Christmas G3 Press book announcement; titles/assets not established in this pass, no candidate increment."
+    }
+  ],
+  "sourceDrift": [
+    {
+      "source": "https://g3min.org/hello-world/",
+      "indexedContext": "2013 conference announcement",
+      "observedDestination": "https://lumenaministries.com/",
+      "classification": "WEB_RETRIEVAL_REDIRECT_NOT_INDEPENDENT_HTTP_CAPTURE"
+    },
+    {
+      "source": "https://g3min.org/g3-2016/",
+      "indexedContext": "2016 Trinity conference announcement",
+      "observedDestination": "https://lumenaministries.com/",
+      "classification": "WEB_RETRIEVAL_REDIRECT_NOT_INDEPENDENT_HTTP_CAPTURE"
+    },
+    {
+      "source": "https://g3min.org/new-book-stand-christianity-vs-social-justice/",
+      "indexedContext": "2022-07-11 announcement",
+      "classification": "INDEXED_BODY_AVAILABLE_DIRECT_OPEN_FAILED"
+    }
+  ],
+  "dedup": "Compared titles and asset URLs against V1–V25 discovery registries; Watson and Pennington not recounted. Pixel-level comparison unavailable without originals.",
+  "rightsNext": "Request original uncropped files, artwork ownership, agreed credit and explicit website/PDF editorial permission from publisher or current rights holder; distributor listing is not a license. Verify current rights ownership after source drift. No outreach sent.",
+  "limitations": "No original binary downloaded, no local hash or contact sheet, no video playback, no frame selection. Two search derivatives actually viewed. No claims about all G3 URLs or organization-wide redirect based on this sample. No routed files or canonical ledger changed."
+}

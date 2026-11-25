@@ -1,0 +1,216 @@
+{
+  "wave": "V33",
+  "checkedOn": "2026-11-24",
+  "priorHead": "4dba1c8b2da445ccf0be4e28833eec17db1dedbf",
+  "authority": "MAX0 W16 / #2383 comment 7133534351; canonical Research ledger; V32 placement contract. No integration or rights promotion.",
+  "summary": {
+    "candidateIds": 77,
+    "everViewedAsOfV31": 50,
+    "newImageCandidates": 0,
+    "newDocumentaryLeads": 2,
+    "newActualImagesViewed": 0,
+    "publicEligible": 0
+  },
+  "newLeads": [
+    {
+      "id": "V33-DOC-ACU-2014",
+      "source": "https://expydoc.com/doc/4776452/2014-feb---african-christian-university",
+      "document": "ACU February Prayer Update, Vol. 5 No. 2, February 2014, G3 Conference Update by Dan Pentimone",
+      "eventDates": "2014-01-23–25",
+      "observed": "Actual HTML transcription read; report says ACU second year at G3, sponsors, Mbewe speaker; caption-like text names Conrad Mbewe and separately Mbewe, Dan Pentimone and Ron Thomas. Actual photos, layout, photographer and exact page placement unverified.",
+      "attemptedOriginal": "https://www.acu-zambia.com/PU/ACU-PU-V5N2.pdf",
+      "originalAccess": "Guessed from adjacent confirmed institutional newsletter URL pattern, 403; non-www inaccessible. Mirror Download https://expydoc.com/download/4776452 also 403. No PDF opened, no screenshot possible, no bypass.",
+      "contact": "https://acu-usa.com/contact",
+      "disposition": "Research review and original issue request; no new visual ID or historical claim adoption."
+    },
+    {
+      "id": "V33-AV-LAWSON-2016",
+      "source": "https://effectualgrace.com/2016/01/28/the-trinity-in-salvation/",
+      "recording": "https://vimeo.com/153952902",
+      "observed": "Body identifies Steve Lawson and 2016 G3 conference, original embed attributed to Josh Buice; click exact Vimeo returns 404.",
+      "disposition": "Research edition locator only; no frame, playback, or verified duration. Compare AV queue before acquisition."
+    }
+  ],
+  "selection": [
+    {
+      "id": "V-G3-042",
+      "period": "2017",
+      "anchor": "g3-year-2017",
+      "source": "https://www.challies.com/sponsored/the-reformation-at-500/",
+      "assetUrl": "https://www.challies.com/media/2016/08/Challies-In-Post-Graphic-1.jpg",
+      "captionDraft": "Афиша юбилейной конференции «Реформация — 500», опубликованная 15 августа 2016 года.",
+      "crop": "full original; no cut of speakers or title",
+      "rightsHolderToConfirm": "G3 organizer / designer via Challies",
+      "condition": "early era substitute only; not 2013 photo",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-006",
+      "period": "2018",
+      "anchor": "g3-year-2018",
+      "source": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia",
+      "assetUrl": "https://www.missionsfirstlove.org/uploads/1/0/7/5/107566717/published/g318-main.jpeg?1517699815=",
+      "captionDraft": "Участники книжного стенда FirstLove на конференции G3, январь 2018 года.",
+      "crop": "full scene; no faces isolated",
+      "rightsHolderToConfirm": "FirstLove / photographer",
+      "condition": "existing firstlove-2018 citation",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-077",
+      "period": "2020",
+      "anchor": "g3-year-2020",
+      "source": "https://www.challies.com/sponsored/worship-our-privilege-and-responsibility/",
+      "assetUrl": "https://www.challies.com/media/2019/09/910X320.jpg",
+      "captionDraft": "Рекламный баннер конференции G3 о поклонении, опубликованный 16 сентября 2019 года.",
+      "crop": "uncropped banner",
+      "rightsHolderToConfirm": "G3 / designer via Challies",
+      "condition": "if approved; prefer original G3-M017 wide hall if available",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-050",
+      "period": "2023",
+      "anchor": "g3-year-2023",
+      "source": "https://the-end-time.org/2023/09/21/g3-conference-2023-day-1/",
+      "assetUrl": "https://the-end-time.org/wp-content/uploads/2023/09/g3-phil-packed.jpg?w=1000",
+      "captionDraft": "Аудитория конференции G3 перед выступлением Фила Джонсона, по отчёту участницы от 21 сентября 2023 года.",
+      "crop": "preserve stage and audience; no crowd enlargement",
+      "rightsHolderToConfirm": "Elizabeth Prata / photographer",
+      "condition": "new eyewitness citation requires Research adoption",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-062",
+      "period": "2022",
+      "anchor": "g3-growth",
+      "source": "https://shop.g3min.org/products/why-are-you-afraid",
+      "assetUrl": "https://316publishing.com/cdn/shop/files/Why_are_you_afraid_1200x1200.jpg?v=1717613398",
+      "captionDraft": "Обложка Why Are You Afraid? — Даррелл Харрисон и Вёрджил Уокер, G3 Press.",
+      "crop": "full front cover; no crop",
+      "rightsHolderToConfirm": "publisher / artwork owner; distributor intermediary",
+      "condition": "first-book claim separately requires adoption",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-064",
+      "period": "2023",
+      "anchor": "g3-growth",
+      "source": "https://shop.g3min.org/products/40-days-in-philippians",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/PhilippiansCover.jpg?v=1731608678&width=1080",
+      "captionDraft": "Шон Коул. 40 Days in Philippians. G3 Press, 2023.",
+      "crop": "get full uncropped print cover",
+      "rightsHolderToConfirm": "publisher / artwork owner",
+      "condition": "devotional example",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-068",
+      "period": "2023",
+      "anchor": "g3-growth",
+      "source": "https://shop.g3min.org/products/marriage-to-a-difficult-man",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/Difficult_Man_Cover_Single_image.jpg?v=1732128899",
+      "captionDraft": "Элизабет Доддс. Marriage to a Difficult Man. Переиздание G3 Press, 2023.",
+      "crop": "get full uncropped print cover",
+      "rightsHolderToConfirm": "publisher / artwork owner",
+      "condition": "historical biography, not original 2023 authorship",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-032",
+      "period": "2022",
+      "anchor": "g3-growth",
+      "source": "https://shop.g3min.org/products/how-we-may-read-scriptures-with-most-spiritual-profit",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/G3_Read-Scriptures_COVER.png?v=1732128275",
+      "captionDraft": "Томас Уотсон. How We May Read Scriptures with Most Spiritual Profit. Издание G3 Press.",
+      "crop": "full cover; original edition date to confirm",
+      "rightsHolderToConfirm": "publisher / artwork owner",
+      "condition": "alternative classic theological work",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    },
+    {
+      "id": "V-G3-070",
+      "period": "2025",
+      "anchor": "dossier-only",
+      "source": "https://churchandfamilylife.com/",
+      "assetUrl": "https://cfl-mango.s3.amazonaws.com/uploads/downloads/G3-Logo-transparent-bg.png",
+      "captionDraft": "Обновлённая символика G3, представленная в июне 2025 года; копия на сайте партнёра.",
+      "crop": "uncropped mark; no combination with Lumena",
+      "rightsHolderToConfirm": "G3 mark/design rights holder, verify current custodian",
+      "condition": "not historical route; no legal continuity claim",
+      "originalDimensions": null,
+      "originalBinary": null,
+      "permission": "HOLD",
+      "publicEligible": false
+    }
+  ],
+  "layout": "Four historical exhibits maximum as initial design target, not all nine records. Publishing group 3 titles (062/064/068), 032 alternate. 070 dossier only; early gap substitute 042 is not early church photo. V32 approved anchors remain unchanged. In each slot choose one image, native figure and source return after adoption, omit entirely when withheld. Do not add new engine.",
+  "gaps": [
+    {
+      "period": "2013–2016",
+      "preferred": "ACU original 2014 newsletter photograph / original 2013 Pray’s Mill material",
+      "alternative": "Existing adopted invitation-2011 typography; no synthetic photo."
+    },
+    {
+      "period": "2019",
+      "preferred": "V-G3-076",
+      "alternative": "Existing author-written Piper source and catalogue, no frame."
+    },
+    {
+      "period": "2020",
+      "preferred": "G3-M017 / V-G3-026 wide hall",
+      "alternative": "V-G3-077 theme poster, not V-G3-053 blurred lettering."
+    },
+    {
+      "period": "2021",
+      "preferred": "V-G3-001 original crowd with permission",
+      "alternative": "Existing Crotts eyewitness citation, no image."
+    },
+    {
+      "period": "2022",
+      "preferred": "G3-M013 panel original",
+      "alternative": "Existing White source links, no frame or uncertain capture date."
+    },
+    {
+      "period": "2023",
+      "preferred": "V-G3-050",
+      "alternative": "V-G3-048 seminar with slide and new source adoption."
+    },
+    {
+      "period": "2024",
+      "preferred": "V-G3-018 / 019 registration artwork",
+      "alternative": "Existing dated registration sources; no implication of venue reconciliation."
+    },
+    {
+      "period": "2025",
+      "preferred": "V-G3-070, crisis dossier only",
+      "alternative": "Original text about dated announcement, no marks if unlicensed."
+    }
+  ],
+  "dedup": "All 77 IDs reloaded at exact prior head, selected IDs resolved. No increase for ACU text or Lawson locator. Current default-branch GitHub search returned no Pentimone/153952902/AV16/AV17 results; AV session inventory read but those wave labels not present; cannot assert full dedup against unindexed or unmerged AV16/17. No new AV session registered or acquisition started.",
+  "limitations": "No newly visually inspected image, no rights cleared, no original dimensions guessed, no outreach, no routed changes. Captions are drafts subject to source and rights review, not public copy."
+}

@@ -1,0 +1,115 @@
+{
+  "wave": "V36",
+  "checkedOn": "2026-11-24",
+  "priorHead": "87a0c857fbf93d9791564aa6b06930d6e9c41f8f",
+  "authority": "Research G3_HISTORY/MEDIA_LEDGER.md G3-M017; MAX0 #2383 W16/W19; donor only",
+  "summary": {
+    "candidateIds": 78,
+    "previousEverViewed": 51,
+    "upgrades": 1,
+    "everViewed": 52,
+    "newCandidateIds": 0,
+    "actualImageVariantsViewed": 2,
+    "originalBinariesAcquired": 0,
+    "actualVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "upgrades": [
+    {
+      "id": "V-G3-026",
+      "canonicalMediaId": "G3-M017",
+      "eventYear": 2020,
+      "source": "https://churchworksmedia.com/2020/01/30/my-two-cents-on-the-g3-conference/",
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "authorOfReport": "Chris Anderson",
+      "originalPostDate": "2020-01-30",
+      "pageAlsoDisplaysDate": "2024-07-20",
+      "preferredAsset": {
+        "url": "https://churchworksmedia.com/wp-content/uploads/2020/01/G3-audience-wide.jpg",
+        "viewedPixels": [
+          1000,
+          486
+        ],
+        "locatorBasis": "Canonical MEDIA_LEDGER filename, resolved at publisher upload directory; direct image returned and inspected."
+      },
+      "alternateAsset": {
+        "url": "https://churchworksmedia.com/wp-content/uploads/2020/01/G3-audience-blog-post-image-3.jpg",
+        "viewedPixels": [
+          1000,
+          760
+        ],
+        "locatorBasis": "Actual header image link 9 of source article; direct image returned and inspected."
+      },
+      "dedup": "Same scene, matching foreground people, stage and screens; apparent crops of same photograph. Treat as one visual family, not two assets for count. No pixel hash or original file acquired.",
+      "visual": "Wide seated audience facing lit stage with two screens and G3/Worship signage. No person identified; no audience estimate.",
+      "captionDraft": "Аудитория конференции G3 «Поклонение», январь 2020 года. Фотография из отчёта Church Works Media.",
+      "placement": "g3-year-2020, prefer this wide photograph over V-G3-077 banner if rights and integration approved; no additional module",
+      "crop": "Preserve complete wide view; use intrinsic ratio, no misleading enlargement of crowd, no zoom to faces. At narrow widths use same entire image or approved alternate. Prefer wide for article/print; assess detail in real route after approval.",
+      "photographer": null,
+      "rightsHolder": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "contact": "https://churchworksmedia.com/contact/",
+      "request": "Existing V13 media-permissions.md draft already covers hall/choir/panel. Amend exact filenames and request original uncropped version, photographer, web and downloadable PDF license, credit and crop conditions; do not send."
+    }
+  ],
+  "documentaryLeads": [
+    {
+      "source": "https://theartofgodliness.com/blog/2017223/2017-g3-conference-review",
+      "publicationDate": "2017-02-23",
+      "author": "Keith Fong",
+      "access": "Publisher body read, contemporary first-person review; no photos linked in article body",
+      "observed": "Author describes 15 numbered main sermons, 10 distinct speakers, 2 Q&A and 3 breakouts. Lists all 15 main sessions in delivery order with scripture references and impressions. All 15 titles match current GNL catalogue at title/speaker level (minor punctuation or extended title differences); author observations are not recordings or exact quotations.",
+      "catalogue": "https://www.gnli.com/titles/2017-G3-Conference-or-G3-Ministries/2901",
+      "catalogueRows": 18,
+      "catalogueMainSermons": 15,
+      "catalogueQARows": [
+        {
+          "label": "Questions & Answers 2",
+          "duration": "38:19"
+        },
+        {
+          "label": "Questions & Answers 2",
+          "duration": "50:40"
+        },
+        {
+          "label": "Questions & Answers 1",
+          "duration": "1:03:18"
+        }
+      ],
+      "disposition": "Eyewitness reports two Q&A vs three catalogue rows, two labelled Q&A2. Edition/duration discrepancy unresolved: possible alternate edits or mislabelling, no third distinct panel inferred. Do not change catalogue matrix semantics. Breakout identities not individually established.",
+      "playlist": "https://www.youtube.com/playlist?list=PL4k0RewlNCcA4gsC8_0p_NRfJdJx6BGoH",
+      "playlistAccess": "Clicked direct link in review: YouTube generic shell only, no video entries verified. No playback or frame.",
+      "relevance": "Independent early participant witness to programme sequence and ecclesiology; Research review before adoption."
+    },
+    {
+      "source": "https://www.bfmnow.org/bfm-national-conferences-outreach-will-you-help-us/",
+      "access": "Indexed text indicates 2021 exhibitor report; direct page timeout twice, no image established. Do not use numbers or new asset count."
+    },
+    {
+      "source": "https://www.challies.com/sponsored/the-mission-of-god/",
+      "access": "Indexed sponsor announcement mentions Devon Kauflin planned to lead singing; prior V30 banner family, not new photo.",
+      "relevance": "Corroborates advertised worship role, not proof of actual performance."
+    }
+  ],
+  "excluded": [
+    {
+      "source": "https://anchoragegrace.org/gospel-grace-and-glory/",
+      "reason": "Already adopted Crotts eyewitness report; header image is illustrative Bible, not G3 event photo."
+    },
+    {
+      "source": "https://churchworksmedia.com/2020/01/30/my-two-cents-on-the-g3-conference/",
+      "reason": "Remaining six captions still no individual image access. V020–025 unchanged; no inferred filenames."
+    }
+  ],
+  "dedup": "V026 explicit canonical G3-M017 mapping verified from prior media-candidates.json and current Research MEDIA_LEDGER; Research default-branch search for theartofgodliness.com returned zero, not exhaustive cross-branch dedup. No new candidate count; V31/V34 historical viewed counts updated by one only.",
+  "resourceProtocol": {
+    "rdcCalls": 0,
+    "ownerHeavyJobs": 0,
+    "cuda": false,
+    "windowsWebkit": false
+  },
+  "limitations": "No confirmed images from 2013–2016 in this wave; choir remains missing; no original file, hash, licence or outreach. No public source or production edit."
+}

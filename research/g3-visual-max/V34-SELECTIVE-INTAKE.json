@@ -1,0 +1,136 @@
+{
+  "wave": "V34",
+  "date": "2026-11-24",
+  "authority": "MAX0 W19 #2383 comment 7135076404; resource protocol comment 7135216788",
+  "priorHead": "417e0bac25eea387fdb81ae3b01b7e903c45f148",
+  "summary": {
+    "oldCandidates": 77,
+    "newCandidates": 1,
+    "totalCandidates": 78,
+    "everViewed": 51,
+    "originalBinariesAcquired": 0,
+    "publicEligible": 0
+  },
+  "rows": [
+    {
+      "id": "V-G3-078",
+      "year": 2024,
+      "kind": "participant-report-photo",
+      "source": "https://316publishing.com/blogs/blog/june-2024-the-lsb-ppr-conferences-a-new-susan-heck-bible-study-more",
+      "assetUrl": "https://cdn.shopify.com/s/files/1/0526/3104/4257/files/IMG_6208_copy_480x480.jpg?v=1717607250",
+      "publicationDate": "2024-06-05",
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "previewDimensions": [
+        480,
+        480
+      ],
+      "originalDimensions": null,
+      "localBinary": null,
+      "visual": "Two people posing behind a book exhibit; LSB signage, books and nearby display visible. Image follows G3 May report paragraph. No separate caption, no visual identification of people, photographer or exact capture date.",
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false,
+      "placement": "Optional alternative for g3-year-2024 after source/identity/rights confirmation; not proof of total attendance."
+    }
+  ],
+  "graphic": {
+    "path": "research/g3-visual-max/V34-reformation-evidence.svg",
+    "gitBlob": "2f43e2d837b97b77b33f1d95c7868e5b2bb5fd0d",
+    "sha256": "a7e0ea21f2def5c56ccfea381c8ea611a3659e20555166294abb94d7e16ea662",
+    "claim": "G3-HIST-PUB-11; HIST-20 / G3-HIST-PUB-09",
+    "placement": "g3-year-2024, replace rather than duplicate proposed paired registration image block; optional pending MAX0/Research adoption.",
+    "sources": [
+      {
+        "id": "reformation-2024",
+        "url": "https://www.tickettailor.com/events/g3ministries/1010697",
+        "meaning": "planned May 9–11 at Countryside Bible Church"
+      },
+      {
+        "id": "316-2024",
+        "url": "https://316publishing.com/blogs/blog/june-2024-the-lsb-ppr-conferences-a-new-susan-heck-bible-study-more",
+        "meaning": "publisher reports own participation"
+      },
+      {
+        "id": null,
+        "url": "https://sermons.countrysidebible.org/2025/20250202p-207656_slides.pdf#page=33",
+        "meaning": "Host annual meeting dated Feb 2 2025, actual slide 33 inspected, explicitly reports hosting The Reformation May 9–11. Proposed extra source pending adoption. Photo on slide not uniquely attributable to event."
+      }
+    ],
+    "caption": "Авторская схема: три документальных свидетельства о конференции 9–11 мая 2024 года. Не архивная фотография.",
+    "gate": "REVIEW_ONLY; third source needs adoption and bibliography/source-return. No public import. Original layout/text, no copied slide, photo, logo or foreign asset.",
+    "qa": {
+      "local": "isolated hosted container Chromium, no owner PC",
+      "widths": [
+        320,
+        400,
+        768
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "screenCases": 6,
+      "svgTextOutsideViewBox": 0,
+      "horizontalOverflow": 0,
+      "externalRequests": 0,
+      "noJSPrintScreenshot": true,
+      "visuallyInspected": [
+        "320_dark",
+        "print"
+      ],
+      "exactLocalGitBlobMatchesRemote": true,
+      "limitations": "No actual routed Astro, full print PDF, or multi-engine verification; browser media print capture only. No claim of release acceptance."
+    }
+  },
+  "overlap": {
+    "against": "b3f4e004",
+    "sameBlobs": [
+      "G3AnnualFinance.astro",
+      "G3SpeakerMatrix.astro",
+      "adopted-visual-data.json",
+      "adopted-visual-inputs.ts",
+      "finance.css",
+      "matrix-data.json",
+      "matrix.css"
+    ],
+    "different": [
+      {
+        "path": "src/components/journal/g3-visual/matrix.js",
+        "donor": "14c1ce8e2f305cd443cd974a80c25fd2cc3d44be",
+        "accepted": "96e34f850d756556a6e1a442515ff13ab7ca315f"
+      }
+    ],
+    "action": "Exclude all eight paths; seven identical, one diverged; retain main. No wholesale donor merge."
+  },
+  "selectiveIntake": {
+    "proposalOnly": true,
+    "paths": [
+      "research/g3-visual-max/media-candidates.json",
+      "research/g3-visual-max/V23-PUBLISHER-MEDIA-CANDIDATES.json",
+      "research/g3-visual-max/V24-ARCHIVAL-PROVENANCE-AV-REVIEW.json",
+      "research/g3-visual-max/V25-EARLY-ARCHIVE-AND-EYEWITNESS-LEADS.json",
+      "research/g3-visual-max/V26-PUBLISHER-ARCHIVE-AND-SOURCE-DRIFT.json",
+      "research/g3-visual-max/V27-EARLY-CONFERENCE-ARCHIVE-RECOVERY.json",
+      "research/g3-visual-max/V28-AV-EDITION-CROSSWALK.json",
+      "research/g3-visual-max/V29-PUBLISHING-HISTORY-AND-COVER-WITNESSES.json",
+      "research/g3-visual-max/V30-VISUAL-IDENTITY-AND-CONFERENCE-ART.json",
+      "research/g3-visual-max/media-permissions.md",
+      "research/g3-visual-max/V24-MEDIA-RIGHTS-REQUESTS.md",
+      "research/g3-visual-max/V31-EDITORIAL-SELECTION-AND-REVALIDATION.json",
+      "research/g3-visual-max/V32-EDITORIAL-STORYBOARD-PLACEMENT.json",
+      "research/g3-visual-max/V33-EARLY-EVIDENCE-AND-INTEGRATION-MANIFEST.json",
+      "research/g3-visual-max/V33-TARGETED-RIGHTS-REQUESTS.md",
+      "research/g3-visual-max/V34-reformation-evidence.svg",
+      "research/g3-visual-max/V34-SELECTIVE-INTAKE.json"
+    ],
+    "rule": "Research evidence and standalone graphic only; verify current main presence/conflicts at intake. Prior QA/prototype files not part of proposed evidence intake. No production import. Rights drafts not sent."
+  },
+  "resourceProtocol": {
+    "read": "AuditRepo/LOCAL_EXECUTION_RESOURCE_PROTOCOL.md main",
+    "rdcCalls": 0,
+    "ownerHeavyJobs": 0,
+    "cuda": false,
+    "windowsWebkit": false,
+    "controllerStatus": "not established; no admission presumed"
+  },
+  "remaining": "Rights HOLD for all 78. Full AV16/17 dedup unresolved. Early photographs not obtained. Research must adopt extra host source; MAX0 decides integration. No deployment."
+}
