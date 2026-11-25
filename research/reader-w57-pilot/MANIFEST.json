@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "2c1a2707872379eb1f2947d529acb0da48dea331efd3bc65a1aaee07245767c1",
-      "bytes": 141650
+      "sha256": "6bd1a17e39735e67f58e16f8f3680874ff2234482de9a08a8a78cf1ab6333ec0",
+      "bytes": 150605
     },
     {
       "name": "reader_editorial_refinement.js",
@@ -58,9 +58,9 @@
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "ca2257d864da28aa394b36b56b216ae926a63cb87aaf228af8855c64c6822c7e",
-      "bytes": 32076
+      "sha256": "24beacc679129b091235eb37153217bbdb554f1df6c6fd6e3d78b37bac10df9d",
+      "bytes": 34935
     }
   ],
-  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD. W121 removes old Learning UI declarations; no authored content, approved geometry or notes storage changed."
+  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD. W121 removes old Learning UI declarations; no authored content, approved geometry or notes storage changed. W268 reconciles the cumulative candidate preview and lazy annotation owner hashes; not visual acceptance or production approval."
 }
