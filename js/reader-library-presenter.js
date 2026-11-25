@@ -533,6 +533,11 @@ function button(action, label, text) {
   function createMountedLifecycle({overlay,editor,research,editorController,reset,render,close}) {
     const ownerId='reader-library';
     let layerRuntime=null;
+    // Runtime recovery may close a registered layer without requesting it.
+    // Reconcile the library's visual/editor state through its existing owner.
+    document.addEventListener('gb:overlay-close',event=>{
+      if(layerRuntime&&event.detail?.ownerId===ownerId){layerRuntime=null;close();}
+    });
     function activate(fab,opener) {
       reset();
       overlay.removeAttribute('inert');
@@ -564,7 +569,7 @@ function button(action, label, text) {
     overlay.setAttribute('inert', '');
     fab.setAttribute('aria-expanded', 'false');
     if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') opener.setAttribute('aria-expanded','false');
-    if(layerRuntime){layerRuntime.close(ownerId,'library-close',{restoreFocus:false});layerRuntime=null;}
+    if(layerRuntime){const runtime=layerRuntime;layerRuntime=null;runtime.close(ownerId,'library-close',{restoreFocus:false});}
     else if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
     else document.body.classList.remove('no-scroll');
     }

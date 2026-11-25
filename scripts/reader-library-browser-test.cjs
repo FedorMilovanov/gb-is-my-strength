@@ -38,7 +38,7 @@ const w57Html=html.replace('<body>','<body class="np-w57-ready">')
   .replace('</body>','<aside id="npUResearch"><div class="np-u-right-scroll"></div></aside><script>window.GBReaderContract={articleRoot:()=>document.querySelector("article")};</script><script src="/research/reader-w57-pilot/assets/reader_w57_annotations.js"></script></body>');
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
-  if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
+  if (url.pathname === '/js/highlights.js' || url.pathname === '/js/site-utils.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
       url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' ||
       url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js' ||
@@ -49,7 +49,8 @@ const server = http.createServer((req, res) => {
   } else {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     const transientHtml = html.replace('</head>', '<style>#selection-share-popup[aria-hidden="true"]{display:none}</style></head>').replace('<main>', '<button id="qa-unrelated" type="button">Другое действие</button><main>');
-    res.end(url.pathname === '/articles/selection-argon/' ? w57Html :
+    res.end(url.pathname === '/articles/print-lock/' ? html.replace('<script src="/js/highlights.js">','<script src="/js/site-utils.js"></script><script src="/js/highlights.js">').replace('</article>','<div style="height:2400px">Продолжение статьи</div></article>') :
+      url.pathname === '/articles/selection-argon/' ? w57Html :
       url.pathname === '/baptisty-rossii/' ? gbsHtml :
       url.pathname === '/articles/selection-native/' ? transientHtml :
       url.pathname === '/articles/selection-fallback/' ? transientHtml.replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>', '') : html);
@@ -589,6 +590,52 @@ async function checkColdRanges(name,driver,base) {
   }finally{await browser.close()}
 }
 
+async function checkPrintLock(name,driver,base){
+  const browser=await driver.launch({headless:true});
+  const context=await browser.newContext({viewport:{width:390,height:844}});
+  const page=await context.newPage(),errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  try{
+    await page.goto(base+'/articles/print-lock/');
+    await page.locator('#gb-hl-fab').click();
+    await page.locator('#gb-hl-new-note').click();
+    const draft=page.locator('#gb-hl-note-text');
+    await draft.fill('Private draft witness');
+    await draft.evaluate(el=>{el.focus();el.setSelectionRange(2,7)});
+    const state=()=>page.evaluate(()=>{
+      const root=document.documentElement,body=document.body,area=document.getElementById('gb-hl-note-text');
+      return {locked:root.getAttribute('data-scroll-locked'),position:body.style.position,
+        owner:window.OverlayRuntime.topLayer()?.ownerId||null,open:document.getElementById('gb-hl-backdrop').classList.contains('is-open'),
+        focus:document.activeElement?.id,draft:area.value,caret:[area.selectionStart,area.selectionEnd]};
+    });
+    const before=await state();
+    assert.equal(before.locked,'1');
+    assert.equal(before.owner,'reader-library','library must register the print-suspendable owner');
+    for(let i=0;i<2;i++){
+      const outcome=await page.evaluate(()=>window.SiteUtils.suspendScrollForPrint());
+      assert.equal(outcome.ok,true,JSON.stringify(outcome));
+      const during=await state();
+      assert.equal(during.locked,null);assert.notEqual(during.position,'fixed');
+      assert.equal(during.open,true);assert.equal(during.draft,before.draft);
+      assert.equal(during.focus,before.focus);assert.deepEqual(during.caret,before.caret);
+      await page.evaluate(()=>window.SiteUtils.resumeScrollAfterPrint());
+      assert.deepEqual(await state(),before,'exact editor/lock restoration');
+    }
+    await page.keyboard.press('Escape');
+    assert.equal((await state()).open,true,'first Escape closes editor only');
+    await page.keyboard.press('Escape');
+    await page.locator('#gb-hl-backdrop.is-open').waitFor({state:'detached'});
+    assert.equal((await state()).locked,null);
+    await page.locator('#gb-hl-fab').click();
+    await page.locator('#gb-hl-backdrop.is-open').waitFor();
+    await page.evaluate(()=>window.OverlayRuntime.forceRecover('force'));
+    assert.equal((await state()).open,false,'external layer recovery reconciles mounted owner');
+    assert.equal((await state()).locked,null);
+    assert.deepEqual(errors,[]);
+    console.log('PASS',name,'library print suspension, draft/caret, nested Escape, external recovery');
+  }finally{await context.close();await browser.close()}
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -604,6 +651,7 @@ async function checkColdRanges(name,driver,base) {
       await run(name+' storage and selection races',()=>checkStorageAndSelectionRaces(name,browser,new URL(url).origin));
       await run(name+' legacy visible projection',()=>checkVisibleLegacy(name,browser,new URL(url).origin));
       await run(name+' cold range readiness',()=>checkColdRanges(name,browser,new URL(url).origin));
+      await run(name+' print lock ownership',()=>checkPrintLock(name,browser,new URL(url).origin));
     }
     console.log('Reader Library browser groups: '+passed+'/'+total);
     assert.deepEqual(failures,[],'browser integration failures');
