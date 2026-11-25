@@ -121,15 +121,15 @@ const ready = async (page, url, stage = () => {}) => {
   assert.equal(response.status(), 200, url);
   // Verify the actual article preload contract on the shipped HTML; fail
   // independently of WebKit's CSS FontFaceSet status, not instead of it.
-  if (new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
+  if (/^\/journal\/?$/.test(new URL(url).pathname) || new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
     const hints = await page.locator('link[rel="preload"][as="font"]').evaluateAll((links) =>
       links.map((el) => new URL(el.href).pathname));
-    const history = new URL(url).pathname.startsWith('/journal/dossiers/g3/history/');
+    const dossier = /^\/journal\/dossiers\/g3\/?$/.test(new URL(url).pathname);
     const source600 = '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2';
     const lora600 = '/fonts/Lora/lora-cyrillic-600.woff2';
     assert.equal(hints.filter((hint) => hint === source600).length, 1,
-      'G3 Article must preload exactly one semibold Cyrillic Source Sans face');
-    assert.equal(hints.filter((hint) => hint === lora600).length, history ? 0 : 1,
+      'Journal must preload exactly one semibold Cyrillic Source Sans face');
+    assert.equal(hints.filter((hint) => hint === lora600).length, dossier ? 1 : 0,
       'Only G3 dossier must preload semibold Cyrillic Lora; history must not preload unused face');
   }
   stage('navigation/fonts-ready');
@@ -1610,10 +1610,28 @@ try {
           item.summaryReturn = await focused(null);
           item.summaryScrollTop = (await railState()).scrollTop;
           await rail.hover({ position: { x: 80, y: 80 } });
-          await page.mouse.wheel(0, 1500); await page.waitForTimeout(160);
+          // Wheel delivery is engine/OS dependent (Firefox can clamp a single
+          // large synthetic wheel event). Require real pointer scrolling until
+          // the link is inside the actual rail clip, not merely the viewport.
+          // Never force-click or set scrollTop; stop before chaining to the article.
+          item.pointerWheelSteps = [];
+          let lastRect = await last.boundingBox(), pointerState = await railState();
+          const pointerVisible = () => lastRect && lastRect.y >= pointerState.rect.top - 1 &&
+            lastRect.y + lastRect.height <= pointerState.rect.bottom + 1;
+          for (let step = 0; step < 24 && !pointerVisible(); step++) {
+            const remaining = pointerState.scrollHeight - pointerState.clientHeight - pointerState.scrollTop;
+            assert.ok(remaining > .5, 'last TOC entry clipped at end of native rail range');
+            const previousTop = pointerState.scrollTop;
+            await page.mouse.wheel(0, Math.min(120, Math.max(1, Math.ceil(remaining))));
+            await page.waitForTimeout(160);
+            pointerState = await railState();
+            lastRect = await last.boundingBox();
+            item.pointerWheelSteps.push({ scrollTop: pointerState.scrollTop, y: pointerState.y, rect: lastRect });
+            assert.ok(pointerState.scrollTop > previousTop, 'native wheel must advance the rail');
+            assert.ok(Math.abs(pointerState.y - item.before.y) < 1, 'pointer traversal must not scroll the article');
+          }
           const href = await last.getAttribute('href');
-          const lastRect = await last.boundingBox();
-          assert.ok(lastRect.y >= 0 && lastRect.y + lastRect.height <= height, 'last TOC entry must be visible before pointer activation');
+          assert.ok(pointerVisible(), 'last TOC entry must be fully inside its rail before pointer activation');
           await last.click(); await settleWithoutScripts(page);
           assert.equal(new URL(page.url()).hash, href);
           assert.equal(await page.locator(href).evaluate((el) => el === document.activeElement), true);
