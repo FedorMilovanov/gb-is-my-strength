@@ -48,8 +48,9 @@
 
 /* One reading-preferences owner: canonical Product properties; font family remains
    the one additional ARGON property, no forced pilot size or line-height values. */
+@media screen {
 body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection]
-:is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *)){
+:is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *, .editorial-dateline, .biography-title)){
  font-size:calc(var(--np-u-reading-base,18px) * var(--gb-reader-font-scale,1))!important;
  line-height:var(--gb-reader-line-height,1.6)!important;
 }
@@ -58,6 +59,8 @@ body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] 
 body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] > section > p{
  max-width:min(100%,var(--np-w57-reading-measure,688px))!important;
 }
+}
+
 #npUniversalDemo #npW57NotesDetails{
  border-top:1px solid var(--np-u-rule,rgba(90,75,63,.15));
  margin:0;background:transparent;color:var(--np-u-ink,#2a2420);

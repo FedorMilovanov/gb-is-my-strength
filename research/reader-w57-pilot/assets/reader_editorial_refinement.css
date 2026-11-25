@@ -50,9 +50,11 @@ body.np-u-preview .np-u-series-disclosure .gill-card{
  background:transparent!important;border:1px solid rgba(141,115,87,.22)!important;
  border-radius:6px!important;box-shadow:none!important;min-height:0!important
 }
+@media screen {
 body.np-u-preview .np-u-series-disclosure .gill-card--active{
  background:rgba(157,124,90,.07)!important;
  border-color:rgba(155,115,76,.44)!important;
+}
 }
 body.np-u-preview .np-u-series-disclosure .gill-card__title{
  font-size:1.02rem!important;margin:3px 0!important;line-height:1.3!important
@@ -113,9 +115,11 @@ body.np-u-preview .np-u-series-disclosure .gill-card{
  border-radius:0!important;background:transparent!important;
  min-height:0!important;
 }
+@media screen {
 body.np-u-preview .np-u-series-disclosure .gill-card--active{
  background:rgba(155,115,76,.055)!important;
  padding-left:8px!important;border-left:2px solid var(--color-accent,#97634e)!important
+}
 }
 body.np-u-preview .np-u-series-disclosure .gill-card__kicker{
  grid-area:kicker!important;font-size:.63rem!important;margin:0!important

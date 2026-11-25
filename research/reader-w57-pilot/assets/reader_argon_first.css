@@ -592,7 +592,7 @@ body.np-u-preview.np-u-argon-shell .gbs2-world[data-gill-v16] article[data-reade
    Roman chapter cards, circular series progress and live section counter.
    Scope this solely to pages that actually carry Product's native rail.
    On smaller widths keep the established Reader drawer and native TTS player. */
-@media(min-width:1360px){
+@media screen and (min-width:1360px){
  body.np-u-preview.np-u-argon-shell.np-u-native-series-rail{
   --np-u-left:min(328px,22vw)!important;
  }
@@ -1981,7 +1981,8 @@ body.np-u-preview.np-u-argon-shell[data-np-u-size="lg"]{--np-u-reading-scale:1.1
 body.np-u-preview.np-u-argon-shell[data-np-u-size="xl"]{--np-u-reading-scale:1.2}
 body.np-u-preview.np-u-argon-shell[data-np-u-spacing="relaxed"]{--np-u-reading-leading:1.92}
 body.np-u-preview.np-u-argon-shell[data-np-u-width="wide"]{--np-u-reading-measure:760px}
-body.np-u-preview.np-u-argon-shell article[data-reader-projection] :is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *)){
+@media screen {
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] :is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *, .editorial-dateline, .biography-title)){
  font-family:var(--np-u-reading-face)!important;
  font-size:calc(var(--np-u-reading-base) * var(--np-u-reading-scale))!important;
  line-height:var(--np-u-reading-leading)!important;
@@ -1995,6 +1996,7 @@ body.np-u-preview.np-u-argon-shell article[data-reader-projection] > .article-he
 body.np-u-preview.np-u-argon-shell article[data-reader-projection] > section > p{
  max-width:min(100%,var(--np-u-reading-measure))!important;
  margin-inline:auto!important;
+}
 }
 
 #npUniversalDemo .np-u-type-open,
