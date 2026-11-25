@@ -590,6 +590,92 @@ const reviewClippedContrast = async (page, reviews) => {
   return witnesses;
 };
 try {
+  // W50: normal desktop context in a fresh browser context, outside native Tab.
+  // Mobile contextual evidence already exists in the mobile suite.
+  if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
+    report.g44DesktopContext = [];
+    for (const theme of ['light', 'dark']) {
+      const viewport = { width: 1440, height: 900 };
+      const context = await contextFor(viewport.width, theme, { viewport });
+      const page = await context.newPage();
+      const name = 'history-context-1440x900-' + theme + '-g44';
+      const item = { name, theme, viewport, runtime: [] };
+      monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
+      try {
+        const response = await ready(page, routes.find(route => route.kind === 'history').url);
+        await assertPublishedHistory(page, response);
+        const index = page.locator('#g3-2018-document-index');
+        assert.equal(await index.count(), 1);
+        const measure = () => index.evaluate(root => {
+          const lanes = root.querySelector('.jcdi-lanes'), css = getComputedStyle(root);
+          const rect = el => el.getBoundingClientRect().toJSON();
+          const style = el => {
+            const s = getComputedStyle(el);
+            return { fontSize: parseFloat(s.fontSize), lineHeight: s.lineHeight,
+              fontFamily: s.fontFamily, fontWeight: s.fontWeight, color: s.color, rect: rect(el) };
+          };
+          const preceding = root.previousElementSibling;
+          const header = document.querySelector('.mcp-top'), hs = header && getComputedStyle(header);
+          const headerBottom = hs && hs.display !== 'none' && hs.visibility !== 'hidden' && Number(hs.opacity) > 0
+            ? Math.max(0, rect(header).bottom) : 0;
+          const tracks = getComputedStyle(lanes).gridTemplateColumns;
+          return { viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
+            theme: document.documentElement.dataset.readerTheme, paper: css.getPropertyValue('--je-paper').trim(),
+            readerScale: parseFloat(css.getPropertyValue('--gb-reader-font-scale').trim() || '1'),
+            container: rect(root), containerFont: parseFloat(css.fontSize), tracks, columns: tracks.trim().split(/\s+/).length,
+            heading: style(root.querySelector('.jcdi-title')), headerBottom, scrollY,
+            preceding: preceding ? { tag: preceding.tagName, rect: rect(preceding) } : null,
+            rootOverflow: root.scrollWidth - root.clientWidth,
+            documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            rows: [...root.querySelectorAll('.jcdi-records > li')].map(li => {
+              const link = li.querySelector('a[data-journal-citation]');
+              return { id: link.id, rect: rect(li), overflow: li.scrollWidth - li.clientWidth,
+                date: style(li.querySelector('.jcdi-date')), event: style(li.querySelector('.jcdi-label')), link: style(link) };
+            }) };
+        });
+        // Match the heading-relative reading position, keep real chrome/prose.
+        await index.evaluate(root => window.scrollTo({ top: scrollY + root.getBoundingClientRect().top - 180, behavior: 'instant' }));
+        await settleWithoutScripts(page);
+        item.normal = await measure();
+        await shot(page, name + '-normal', { fullPage: false });
+        item.afterShot = await measure();
+        const normal = item.normal;
+        assert.deepEqual(normal.viewport, { ...viewport, dpr: 1 });
+        assert.equal(normal.theme, theme);
+        assert.equal(normal.readerScale, 1);
+        assert.equal(normal.columns, 2);
+        assert.equal(normal.rootOverflow, 0);
+        assert.equal(normal.documentOverflow, 0);
+        assert.deepEqual(normal.rows.map(row => row.id), g44Sources.map(([id]) => id));
+        assert.ok(normal.rows.every(row => row.overflow <= 0 && row.link.rect.height >= 44));
+        assert.ok(normal.heading.rect.top >= normal.headerBottom && normal.heading.rect.bottom <= viewport.height);
+        assert.ok(normal.preceding?.tag === 'P' && normal.preceding.rect.bottom > normal.headerBottom
+          && normal.preceding.rect.top < normal.heading.rect.top, 'capture must include surrounding prose');
+        assert.ok(Math.abs(item.afterShot.container.top - normal.container.top) < 2, 'viewport capture moved the article');
+        // Reflow measurement is deliberately after the normal screenshot.
+        // This context is discarded; native keyboard tests never use it.
+        await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale', '2'));
+        await settleWithoutScripts(page);
+        item.scaled = await measure();
+        assert.equal(item.scaled.columns, 1);
+        assert.equal(item.scaled.rootOverflow, 0);
+        assert.equal(item.scaled.documentOverflow, 0);
+        assert.ok(item.scaled.rows.every((row, i) => row.overflow <= 0 && row.link.rect.height >= 44
+          && ['date', 'event', 'link'].every(key => Math.abs(row[key].fontSize - 2 * normal.rows[i][key].fontSize) < .25)));
+        assert.deepEqual(item.runtime, []);
+        console.log('G44_DESKTOP_CONTEXT ' + JSON.stringify({ name, normal: { viewport: normal.viewport,
+          width: normal.container.width, columns: normal.columns, theme: normal.theme, font: normal.rows[0].event.fontSize },
+          scaled: { width: item.scaled.container.width, columns: item.scaled.columns, font: item.scaled.rows[0].event.fontSize } }));
+      } catch (error) {
+        item.failure = error.message;
+        report.problems.push(name + ': ' + error.message);
+        console.error('FAIL ' + name + ': ' + error.message);
+      } finally {
+        report.g44DesktopContext.push(item);
+        await context.close();
+      }
+    }
+  }
   if (suite === 'full') for (const route of routes) for (const width of widths) for (const theme of ['light', 'dark']) {
     const context = await contextFor(width, theme);
     await context.addInitScript(() => {
