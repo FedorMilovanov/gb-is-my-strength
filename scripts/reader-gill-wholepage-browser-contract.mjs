@@ -101,6 +101,28 @@ function checkAtlas(actual,index,dark){
   assert.deepEqual(actual.nodes,atlasExpected.map((v,i)=>({...v,current:i===index?'page':null,here:i===index?'Вы здесь':null})));
   assert.deepEqual(actual.faults,[],'atlas geometry, SVG and contrast');
 }
+async function waitForAtlasFonts(page) {
+  // Firefox with page JS disabled can hang when Playwright awaits a promise
+  // in the page realm, even with all font faces already loaded. Read the
+  // actual FontFaceSet synchronously and bound the wait in the Node realm.
+  const deadline = Date.now() + 15000;
+  let state;
+  do {
+    state = await page.evaluate(() => {
+      const atlas = document.querySelector('.gill-atlas');
+      if (!atlas) return {status:'missing-atlas',families:[]};
+      void atlas.getBoundingClientRect().height;
+      return {
+        status: document.fonts.status,
+        families: [...document.fonts].filter(face => face.status === 'loaded')
+          .map(face => face.family.replace(/["']/g, ''))
+      };
+    });
+    if (state.status === 'loaded' && ['Lora','Source Sans 3'].every(family => state.families.includes(family))) return;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  } while (Date.now() < deadline);
+  assert.fail('Atlas fonts did not load: ' + JSON.stringify(state));
+}
 async function runAtlasMatrix(){
   const rows=[];
   for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
@@ -123,10 +145,8 @@ async function runAtlasMatrix(){
               assert.equal(response.status(),200);
               assert.ok((await response.body()).equals(bytes),'HTTP response differs from built dist');
                assert.equal(await page.evaluate(()=>innerWidth),width,'fixed matrix viewport must match its label');
-              await page.evaluate(async dark=>{
-                document.documentElement.classList.toggle('dark',dark);
-                await document.fonts.ready;
-              },dark);
+              await page.evaluate(dark=>document.documentElement.classList.toggle('dark',dark),dark);
+              await waitForAtlasFonts(page);
               const atlas=page.locator('.gill-atlas');
               await atlas.scrollIntoViewIfNeeded();
               const info=await page.evaluate(atlasSnapshot);
