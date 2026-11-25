@@ -462,14 +462,30 @@ async function wideHistoryGeometry(page) {
       paintedWidth: Math.max(0, Math.min(frame.right, painted.right) - Math.max(frame.left, painted.left)),
       labelSize: parseFloat(getComputedStyle(label).fontSize) * Math.hypot(matrix.a, matrix.b),
       atlasTextSizes: [atlas.querySelector('.g3g-map-key'),atlas.querySelector('.g3g-atlas-list h5'),atlas.querySelector('.g3g-atlas-list a')].map(el=>parseFloat(getComputedStyle(el).fontSize)),
-      markers: svg.querySelectorAll('.g3g-atlas-marker > *').length,
+      markers: Array.from(svg.querySelectorAll('.g3g-atlas-marker > *')).map(rect),
+      mapLabels: Array.from(svg.querySelectorAll('text')).map(el => ({ text:el.textContent.trim(), box:rect(el),
+        size:parseFloat(getComputedStyle(el).fontSize)*Math.hypot(el.getScreenCTM().a,el.getScreenCTM().b) })),
+      mapKey: rect(atlas.querySelector('.g3g-map-key')),
+      mapKeyItems: Array.from(atlas.querySelectorAll('.g3g-map-key > span')).map(rect),
+      mapList: rect(atlas.querySelector('.g3g-atlas-list')),
+      mapRows: Array.from(atlas.querySelectorAll('.g3g-atlas-list li')).map(rect),
       mapLinks: atlas.querySelectorAll('.g3g-atlas-list a').length,
       allAtlasLinks: Array.from(atlas.querySelectorAll('a[data-journal-citation]')).map(a => a.id),
       scale: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-font-scale') || '1') };
   });
   assert.equal(state.scrollWidth, state.viewport, 'wide layout root overflow');
-  assert.equal(state.markers, 4);
+  assert.equal(state.markers.length, 4);
+  assert.equal(state.mapLabels.length,13);
+  assert.equal(state.mapKeyItems.length,2);
+  assert.equal(state.mapRows.length,4);
   assert.equal(state.mapLinks, 5);
+  const inside=(box,parent)=>box.width>0&&box.height>0&&box.left>=parent.left-1&&box.right<=parent.right+1&&box.top>=parent.top-1&&box.bottom<=parent.bottom+1;
+  const disjoint=(boxes)=>boxes.every((a,i)=>boxes.slice(i+1).every(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)<=1||Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)<=1));
+  assert.ok(state.markers.every(box=>inside(box,state.frame))&&disjoint(state.markers),'atlas markers must be inside map and separated');
+  assert.ok(state.mapLabels.every(label=>label.text&&inside(label.box,state.frame))&&disjoint(state.mapLabels.map(label=>label.box)),'atlas text must be inside map and not overlap other labels');
+  assert.ok(inside(state.mapKey,state.atlas)&&inside(state.mapList,state.atlas)&&state.mapKey.top>=state.frame.bottom-1&&state.mapList.top>=state.mapKey.bottom-1,'map, key and source list must occupy separate natural flow');
+  assert.ok(state.mapKeyItems.every(box=>inside(box,state.mapKey))&&disjoint(state.mapKeyItems),'legend must fit without overlapping');
+  assert.ok(state.mapRows.every(box=>inside(box,state.mapList))&&disjoint(state.mapRows),'map source rows must fit without overlapping');
   assert.deepEqual(state.allAtlasLinks, Array.from({length:18}, (_,i) => 'cite-g3g-history-' + (i+1)));
   for (const box of [state.atlas,state.index,state.ordinary,state.origin,state.paragraph]) {
     assert.ok(box.left >= -1 && box.right <= state.viewport + 1 && box.left >= state.story.left - 1 && box.right <= state.story.right + 1, JSON.stringify(state));
@@ -480,7 +496,7 @@ async function wideHistoryGeometry(page) {
     assert.ok(state.atlas.width >= state.story.width - 2 && state.atlas.width > state.ordinary.width * 1.4, 'wide atlas not using its track');
     assert.ok(state.atlas.right <= state.rail.left - 16 && state.index.right <= state.rail.left - 16, 'figure intersects separate TOC track');
     assert.ok(state.index.width >= Math.min(1100,state.story.width) - 2 && state.index.width <= 1101);
-    assert.ok(state.paintedWidth > state.ordinary.width * 1.35 && state.labelSize >= 14, 'map itself must scale and retain readable desktop labels');
+    assert.ok(state.paintedWidth > state.ordinary.width * 1.35 && state.mapLabels.every(label=>label.size>=14), 'map itself must scale and retain readable desktop labels');
   }
   return state;
 }
