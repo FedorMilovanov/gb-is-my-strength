@@ -18,6 +18,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+const { isDesktopReaderRoute } = require('./lib/reader-desktop-contract');
 const { parseBoundedWorkerCount, runBoundedWorkerPool } = require('./lib/bounded-worker-pool');
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -406,6 +407,51 @@ async function inspectKodDaVinchiTimeline(page, entry, viewport) {
 }
 
 async function inspectSeriesSettings(page, entry, viewport) {
+  if (viewport.width >= 1121 && isDesktopReaderRoute(entry)) {
+    // ARGON deliberately rebinds the actual series Settings button to its
+    // canonical panel. Keep the native/mobile sheet contract below, but do
+    // not require that hidden sheet to open in desktop ARGON.
+    await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+      window.__NP_UNIVERSAL_PREVIEW__?.ready === true &&
+      window.__NP_W57_ANNOTATIONS__?.ready === true, null, { timeout: 15000 });
+    const owner = await page.evaluate(() => ({
+      explicit: new URLSearchParams(location.search).has('reader-pilot'),
+      nativeHidden: document.getElementById('gillSettingsOverlay')?.getAttribute('aria-hidden') === 'true',
+    }));
+    record(entry, viewport, 'settings:default-argon-owner', !owner.explicit && owner.nativeHidden, JSON.stringify(owner));
+    const selector = '#railSettingsBtn[aria-controls="npUFontPanel"]';
+    const trigger = await clickVisible(page, selector);
+    record(entry, viewport, 'settings:trigger', Boolean(trigger), trigger || 'missing/covered');
+    if (!trigger) return;
+    const panel = page.locator('#npUFontPanel');
+    await panel.waitFor({ state: 'visible', timeout: 5000 });
+    const state = await page.evaluate(() => {
+      const panel = document.getElementById('npUFontPanel'), trigger = document.getElementById('railSettingsBtn');
+      const r = panel.getBoundingClientRect();
+      return { open: !panel.hidden && trigger?.getAttribute('aria-expanded') === 'true' &&
+        document.getElementById('gillSettingsOverlay')?.getAttribute('aria-hidden') === 'true',
+        rect: { left: r.left, top: r.top, right: r.right, bottom: r.bottom }, width: innerWidth, height: innerHeight };
+    });
+    record(entry, viewport, 'settings:opens', state.open, JSON.stringify(state));
+    record(entry, viewport, 'settings:inside-viewport', state.rect.left >= -2 && state.rect.top >= -2 &&
+      state.rect.right <= state.width + 2 && state.rect.bottom <= state.height + 2, JSON.stringify(state.rect));
+    const sepia = panel.locator('[data-np-u-type-theme="sepia"]');
+    await sepia.click();
+    await page.waitForFunction(() => window.GBReaderPreferences?.get?.().theme === 'sepia', null, { timeout: 5000 });
+    const applied = await page.evaluate(() => ({
+      theme: window.GBReaderPreferences.get().theme,
+      projected: document.documentElement.getAttribute('data-reader-theme'),
+      selected: document.querySelector('#npUFontPanel [data-np-u-type-theme="sepia"]')?.getAttribute('aria-pressed'),
+    }));
+    record(entry, viewport, 'settings:sepia-scoped', applied.theme === 'sepia' &&
+      applied.projected === 'sepia' && applied.selected === 'true', JSON.stringify(applied));
+    await page.keyboard.press('Escape');
+    await panel.waitFor({ state: 'hidden', timeout: 5000 });
+    const closed = await page.locator(selector).evaluate(el =>
+      el.getAttribute('aria-expanded') === 'false' && document.activeElement === el);
+    record(entry, viewport, 'settings:escape-closes', closed, 'ARGON panel hidden and focus restored');
+    return;
+  }
   const trigger = await clickVisible(page, viewport.mobile ? '#mobSettingsBtn' : '#railSettingsBtn');
   record(entry, viewport, 'settings:trigger', Boolean(trigger), trigger || 'missing/covered');
   if (!trigger) return;
