@@ -1259,7 +1259,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const a=src.indexOf('  let activeAction = null'),b=src.indexOf('  function bindSelectionButton(',a);
  assert.ok(a>=0&&b>a);
  const first={},second={},surface={isConnected:true};let visible=true,range=[first,1,first,8],timers=new Map(),next=0,reset=0,finish=0;
- const location={href:'/a'},window={getSelection:()=>range?{isCollapsed:false,rangeCount:1,getRangeAt:()=>({startContainer:range[0],startOffset:range[1],endContainer:range[2],endOffset:range[3]})}:null};
+ let selectedText='Alpha bravo';
+ const location={href:'/a'},window={getSelection:()=>range?{isCollapsed:false,rangeCount:1,getRangeAt:()=>({startContainer:range[0],startOffset:range[1],endContainer:range[2],endOffset:range[3],toString:()=>selectedText})}:null};
  const api=new Function('window','location','setTimeout','clearTimeout','let selBarHideTimer=0;'+src.slice(a,b)+'return {beginSelectionAction,reconcileSelectionFeedback,showSelectionFeedback};')(window,location,fn=>{timers.set(++next,fn);return next},id=>timers.delete(id));
  const begin=()=>api.beginSelectionAction(surface,()=>visible);
  const feedback=current=>api.showSelectionFeedback(current,()=>reset++,()=>finish++,700);
@@ -1270,4 +1271,14 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const newest=[...timers.values()][0];newest();assert.equal(reset,3);assert.equal(finish,1);
  const close=begin();visible=false;api.reconcileSelectionFeedback();visible=true;assert.equal(close(),false);
  const route=begin();location.href='/b';assert.equal(route(),false);
+ // W236: identical DOM endpoints do not imply unchanged selected prose.
+ location.href='/a';range=[first,1,first,8];
+ const changed=begin();feedback(changed);const changedTimer=[...timers.values()][0];
+ const oldReset=reset,oldFinish=finish;
+ selectedText='Alpha DELTA';assert.equal(changed(),false,'same endpoints, changed text');
+ api.reconcileSelectionFeedback();assert.equal(reset,oldReset+1);
+ changedTimer();assert.equal(finish,oldFinish,'stale completion cannot hide current text');
+ const unchanged=begin();assert.equal(unchanged(),true);
+ feedback(unchanged);[...timers.values()][0]();
+ assert.equal(finish,oldFinish+1,'unchanged selection still completes feedback');
 }
