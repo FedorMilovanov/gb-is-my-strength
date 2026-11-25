@@ -113,7 +113,8 @@ function portalFixtureHtml(modern) {
   <style>article { margin: 120px auto; width: min(700px, 86vw); } body { min-height: 140vh; }</style>
   </head><body><article data-pagefind-body><p class="reveal">
   <span id="portal-term" class="gterm" tabindex="0" data-term="песнь песней" data-term-title="Песнь песней">Песнь песней<span class="gtip">Локальное определение.</span></span>
-  </p><p><span id="portal-footnote" class="fn-marker" tabindex="0">1<span class="tooltip">Источник.</span></span></p></article>
+  </p><p><span id="portal-footnote" class="fn-marker" tabindex="0">1<span class="tooltip">Источник.</span></span></p>
+  ${modern ? '<p><span id="registry-footnote" class="fn-marker" tabindex="0" data-note-id="qa-note" aria-describedby="qa-endnote" aria-controls="qa-tip">2<span id="qa-tip" class="tooltip">Канонический источник.</span></span></p><p><span id="shared-description" class="gterm" tabindex="0" aria-describedby="qa-independent">Термин<span id="qa-transient" class="gtip">Определение.</span></span></p><span id="qa-independent">Авторское пояснение.</span><ol data-note-registry-endnotes><li id="qa-endnote" data-note-id="qa-note">Канонический источник.</li></ol>' : ''}</article>
   <script>window.SITE_CONFIG={site:{name:'Fixture',baseUrl:'/',locale:'ru'},page:{type:'article',id:'glossary-portal-fixture',title:'Fixture'},features:{toc:false,share:false,quiz:{enabled:false}}};</script>
   <script src="/js/site-utils.js"></script><script src="/js/site.js"></script>
   <script type="module">
@@ -261,6 +262,23 @@ async function portalAssertions(browser, origin, modern, mobile) {
       assert.equal(await footnote.getAttribute('aria-expanded'), 'true', label + ': footnote focus-to-keyboard');
       await footnote.press('Space');
       assert.equal(await footnote.getAttribute('aria-expanded'), 'false', label + ': second Space closes footnote');
+    }
+    if (modern) {
+      const note=page.locator('#registry-footnote');
+      assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': authored endnote survives initialization');
+      await note.click();
+      await page.waitForFunction(()=>document.querySelector('#registry-footnote').getAttribute('aria-expanded')==='true');
+      assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': canonical note is not announced twice');
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(()=>document.querySelector('#registry-footnote').getAttribute('aria-expanded')==='false');
+      assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': authored endnote survives close');
+      const term=page.locator('#shared-description');
+      await term.click();
+      await page.waitForFunction(()=>document.querySelector('#shared-description').getAttribute('aria-expanded')==='true');
+      assert.equal(await term.getAttribute('aria-describedby'),'qa-independent qa-transient');
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(()=>document.querySelector('#shared-description').getAttribute('aria-expanded')==='false');
+      assert.equal(await term.getAttribute('aria-describedby'),'qa-independent',label+': only transient ID is removed');
     }
     assert.deepEqual(errors, [], label + ': page errors');
   } finally {

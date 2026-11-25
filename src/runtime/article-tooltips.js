@@ -1,4 +1,4 @@
-const VERSION = 21;
+const VERSION = 22;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -453,6 +453,33 @@ function restore(record) {
   }
 }
 
+// aria-describedby is a token list shared with authored accessibility.
+// The tooltip owns only its own transient ID, never a publication endnote.
+function descriptionIds(anchor) {
+  return (anchor.getAttribute('aria-describedby') || '').trim().split(/\s+/).filter(Boolean);
+}
+function removeTipDescription(anchor, tipId) {
+  const before=descriptionIds(anchor);
+  if (!tipId || !before.includes(tipId)) return;
+  const remaining=before.filter(id=>id!==tipId);
+  if (remaining.length) anchor.setAttribute('aria-describedby',remaining.join(' '));
+  else anchor.removeAttribute('aria-describedby');
+}
+function describeOpenTip(anchor, tip) {
+  const ids=descriptionIds(anchor);
+  // Registry endnotes already expose the same canonical note body. Do not
+  // announce its duplicate visual popover in addition to the endnote.
+  const noteId=anchor.getAttribute('data-note-id');
+  if (noteId && anchor.matches('.fn-marker') && ids.some(id=>{
+    const node=document.getElementById(id);
+    return node?.matches('li[data-note-id]') && node.getAttribute('data-note-id')===noteId &&
+      node.closest('[data-note-registry-endnotes]');
+  })) return false;
+  if (ids.includes(tip.id)) return false;
+  anchor.setAttribute('aria-describedby',[...ids,tip.id].join(' '));
+  return true;
+}
+
 export function closeTooltip(reason = 'close') {
   cancelClose();
   const record = active;
@@ -462,7 +489,7 @@ export function closeTooltip(reason = 'close') {
   record.anchor.setAttribute('aria-expanded', 'false');
   // A closed tip is inert — drop the relation so AT never resolves a
   // describedby reference into an excluded subtree.
-  record.anchor.removeAttribute('aria-describedby');
+  if (record.addedDescription) removeTipDescription(record.anchor,record.tip.id);
   if (record.mobile) {
     // OverlayRuntime restores focus to the reference opener on mobile.
     // Without suppressing that restoration, its focus listener re-opens
@@ -518,9 +545,10 @@ function openTooltip(anchor, reason = 'open') {
   // tooltip role, and the anchor points at it via aria-describedby while open.
   if (!tip.getAttribute('role')) tip.setAttribute('role', 'tooltip');
   if (!tip.id) tip.id = nextTipId();
-  anchor.setAttribute('aria-describedby', tip.id);
+  const addedDescription=describeOpenTip(anchor,tip);
 
   active = {
+    addedDescription,
     anchor,
     tip,
     placeholder,
@@ -607,7 +635,7 @@ function initializeAnchor(anchor) {
   if (!tip) return;
   anchor.dataset.gbTooltipReady = '1';
   anchor.setAttribute('aria-expanded', 'false');
-  anchor.removeAttribute('aria-describedby');
+  removeTipDescription(anchor,tip.id);
   if (!anchor.hasAttribute('tabindex') && !anchor.matches('button, a[href], input, select, textarea')) anchor.tabIndex = 0;
   if (!anchor.hasAttribute('role') && !anchor.matches('button, a[href]')) anchor.setAttribute('role', 'button');
 
