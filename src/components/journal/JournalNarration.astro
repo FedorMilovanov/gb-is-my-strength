@@ -23,21 +23,13 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
   </div>
 </div>
 <script>
-  // Same side-effect import contract as ReaderActionsRuntime. These classic
-  // runtime files intentionally do not expose ES module exports.
-  import '../../runtime/reader-projection.js';
-  import '../../runtime/reader-tts-defaults.js';
-  import '../../runtime/reader-tts-click-guard.js';
-  import '../../runtime/reader-tts-lifecycle.js';
-  import '../../runtime/reader-tts.js';
-  import '../../runtime/reader-tts-media-session.js';
   type SpeechState = { phase: string; rate: number };
   type SpeechOwner = { getState: () => SpeechState; stop: () => void };
   type RateOwner = { read: () => number; persist: (value: string) => number | null };
   type Projection = { getRoot: (scope?: Document) => Element | null; getTtsSegments: (scope?: Document) => { element: Element }[] };
   const shared = window as Window & { GBReaderTTS?: SpeechOwner; GBReaderRatePolicy?: RateOwner; GBReaderProjection?: Projection };
 
-  function mountNarration() {
+  async function mountNarration() {
     const slot = document.querySelector<HTMLElement>('[data-journal-narration]');
     const main = document.querySelector<HTMLElement>('main[data-reader-range]');
     if (!slot || !main || !main.contains(slot) || slot.dataset.jnBound) return;
@@ -55,6 +47,7 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
     main.querySelectorAll(speechOnly).forEach(node => node.setAttribute('data-tts-policy', 'exclude'));
     // The platform owns all semantics and playback. Do not import the full
     // ReaderActionsRuntime: it also mounts tools that Journal does not expose.
+    await import('./journalNarrationRuntime');
     const speech = shared.GBReaderTTS, rate = shared.GBReaderRatePolicy, projection = shared.GBReaderProjection;
     const play = slot.querySelector<HTMLButtonElement>('[data-fc-action="play"]');
     const stop = slot.querySelector<HTMLButtonElement>('[data-jn-stop]');
@@ -94,8 +87,7 @@ import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedCont
     } else window.addEventListener('scroll', syncDock, { passive: true });
   }
   // A failed capability import must not show a dead control or break reading.
-  try { mountNarration(); }
-  catch (error) { console.warn('[JournalNarration] unavailable', error); }
+  void mountNarration().catch(error => console.warn('[JournalNarration] unavailable', error));
 </script>
 <style>
   .jn-slot[hidden] { display: none; }

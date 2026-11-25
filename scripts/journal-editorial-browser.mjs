@@ -70,6 +70,7 @@ const witnessFiles = [
   'src/components/article-pilots/_shared/MobileChromePage.astro',
   'src/components/reader-platform/ReaderPreferencesHead.astro',
   'src/components/reader-platform/ReaderSpeedContract.ts',
+  'src/components/journal/journalNarrationRuntime.ts',
   ...['reader-projection.js','reader-tts-defaults.js','reader-tts-click-guard.js','reader-tts-lifecycle.js','reader-tts.js','reader-tts-media-session.js'].map(name=>'src/runtime/'+name),
   'css/reader-preferences.css',
   'js/reader-preferences-head.js',
@@ -927,7 +928,7 @@ try {
               count:segments.length, excluded:segments.filter(s=>s.element.closest('[data-tts-policy="exclude"],aside,footer')).length,
               history:segments.some(s=>s.text.includes('Пастор Джефф Кроттс')),
               crisis:segments.some(s=>s.text.includes('Согласно заявлению совета G3 от 12 мая 2025 года')),
-              bibliographyInSearch:search.includes('Библиография')||search.includes('Источники истории'),
+              bibliographyInSearch:search.includes('Источники и материалы для проверки')||search.includes('Источники истории'),
               engine:typeof window.GBReaderTTS?.getState, rate:window.GBReaderRatePolicy?.read()
             };
           });
