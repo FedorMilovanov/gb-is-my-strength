@@ -1963,7 +1963,8 @@ try {
               'Forced colors must distinguish the current section, not underline every link equally');
           }
           if (width < 1024 && route.kind !== 'journal') item.standaloneSourceActions = await standaloneSourceActions(page, route.kind, true);
-          if (route.kind === 'history') item.atlasSourceActions = await atlasSourceActions(page,true);
+          // Masthead focus is a separate native navigation scenario. Measure it
+          // before the atlas witness scrolls deep into the historical article.
           await shot(page, name);
           const current = page.locator('.je-masthead__nav a[aria-current]');
           await current.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
@@ -1980,6 +1981,7 @@ try {
           assert.ok(f.rect.left - outset >= -1 && f.rect.right + outset <= f.usableWidth + 1
             && f.rect.top - outset >= -1 && f.rect.bottom + outset <= f.height + 1);
           await shot(page, `${name}-focus`);
+          if (route.kind === 'history') item.atlasSourceActions = await atlasSourceActions(page,true);
           assert.deepEqual(item.runtime, []);
           console.log(`PASS ${name}`);
         } catch (error) {
