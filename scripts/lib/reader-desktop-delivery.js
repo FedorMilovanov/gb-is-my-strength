@@ -43,6 +43,11 @@ function createDesktopDelivery(contract) {
     return printActive || printMedia.matches || !screenMedia.matches ||
       document.documentElement.hasAttribute('data-gb-print-prepared');
   }
+  function usableScreenViewport() {
+    // Chromium can expose a transient 1x1 capture viewport (also zero during
+    // teardown). No reader layout is usable there; do not reload the document.
+    return window.innerWidth > 1 && window.innerHeight > 1;
+  }
   function forgetResize() {
     resizeWitness = false;
     if (reconcileFrame) cancelAnimationFrame(reconcileFrame);
@@ -53,7 +58,7 @@ function createDesktopDelivery(contract) {
     if (reconcileFrame) cancelAnimationFrame(reconcileFrame);
     reconcileFrame = requestAnimationFrame(function(){
       reconcileFrame = 0;
-      if (inPrint()) { forgetResize(); return; }
+      if (inPrint() || !usableScreenViewport()) { forgetResize(); return; }
       var viewportDesktop = window.innerWidth >= 1121;
       // A transient media/viewport mismatch is not a screen crossing.
       if (desktop.matches !== viewportDesktop) return;
@@ -65,7 +70,7 @@ function createDesktopDelivery(contract) {
   window.addEventListener('afterprint',function(){ printActive = false; forgetResize(); });
   printMedia.addEventListener('change',function(event){ if (event.matches) forgetResize(); });
   window.addEventListener('resize',function(){
-    if (inPrint()) { forgetResize(); return; }
+    if (inPrint() || !usableScreenViewport()) { forgetResize(); return; }
     resizeWitness = true;
     reconcileScreen();
   });

@@ -259,8 +259,11 @@ try {
               await page.evaluate(()=>new Promise(done=>
                 requestAnimationFrame(()=>requestAnimationFrame(done))));
             }
-            await el.screenshot({path:path.join(shots,engine+'-'+width+'-'+theme+'-'+label+'.png'),
+            const captureDocument=await page.evaluate(()=>performance.timeOrigin);
+             await el.screenshot({path:path.join(shots,engine+'-'+width+'-'+theme+'-'+label+'.png'),
               animations:'disabled',timeout:12000});
+             await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+             assert.equal(await page.evaluate(()=>performance.timeOrigin),captureDocument,tag+' '+label+' must not reload the document during capture');
           }
         }
         results.push({engine,width,theme,sourceItems:info.sourceItems,links:info.sourceLinks,

@@ -43,7 +43,7 @@ try {
     const media=makeMedia(width>=1121),printMedia=makeMedia(false),screenMedia=makeMedia(true);
     let reloads=0,nextTimer=0,nextFrame=0,prepared=false;
     const frames=new Map();
-    const window={innerWidth:width,location:{search,href:'https://example.test/articles/fixture/'+search+'#paragraph',reload(){reloads++;},replace(href){redirects.push(href);}},
+    const window={innerWidth:width,innerHeight:900,location:{search,href:'https://example.test/articles/fixture/'+search+'#paragraph',reload(){reloads++;},replace(href){redirects.push(href);}},
       matchMedia(q){if(q===MEDIA)return media;if(q==='print')return printMedia;if(q==='screen')return screenMedia;throw Error('unexpected media '+q);},
       addEventListener(type,fn){listeners[type]=fn;},removeEventListener(type){delete listeners[type];}};
     const document={documentElement:{hasAttribute(name){assert.equal(name,'data-gb-print-prepared');return prepared;}},
@@ -64,7 +64,7 @@ try {
     vm.runInContext(plan.bootstrap.code,ctx);
     return {links,scripts,before,listeners,media,printMedia,screenMedia,errors,redirects,timers,reloads:()=>reloads,
       prepared(value){prepared=value;},
-      resize(value){window.innerWidth=value;listeners.resize?.();},
+      resize(value,height=900){window.innerWidth=value;window.innerHeight=height;listeners.resize?.();},
       flush(){for(const [id,fn] of [...frames]){frames.delete(id);fn();}},
       timeout(){const timer=[...timers.values()].find(t=>t.ms===12000);assert.ok(timer);timer.fn();}};
   }
@@ -90,6 +90,23 @@ try {
     q.listeners.beforeprint();q.listeners.afterprint();q.prepared(false);q.media.set(admitted);q.flush();assert.equal(q.reloads(),0);
     const s=run({width});s.screenMedia.set(false);s.resize(other);s.media.set(!admitted);s.flush();
     assert.equal(s.reloads(),0,'screen media absent before print event');
+  }
+  // Chromium screenshot capture transiently reports 1x1 despite a 1440px
+  // outer window. It is not a usable screen viewport or a Reader mode switch.
+  for(const width of [1120,1440]){
+    const admitted=width>=1121,other=admitted?195:1440;
+    for(const [w,h] of [[1,1],[0,900],[other,1]]){
+      for(const mediaFirst of [false,true]){
+        const p=run({width});
+        if(mediaFirst)p.media.set(w>=1121);
+        p.resize(w,h);if(!mediaFirst)p.media.set(w>=1121);p.flush();
+        assert.equal(p.reloads(),0,'degenerate viewport must not reload');
+        p.resize(width,900);p.media.set(admitted);p.flush();
+        assert.equal(p.reloads(),0,'restored viewport must not reload');
+        p.resize(other,320);p.media.set(!admitted);p.flush();
+        assert.equal(p.reloads(),1,'real crossing, including 195px zoom, remains active');
+      }
+    }
   }
   function fallbackState(result) {
     assert.equal(result.redirects.length,1);assert.ok(result.links.every(l=>l.media==='not all'));assert.equal(result.errors.length,1);
