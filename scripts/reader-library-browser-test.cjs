@@ -465,15 +465,17 @@ async function checkVisibleLegacy(name, driver, base) {
         <span inert>Скрытая фраза В</span><span style="display:none">Скрытая фраза Г</span>
         <span style="visibility:hidden">Скрытая фраза Д</span></p>
         <p><span role="tooltip">Скрытая фраза Е</span><span class="btip">Скрытая фраза Ж</span></p>
-        <p class="manuscript-quote--bilingual"><span class="mq-translation-russian">Русская сторона</span>
+        <div class="manuscript-quote--bilingual"><span class="mq-translation-russian">Русская сторона</span>
         <details class="mq-translation-flip"><summary class="mq-translation-toggle">Переключатель языка</summary>
-        <span class="mq-translation-original">Original language</span></details></p>
+        <span class="mq-translation-original">Original language</span></details></div>
+        <p><span id="edge">Граничный отрывок</span><span hidden>Скрытый хвост</span><span>Следующий текст</span></p>
         <p>Неоднозначный фрагмент</p><p>Неоднозначный фрагмент</p>`;
       const resolve=text=>window.GBHighlights.resolveRange({text,url:location.href},article);
       const range=resolve('Видимая фраза');
       const data={
         visible:range?.toString()||null,
         source:range?.startContainer.parentElement.id||null,
+        edge:resolve('Граничный отрывок')?.toString()||null,
         hidden:['А','Б','В','Г','Д','Е','Ж'].map(x=>!!resolve('Скрытая фраза '+x)),
         closedRussian:!!resolve('Русская сторона'),
         closedOriginal:!!resolve('Original language'),
@@ -486,7 +488,7 @@ async function checkVisibleLegacy(name, driver, base) {
       return data;
     });
     assert.deepEqual(results,{
-      visible:'Видимая фраза',source:'visible',hidden:Array(7).fill(false),
+      visible:'Видимая фраза',source:'visible',edge:'Граничный отрывок',hidden:Array(7).fill(false),
       closedRussian:true,closedOriginal:false,toggle:false,ambiguous:false,
       openRussian:false,openOriginal:true
     });

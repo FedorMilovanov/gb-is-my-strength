@@ -599,15 +599,15 @@
     }
     catch { return null; }
     if (!match) return null;
-    const pointAt = (offset) => {
+    const pointAt = (offset, end = false) => {
       for (let i = index.nodes.length - 1; i >= 0; i--) {
         const rec = index.nodes[i];
-        if (offset >= rec.start) return { node: rec.node, offset: Math.min(rec.node.textContent.length, offset - rec.start) };
+        if (end ? offset > rec.start : offset >= rec.start) return { node: rec.node, offset: Math.min(rec.node.textContent.length, offset - rec.start) };
       }
       return null;
     };
     const a = pointAt(match.index + match[1].length);
-    const b = pointAt(match.index + match[1].length + match[2].length);
+    const b = pointAt(match.index + match[1].length + match[2].length, true);
     if (!a || !b) return null;
     try {
       const range = document.createRange();

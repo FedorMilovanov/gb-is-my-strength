@@ -126,8 +126,10 @@ assert.equal((readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8'
 assert.doesNotMatch(file,/function resolve\(article,anchor\)/,
  'W57 must not fork a stale second copy of the resolver');
 // Persist the same DOM-author-visible offset mapping on capture and resolve.
-assert.match(highlights,/function visibleProjection\(block\)/,
+assert.equal((highlights.match(/function visibleProjection\(/g)||[]).length,1,
  'single visible-author-text projection owner is required');
+assert.match(highlights,/GBReaderAnchors\.visibleProjection\(scope,true\)/,
+ 'legacy text index must delegate to the canonical visible projection');
 assert.match(highlights,/projection:'reader-visible-v1'/,
  'new anchored quotes must record their coordinate system');
 assert.match(highlights,/\.gtip,\.btip,\.tooltip/,
