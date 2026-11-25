@@ -1735,6 +1735,66 @@ async function auditGillActivationTeardown(browser) {
   } finally {await ctx.close();}
 }
 
+// Real keyboard focus departure with the exact boundary script and
+// deliberately held native callbacks; no interception of Tab itself.
+async function auditGillActivationFocusDeparture(browser) {
+  const caseId = 'gill-activation-focus-departure';
+  const checks = [];
+  const ctx = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,serviceWorkers:'block'});
+  try {
+    const page = await ctx.newPage();
+    await page.setContent('<button id="before">До</button><button id="mobPartTocBtn">Оглавление</button><button id="after">После</button><div id="partTocOverlay" aria-hidden="true"></div>');
+    const source = fs.readFileSync(path.join(ROOT,'src/components/article-pilots/gill-series/GillMobileOverlayActivationBoundary.astro'),'utf8');
+    const match = source.match(/<script>([\s\S]*?)<\/script>/);
+    assert.ok(match,'activation boundary script required');
+    await page.addScriptTag({content:match[1]});
+    await page.evaluate(()=>{
+      const state = {callbacks:[], delivered:0};
+      window.__gbFocusDepartureWitness=state;
+      const trigger=document.getElementById('mobPartTocBtn');
+      trigger.addEventListener('click',()=>state.delivered++);
+      state.hold=()=>{
+        const raf=window.requestAnimationFrame,timer=window.setTimeout;
+        try {
+          window.requestAnimationFrame=cb=>{state.callbacks.push(cb);return -101;};
+          window.setTimeout=(cb,delay)=>{
+            if(typeof cb==='function'&&delay===120){state.callbacks.push(cb);return -102;}
+            return timer(cb,delay);
+          };
+          trigger.click();
+        } finally {window.requestAnimationFrame=raf;window.setTimeout=timer;}
+      };
+    });
+    for(const [key,destination] of [['Tab','after'],['Shift+Tab','before']]){
+      await page.locator('#mobPartTocBtn').focus();
+      const initial=await page.evaluate(()=>{
+        const s=window.__gbFocusDepartureWitness;
+        s.hold();return {held:s.callbacks.length,delivered:s.delivered};
+      });
+      await page.keyboard.press(key);
+      const actual=await page.evaluate(()=>{
+        const s=window.__gbFocusDepartureWitness;
+        s.callbacks.splice(0).forEach(cb=>cb(performance.now()));
+        return {active:document.activeElement.id,delivered:s.delivered};
+      });
+      record(checks,caseId+'-'+key,'native keyboard departure cancels pending activation without intercepting navigation',
+        initial.held===2&&actual.active===destination&&actual.delivered===initial.delivered,{initial,actual});
+    }
+    await page.locator('#mobPartTocBtn').focus();
+    const fresh=await page.evaluate(()=>{
+      const s=window.__gbFocusDepartureWitness,before=s.delivered;
+      s.hold();
+      s.callbacks.splice(0).forEach(cb=>cb(performance.now()));
+      return {before,after:s.delivered};
+    });
+    record(checks,caseId+'-fresh','new activation without focus departure delivers exactly once',fresh.after===fresh.before+1,fresh);
+    return {caseId,checks};
+  } catch(error){
+    record(checks,caseId+'-exception','focus departure scenario completes',false,{message:String(error.stack||error).slice(0,1300)});
+    return {caseId,checks};
+  } finally {await ctx.close();}
+}
+
 async function auditGillTooltipSelection(browser, origin) {
   const caseId = 'gill-tooltip-selection-halo';
   const checks = [];
@@ -1820,6 +1880,7 @@ try {
   for (const kind of ['toc','settings']) cases.push(await auditGillChromeBreakpoint(browser, origin, kind));
   cases.push(await auditGillPendingActivation(browser, origin));
   cases.push(await auditGillActivationTeardown(browser));
+  cases.push(await auditGillActivationFocusDeparture(browser));
   cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));
   for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[480,320,false],[568,320,false],[568,320,true],[639,360,false],[640,360,false],[667,375,false],[768,320,false],[768,320,true],[844,390,false],[844,390,true],[960,390,false],[961,390,false],[1024,390,false],[1024,390,true],[1359,390,false],[1359,390,true],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));

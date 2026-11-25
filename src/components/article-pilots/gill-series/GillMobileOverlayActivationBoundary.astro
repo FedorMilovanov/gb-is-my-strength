@@ -102,6 +102,14 @@
     document.addEventListener('keydown', (event) => {
       if (pending && (event.key === 'Escape' || event.key === 'Esc')) cancelPending();
     }, { capture: true, signal });
+    // Tab and Shift+Tab remain native. Cancel only on a real departure
+    // to another element; touch activation need not focus the trigger.
+    document.addEventListener('focusin', (event) => {
+      if (pending && !trigger.contains(event.target) &&
+          event.target !== document.body && event.target !== document.documentElement) {
+        cancelPending();
+      }
+    }, { capture: true, signal });
     // An overlay can open from a keyboard shortcut or programmatically,
     // without a click reaching the capture handler.
     document.addEventListener('gb:overlay-open', cancelPending, { signal });
