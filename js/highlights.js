@@ -362,7 +362,7 @@
     if (!presenterPromise) {
       presenterPromise = Promise.all([
         import('/js/reader-library-presenter.js?v=35ef9be2'),
-        import('/js/reader-library-v3.js?v=d6fdb5cb'),
+        import('/js/reader-library-v3.js?v=39300423'),
       ]).then(([module,researchModule]) => {
           if (!view) {
             view = module.createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch:researchModule.createLibraryResearch,isOpen});

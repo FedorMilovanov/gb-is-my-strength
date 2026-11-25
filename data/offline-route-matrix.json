@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "contract": "A07-honest-offline-pwa",
   "decision": "REBUILD_CURRENT_MAIN",
-  "cacheVersion": "gb-v242-reader-w227-preview-20261125",
+  "cacheVersion": "gb-v243-reader-w228-candidate-20261125",
   "sourceOwners": {
     "runtime": "sw.js",
     "registrationUi": "js/sw-register.js",
