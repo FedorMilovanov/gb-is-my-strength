@@ -498,13 +498,13 @@ html[data-reader-theme] {
 @media screen {
   .lawson-news-edition .lawson-journal-return a,
   .lawson-news-edition .lawson-toc nav a,
-  .lawson-news-edition .lawson-bibliography__head a {
+  .lawson-news-edition .lawson-bibliography__head a[href] {
     text-decoration: none;
     overflow-wrap: anywhere;
     min-width: 0;
   }
   .lawson-news-edition .lawson-toc nav a,
-  .lawson-news-edition .lawson-bibliography__head a {
+  .lawson-news-edition .lawson-bibliography__head a[href] {
     display: grid;
     grid-template-columns: minmax(0, 1fr) .65rem;
     align-items: center;
@@ -516,7 +516,7 @@ html[data-reader-theme] {
     line-height: 1.45;
   }
   .lawson-news-edition .lawson-toc nav a::after,
-  .lawson-news-edition .lawson-bibliography__head a::after {
+  .lawson-news-edition .lawson-bibliography__head a[href]::after {
     content: '';
     inline-size: .45rem;
     block-size: .45rem;
@@ -527,11 +527,11 @@ html[data-reader-theme] {
     color: var(--accent);
   }
   .lawson-news-edition .lawson-toc li { margin: 0; }
-  .lawson-news-edition .lawson-bibliography__head a { font-weight: 600; }
+  .lawson-news-edition .lawson-bibliography__head a[href] { font-weight: 600; }
   .lawson-news-edition .lawson-bibliography__video { display: block; }
   .lawson-news-edition .lawson-bibliography__separator { display: none; }
   .lawson-news-edition .lawson-bibliography__video a { font-weight: 500; color: var(--accent); }
-  .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a, .lawson-journal-return a):focus-visible {
+  .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a[href], .lawson-journal-return a):focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
   }
@@ -540,18 +540,18 @@ html[data-reader-theme] {
     outline-offset: 4px;
   }
   @media (hover: hover) and (pointer: fine) {
-    .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a, .lawson-journal-return a):hover {
+    .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a[href], .lawson-journal-return a):hover {
       text-decoration: underline;
       text-underline-offset: .2em;
     }
   }
 }
 @media screen and (forced-colors: active) {
-  .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a, .lawson-journal-return a) {
+  .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a[href], .lawson-journal-return a) {
     color: LinkText;
     text-decoration: underline;
   }
-  .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a, .lawson-journal-return a, .lawson-bibliography > ol > li):focus-visible { outline-color: Highlight; }
+  .lawson-news-edition :is(.lawson-toc nav a, .lawson-bibliography__head a[href], .lawson-journal-return a, .lawson-bibliography > ol > li):focus-visible { outline-color: Highlight; }
 }
 @media (max-width: 420px) {
   .lawson-news-edition .lawson-journal-return { justify-content: flex-start; }
