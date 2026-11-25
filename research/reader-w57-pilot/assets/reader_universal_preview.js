@@ -1743,6 +1743,11 @@
     const fresh=template.content.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
     if(fresh){
      const children=[...template.content.children],at=children.indexOf(fresh);
+     // New sections normally initialise several details as open. Their queued
+     // toggle events would close the focused live accordion. Set the actual
+     // one-open-card policy before attaching the competing windows.
+     for(const card of template.content.querySelectorAll('.np-u-research-module > details.np-u-window[open]'))
+      if(!fresh.contains(card))card.open=false;
      // Keep the live DOM node connected: even moving it through a fragment
      // would reset focus and dismiss the browser's native select.
      for(const node of [...sectionHost.childNodes])if(node!==keptScripture)node.remove();
