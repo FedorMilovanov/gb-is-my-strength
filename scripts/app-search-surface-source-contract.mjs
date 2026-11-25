@@ -99,7 +99,14 @@ for (const marker of [
   "window.dispatchEvent(new CustomEvent('gb:openSearch'",
   "document.addEventListener('keydown', handleSearchShortcut, true)",
 ]) check(files.siteUtils.includes(marker), `SiteUtils canonical shortcut marker missing: ${marker}`);
-check(!/\b(?:ctrlKey|metaKey)\b/.test(files.search), 'Search must not parse the global keyboard chord');
+// A native result link must preserve modified clicks (new tab/window). This
+// precise exception is for the result's click handler, never a keydown owner.
+const nativeReadClickGuard = 'var d=document.getElementById("cp-read-btn");d&&d.addEventListener("click",function(t){if(t.button===0&&!t.ctrlKey&&!t.metaKey&&!t.shiftKey&&!t.altKey){t.preventDefault();e.title&&U(e.title);__gbOpenArticleResult(e)}})';
+const hasUnexpectedSearchModifier = (source) => /\b(?:ctrlKey|metaKey)\b/.test(source.replace(nativeReadClickGuard, ''));
+check(count(files.search, nativeReadClickGuard) === 1, 'Search result must preserve native modified-click navigation with one guarded handler');
+check(!hasUnexpectedSearchModifier(files.search), 'Search must not parse the global keyboard chord');
+check(hasUnexpectedSearchModifier(files.search + 'document.addEventListener("keydown",function(e){if(e.ctrlKey&&e.key==="k")e.preventDefault()})'), 'modifier guard must reject an added Ctrl+K owner');
+check(hasUnexpectedSearchModifier(files.search + 'document.addEventListener("keydown",function(e){if(e.metaKey&&e.key==="k")e.preventDefault()})'), 'modifier guard must reject an added Meta+K owner');
 check(files.search.includes('window.addEventListener("gb:openSearch",function(){ne()})'), 'loaded Search gb:openSearch transport missing');
 check(files.search.includes('window.addEventListener("gb:openSearch",function(){__gbLoadSearch(true)})'), 'bootstrap Search gb:openSearch transport missing');
 check(files.search.includes('we(),ie())'), 'Search open path must only warm Pagefind');
