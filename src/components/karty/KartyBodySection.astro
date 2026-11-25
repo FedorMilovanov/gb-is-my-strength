@@ -1,32 +1,84 @@
 ---
-/**
- * KartyBodySection.astro — audit + principles body block for /karty/.
- *
- * Refactoring 6.0 parallel pilot. Preserve legacy DOM/classes/strings.
- */
+/** Reader-facing publication criteria. No inventory or approval authority here. */
 ---
-<div class="karty-body">
-  <section class="audit-card">
-    <span class="badge">Визуальный аудит</span>
-    <h2>Карты в подготовке</h2>
+<div class="karty-editorial">
+  <section class="karty-editorial__section" aria-labelledby="karty-preparation-title">
+    <p class="karty-editorial__kicker">Визуальный аудит</p>
+    <h2 id="karty-preparation-title">Карты в подготовке</h2>
     <p>Новые маршруты открываются после проверки географии, подписей и удобства чтения карты на разных экранах. Пока проверка не завершена, они не представлены здесь как готовые исследования.</p>
-    <div class="audit-list" role="group" aria-label="Что проверяется перед возвратом карт">
-      <div class="audit-chip">Начальный масштаб</div>
-      <div class="audit-chip">Разборчивость подписей</div>
-      <div class="audit-chip">Телефон и компьютер</div>
-      <div class="audit-chip">Слои и управление</div>
-      <div class="audit-chip">читаемость маршрута</div>
-      <div class="audit-chip">Редакционная проверка</div>
-    </div>
+    <ul class="karty-editorial__checks" aria-label="Критерии проверки карт">
+      <li>Начальный масштаб</li>
+      <li>Разборчивость подписей</li>
+      <li>Телефон и компьютер</li>
+      <li>Слои и управление</li>
+      <li>Читаемость маршрута</li>
+      <li>Редакционная проверка</li>
+    </ul>
   </section>
-
-  <aside class="principles-card" aria-label="Принцип публикации карт">
-    <h2>Принцип раздела</h2>
+  <aside class="karty-editorial__section" aria-labelledby="karty-principles-title">
+    <h2 id="karty-principles-title">Принцип раздела</h2>
     <p>Карта помогает читать Писание в его географическом и историческом контексте.</p>
-    <ol>
+    <ol class="karty-editorial__principles">
       <li>Подписи должны оставаться разборчивыми.</li>
       <li>Уверенные и спорные локализации следует различать.</li>
       <li>Открывать только материалы, прошедшие редакционную и визуальную проверку.</li>
     </ol>
   </aside>
 </div>
+<style>
+  .karty-editorial {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));
+    align-items:start;
+    gap:18px;
+    margin-top:18px;
+  }
+  .karty-editorial__section {
+    min-width:0;
+    padding:clamp(16px,2.5vw,24px);
+    border:1px solid var(--kh-line);
+    border-radius:18px;
+    background:linear-gradient(145deg,var(--kh-card),var(--kh-card2));
+    color:var(--kh-ink);
+    hyphens:none;
+    word-break:normal;
+    overflow-wrap:normal;
+  }
+  .karty-editorial__section h2 {
+    margin:0 0 10px;
+    color:var(--kh-ink);
+    font:600 1.35rem/1.25 "Playfair Display",Georgia,serif;
+  }
+  .karty-editorial__section p {
+    margin:0 0 14px;
+    color:var(--kh-muted);
+    font-size:1rem;
+    line-height:1.65;
+  }
+  .karty-editorial__section .karty-editorial__kicker {
+    margin-bottom:6px;
+    color:var(--kh-accent);
+    font-size:.75rem;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .karty-editorial__checks,.karty-editorial__principles {
+    margin:0;
+    padding-inline-start:1.5rem;
+    color:var(--kh-ink);
+    font-size:1rem;
+    line-height:1.55;
+  }
+  .karty-editorial__checks { list-style:disc outside; }
+  .karty-editorial__principles { list-style:decimal outside; }
+  .karty-editorial__section li {
+    display:list-item;
+    padding:0;
+    margin:0;
+    hyphens:none;
+    overflow-wrap:normal;
+  }
+  .karty-editorial__section li+li { margin-top:.45rem; }
+  .karty-editorial__section li::marker { color:var(--kh-accent); font-weight:600; }
+</style>
