@@ -1810,14 +1810,27 @@
         onRequestClose: function(reason) { closeGillSheet(overlay, true, reason); }
       });
       (triggers || []).forEach(function(t) { t.setAttribute('aria-expanded', 'true'); });
-      if (!getOverlayRuntime() && focusable) setTimeout(function() { try { focusable.focus(); } catch(_) {} }, 20);
+      if (!getOverlayRuntime() && focusable) setTimeout(function() {
+        // A delayed legacy focus task must not target a dismissed sheet.
+        if (!overlay.classList.contains('is-open') || settingsOpener !== opener) return;
+        try { focusable.focus({ preventScroll: true }); } catch(_) {}
+      }, 20);
     }
     function closeGillSheet(overlay, restoreFocus, reason) {
       if (!overlay) return;
       var triggers = triggersFor(overlay);
       closeOverlay(overlay, reason || 'programmatic', restoreFocus !== false);
       triggers.forEach(function(t) { t.setAttribute('aria-expanded', 'false'); });
-      if (!getOverlayRuntime() && restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
+      var actualOpener = settingsOpener;
+      settingsOpener = null;
+      // OverlayRuntime already restores its own opener. The legacy fallback
+      // must use the same real initiating button, never the first DOM match.
+      if (!getOverlayRuntime() && restoreFocus && actualOpener &&
+          actualOpener.isConnected && actualOpener.getClientRects().length &&
+          !actualOpener.closest('[inert],[hidden],[aria-hidden="true"]') &&
+          getComputedStyle(actualOpener).visibility !== 'hidden' && actualOpener.focus) {
+        try { actualOpener.focus({ preventScroll: true }); } catch(_) {}
+      }
     }
 
     if (settingsBtns.length && settingsOverlay) {

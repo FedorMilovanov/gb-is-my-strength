@@ -44,10 +44,8 @@
         (!originalOpen&&!!el.closest('.mq-translation-original')) ||
         (originalOpen&&!!el.closest('.mq-translation-russian'))
       );
-      const excluded=inactiveFace ||
-        el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
-        getComputedStyle(el).display==='none' ||
-        getComputedStyle(el).visibility==='hidden' || ignored(el.parentElement);
+      let excluded=inactiveFace || el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]');
+      if(!excluded){const style=getComputedStyle(el);excluded=style.display==='none'||style.visibility==='hidden'||ignored(el.parentElement);}
       cached.set(el,excluded);return excluded;
     };
     const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
@@ -69,8 +67,7 @@
     }
     return p.text.length;
   }
-  function makeRange(block,start,end){
-    const p=visibleProjection(block);
+  function makeRange(p,start,end){
     if(!Number.isInteger(start)||!Number.isInteger(end)||
        start<0||end<=start||end>p.text.length)return null;
     const from=p.segments.find(s=>s.start<=start&&start<s.end);
@@ -106,9 +103,13 @@
     };
     return{text,anchor,range:r,rect:visual};
   }
-  function resolve(article,anchor){
+  function resolution(article){
+    let list;
+    const projected=new WeakMap();
+    const projection=block=>{let p=projected.get(block);if(!p){p=visibleProjection(block);projected.set(block,p)}return p};
+    return function resolveAnchor(anchor){
     if(!anchor||typeof anchor.exact!=='string'||!anchor.exact)return null;
-    const list=blocks(article);
+    list ||= blocks(article);
     // Legacy annotations are preserved exactly. If old coordinates included
     // hidden glossary prose, do NOT guess a new author or passage.
     const surroundingMatches=(raw,start,end)=>{
@@ -120,11 +121,11 @@
     };
     const probe=(block,start=anchor.start,end=anchor.end)=>{
       if(!block)return null;
-      const raw=visibleProjection(block).text;
+      const p=projection(block),raw=p.text;
       if(raw.slice(start,end)!==anchor.exact)return null;
       const sameBlock=anchor.blockHash&&hash(normalize(raw))===anchor.blockHash;
       if(!sameBlock&&!surroundingMatches(raw,start,end))return null;
-      return makeRange(block,start,end);
+      return makeRange(p,start,end);
     };
     const preferred=anchor.blockId?
       article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
@@ -139,7 +140,7 @@
     const searchBlocks=stablePreferred?[preferred]:list;
     const candidates=[];
     for(const block of searchBlocks){
-      const raw=visibleProjection(block).text;
+      const p=projection(block),raw=p.text;
       const sameBlock=anchor.blockHash&&hash(normalize(raw))===anchor.blockHash;
       // Without a stable block ID, cross-block relocation is safe only when
       // the complete original block fingerprint and local context both agree.
@@ -147,21 +148,23 @@
       let at=0;
       while((at=raw.indexOf(anchor.exact,at))!==-1){
         if(surroundingMatches(raw,at,at+anchor.exact.length)){
-          const range=makeRange(block,at,at+anchor.exact.length);
+          const range=makeRange(p,at,at+anchor.exact.length);
           if(range)candidates.push(range);
         }
         at++;
       }
     }
     return candidates.length===1?candidates[0]:null;
+    };
   }
+  function resolve(article,anchor){return resolution(article)(anchor)}
     function sameRange(a,b) {
       if(!a||!b)return false;
       try { return a.compareBoundaryPoints(Range.START_TO_START,b)===0
         && a.compareBoundaryPoints(Range.END_TO_END,b)===0; }
       catch(_) {return false;}
     }
-    return Object.freeze({blocks,visibleProjection,capture,resolve,sameRange});
+    return Object.freeze({blocks,visibleProjection,capture,resolve,resolution,sameRange});
   })();
   window.GBReaderAnchors = GBReaderAnchors;
 
@@ -233,14 +236,6 @@
   function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
   function snapshotRaw() {return storageCall('snapshotRaw');}
   function restoreRaw(raw,shouldContinue) {return storageCall('restoreRaw',raw,shouldContinue);}
-  function commit(key, guard, mutate) {
-    return mutateLibrary([key], stores => {
-      const current = stores[key], outcome = mutate(current, guard);
-      if (!outcome || outcome.conflict) return { reason: 'conflict', current };
-      if (outcome.reason) return { reason: outcome.reason, current };
-      return { changes: { [key]: outcome.items }, result: { items: outcome.items } };
-    });
-  }
   // Restore only the deleted version and relationships that are still valid.
   // A conflict never rewinds a newer quote or note; detached copy is explicit.
   let recordTransactions, recordTransactionsLoad;
@@ -341,12 +336,13 @@
     if (!selected.positionalAnchor) return context;
     const article = document.querySelector('article.article-body') || document.querySelector('article');
     if (!article) return context;
-    const exact = GBReaderAnchors.resolve(article, selected.positionalAnchor);
+    const resolve = GBReaderAnchors.resolution(article);
+    const exact = resolve(selected.positionalAnchor);
     if (!exact) return context;
     const here = gbHighlightPath({url:location.href});
     const matches = quotes().filter(item => {
       if (item.annotation?.version !== 1 || gbHighlightPath(item) !== here) return false;
-      const stored = GBReaderAnchors.resolve(article, item.annotation.anchor);
+      const stored = resolve(item.annotation.anchor);
       return stored && GBReaderAnchors.sameRange(exact, stored);
     });
     // Keep a useful unlinked note if this occurrence is new, legacy, or
@@ -458,6 +454,7 @@
     fab.classList.add('visible');
     fab.addEventListener('click', () => open(fab));
     document.addEventListener('keydown', keydown);
+    document.addEventListener('focusin', pendingFocusChanged);
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
     window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
@@ -491,7 +488,13 @@
     editor.addEventListener('submit', editorController.saveNote);
   }
   function keydown(e) {
-    if (!isOpen()) { if (opening && e.key === 'Escape') { e.preventDefault(); close(); } return; }
+    if (!isOpen()) {
+      if (opening && e.key === 'Escape') {
+        if (!ownsPendingFocus()) cancelPending(false);
+        else { e.preventDefault(); close(); }
+      }
+      return;
+    }
     if (e.key === 'Escape') {
       e.preventDefault();
       if (!editor.hidden) hideEditor();
@@ -500,7 +503,25 @@
     else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
   }
   let opening = null, openGeneration = 0, pendingTrigger = null;
-  let pendingReturn = null, focusReturn = null;
+  let pendingReturn = null, focusReturn = null, pendingInitialFocus = null;
+  function ownsPendingFocus() {
+    const active = document.activeElement;
+    return !active || active === document.body || active === pendingInitialFocus ||
+      active === pendingTrigger || pendingTrigger?.contains?.(active) || active === pendingReturn ||
+      !active.isConnected || !active.getClientRects?.().length ||
+      !!active.closest?.('[hidden],[inert],[aria-hidden="true"]');
+  }
+  function cancelPending(restore) {
+    if (!opening) return;
+    const target = pendingReturn;
+    ++openGeneration;
+    opening = null;
+    clearOpenBusy();
+    if (restore) restoreReadingFocus(target);
+  }
+  function pendingFocusChanged() {
+    if (opening && !isOpen() && !ownsPendingFocus()) cancelPending(false);
+  }
   function restoreReadingFocus(preferred) {
     const candidates = [preferred, fab, document.getElementById('npULibraryButton'), document.querySelector('article.article-body h1, article h1, main h1')];
     for (const target of candidates) {
@@ -521,21 +542,24 @@
     pendingTrigger?.removeAttribute?.('aria-busy');
     pendingTrigger = null;
     pendingReturn = null;
+    pendingInitialFocus = null;
   }
   function open(trigger, returnTarget = null) {
     if (!fab) create();
     if (!fab) return Promise.resolve(false);
     if (isOpen()) return Promise.resolve(true);
-    if (opening) return opening;
+    if (opening) cancelPending(false);
     const generation = ++openGeneration;
     const activeTrigger = trigger || document.activeElement;
     const activeReturn = returnTarget || activeTrigger;
     pendingTrigger = activeTrigger;
     pendingReturn = activeReturn;
+    pendingInitialFocus = document.activeElement;
     fab.setAttribute('aria-busy','true');
     if (activeTrigger !== fab) activeTrigger?.setAttribute?.('aria-busy','true');
     const task = loadPresenter().then(() => {
       if (generation !== openGeneration) return false;
+      if (!ownsPendingFocus()) { cancelPending(false); return false; }
       opener = activeTrigger;
       focusReturn = activeReturn;
       tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
@@ -556,7 +580,8 @@
     }).catch(() => {
       if (generation === openGeneration) {
         if (isOpen()) close();
-        else restoreReadingFocus(activeReturn);
+        else if (ownsPendingFocus()) restoreReadingFocus(activeReturn);
+        else { cancelPending(false); return false; }
         toast('Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.', null);
       }
       return false;
@@ -567,9 +592,8 @@
     return task;
   }
   function close() {
-    const cancelledReturn = pendingReturn;
-    if (opening) { ++openGeneration; opening = null; clearOpenBusy(); }
-    if (!isOpen()) { if (cancelledReturn) restoreReadingFocus(cancelledReturn); return; }
+    if (opening) cancelPending(!isOpen() && ownsPendingFocus());
+    if (!isOpen()) return;
     hideEditor(false);
     clearUndo();
     research?.resetMenu();
@@ -584,7 +608,7 @@
     opener = null;
     focusReturn = null;
   }
-  function sync() { if (fab) { const count=all().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
+  function sync() { if (fab) { const count=quotes().length+notes().length+favorites().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
   let dockImpl, dockLoad, contextFromSelection = () => ({ before: '', after: '' });
   function dock() {
     if (!fab) return;
@@ -727,7 +751,7 @@
     if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0, placed: new Set() };
     const scope = document.querySelector('article.article-body') || document.querySelector('article') || document.querySelector('main');
     if (!scope) return { supported: true, painted: 0, placed: new Set() };
-    let index = null;
+    let index = null, resolve;
     const groups = new Map();
     const placed = new Set();
     const desktopW57 = document.body?.classList.contains('np-w57-ready')
@@ -742,7 +766,7 @@
       const color = String(item && (item.color || item.annotation?.color) || '');
       if (!MARK_COLORS.includes(color)) continue;
       const range = annotated
-        ? GBReaderAnchors.resolve(scope, item.annotation.anchor) : locate(index ||= textIndex(scope), item);
+        ? (resolve ||= GBReaderAnchors.resolution(scope))(item.annotation.anchor) : locate(index ||= textIndex(scope), item);
       if (!range) continue;
       if (!groups.has(color)) groups.set(color, []);
       groups.get(color).push(range);
@@ -761,8 +785,8 @@
     const fragment = gbFragmentKey(record);
     const context = gbContextKey(record);
     const article = document.querySelector('article.article-body') || document.querySelector('article');
-    const exact = article && record.annotation
-      ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
+    const resolve = article && record.annotation ? GBReaderAnchors.resolution(article) : null;
+    const exact = resolve?.(record.annotation.anchor);
     let legacyIndex = null;
     let existingIndex = -1;
     if (exact && article) {
@@ -771,10 +795,11 @@
       // rejection. If legacy data already contains both, prefer the colored
       // record to avoid creating a second painter on the same DOM Range.
       const candidates = [];
+      const here=gbHighlightPath(record);
       old.forEach((x, i) => {
-        if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
+        if (gbHighlightPath(x) !== here) return;
         const found = x.annotation?.version === 1
-          ? GBReaderAnchors.resolve(article,x.annotation.anchor)
+          ? resolve(x.annotation.anchor)
           : locate(legacyIndex ||= textIndex(article),x);
         if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
       });

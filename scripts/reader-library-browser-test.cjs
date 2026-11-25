@@ -43,7 +43,7 @@ const server = http.createServer((req, res) => {
     res.end(fs.readFileSync(file));
   } else {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    const transientHtml = html.replace('</head>', '<style>#selection-share-popup[aria-hidden="true"]{display:none}</style></head>');
+    const transientHtml = html.replace('</head>', '<style>#selection-share-popup[aria-hidden="true"]{display:none}</style></head>').replace('<main>', '<button id="qa-unrelated" type="button">Другое действие</button><main>');
     res.end(url.pathname === '/baptisty-rossii/' ? gbsHtml :
       url.pathname === '/articles/selection-native/' ? transientHtml :
       url.pathname === '/articles/selection-fallback/' ? transientHtml.replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>', '') : html);
@@ -220,68 +220,100 @@ async function checkGbs2(name, driver, url) {
 // first presenter request. Selection range setup is deterministic, not a claim
 // of OS-native long-press selection or physical Android/iOS coverage.
 async function checkTransientFocus(name,driver,base) {
-  const browser=await driver.launch({headless:true});
+  const browser=await driver.launch({headless:true}), failures=[];
+  const cases=['close','cancel','failure','unrelated-escape','unrelated-reject','unrelated-resolve','note-B','fab'];
+  let passes=0;
   try {
-    for(const surface of ['native','fallback']) for(const termination of ['close','cancel','failure']) {
+    for(const surface of ['native','fallback']) for(const termination of cases) {
+      const label=name+' '+surface+' '+termination;
       const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,serviceWorkers:'block'});
       const page=await context.newPage();
-      let release, signalRequest, requested=0;
+      let release, signalRequest, requested=0, timer;
       const gate=new Promise(resolve=>{release=resolve});
       const requestSeen=new Promise(resolve=>{signalRequest=resolve});
       const errors=[];
       page.on('pageerror',e=>errors.push(e.message));
+      const rejected=['failure','unrelated-reject'].includes(termination);
+      const unrelated=termination.startsWith('unrelated-');
+      const select=async id=>page.evaluate(id=>{
+        const range=document.createRange();range.selectNodeContents(document.getElementById(id));
+        const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+        const popup=document.getElementById('selection-share-popup');
+        if(popup){popup.classList.add('ss-visible');popup.setAttribute('aria-hidden','false');}
+        document.dispatchEvent(new Event('selectionchange'));
+      },id);
       try {
         await page.route('**/js/reader-library-presenter.js?*',async route=>{
-          requested++;signalRequest();
-          await gate;
-          if(termination==='failure') await route.abort('failed');
-          else await route.continue();
+          requested++;signalRequest();await gate;
+          if(rejected) await route.abort('failed'); else await route.continue();
         });
         await page.goto(base+'/articles/selection-'+surface+'/',{waitUntil:'load'});
         await page.locator('#gb-hl-fab').waitFor({state:'visible'});
-        await page.evaluate(()=>{
-          const range=document.createRange();range.selectNodeContents(document.getElementById('more'));
-          const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
-          document.dispatchEvent(new Event('selectionchange'));
-        });
+        await select('more');
         const note=page.locator(surface==='native'?'#ss-note':'#gb-hl-selbar-note');
         await note.waitFor({state:'visible'});
         const before=await page.evaluate(()=>scrollY);
         await note.tap();
         await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')==='true');
-        await requestSeen;
+        await Promise.race([requestSeen,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+': presenter request never intercepted')),10000);})]);
+        clearTimeout(timer);
         assert.equal(requested,1,'one real presenter request');
-        if(termination==='cancel') {
+        if(unrelated){
+          await page.locator('#qa-unrelated').click();
+          await page.waitForFunction(()=>document.activeElement?.id==='qa-unrelated');
+          if(termination==='unrelated-escape'){
+            await page.evaluate(()=>window.addEventListener('keydown',e=>{if(e.key==='Escape')window.qaEscapePrevented=e.defaultPrevented;},{once:true}));
+            await page.keyboard.press('Escape');
+            assert.equal(await page.evaluate(()=>window.qaEscapePrevented),false,'unrelated Escape not consumed');
+          }
+          const failedRequest=rejected?page.waitForEvent('requestfailed',{predicate:req=>req.url().includes('/js/reader-library-presenter.js?')}):null;
+          release();
+          if(failedRequest)await failedRequest;
+          else await page.locator('#gb-hl-backdrop[inert]').waitFor({state:'attached'});
+          await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true');
+          assert.equal(await page.evaluate(()=>document.activeElement.id),'qa-unrelated');
+          assert.equal(await page.locator('#gb-hl-panel').isVisible(),false);
+        } else if(termination==='cancel') {
           await page.keyboard.press('Escape');
           await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true');
           release();
-          // The cancelled load still finishes mounting its hidden dialog. Do
-          // not assert before the obsolete continuation has had its chance.
           await page.locator('#gb-hl-backdrop[inert]').waitFor({state:'attached'});
         } else {
+          if(termination==='note-B'){
+            await select('demo');await note.waitFor({state:'visible'});await note.tap();
+          } else if(termination==='fab') await page.locator('#gb-hl-fab').tap();
           release();
-          if(termination==='close'){
-            await page.locator('#gb-hl-editor').waitFor({state:'visible'});
+          if(rejected) await page.waitForFunction(()=>document.getElementById('gb-hl-toast')?.dataset.open==='true');
+          else {
+            await page.locator('#gb-hl-panel').waitFor({state:'visible'});
+            if(termination==='fab')assert.equal(await page.locator('#gb-hl-editor').isVisible(),false,'obsolete note must not open editor');
+            else {
+              await page.locator('#gb-hl-editor').waitFor({state:'visible'});
+              if(termination==='note-B')assert.match(await page.locator('#gb-hl-note-context').textContent(),/Размышление/,'latest selected text owns editor');
+            }
             await page.locator('#gb-hl-close').tap();
-          } else await page.waitForFunction(()=>document.getElementById('gb-hl-toast')?.dataset.open==='true');
+          }
         }
-        await page.waitForFunction(()=>{
-          const fab=document.getElementById('gb-hl-fab'),active=document.activeElement;
-          return fab?.getAttribute('aria-busy')!=='true' && !!active?.closest('article') &&
-            active!==document.body && active.getClientRects().length>0 &&
-            !active.closest('[hidden],[inert],[aria-hidden="true"]') &&
-            !document.getElementById('gb-hl-backdrop')?.classList.contains('is-open');
-        });
+        await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true'&&!document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'));
         const after=await page.evaluate(()=>({id:document.activeElement.id,tag:document.activeElement.tagName,scroll:scrollY,
-          lock:document.body.classList.contains('no-scroll'),expanded:document.getElementById('gb-hl-fab').getAttribute('aria-expanded')}));
-        assert.ok(after.id==='more'||after.tag==='H1','stable authored reading target: '+JSON.stringify(after));
-        assert.equal(after.lock,false);assert.equal(after.expanded,'false');
-        assert.ok(Math.abs(after.scroll-before)<=1,'no scroll jump');
+          visible:document.activeElement.getClientRects().length>0&&!document.activeElement.closest('[hidden],[inert],[aria-hidden="true"]'),
+          lock:document.body.classList.contains('no-scroll'),expanded:document.getElementById('gb-hl-fab').getAttribute('aria-expanded'),
+          busy:[...document.querySelectorAll('#ss-note,#gb-hl-selbar-note,#gb-hl-fab')].some(e=>e.getAttribute('aria-busy')==='true')}));
+        assert.equal(after.visible,true);assert.equal(after.lock,false);assert.equal(after.expanded,'false');assert.equal(after.busy,false);
+        if(unrelated)assert.equal(after.id,'qa-unrelated');
+        else if(termination==='fab')assert.equal(after.id,'gb-hl-fab');
+        else if(termination==='note-B')assert.equal(after.id,'demo','latest text owns return focus');
+        else assert.ok(after.id==='more'||after.tag==='H1','stable authored reading target: '+JSON.stringify(after));
+        if(!unrelated)assert.ok(Math.abs(after.scroll-before)<=1,'no scroll jump');
+        assert.equal(requested,1,'one presenter import across intents');
         assert.deepEqual(errors,[]);
-        console.log('PASS',name,surface,termination,'transient selection focus');
-      } finally { release();await context.close(); }
+        passes++;console.log('PASS',label,'transient selection focus');
+      } catch(error){failures.push(label+': '+error.message);console.error('FAIL',label,error.message);}
+      finally {clearTimeout(timer);release();await context.close();}
     }
-  } finally { await browser.close(); }
+  } finally {await browser.close();}
+  console.log(name+' transient focus: '+passes+'/'+(2*cases.length));
+  assert.deepEqual(failures,[],'transient focus failures');
 }
 
 (async () => {
@@ -289,11 +321,14 @@ async function checkTransientFocus(name,driver,base) {
   await once(server, 'listening');
   const url = 'http://127.0.0.1:' + server.address().port + '/articles/sample/';
   try {
+    const failures=[];let passed=0,total=0;
+    const run=async(label,fn)=>{total++;try{await fn();passed++;}catch(error){failures.push(label+': '+error.message);console.error('FAIL',label,error.message);}};
     for (const [name, browser] of [['chromium', chromium], ['firefox', firefox], ['webkit', webkit]]) {
-      for (const width of [320, 390]) await check(name, browser, url, width);
-      await checkGbs2(name, browser, url.replace('/articles/sample/', '/baptisty-rossii/'));
-      if(name!=='firefox') await checkTransientFocus(name,browser,new URL(url).origin);
+      for (const width of [320, 390]) await run(name+' '+width,()=>check(name,browser,url,width));
+      await run(name+' GBS2',()=>checkGbs2(name,browser,url.replace('/articles/sample/','/baptisty-rossii/')));
+      if(name!=='firefox') await run(name+' transient focus',()=>checkTransientFocus(name,browser,new URL(url).origin));
     }
-    console.log('✅ Reader Library browser integration: 6 end-to-end passes');
+    console.log('Reader Library browser groups: '+passed+'/'+total);
+    assert.deepEqual(failures,[],'browser integration failures');
   } finally { server.close(); }
 })().catch((error) => { console.error(error); process.exitCode = 1; server.close(); });

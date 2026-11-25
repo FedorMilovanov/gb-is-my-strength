@@ -1958,19 +1958,6 @@ html.dark [data-gill-v16] .toc-sheet__actions--grid .toc-action-btn.gb-save.is-s
   border: 1px solid transparent !important;
   transition: all .28s var(--gb-ease-out), transform .35s var(--gb-ease-spring) !important;
 }
-[data-gill-v16] .toc-item:hover,
-[data-gill-v16] .toc-part-item:hover {
-  background: var(--gb-surface) !important;
-  border-color: var(--gb-border) !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,.06), 0 2px 6px rgba(184,147,106,.12) !important;
-  transform: none !important;
-}
-html.dark [data-gill-v16] .toc-item:hover,
-html.dark [data-gill-v16] .toc-part-item:hover {
-  background: rgba(255,255,255,.05) !important;
-  border-color: rgba(255,255,255,.1) !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,.5), 0 0 18px rgba(245,197,66,.2) !important;
-}
 [data-gill-v16] .toc-item.is-current,
 [data-gill-v16] .toc-part-item.is-current {
   background: color-mix(in srgb, var(--gb-accent-gold) 12%, var(--gb-surface)) !important;
@@ -2032,10 +2019,6 @@ html.dark [data-gill-v16] .toc-part-item:hover .toc-part-item__num {
 /* 2. Устранение дрожания карточек (Jitter) */
 [data-gill-v16] .toc-item,
 [data-gill-v16] .toc-part-item {
-  transform: none !important;
-}
-[data-gill-v16] .toc-item:hover,
-[data-gill-v16] .toc-part-item:hover {
   transform: none !important;
 }
 

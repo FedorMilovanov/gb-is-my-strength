@@ -1947,17 +1947,24 @@ body .article-body .article-header > .original-author-card + .article-byline {
 .manuscript-quote--bilingual .mq-translation-toggle{display:flex;justify-content:flex-end;align-items:center;min-height:44px;width:100%;margin-top:.4rem;padding:.4rem .1rem;cursor:pointer;list-style:none;outline-offset:3px;font:600 .76rem/1.4 ui-sans-serif,system-ui,sans-serif;font-style:normal;color:var(--color-accent-strong);letter-spacing:.015em;user-select:none;-webkit-tap-highlight-color:transparent}
 .manuscript-quote--bilingual .mq-translation-toggle::-webkit-details-marker{display:none}
 .manuscript-quote--bilingual .mq-translation-toggle::marker{content:""}
-.manuscript-quote--bilingual .mq-toggle-show-translation{display:none}
 .manuscript-quote--bilingual .mq-translation-original{min-width:0;overflow-wrap:break-word;animation:mq-quote-turn .34s ease-out both}
 .manuscript-quote--bilingual .mq-translation-original em{font-style:italic}
-.manuscript-quote--bilingual .mq-translation-flip[open] .mq-toggle-show-original{display:none}
-.manuscript-quote--bilingual .mq-translation-flip[open] .mq-toggle-show-translation{display:inline}
-.manuscript-quote--bilingual .mq-translation-flip[open]+.mq-translation-russian{display:none}
-.manuscript-quote--bilingual .mq-translation-flip[open]{order:0}
-.manuscript-quote--bilingual .mq-translation-flip[open] .mq-translation-toggle{order:1}
-.manuscript-quote--bilingual .mq-translation-flip[open] .mq-translation-original{order:0}
-.manuscript-quote--bilingual .mq-translation-flip[open]{display:flex;flex-direction:column}
 .manuscript-quote--bilingual .mq-translation-toggle:focus-visible{outline:2px solid var(--color-accent-strong);border-radius:4px}
-@keyframes mq-quote-turn{from{opacity:.6;transform:perspective(750px) rotateY(-25deg)}to{opacity:1;transform:perspective(750px) rotateY(0)}}
+/* The disclosure is a screen-only interaction. Paper always selects the
+   authored translation, independent of the disclosure's open state. */
+@layer components{
+  @media screen{
+    .manuscript-quote--bilingual .mq-toggle-show-translation{display:none}
+    .manuscript-quote--bilingual .mq-translation-flip[open] .mq-toggle-show-original{display:none}
+    .manuscript-quote--bilingual .mq-translation-flip[open] .mq-toggle-show-translation{display:inline}
+    .manuscript-quote--bilingual .mq-translation-flip[open]+.mq-translation-russian{display:none}
+  }
+  @keyframes mq-quote-turn{from{opacity:.6;transform:perspective(750px) rotateY(-25deg)}to{opacity:1;transform:perspective(750px) rotateY(0)}}
+}
+@media screen{
+  .manuscript-quote--bilingual .mq-translation-flip[open]{order:0;display:flex;flex-direction:column}
+  .manuscript-quote--bilingual .mq-translation-flip[open] .mq-translation-toggle{order:1}
+  .manuscript-quote--bilingual .mq-translation-flip[open] .mq-translation-original{order:0}
+}
 @media (prefers-reduced-motion:reduce){.manuscript-quote--bilingual .mq-translation-russian,.manuscript-quote--bilingual .mq-translation-original{animation:none}}
-@media print{.manuscript-quote--bilingual .mq-translation-flip{display:none!important}.manuscript-quote--bilingual .mq-translation-russian{display:block!important}}
+@media print{.manuscript-quote--bilingual .mq-translation-flip{display:none}.manuscript-quote--bilingual .mq-translation-russian{display:block}}

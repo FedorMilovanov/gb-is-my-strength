@@ -75,6 +75,7 @@ const SPEECH_STUB = `
 `;
 
 const results = [];
+const pageErrors = new WeakMap();
 const ARTIFACT_DIR = process.env.GB_READER_UI_ARTIFACT_DIR || '';
 if (ARTIFACT_DIR) await mkdir(ARTIFACT_DIR, { recursive: true });
 const R = (page, name, ok, detail) => results.push({ page, name, ok, detail: detail || '' });
@@ -104,7 +105,11 @@ async function newPage(vp, { speech = false } = {}) {
   const ctx = await browser.newContext({ viewport: vp });
   const page = await ctx.newPage();
   await page.route(/gospod-bog\.ru|mc\.yandex/, (r) => r.abort());
-  page.on('pageerror', (e) => R('JS', 'pageerror', false, String(e).slice(0, 120)));
+  pageErrors.set(page, []);
+  page.on('pageerror', (e) => {
+    pageErrors.get(page).push(String(e).slice(0, 500));
+    R('JS', 'pageerror', false, String(e).slice(0, 120));
+  });
   if (speech) await page.addInitScript(SPEECH_STUB);
   return { ctx, page };
 }
@@ -151,6 +156,53 @@ async function clickVisibleCenter(page, selector) {
     await page.mouse.click(hit.x, hit.y);
   }
   return hit;
+}
+
+// Keep the original blocking wait, but retain actual failure evidence before
+// the outer finally closes the browser and discards the in-memory R report.
+async function reportGillSettingsFailure(page, id, selector, hit, reason) {
+  const evidence = { id, selector, hit, reason: String(reason), url: page.url(),
+    pageErrors: pageErrors.get(page) || [] };
+  try {
+    evidence.dom = await page.evaluate(selector => {
+      const describe = el => {
+        if (!el) return null;
+        const style = getComputedStyle(el), rect = el.getBoundingClientRect();
+        return { id: el.id, className: String(el.className), expanded: el.getAttribute('aria-expanded'),
+          hidden: el.getAttribute('aria-hidden'), controls: el.getAttribute('aria-controls'),
+          inert: el.inert, display: style.display, visibility: style.visibility,
+          pointerEvents: style.pointerEvents, rect: rect.toJSON() };
+      };
+      return { viewport: [innerWidth,innerHeight], readyState: document.readyState,
+        comparison: new URL(location.href).searchParams.getAll('reader-pilot'),
+        w57: document.body.classList.contains('np-w57-ready'),
+        overlayRuntime: typeof window.OverlayRuntime?.open === 'function',
+        readerActions: !!window.GBReaderActions, trigger: describe(document.querySelector(selector)),
+        overlay: describe(document.getElementById('gillSettingsOverlay')),
+        focus: describe(document.activeElement),
+        scripts: [...document.scripts].filter(s => /floating-cluster|overlay-runtime|reader-desktop/.test(s.src)).map(s => s.src) };
+    }, selector);
+  } catch (error) { evidence.domError = String(error); }
+  if (ARTIFACT_DIR && !page.isClosed()) {
+    try {
+      const path = join(ARTIFACT_DIR, 'gill-settings-failure-' + id + '.png');
+      await page.screenshot({ path, fullPage: false, timeout: 5000 });
+      evidence.screenshot = path;
+    } catch (error) { evidence.screenshotError = String(error); }
+  }
+  console.error('[engine:sweep] GILL_SETTINGS_FAILURE ' + JSON.stringify(evidence));
+}
+async function waitGillSettings(page,id,selector,hit) {
+  if (!(hit && hit.visible && hit.hit)) {
+    await reportGillSettingsFailure(page,id,selector,hit,'trigger not hit');
+    return;
+  }
+  try {
+    await page.waitForFunction(() => document.querySelector('#gillSettingsOverlay')?.classList.contains('is-open'), null, { timeout: 8000 });
+  } catch (error) {
+    await reportGillSettingsFailure(page,id,selector,hit,error);
+    throw error;
+  }
 }
 
 /* ============ СЕРИЯ-ДВИЖОК — ДЕСКТОП CLASSIC ============ */
@@ -200,9 +252,7 @@ for (const [id, url] of SERIES) {
 
   const settingsHit = await clickVisibleCenter(page, '#railSettingsBtn');
   R(id, 'desk: rail ⚙ hit-target', !!settingsHit && settingsHit.visible && settingsHit.hit, JSON.stringify(settingsHit));
-  if (settingsHit && settingsHit.visible && settingsHit.hit) {
-    await page.waitForFunction(() => document.querySelector('#gillSettingsOverlay')?.classList.contains('is-open'), null, { timeout: 8000 });
-  }
+  await waitGillSettings(page,id+'-desktop','#railSettingsBtn',settingsHit);
   await page.waitForTimeout(450);
   const pop = await page.evaluate(() => {
     const p = document.querySelector('[data-gill-v16] .gill-settings-overlay [class*="sheet"]');
@@ -244,6 +294,9 @@ for (const [id, url] of SERIES) {
     R(id, 'desk: сепия', sep === 'sepia', String(sep));
   } else R(id, 'desk: сепия', false, 'кнопка не найдена');
   await page.keyboard.press('Escape'); await page.waitForTimeout(250);
+  R(id, 'desk: Settings Escape restores actual opener', await page.evaluate(() =>
+    document.activeElement === document.getElementById('railSettingsBtn') &&
+    document.getElementById('gillSettingsOverlay')?.getAttribute('aria-hidden') === 'true'));
 
   await page.evaluate(() => document.querySelector('.gbs-theme-corner .gb-theme-toggle')?.click());
   await page.waitForTimeout(350);
@@ -355,9 +408,7 @@ for (const [id, url] of SERIES) {
   if (gear) {
     const gearHit = await clickVisibleCenter(page, '#mobSettingsBtn');
     R(id, 'mob: ⚙ hit-target', !!gearHit && gearHit.visible && gearHit.hit, JSON.stringify(gearHit));
-    if (gearHit && gearHit.visible && gearHit.hit) {
-      await page.waitForFunction(() => document.querySelector('#gillSettingsOverlay')?.classList.contains('is-open'), null, { timeout: 8000 });
-    }
+    await waitGillSettings(page,id+'-mobile','#mobSettingsBtn',gearHit);
     await page.waitForTimeout(450);
     const sheet = await page.evaluate(() => {
       const p = document.querySelector('#gillSettingsOverlay [class*="sheet"]');
@@ -367,6 +418,9 @@ for (const [id, url] of SERIES) {
     });
     R(id, 'mob: настройки bottom-sheet', !!sheet && sheet.w >= sheet.vw * 0.9 && sheet.gap <= 8, JSON.stringify(sheet));
     await page.keyboard.press('Escape'); await page.waitForTimeout(250);
+    R(id, 'mob: Settings Escape restores actual opener', await page.evaluate(() =>
+      document.activeElement === document.getElementById('mobSettingsBtn') &&
+      document.getElementById('gillSettingsOverlay')?.getAttribute('aria-hidden') === 'true'));
   } else R(id, 'mob: настройки bottom-sheet', false, '#mobSettingsBtn нет');
 
   await page.evaluate(() => (document.querySelector('#mobPartTocBtn') || document.querySelector('.mobile-bottom-bar'))?.click());
