@@ -536,7 +536,7 @@ function button(action, label, text) {
     // Runtime recovery may close a registered layer without requesting it.
     // Reconcile the library's visual/editor state through its existing owner.
     document.addEventListener('gb:overlay-close',event=>{
-      if(layerRuntime&&event.detail?.ownerId===ownerId){layerRuntime=null;close();}
+      if(layerRuntime&&event.detail?.ownerId===ownerId)close();
     });
     function activate(fab,opener) {
       reset();
