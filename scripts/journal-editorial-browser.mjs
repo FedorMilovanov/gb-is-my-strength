@@ -392,6 +392,8 @@ const dossierActionKeys = ["#journal-g3-toc","#documents","#overview","cite-time
 async function standaloneSourceActions(page, kind, forced = false) {
   const selector = kind === 'history'
     ? '.je-history-footnote > a, .jcdi-records a[data-journal-citation]'
+    : kind === 'atlas' ? '.g3g-history a[data-journal-citation]'
+    : kind === 'atlas-map' ? '.g3g-history .g3g-atlas-list a[data-journal-citation]'
     : '.je-contents-jump, .je-contents > .je-contents-return, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref';
   const rows = await page.locator(selector).evaluateAll(nodes => nodes.map(el => {
     const style = getComputedStyle(el), arrow = getComputedStyle(el, '::after'), rect = el.getBoundingClientRect();
@@ -406,7 +408,9 @@ async function standaloneSourceActions(page, kind, forced = false) {
       width: rect.width, blockers, nativeClosedReturn: el.matches('.je-contents-return') && !el.closest('details').open,
       arrow: arrow.content !== 'none' && arrow.borderTopStyle === 'solid' && arrow.borderRightStyle === 'solid' };
   }));
-  assert.deepEqual(rows.map(row => row.id || row.href), kind === 'history' ? historyActionIds : dossierActionKeys, kind + ' exact standalone action inventory');
+  const expected = kind === 'history' ? historyActionIds : (kind === 'atlas' || kind === 'atlas-map')
+    ? Array.from({length:kind === 'atlas' ? 18 : 5},(_,i)=>'cite-g3g-history-'+(i+1)) : dossierActionKeys;
+  assert.deepEqual(rows.map(row => row.id || row.href), expected, kind + ' exact standalone action inventory');
   for (const row of rows) {
     if (row.nativeClosedReturn) continue;
     assert.ok(!row.blockers.length && row.width > 0 && row.height >= 43.5 && row.left >= -1 && row.right <= row.viewport + 1, JSON.stringify(row));
@@ -415,6 +419,34 @@ async function standaloneSourceActions(page, kind, forced = false) {
   }
   return rows;
 }
+// Open the real native chronology only for its source-action witness; restore
+// the original state before the next screenshot or interaction.
+async function atlasSourceActions(page, forced = false) {
+  const chronology = page.locator('.g3g-history .g3g-chron-details');
+  const summary = chronology.locator('summary');
+  assert.equal(await chronology.count(),1);
+  assert.equal(await summary.count(),1);
+  const wasOpen = await chronology.evaluate(el=>el.open);
+  const map = await standaloneSourceActions(page,'atlas-map',forced);
+  const hiddenRows = chronology.locator('a[data-journal-citation]');
+  assert.equal(await hiddenRows.count(),13);
+  assert.deepEqual(await hiddenRows.evaluateAll(nodes=>nodes.map(n=>n.id)),Array.from({length:13},(_,i)=>'cite-g3g-history-'+(i+6)));
+  try {
+    if (!wasOpen) {
+      // Native summary activation, not forced visibility.
+      await summary.click();
+      assert.equal(await chronology.evaluate(el=>el.open),true);
+    }
+    const expanded = await standaloneSourceActions(page,'atlas',forced);
+    return { map, expanded, initiallyOpen:wasOpen };
+  } finally {
+    if ((await chronology.evaluate(el=>el.open))!==wasOpen) {
+      await summary.click();
+      assert.equal(await chronology.evaluate(el=>el.open),wasOpen,'restore native chronology state');
+    }
+  }
+}
+
 // Adversarial checks run on the real routed page AFTER visual capture, in a
 // discarded context. Restore each mutation before the next independent case.
 async function rejectBrokenSourceActions(page) {
@@ -732,6 +764,7 @@ try {
         const response = await ready(page, routes.find(route => route.kind === 'history').url);
         await assertPublishedHistory(page, response);
         item.normal = await wideHistoryGeometry(page);
+        item.atlasSourceActions = await atlasSourceActions(page);
         if (width <= 430) item.sourceActions = await standaloneSourceActions(page,'history');
         await shot(page, name + '-full', { fullPage: true });
         for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
@@ -742,6 +775,7 @@ try {
         await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
         await settleWithoutScripts(page);
         item.scaled = await wideHistoryGeometry(page);
+        item.scaledAtlasSourceActions = await atlasSourceActions(page);
         assert.equal(item.scaled.scale,2);
         assert.ok(item.scaled.atlasTextSizes.every((size,i)=>Math.abs(size-item.normal.atlasTextSizes[i]*2)<.25),'atlas text alternative must follow 200% Reader scale');
         for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
@@ -753,6 +787,17 @@ try {
           await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','1'));
           await settleWithoutScripts(page);
           item.negativeSourceActions = await rejectBrokenSourceActions(page);
+          const atlasChronology = page.locator('.g3g-history .g3g-chron-details');
+          assert.equal(await atlasChronology.evaluate(el=>el.open),false,'native closed chronology baseline');
+          item.atlasNativeReturns = [await sourceRoundTrip(page,page.locator('#cite-g3g-history-1'),true)];
+          await atlasChronology.locator('summary').click();
+          try {
+            assert.equal(await atlasChronology.evaluate(el=>el.open),true);
+            item.atlasNativeReturns.push(await sourceRoundTrip(page,page.locator('#cite-g3g-history-6'),false));
+          } finally {
+            if(await atlasChronology.evaluate(el=>el.open))await atlasChronology.locator('summary').click();
+          }
+          assert.equal(await atlasChronology.evaluate(el=>el.open),false);
         }
         assert.deepEqual(item.runtime, []);
         console.log('PASS '+name);
@@ -1762,6 +1807,7 @@ try {
               'Forced colors must distinguish the current section, not underline every link equally');
           }
           if (width < 1024 && route.kind !== 'journal') item.standaloneSourceActions = await standaloneSourceActions(page, route.kind, true);
+          if (route.kind === 'history') item.atlasSourceActions = await atlasSourceActions(page,true);
           await shot(page, name);
           const current = page.locator('.je-masthead__nav a[aria-current]');
           await current.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
