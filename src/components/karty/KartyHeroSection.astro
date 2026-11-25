@@ -38,15 +38,17 @@ function publishedLabel(count: number) {
         return (
           <a
             href={`./${record.slug}/`}
-            class="karty-feature"
-            style={`--karty-feature-image:url('${image}')`}
+            class="karty-map-card"
             data-karty-published={record.slug}
           >
-            <div class="karty-feature__body">
-              <span class="badge badge--ready">Проверенная карта</span>
+            <figure class="karty-map-card__figure">
+              <img src={image} alt="" width="1200" height="630" decoding="async" />
+            </figure>
+            <div class="karty-map-card__body">
+              <span class="karty-map-card__eyebrow">Проверенная карта</span>
               <h2>{title} {titleHe && <span lang="he">{titleHe}</span>}</h2>
               <p>{summary}</p>
-              <span class="karty-feature__cta">Открыть карту →</span>
+              <span class="karty-map-card__cta">Открыть карту <span aria-hidden="true">→</span></span>
             </div>
           </a>
         );
@@ -77,8 +79,79 @@ function publishedLabel(count: number) {
   .karty-hero-layout .he { direction:rtl; text-align:left; font-size:1.8rem; }
   .karty-hero-layout .desc { font-family:"Source Sans 3",Inter,system-ui,sans-serif; font-size:1rem; line-height:1.65; }
   .karty-feature-list { display:grid; gap:1rem; min-width:0; }
-  .karty-feature { min-height:300px; }
-  .karty-feature:focus-visible { outline:3px solid var(--kh-accent); outline-offset:4px; }
+  /* The governed illustration and the reading surface are separate regions.
+     The native card owns its presentation, not the old background-overlay
+     selector in the page head. No text is positioned over the image. */
+  .karty-map-card {
+    display:block;
+    min-width:0;
+    border:1px solid var(--kh-line);
+    border-radius:18px;
+    background:var(--kh-card);
+    color:var(--kh-ink);
+    text-decoration:none;
+    box-shadow:var(--kh-shadow);
+  }
+  .karty-map-card__figure {
+    margin:0;
+    overflow:hidden;
+    border-radius:17px 17px 0 0;
+    background:var(--kh-deep);
+  }
+  .karty-map-card__figure img {
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:40/21;
+    object-fit:contain;
+  }
+  .karty-map-card__body {
+    padding:clamp(1rem,2vw,1.5rem);
+    background:var(--kh-card);
+    border-radius:0 0 17px 17px;
+    min-width:0;
+  }
+  .karty-map-card__eyebrow {
+    display:block;
+    color:var(--kh-accent);
+    font-size:.75rem;
+    line-height:1.4;
+    letter-spacing:.08em;
+    font-weight:750;
+    text-transform:uppercase;
+  }
+  .karty-map-card h2 {
+    font:600 clamp(1.35rem,2.5vw,1.9rem)/1.2 "Playfair Display",Georgia,serif;
+    margin:.6rem 0;
+    color:var(--kh-ink);
+    overflow-wrap:anywhere;
+  }
+  .karty-map-card h2 span {
+    font-family:"Noto Serif Hebrew",serif;
+    font-size:.75em;
+    color:var(--kh-muted);
+    unicode-bidi:isolate;
+  }
+  .karty-map-card p {
+    margin:0;
+    color:var(--kh-muted);
+    font-size:1rem;
+    line-height:1.55;
+  }
+  .karty-map-card__cta {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.5rem;
+    min-height:44px;
+    margin-top:.85rem;
+    border-top:1px solid var(--kh-line);
+    padding-top:.65rem;
+    color:var(--kh-accent);
+    font-weight:750;
+  }
+  .karty-map-card:hover { border-color:var(--kh-accent); text-decoration:none; }
+  .karty-map-card:focus-visible { outline:3px solid var(--kh-accent); outline-offset:4px; }
   .karty-hero-layout .karty-hero__meta {
     grid-column:1/-1;
     grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));
@@ -101,10 +174,5 @@ function publishedLabel(count: number) {
   .karty-hero-layout .karty-stat span { font-size:.83rem; text-transform:none; letter-spacing:0; margin:0; line-height:1.3; }
   @media(max-width:560px) {
     .karty-hero-layout .karty-hero__meta { gap:.2rem; grid-template-columns:minmax(0,1fr); }
-    .karty-feature { min-height:250px; }
-  }
-  @media(prefers-reduced-motion:reduce) {
-    .karty-feature::before { transition:none; }
-    .karty-feature:hover::before { transform:none; filter:none; }
   }
 </style>
