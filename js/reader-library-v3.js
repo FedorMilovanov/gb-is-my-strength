@@ -438,7 +438,8 @@ export function warmReadingProgress({isOpen,exitForResume}) {
   function onPageHide() {
     const intent = pending;
     cancelPendingProgress();
-    rememberProgress(intent);
+    // A visit without scrolling must not reset a saved reading position.
+    if (intent) rememberProgress(intent);
   }
   function refreshReading() {
     reading = readReading();

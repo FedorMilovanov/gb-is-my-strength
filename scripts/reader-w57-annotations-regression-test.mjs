@@ -890,9 +890,9 @@ console.log('W40: 6/6 Undo integrity cases PASS');
     addEventListener(type){if(fail==='dom:'+type)throw Error('injected')}});
    const document={createElement:node,readyState:'complete'};
    const sessionStorage={getItem(){sessionReads++;return null}};
-   const factory=new Function('window','document','sessionStorage','AbortController','KEYS','objectMap','parse','btn','node','Option','location','cleanPath',body+';return createLibraryResearch;')(
+   const factory=new Function('window','document','sessionStorage','AbortController','KEYS','objectMap','parse','btn','node','Option','location','cleanPath',body+';return {createLibraryResearch,warmReadingProgress};')(
     window,document,sessionStorage,Controller,{tags:'tags',reading:'reading',revisit:'revisit'},x=>x,()=>({}),node,node,function(){},{pathname:'/a'},x=>x);
-   const mount=()=>factory({overlay:node(),getItems:()=>[],notify(){},refresh(){},isOpen:()=>false,renderItem(){}});
+   const mount=()=>factory.createLibraryResearch({overlay:node(),getItems:()=>[],notify(){},refresh(){},isOpen:()=>false,renderItem(){}});
    const live=()=>listeners.filter(x=>!x.opts.signal?.aborted).map(x=>x.type);
    if(fault){
     assert.throws(mount,/injected/,fault);
@@ -903,10 +903,10 @@ console.log('W40: 6/6 Undo integrity cases PASS');
    assert.ok(mount());
    assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed'],'one progress owner and one UI storage listener after success/retry');
    assert.equal(sessionReads,1);
-   // A second UI mount may add its own storage listener, but must not
-   // attach any more document-lifetime progress listeners or resume again.
-   assert.ok(mount());
-   assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed','storage']);
+   // Calling the warm entry point again must return the one live owner.
+   const first=factory.warmReadingProgress({isOpen:()=>false});
+   assert.equal(factory.warmReadingProgress({isOpen:()=>false}),first);
+   assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed']);
    assert.equal(sessionReads,1);
   }
  }
@@ -958,7 +958,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  new Function('window','localStorage','STORAGE_KEY','publish','let clearGeneration=0;'+favoriteSource.slice(fa,fb))({addEventListener:(_,fn)=>favoriteListener=fn},localStorage,'f',()=>published++);
  favoriteListener(event(null,other));favoriteListener(event('q'));assert.equal(published,0);
  favoriteListener(event('f'));favoriteListener(event(null));assert.equal(published,2);
- const ra=researchSource.indexOf('  function onStorage(event) {');
+ const ra=researchSource.indexOf('  function onStorage(event) {',researchSource.indexOf('export function createLibraryResearch('));
  const rb=researchSource.indexOf('  const controller = Object.freeze({',ra);
  assert.ok(ra>=0&&rb>ra);
  let reads=[],refreshes=0,manager=0,cancels=0,imports=0,focuses=0;
@@ -970,9 +970,49 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  api.onStorage(event(null,other));api.onStorage(event('q'));assert.equal(reads.length,0);
  api.onStorage(event('t'));assert.equal(reads.join(','),'t');assert.equal(refreshes,1);
  reads=[];
- api.onStorage(event(null));assert.equal(reads.join(','),'t,r,v');assert.equal(refreshes,2);assert.equal(manager,2);assert.equal(cancels,1);assert.equal(imports,1);
+ api.onStorage(event(null));assert.equal(reads.join(','),'t,r,v');assert.equal(refreshes,2);assert.equal(manager,2);assert.equal(cancels,0);assert.equal(imports,1);
  assert.equal(api.state().tags.new,'tag');assert.equal(Object.keys(api.state().reading).length,0);assert.equal(api.state().revisit.new,'revisit');
  assert.equal(api.state().selectedItem,null);assert.equal(tagEditor.hidden,true);assert.equal(focuses,1);
+}
+
+
+// W248: the document-lifetime progress owner flushes only real scroll intent,
+// cancels stale status updates, and never attributes a scroll to another route.
+{
+ const source=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
+ const a=source.indexOf('let readingProgress;'),b=source.indexOf('export function createLibraryResearch(',a);
+ assert.ok(a>=0&&b>a);
+ const handlers=new Map(),timers=new Map();let next=0,writes=[],opened=false;
+ const record={state:'reading',anchor:'saved',ratio:.7,updatedAt:1};
+ let live={'/a':record,'/b':{...record,anchor:'b'}};
+ const copy=x=>JSON.parse(JSON.stringify(x));
+ const location={pathname:'/a'},localStorage={};
+ const window={scrollY:500,innerHeight:800,addEventListener:(type,fn)=>handlers.set(type,fn)};
+ const document={readyState:'loading',documentElement:{scrollHeight:1800},querySelectorAll:()=>[]};
+ const factory=new Function('window','document','location','localStorage','sessionStorage','AbortController','KEYS','objectMap','parse','cleanPath','exact','setTimeout','clearTimeout','mutateResearch','updateProgress',
+  source.slice(a,b).replace('export function','function')+'return warmReadingProgress;');
+ const exact=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+ const warm=factory(window,document,location,localStorage,{},AbortController,{reading:'r'},x=>x,()=>copy(live),x=>x,exact,
+  fn=>{timers.set(++next,fn);return next},id=>timers.delete(id),
+  async(name,prepare)=>{const result=prepare(live);if(result.reason)return{ok:false};live=result.value;writes.push(copy(live));return{ok:true}},
+  (map,key,expected,progress)=>exact(map[key],expected)&&map[key]?.state==='reading'?{value:{...map,[key]:{...map[key],...progress}}}:{reason:'conflict'});
+ const owner=warm({isOpen:()=>opened});
+ const fire=(name,event={})=>handlers.get(name)(event);
+ const flush=()=>{const fns=[...timers.values()];timers.clear();fns.forEach(fn=>fn())};
+ const settle=async()=>{await Promise.resolve();await Promise.resolve()};
+ fire('pagehide');await settle();assert.equal(writes.length,0,'no scroll must preserve saved progress');
+ fire('scroll');assert.equal(timers.size,1);
+ live={'/a':{...record,state:'finished'},'/b':live['/b']};fire('storage',{key:'r',storageArea:localStorage});
+ assert.equal(timers.size,0);fire('pagehide');flush();await settle();assert.equal(writes.length,0,'new status must not be overwritten');
+ live={'/a':record,'/b':live['/b']};fire('gb:library-committed',{detail:{key:'r'}});
+ fire('scroll');location.pathname='/b';flush();await settle();assert.equal(writes.length,0,'old route scroll must not move new route');
+ location.pathname='/a';fire('scroll');fire('storage',{key:null,storageArea:{}});assert.equal(timers.size,1);
+ live={};fire('storage',{key:null,storageArea:localStorage});assert.equal(timers.size,0);fire('pagehide');await settle();assert.equal(writes.length,0,'clear revokes pending progress');
+ live={'/a':record};fire('gb:library-committed',{detail:{key:'r'}});
+ opened=true;fire('scroll');assert.equal(timers.size,0);opened=false;
+ fire('scroll');fire('pagehide');await settle();assert.equal(writes.length,1);assert.equal(live['/a'].ratio,.5);
+ assert.equal(warm({isOpen:()=>false}),owner);
+ console.log('W248: warm progress intent and no-scroll preservation PASS');
 }
 
 // W69: exercise exact bootstrap functions across both lazy boundaries and

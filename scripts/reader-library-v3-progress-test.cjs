@@ -48,6 +48,8 @@ async function test(engine,driver,base){
  console.log('PASS '+engine+' warm progress without presenter request or DOM');
  // Revisit a quote, suppress it permanently, then verify it will not reappear.
  await page.locator('#gb-hl-fab').click();
+ await page.locator('#gb-hl-backdrop.is-open').waitFor();
+ await page.locator('.gb-hl-daily').waitFor();
  assert.equal(await page.locator('.gb-hl-daily').count(),1);
  const first=await page.locator('[data-research-action=never-quote]').getAttribute('data-value');
  await page.locator('[data-research-action=never-quote]').click();
@@ -61,6 +63,7 @@ async function test(engine,driver,base){
  await page.locator('#gb-hl-close').click();
  await page.reload();
  await page.locator('#gb-hl-fab').click();
+ await page.locator('#gb-hl-backdrop.is-open').waitFor();
  assert.equal(await page.locator('.gb-hl-daily').count(),0,'suppressed quotes survive reload');
  assert.deepEqual(errors,[]);
  console.log('PASS '+engine+' exact resume anchor and permanent daily exclusions');

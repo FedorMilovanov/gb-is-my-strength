@@ -67,7 +67,7 @@ const fixture=(seed={},options={})=>{
   assert.equal(name,'gb-library:'+keys.notes);
   const run=queue.then(()=>fn({name}));queue=run.catch(()=>{});return run;
  }}};
- const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary,snapshotRaw,restoreRaw};')(keys.notes,keys.quotes,500,200,storage,nav,{dispatchEvent:()=>{}},class{},AbortController,()=>1,()=>{},x=>x?.text);
+ const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary,snapshotRaw,restoreRaw};')(keys.notes,keys.quotes,500,200,storage,nav,{dispatchEvent:()=>{},addEventListener:()=>{}},class{},AbortController,()=>1,()=>{},x=>x?.text);
  const install=()=>{globalThis.window={GBHighlights:owner}};
  const snapshot=()=>Object.fromEntries(Object.values(keys).map(k=>[k,storage.getItem(k)]));
  return {owner,install,raw,writes,snapshot};
