@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v250-reader-w306-candidate-20261126';
+const CACHE_VERSION = 'gb-v251-reader-w317-candidate-20261126';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -22,7 +22,7 @@ const PRECACHE_ASSETS = [
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
   '/css/nagornaya-mobile-toc.css?v=623e0845',
-  '/css/floating-cluster.css?v=0457785a',
+  '/css/floating-cluster.css?v=c1edf6a9',
   '/css/series-samizdat.css?v=6d9658bd',
   '/css/reader-preferences.css?v=9f01260b',
   '/css/enhancements-runtime.css?v=d195a91d',
@@ -30,7 +30,7 @@ const PRECACHE_ASSETS = [
   '/css/sw-toast.css?v=2e540077',
   '/fonts/fonts.css?v=14332eea',
   '/nagornaya/tw.min.css?v=bee34e73',
-  '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
+  '/js/nagornaya-bar-extras.js?v=b8b430cb',
   '/js/site.js?v=90db3daa',
   '/js/site-utils.js?v=1d1c72c3',
   '/js/scroll-perf.js?v=454d6f7b',

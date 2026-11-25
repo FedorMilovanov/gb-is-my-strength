@@ -775,25 +775,18 @@ body.nagornaya-page #themeToggle {
    revived bar by a small script (see nagornaya PageFooter) that clones the
    sidebar's existing [data-fc-root] cluster — same pattern already used by
    floating-cluster-controller.js's own ensureMobileFallbackControls(). */
-@media (max-width: 899px) {
-  /* Double class + id: deliberately out-specifies the
-     body.gb-cluster-single-active/fc-single-active #bottomBar hide rules
-     above (same single-class+id specificity as this rule at first, which
-     lost the cascade tie in testing despite later source order — some
-     other stylesheet or dynamically-inserted \3c style> was re-asserting
-     display:none after this file loads). Don't rely on source order here.
-     (js/nagornaya-bar-extras.js also forces this inline as a backstop.) */
-  body.nagornaya-page.has-bottom-bar #bottomBar,
-  body.nagornaya-page.has-bottom-bar #btocOverlay {
-    display: block !important;
-  }
-  /* The real #bottomBar now covers everything the generic floating-pill
-     fallback exists for — hide the pill on Nagornaya so the two don't stack
-     (ensureMobileFallbackControls() in floating-cluster-controller.js still
-     creates it; its hasVisibleEmber() check doesn't reliably see the ember
-     cloned into #bottomBar in time). */
-  body.nagornaya-page .gb-mobile-fallback-controls {
-    display: none !important;
+/* Important declarations in the components layer outrank unlayered
+   important declarations. Keep the mobile exception in that same layer,
+   and exclude print media instead of overriding visibility inline. */
+@layer components {
+  @media screen and (max-width: 899px) {
+    body.nagornaya-page.has-bottom-bar #bottomBar,
+    body.nagornaya-page.has-bottom-bar #btocOverlay {
+      display: block !important;
+    }
+    body.nagornaya-page .gb-mobile-fallback-controls {
+      display: none !important;
+    }
   }
 }
 

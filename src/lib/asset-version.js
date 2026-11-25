@@ -5,7 +5,7 @@
 export const ASSET_VERSIONS = {
   'css/command-palette.css': '3b88813f',
   'css/enhancements-runtime.css': 'd195a91d',
-  'css/floating-cluster.css': '0457785a',
+  'css/floating-cluster.css': 'c1edf6a9',
   'css/highlights-runtime.css': '7d6f17ca',
   'css/home.css': '4a2fa9a3',
   'css/mobile-hotfix.css': '9cfd6aee',
@@ -22,7 +22,7 @@ export const ASSET_VERSIONS = {
   'js/floating-cluster-controller.js': '602c21e5',
   'js/glossary.js': '8c2537f0',
   'js/highlights.js': '4834c431',
-  'js/nagornaya-bar-extras.js': '3c7e0bdd',
+  'js/nagornaya-bar-extras.js': 'b8b430cb',
   'js/nagornaya-mobile-toc.js': 'a0b23b1c',
   'js/reader-library-dock.js': 'f730766c',
   'js/reader-library-presenter.js': 'df7edaea',
