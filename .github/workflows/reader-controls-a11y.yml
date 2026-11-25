@@ -151,6 +151,7 @@ jobs:
           npx playwright install --with-deps chromium webkit firefox
 
       - name: Syntax and source boundary
+        id: reader_source
         run: |
           node --check src/runtime/reader-controls-a11y.js
           node --check scripts/reader-controls-a11y-browser-contract.mjs
@@ -183,15 +184,8 @@ jobs:
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
-      - name: Build production-like dist
-        id: reader_build
-        run: |
-          mkdir -p reports
-          set -o pipefail
-          npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
-
-      # Source fixture does not depend on dist; a failed production build
-      # must not suppress this independent lifecycle witness.
+      # Source fixture does not depend on dist. Run it before the build so
+      # a build timeout cannot suppress this independent lifecycle witness.
       - name: Run exact-head Library source browser integration
         if: ${{ !cancelled() && steps.reader_dependencies.outcome == 'success' }}
         run: |
@@ -201,6 +195,14 @@ jobs:
             printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
             node scripts/reader-library-browser-test.cjs
           } 2>&1 | tee reports/reader-library-browser-test.log
+
+      - name: Build production-like dist
+        id: reader_build
+        if: ${{ !cancelled() && steps.reader_source.outcome == 'success' }}
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
 
       - name: Run exact-head Gill whole-page and atlas contracts
         if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
