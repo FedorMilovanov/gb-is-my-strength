@@ -2,7 +2,7 @@
 
 /* TODO: gill-v16 | gbs2-baptisty | gbs2-hard-texts | astro-series */
 /* Gill v16 required: data-gill-v16, .gbs-rail, .gbs-rail-card.is-current, .mobile-bottom-bar, #mobPartTocBtn, #seriesTocOverlay, #partTocOverlay */
-/* REMOVE .gbs2-timeline requirement from Gill v16 — prevents false-red */
+/* Gill uses the canonical editorial atlas, not the legacy timeline. */
 
 /**
  * Interactive regression audit for runtime-only bugs that static HTML checks miss.
@@ -26,6 +26,7 @@ const SERIES_URLS = [
   '/articles/dzhon-gill-istoricheskiy-kontekst/',
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/dzhon-gill-chast-2-uchenyi/',
+  '/articles/dzhon-gill-chast-4-ekzeget/',
   '/articles/dzhon-gill-chast-3-nasledie/',
   '/articles/dzhon-gill-spravochnik/',
   '/articles/krajne-li-isporcheno-serdce/',
@@ -238,6 +239,13 @@ async function checkSeries(browser) {
         gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current, .gbs-rail-card[aria-current="page"], .gbs-rail-card.is-current, .gbs2-current[aria-current="page"]'),
         gbsNext: !!document.querySelector('.gbs2-next, .gbs-rail-card[href]:not([aria-current="page"]):not(.is-current)'),
         gbsTimeline: !!document.querySelector('.gbs2-timeline'),
+        gillAtlas: {
+          count: document.querySelectorAll('.gill-atlas').length,
+          links: [...document.querySelectorAll('.gill-atlas .atlas-node')].map(a => ({
+            href: a.getAttribute('href'), current: a.getAttribute('aria-current'),
+            width: a.getBoundingClientRect().width, height: a.getBoundingClientRect().height,
+          })),
+        },
         gbsV16: !!document.querySelector('[data-gill-v16], .mobile-bottom-bar, #seriesTocOverlay, #partTocOverlay'),
         astroArticle: !!document.querySelector('.astro-article'),
         astroSeriesNav: !!document.querySelector('.astro-series-nav'),
@@ -251,9 +259,21 @@ async function checkSeries(browser) {
       if (!state.gbsRail || !state.gbsRailVisible) push('gbs-rail-not-visible', url, state);
       if (!state.gbsCurrent) push('gbs-no-current-part', url, state);
       if (!state.gbsNext) push('gbs-next-nav-missing', url, state);
-      // Hard-texts GBS pages intentionally use the compact rail without the
-      // chronological timeline used by Gill/Baptisty series.
-      if (!state.gbsTimeline && state.gbsSeries !== 'hard-texts') push('gbs-timeline-missing', url, state);
+      // Gill's authored atlas replaced the timeline; require its actual
+      // ordered six-route graph and one truthful, visible current marker.
+      if (state.gbsSeries === 'dzhon-gill') {
+        const expected = SERIES_URLS.filter(route => route.startsWith('/articles/dzhon-gill-'));
+        const atlas = state.gillAtlas;
+        const current = atlas.links.filter(link => link.current === 'page');
+        if (atlas.count !== 1 || state.gbsTimeline ||
+            JSON.stringify(atlas.links.map(link => link.href)) !== JSON.stringify(expected) ||
+            current.length !== 1 || current[0].href !== url ||
+            atlas.links.some(link => link.width <= 0 || link.height <= 0)) {
+          push('gill-atlas-contract', url, atlas);
+        }
+      } else if (!state.gbsTimeline && state.gbsSeries !== 'hard-texts') {
+        push('gbs-timeline-missing', url, state);
+      }
     } else {
       if (!state.astroArticle) push('astro-series-article-missing', url, state);
       if (!state.astroSeriesNav) push('astro-series-nav-missing', url, state);

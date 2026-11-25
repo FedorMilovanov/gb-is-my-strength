@@ -5,6 +5,14 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 const BASE = process.env.DATELINE_BASE_URL || 'http://127.0.0.1:4173';
 const OUT = path.resolve('reports/editorial-dateline');
+const atlasRoutes = [
+  "/articles/dzhon-gill-istoricheskiy-kontekst/",
+  "/articles/dzhon-gill-chast-1-chelovek/",
+  "/articles/dzhon-gill-chast-2-uchenyi/",
+  "/articles/dzhon-gill-chast-4-ekzeget/",
+  "/articles/dzhon-gill-chast-3-nasledie/",
+  "/articles/dzhon-gill-spravochnik/"
+];
 const routes = [
   ['gill-part-1', '/articles/dzhon-gill-chast-1-chelovek/'],
   ['gill-part-2', '/articles/dzhon-gill-chast-2-uchenyi/'],
@@ -83,12 +91,21 @@ try {
           terminalChrome.every((item) => item.display === 'none'),
           `${route}: terminal reader chrome leaked into paper flow: ${JSON.stringify(terminalChrome)}`,
         );
-        const seriesMaps = await page.evaluate(() => [...document.querySelectorAll('.gbs2-timeline')].map((node) => ({
+        const seriesMaps = await page.evaluate(() => [...document.querySelectorAll('.gill-atlas')].map((node) => ({
           display: getComputedStyle(node).display,
           printPolicy: node.getAttribute('data-print-policy'),
+          links: [...node.querySelectorAll('.atlas-node')].map(a => ({
+            href: a.getAttribute('href'), current: a.getAttribute('aria-current'),
+            width: a.getBoundingClientRect().width, height: a.getBoundingClientRect().height,
+          })),
         })));
         assert.ok(
-          seriesMaps.length > 0 && seriesMaps.every((item) => item.display !== 'none' && item.printPolicy !== 'exclude'),
+          seriesMaps.length === 1 && seriesMaps.every((item) =>
+            item.display !== 'none' && item.printPolicy !== 'exclude' &&
+            JSON.stringify(item.links.map(link => link.href)) === JSON.stringify(atlasRoutes) &&
+            item.links.filter(link => link.current === 'page').length === 1 &&
+            item.links.some(link => link.current === 'page' && link.href === route) &&
+            item.links.every(link => link.width > 0 && link.height > 0)),
           `${route}: authored series map was removed from paper flow: ${JSON.stringify(seriesMaps)}`,
         );
         await page.pdf({ path: path.join(OUT, `${slug}.pdf`), format: 'A4', printBackground: true, preferCSSPageSize: true });
