@@ -29,6 +29,41 @@ const byId = (doc, id) => all(doc, (node) => attr(node, 'id') === id)[0];
 const text = (node) => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(text).join('');
 const normalize = (value) => value.replace(/\s+/gu, '');
 
+/** Assert the actual ordered chronology, not a regex-filtered subset of
+ * descendant IDs: an extra/missing/misnested row must fail as well. */
+function assertLaterConferenceChronology(doc) {
+  const section = byId(doc, 'g3-later-conferences');
+  assert.ok(section, 'later conference section is present');
+  const lists = all(section, node => node.tagName === 'ol' && hasClass(node, 'je-history-years'));
+  assert.equal(lists.length, 1, 'one native chronological list');
+  assert.equal(lists[0].parentNode, section, 'chronology is a direct section child');
+  const rows = (lists[0].childNodes || []).filter(node => node.tagName);
+  const years = ['2019', '2020', '2021', '2022', '2023', '2024'];
+  assert.deepEqual(rows.map(row => [row.tagName, attr(row, 'id')]),
+    years.map(year => ['li', 'g3-year-' + year]), 'historical conference chronology includes 2021 in exact order');
+  rows.forEach((row, index) => {
+    const marks = all(row, node => hasClass(node, 'je-history-year-mark'));
+    assert.equal(marks.length, 1, 'one visible year marker per chronological row');
+    const dates = all(marks[0], node => node.tagName === 'time');
+    assert.equal(dates.length, 1, 'one semantic date per year marker');
+    assert.equal(attr(dates[0], 'datetime'), years[index]);
+    assert.equal(text(dates[0]).trim(), years[index]);
+  });
+  return rows[2];
+}
+// Native parse5 positive/negative controls run even with --source-only.
+{
+  const year = value => '<li id="g3-year-' + value + '"><div class="je-history-year-mark"><time datetime="' + value + '">' + value + '</time></div></li>';
+  const valid = ['2019', '2020', '2021', '2022', '2023', '2024'].map(year);
+  const fixture = rows => parse('<section id="g3-later-conferences"><ol class="je-history-years">' + rows.join('') + '</ol></section>');
+  assert.equal(attr(assertLaterConferenceChronology(fixture(valid)), 'id'), 'g3-year-2021');
+  assert.throws(() => assertLaterConferenceChronology(fixture(valid.filter((_, i) => i !== 2))), /chronology includes 2021/);
+  assert.throws(() => assertLaterConferenceChronology(fixture([valid[0], valid[2], valid[1], ...valid.slice(3)])), /chronology includes 2021/);
+  assert.throws(() => assertLaterConferenceChronology(fixture([...valid, year('2025')])), /chronology includes 2021/);
+  assert.throws(() => assertLaterConferenceChronology(fixture(valid.map((row, i) => i === 2 ? row.replace('datetime="2021"', 'datetime="2020"') : row))));
+  assert.throws(() => assertLaterConferenceChronology(fixture(valid.map((row, i) => i === 2 ? row.replace('>2021</time>', '>2020</time>') : row))));
+}
+
 /** Immutable G44 editorial witness, accepted ART/E36 on #2381. */
 const G44_ROWS = [
   [
@@ -590,9 +625,7 @@ if (!process.argv.includes('--source-only')) {
           assert.ok(byId(doc,'cite-r6-'+id));
         }
       }
-      const yearList=byId(doc,'g3-later-conferences');
-      assert.deepEqual(all(yearList,n=>n.tagName==='li'&&/^g3-year-\\d{4}$/.test(attr(n,'id')||'')).map(n=>attr(n,'id')),['g3-year-2019','g3-year-2020','g3-year-2021','g3-year-2022','g3-year-2023','g3-year-2024'],'historical conference chronology includes 2021');
-      const christYear=byId(doc,'g3-year-2021');
+      const christYear=assertLaterConferenceChronology(doc);
       assert.equal(all(christYear,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-14').length,1,'2021 testimony belongs to its chronological chapter');
       assert.equal(all(christYear,n=>attr(n,'id')==='cite-r6-crotts-2021').length,1,'2021 source remains next to testimony');
       assert.equal(all(byId(doc,'g3-growth'),n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-15').length,1,'network account remains in institutional growth');
