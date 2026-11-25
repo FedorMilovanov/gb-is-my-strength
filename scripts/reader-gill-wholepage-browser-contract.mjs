@@ -101,6 +101,16 @@ function checkAtlas(actual,index,dark){
   assert.deepEqual(actual.nodes,atlasExpected.map((v,i)=>({...v,current:i===index?'page':null,here:i===index?'Вы здесь':null})));
   assert.deepEqual(actual.faults,[],'atlas geometry, SVG and contrast');
 }
+async function isolateTelemetry(context) {
+  // Same two telemetry origins as the hermetic Reader data-integrity test.
+  // All same-origin assets and all page errors remain real and asserted.
+  await context.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i, route =>
+    route.fulfill({
+      status: 200,
+      contentType: route.request().resourceType() === 'script' ? 'application/javascript' : 'text/plain',
+      body: '',
+    }));
+}
 async function waitForAtlasFonts(page) {
   // Firefox with page JS disabled can hang when Playwright awaits a promise
   // in the page realm, even with all font faces already loaded. Read the
@@ -133,6 +143,7 @@ async function runAtlasMatrix(){
       for(const js of [false,true])for(const width of [390,1440]){
         const ctx=await browser.newContext({viewport:{width,height:844},javaScriptEnabled:js,serviceWorkers:'block',reducedMotion:'reduce'});
         try{
+          await isolateTelemetry(ctx);
           const page=await ctx.newPage(),errors=[];
           page.on('pageerror',e=>errors.push(e.message));
           for(let index=0;index<atlasExpected.length;index++){
@@ -190,7 +201,8 @@ try {
       for(const theme of ['light','dark']){
         const ctx=await browser.newContext({viewport:{width,height:844},isMobile:width<500,
           hasTouch:width<500,serviceWorkers:'block',reducedMotion:'reduce'});
-        const page=await ctx.newPage(),errors=[];
+        await isolateTelemetry(ctx);
+          const page=await ctx.newPage(),errors=[];
         page.on('pageerror',e=>errors.push(e.message));
         const r=await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:30000});
         assert.equal(r.status(),200,engine+' '+width+' route');
