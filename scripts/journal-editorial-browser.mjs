@@ -395,6 +395,8 @@ async function standaloneSourceActions(page, kind, forced = false) {
     : kind === 'atlas' ? '.g3g-history a[data-journal-citation]'
     : kind === 'atlas-map' ? '.g3g-history .g3g-atlas-list a[data-journal-citation]'
     : '.je-contents-jump, .je-contents > .je-contents-return, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref';
+  // Measure resting affordance, never an incidental hover after scrolling.
+  await page.mouse.move(0, 0);
   const rows = await page.locator(selector).evaluateAll(nodes => nodes.map(el => {
     const style = getComputedStyle(el), arrow = getComputedStyle(el, '::after'), rect = el.getBoundingClientRect();
     const blockers = [];
@@ -405,7 +407,7 @@ async function standaloneSourceActions(page, kind, forced = false) {
     }
     return { id: el.id, href: el.getAttribute('href'), height: rect.height, left: rect.left, right: rect.right,
       viewport: document.documentElement.clientWidth, decoration: style.textDecorationLine,
-      width: rect.width, blockers, nativeClosedReturn: el.matches('.je-contents-return') && !el.closest('details').open,
+      width: rect.width, blockers, hovered: el.matches(':hover'), hoverCapable: matchMedia('(hover: hover) and (pointer: fine)').matches, nativeClosedReturn: el.matches('.je-contents-return') && !el.closest('details').open,
       arrow: arrow.content !== 'none' && arrow.borderTopStyle === 'solid' && arrow.borderRightStyle === 'solid' };
   }));
   const expected = kind === 'history' ? historyActionIds : (kind === 'atlas' || kind === 'atlas-map')
@@ -415,6 +417,7 @@ async function standaloneSourceActions(page, kind, forced = false) {
     if (row.nativeClosedReturn) continue;
     assert.ok(!row.blockers.length && row.width > 0 && row.height >= 43.5 && row.left >= -1 && row.right <= row.viewport + 1, JSON.stringify(row));
     assert.ok(row.arrow, 'missing standalone action cue: ' + JSON.stringify(row));
+    assert.ok(!row.hovered || !row.hoverCapable, 'resting witness must not measure a pointer-hovered source: ' + JSON.stringify(row));
     assert.equal(row.decoration.includes('underline'), forced, 'resting/forced-color action cue: ' + JSON.stringify(row));
   }
   return rows;
