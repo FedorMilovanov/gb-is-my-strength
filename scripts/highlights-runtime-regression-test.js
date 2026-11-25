@@ -161,7 +161,7 @@ const painting = {
   quotes: () => savedMarks,
   cancelScheduledPaint() {},
   matchMedia: () => ({matches:desktopW57}),
-  textIndex: () => ({ raw: articleText, nodes: [{ node: { textContent: articleText }, start: 0 }] }),
+  textIndex: () => ({ text: articleText, segments: [{ node: { nodeValue: articleText }, start: 0, end:articleText.length }] }),
   document: {
     body: {classList:{contains:name=>name==='np-w57-ready'&&desktopW57}},
     querySelector: selector => selector.includes('#npUResearch') ? (desktopW57 ? {} : null) : ({tagName:'ARTICLE'}),
@@ -175,7 +175,10 @@ const painting = {
   Highlight: class { constructor(...ranges) { this.ranges = ranges; } },
 };
 painting.window = { CSS: painting.CSS };
-painting.GBReaderAnchors = { resolution: () => anchor => { positionalResolutions++; return {toString:()=>anchor.exact}; } };
+const makeRangeStart=source.indexOf('  function makeRange('),makeRangeEnd=source.indexOf('  function contextBlock(',makeRangeStart);
+assert.ok(makeRangeStart>=0&&makeRangeEnd>makeRangeStart);
+const canonicalMakeRange=new Function('document',source.slice(makeRangeStart,makeRangeEnd)+'return makeRange;')(painting.document);
+painting.GBReaderAnchors = { makeRange:canonicalMakeRange,resolution: () => anchor => { positionalResolutions++; return {toString:()=>anchor.exact}; } };
 vm.createContext(painting);
 vm.runInContext(source.slice(locateStart, locateEnd) +
   '\nthis.paintAPI = { locate, paintMarks };', painting);
@@ -207,6 +210,10 @@ assert.equal(paintOnce([overlapMark],'Контекст абаба конец.').
 assert.equal(paintOnce([{...overlapMark,before:'Контекст'}],'Контекст абаба конец.').painted,1,'unique prefix identifies first overlap');
 assert.equal(paintOnce([{...overlapMark,after:'конец.'}],'Контекст абаба конец.').painted,1,'unique suffix identifies second overlap');
 assert.equal(paintOnce([overlapMark],'   аба   ').painted,1,'leading whitespace is not a second match');
+assert.equal(paintRegistry.get('gb-hl-amber').ranges[0].toString(),'аба','canonical offset mapping excludes surrounding spaces');
+const disconnected={text:'аба',segments:[{node:null,start:0,end:3}]};
+const brokenRange=new Function('document',source.slice(makeRangeStart,makeRangeEnd)+'return makeRange;')({createRange(){return{setStart(){throw Error('detached')}}}});
+assert.equal(brokenRange(disconnected,0,3),null,'invalid DOM range fails closed');
 assert.equal(paintOnce([firstMark], 'Заменено Бог благ конец. Далее Бог благ снова.').painted, 0,
   'changed source context cannot reattach the marker to another quote');
 const positionalMark = { ...firstMark, annotation: {

@@ -61,6 +61,7 @@
       }
       cached.set(el,excluded);return excluded;
     };
+    if(ignored(block))return{text:'',segments};
     const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
     let text='',node;
     while((node=walker.nextNode())){
@@ -86,10 +87,12 @@
     const from=p.segments.find(s=>s.start<=start&&start<s.end);
     const to=p.segments.find(s=>s.start<end&&end<=s.end);
     if(!from||!to)return null;
-    const r=document.createRange();
-    r.setStart(from.node,start-from.start);
-    r.setEnd(to.node,end-to.start);
-    return r;
+    try {
+      const r=document.createRange();
+      r.setStart(from.node,start-from.start);
+      r.setEnd(to.node,end-to.start);
+      return r;
+    } catch { return null; }
   }
   function contextBlock(range){
     const origin=range.startContainer.nodeType===1?range.startContainer:range.startContainer.parentElement;
@@ -202,7 +205,7 @@
         && a.compareBoundaryPoints(Range.END_TO_END,b)===0; }
       catch(_) {return false;}
     }
-    return Object.freeze({blocks,visibleProjection,capture,resolve,resolution,sameRange,selectionContext});
+    return Object.freeze({blocks,visibleProjection,makeRange,capture,resolve,resolution,sameRange,selectionContext});
   })();
   window.GBReaderAnchors = GBReaderAnchors;
 
@@ -593,8 +596,7 @@
   // Legacy records use the same visible prose as positional anchors, but
   // retain their original whitespace-only-node exclusion and text search.
   function textIndex(scope) {
-    const {text,segments}=GBReaderAnchors.visibleProjection(scope,true);
-    return {nodes:segments,raw:text};
+    return GBReaderAnchors.visibleProjection(scope,true);
   }
 
   const REGEXP_SPECIAL = /[.*+?^${}()|[\]\\]/g;
@@ -610,33 +612,18 @@
     try {
       const prefix=tolerantPattern(before),suffix=tolerantPattern(after);
       const expression = new RegExp('(' + (prefix?prefix+'\\s*':'') + ')(' + pattern + ')' + (suffix?'\\s*'+suffix:''), 'ig');
-      match = expression.exec(index.raw);
+      match = expression.exec(index.text);
       if (match) {
         // Non-overlapping RegExp iteration misses a second occurrence that
         // begins inside the first match. Such a legacy anchor is ambiguous.
         expression.lastIndex=match.index+1;
-        if(expression.exec(index.raw))return null;
+        if(expression.exec(index.text))return null;
       }
     }
     catch { return null; }
     if (!match) return null;
-    const pointAt = (offset, end = false) => {
-      for (let i = index.nodes.length - 1; i >= 0; i--) {
-        const rec = index.nodes[i];
-        if (end ? offset > rec.start : offset >= rec.start) return { node: rec.node, offset: Math.min(rec.node.textContent.length, offset - rec.start) };
-      }
-      return null;
-    };
-    const a = pointAt(match.index + match[1].length);
-    const b = pointAt(match.index + match[1].length + match[2].length, true);
-    if (!a || !b) return null;
-    try {
-      const range = document.createRange();
-      range.setStart(a.node, a.offset);
-      range.setEnd(b.node, b.offset);
-      if (!range.toString().trim()) return null;
-      return range;
-    } catch { return null; }
+    const start=match.index+match[1].length;
+    return GBReaderAnchors.makeRange(index,start,start+match[2].length);
   }
 
   function locate(index, item) {

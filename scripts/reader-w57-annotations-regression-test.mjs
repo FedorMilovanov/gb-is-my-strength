@@ -720,6 +720,10 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  leaf.nodeValue='Alpha zeta gamma delta';block.textContent=leaf.nodeValue;
  assert.equal(api.resolve(article,anchor),null,'new resolution observes changed text');
  assert.equal(inventories,2);assert.equal(walks,2);
+ block.matches=selector=>selector.includes('[hidden]');
+ const hidden=api.visibleProjection(block);
+ assert.equal(hidden.text,'');assert.deepEqual(hidden.segments,[]);
+ assert.equal(walks,2,'hidden root never starts a DOM text walk');
 }
 
  // W58: closed FAB must not project/serialize/sort the complete card collection.
