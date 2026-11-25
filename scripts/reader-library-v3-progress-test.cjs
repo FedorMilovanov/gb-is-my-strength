@@ -30,6 +30,9 @@ async function test(engine,driver,base){
  assert.equal(record.state,'reading');
  await page.goto(base+'/articles/elsewhere/');
  await page.locator('#gb-hl-fab').click();
+ // Finish opening the source document before measuring destination requests.
+ await page.locator('#gb-hl-backdrop.is-open').waitFor();
+ await page.locator('[data-research-action=resume]').waitFor();
  const resumeRequests=[];
  const trackResume=req=>resumeRequests.push(new URL(req.url()).pathname);
  page.on('request',trackResume);
