@@ -1893,12 +1893,8 @@ body.np-u-preview button.bref.np-u-source-flash{
  }
 }
 
-/* W16 inline scripture is handled by the real «Писание» study panel.
-   Prevent Product's legacy body-level giant overlay from visually
-   competing with it, while keeping the source markup intact for reading. */
-body.np-u-preview > span.btip.gb-floating-tip.is-open{
- display:none!important;
-}
+/* Managed scripture citations delegate at the native event owner.
+   Never hide an unmanaged native fallback merely because ARGON is active. */
 
 /* W16 audio alignment: labels are native decoration, never a second player. */
 #npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave16-audio-caption{

@@ -250,18 +250,48 @@ try {
         document.activeElement?.id === 'npUFollowToggle', null, { timeout: 5000 });
       assert.equal(await parents.locator('#npUScripturePick').count(), 1, 'deferred section projection replaces only the released instrument');
       console.log('PASS scripture live focus continuity and deferred section refresh');
-      await assertArgonScriptureActivation(parents, parents.locator('article .bref[data-ref]').first());
+      // Choose an actual narrow section rather than racing the automatic
+      // article-wide fallback after focus restoration at the introduction.
+      const fixture = await parents.evaluate(() => {
+        const citations = [...document.querySelectorAll('article button.bref[data-ref]')];
+        const groups = window.__NP_UNIVERSAL_PREVIEW__.groups;
+        const refs = groups.map((g, i) => {
+          const start = document.getElementById(g.id);
+          const end = groups[i + 1] && document.getElementById(groups[i + 1].id);
+          return citations.filter(el => start &&
+            (start.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+            (!end || !(end.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)));
+        });
+        for (let i = 0; i < refs.length; i++) {
+          if (!refs[i].length) continue;
+          const held = [...new Set(refs[i].map(el => el.dataset.ref))];
+          const outside = refs.slice(1).flat().find(el => !held.includes(el.dataset.ref));
+          if (outside) return { group: groups[i].id, held, outsideIndex: citations.indexOf(outside) };
+        }
+        return null;
+      });
+      assert.ok(fixture, 'fixture must offer a narrow source group and an outside reference');
+      const follow = parents.locator('#npUFollowToggle');
+      await parents.evaluate(group => {
+        document.getElementById(group).scrollIntoView({ block: 'start', behavior: 'instant' });
+        window.scrollBy(0, 120);
+      }, fixture.group);
+      await parents.waitForFunction(held => {
+        const pick = document.getElementById('npUScripturePick');
+        return pick && JSON.stringify([...pick.options].map(o => o.value)) === JSON.stringify(held);
+      }, fixture.held, { timeout: 10000 });
+      await follow.click();
+      assert.equal(await follow.getAttribute('aria-pressed'), 'false', 'manual research selection');
       const pin = parents.locator('[data-np-u-pin="scripture"]');
       await pin.click();
       assert.equal(await pin.getAttribute('aria-pressed'), 'true');
-      const outsideIndex = await parents.evaluate(() => {
-        const pick = document.getElementById('npUScripturePick');
-        const held = new Set([...pick.options].map(o => o.value));
-        return [...document.querySelectorAll('article .bref[data-ref]')].findIndex(el => !held.has(el.dataset.ref));
-      });
-      assert.ok(outsideIndex >= 0, 'fixture must offer a source outside the pinned selection');
       const chosen = await assertArgonScriptureActivation(parents,
-        parents.locator('article .bref[data-ref]').nth(outsideIndex), { key: 'Space' });
+        parents.locator('article button.bref[data-ref]').nth(fixture.outsideIndex), { key: 'Space' });
+      await follow.click();
+      assert.equal(await follow.getAttribute('aria-pressed'), 'true', 'resume automatic follow with the pinned passage');
+      await parents.waitForFunction(() => window.ReaderState.getSnapshot()?.phase === 'active-section' &&
+        document.getElementById('npUFollowChapter')?.textContent !== 'Раздел ' + window.__NP_UNIVERSAL_PREVIEW__.groups[0].roman,
+        null, { timeout: 10000 });
       assert.equal(await pin.getAttribute('aria-pressed'), 'true', 'explicit source selection preserves pin');
       await parents.locator('#npUFollowToggle').focus();
       const prior = await parents.evaluate(() => {

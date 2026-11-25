@@ -2080,8 +2080,24 @@
  // W16: in pilot Reader, inline Scripture opens the single shared
  // study window instead of creating a huge second floating popup.
  // Product's original tooltip markup remains untouched and is read-only.
+ // The same exact source coverage governs native tooltip delegation and
+ // explicit study activation. Sources outside the projection stay native.
+ function scriptureGroupIndex(ref){
+  const matches=$$('button.bref[data-ref]',article).filter(el=>el.dataset.ref===ref);
+  return sections.findIndex((group,i)=>{
+   const start=document.getElementById(group.id),end=sections[i+1]?document.getElementById(sections[i+1].id):null;
+   return matches.some(el=>inRange(el,start,end));
+  });
+ }
+ function ownsScriptureCitation(citation){
+  if(!citation?.matches('button.bref[data-ref]')||!article.contains(citation))return false;
+  const ref=citation.dataset.ref;
+  const pick=sectionHost.querySelector('[data-np-u-scripture-picker]');
+  return Boolean(pick&&([...pick.options].some(o=>o.value===ref)||scriptureGroupIndex(ref)>=0||
+   (pinnedMarkup.has('scripture')&&articleStudyRefs.includes(ref))));
+ }
  function activateScriptureCitation(citation,keyboard){
-  if(!citation||!article.contains(citation))return false;
+  if(!ownsScriptureCitation(citation))return false;
   flushDeferredScripture(true);
   const ref=citation.dataset.ref;
   let mod=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
@@ -2090,7 +2106,7 @@
   // Pin means do not change with passive scrolling. An explicit citation
   // is a deliberate choice, not a passive update. Preserve the pin and
   // its existing references, adding the actual clicked source if needed.
-  if(idx<0&&pinnedMarkup.has('scripture')&&pick&&articleStudyRefs.includes(ref)){
+  if(idx<0&&pinnedMarkup.has('scripture')&&pick&&(articleStudyRefs.includes(ref)||scriptureGroupIndex(ref)>=0)){
    pick.add(new Option(ref,ref));
    idx=pick.options.length-1;
    const caption=mod.querySelector('.np-u-research-data-caption');
@@ -2099,7 +2115,7 @@
    if(meta)meta.textContent=String(pick.options.length);
   }
   if(idx<0){
-   const groupIndex=sections.findIndex((_,i)=>getGroupMaterial(i).refs.includes(ref));
+   const groupIndex=scriptureGroupIndex(ref);
    if(groupIndex<0)return false;
    show(groupIndex);
    mod=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
@@ -2260,6 +2276,7 @@
   ready:true,source:'real-article',kind:model.kind,counts:model.counts,
   groups:sections.map(s=>({id:s.id,roman:s.numeral})),
   features:model.supports,hasNativeReader:model.supports.nativeRail,
+  ownsScriptureCitation,
   // Single research owner for desktop and mobile; do not clone panels.
   openResearchForAnnotation(){
    if(isMobile()){
@@ -2272,5 +2289,7 @@
    return true;
   }
  };
+ // A native tooltip may have opened before the asynchronous Reader handoff.
+ if($$('button.bref.is-open[data-ref]',article).some(ownsScriptureCitation))window.GBArticleTooltips?.close?.('argon-owner-handoff');
  console.info('NP_UNIVERSAL_PREVIEW_READY',JSON.stringify(window.__NP_UNIVERSAL_PREVIEW__));
 })();

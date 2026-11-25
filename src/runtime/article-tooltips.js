@@ -1,4 +1,4 @@
-const VERSION = 22;
+const VERSION = 23;
 const OWNER = 'article-inline-tooltip';
 const SELECTOR = '.gterm, .fn-marker, .bref[data-ref]';
 const OWNED_LEGACY_SELECTORS = new Set(['.gterm', '.fn-marker', '.bref[data-ref]']);
@@ -508,6 +508,14 @@ export function closeTooltip(reason = 'close') {
 }
 
 function openTooltip(anchor, reason = 'open') {
+  const study = window.__NP_UNIVERSAL_PREVIEW__;
+  if (study?.ready && document.body.classList.contains('np-u-preview') &&
+      study.ownsScriptureCitation?.(anchor)) {
+    // A delegated citation must not create a portaled, focusable native tip.
+    // Preserve glossary/footnote ownership and all unprojected references.
+    if (active?.anchor === anchor) closeTooltip('study-owner');
+    return;
+  }
   if ((reason === 'focus' || reason === 'hover') && anchor === mobileDismissedAnchor &&
       window.performance.now() < mobileDismissedUntil) return;
   if (reason === 'hover' && active && active.anchor !== anchor && active.reason !== 'hover'
