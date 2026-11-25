@@ -578,6 +578,7 @@ function button(action, label, text) {
     let research;
     function reset() {
       tab='all';filter='all';searchTerm='';shown=BATCH_SIZE;search.value='';
+      research?.refreshState?.();
     }
     function render() {
       const items=all();

@@ -563,7 +563,8 @@
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
     dockLoad ||= import('/js/reader-library-dock.js?v=adffc6aa')
-      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter().catch(() => {}); })
+      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); if (m.shouldWarmReading()) import('/js/reader-library-v3.js?v=39300423')
+        .then(research=>research.warmReadingProgress({isOpen,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}})).catch(()=>{}); })
       .catch(() => { dockLoad = null; });
   }
   function render() { view?.render(); }

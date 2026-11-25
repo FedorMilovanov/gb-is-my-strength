@@ -875,11 +875,11 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  // must not consume the one-time resume intent before successful setup.
  {
   const researchSource=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
-  const from=researchSource.indexOf('export function createLibraryResearch(');
+  const from=researchSource.indexOf('let readingProgress;');
   const to=researchSource.indexOf('// Pure fail-closed backup contract functions',from);
   assert.ok(from>=0&&to>from);
-  const body=researchSource.slice(from,to).replace('export function','function');
-  for(const fault of ['dom:click','dom:change','dom:keydown','global:scroll','global:pagehide','global:load','global:storage',null]){
+  const body=researchSource.slice(from,to).replace(/export function/g,'function');
+  for(const fault of ['dom:click','dom:change','dom:keydown','global:scroll','global:pagehide','global:load','global:storage','global:gb:library-committed',null]){
    const listeners=[];let sessionReads=0,fail=fault;
    const window={addEventListener(type,fn,opts={}){
     if(fail==='global:'+type)throw Error('injected');
@@ -901,7 +901,12 @@ console.log('W40: 6/6 Undo integrity cases PASS');
     fail=null;
    }
    assert.ok(mount());
-   assert.deepEqual(live(),['scroll','pagehide','load','storage'],'one listener per event after success/retry');
+   assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed'],'one progress owner and one UI storage listener after success/retry');
+   assert.equal(sessionReads,1);
+   // A second UI mount may add its own storage listener, but must not
+   // attach any more document-lifetime progress listeners or resume again.
+   assert.ok(mount());
+   assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed','storage']);
    assert.equal(sessionReads,1);
   }
  }
@@ -960,14 +965,14 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const tagEditor={hidden:false,contains:()=>true},menu={hidden:false};
  const keys={tags:'t',reading:'r',revisit:'v'},live={t:{new:'tag'},r:{},v:{new:'revisit'}};
  const factory=new Function('localStorage','KEYS','objectMap','parse','refresh','fillManager','clearTimeout','invalidateImport','tagEditor','menu','document','h',
-  'let tags={old:1},reading={old:1},revisit={old:1},progressTimer=9,selectedItem={id:"old"};'+researchSource.slice(ra,rb)+'return {onStorage,state:()=>({tags,reading,revisit,progressTimer,selectedItem})};');
+  'let tags={old:1},reading={old:1},revisit={old:1},selectedItem={id:"old"};'+researchSource.slice(ra,rb)+'return {onStorage,state:()=>({tags,reading,revisit,selectedItem})};');
  const api=factory(localStorage,keys,x=>x,key=>{reads.push(key);return live[key]},()=>refreshes++,()=>manager++,()=>cancels++,()=>imports++,tagEditor,menu,{},()=>({focus(){focuses++;}}));
  api.onStorage(event(null,other));api.onStorage(event('q'));assert.equal(reads.length,0);
  api.onStorage(event('t'));assert.equal(reads.join(','),'t');assert.equal(refreshes,1);
  reads=[];
  api.onStorage(event(null));assert.equal(reads.join(','),'t,r,v');assert.equal(refreshes,2);assert.equal(manager,2);assert.equal(cancels,1);assert.equal(imports,1);
  assert.equal(api.state().tags.new,'tag');assert.equal(Object.keys(api.state().reading).length,0);assert.equal(api.state().revisit.new,'revisit');
- assert.equal(api.state().progressTimer,null);assert.equal(api.state().selectedItem,null);assert.equal(tagEditor.hidden,true);assert.equal(focuses,1);
+ assert.equal(api.state().selectedItem,null);assert.equal(tagEditor.hidden,true);assert.equal(focuses,1);
 }
 
 // W69: exercise exact bootstrap functions across both lazy boundaries and

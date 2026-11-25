@@ -389,7 +389,132 @@ async function atomicImport(next, shouldContinue = () => true) {
   return result.merged;
 }
 
+// Reading progress has one document-lifetime owner, independent of the
+// optional library DOM. The first mount (warm route or user open) wins.
+let readingProgress;
+export function warmReadingProgress({isOpen,exitForResume}) {
+  if (readingProgress) return readingProgress;
+  const currentPath = () => cleanPath(location.pathname);
+  const readReading = () => objectMap(parse(KEYS.reading, {}));
+  let reading = readReading(), pending = null, progressTimer = null;
+  function cancelPendingProgress() {
+    clearTimeout(progressTimer);
+    progressTimer = null;
+    pending = null;
+  }
+  function anchorAtScroll() {
+    const headings = [...document.querySelectorAll('article h2[id],article h3[id],main [data-pagefind-body] h2[id],main [data-pagefind-body] h3[id]')];
+    const cutoff = Math.max(90, Math.min(window.innerHeight * .35, 250));
+    for (let i = headings.length - 1; i >= 0; i--) {
+      if (headings[i].getBoundingClientRect().top <= cutoff) return headings[i].id;
+    }
+    return '';
+  }
+  async function rememberProgress(intent = null) {
+    if (isOpen()) return;
+    const key = intent?.key || currentPath();
+    const expected = intent?.expected || readReading()[key];
+    if (key !== currentPath() || expected?.state !== 'reading') return;
+    const doc = document.documentElement;
+    const maxScroll = Math.max(1,doc.scrollHeight-window.innerHeight);
+    const progress = {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
+    // Snapshot the record at scroll time; never attribute an old scroll
+    // to a newer reading status or route after a concurrent mutation.
+    await mutateResearch('reading',map=>updateProgress(map,key,expected,progress));
+    reading = readReading();
+  }
+  function onScroll() {
+    const key = currentPath(), expected = reading[key];
+    if (isOpen() || expected?.state !== 'reading') return;
+    cancelPendingProgress();
+    pending = {key,expected};
+    progressTimer = setTimeout(() => {
+      const intent = pending;
+      pending = null;
+      progressTimer = null;
+      if (intent) rememberProgress(intent);
+    },800);
+  }
+  function onPageHide() {
+    const intent = pending;
+    cancelPendingProgress();
+    rememberProgress(intent);
+  }
+  function refreshReading() {
+    reading = readReading();
+    if (pending && !exact(reading[pending.key],pending.expected)) cancelPendingProgress();
+  }
+  function onStorage(event) {
+    if (event.storageArea !== localStorage) return;
+    if (event.key === null) cancelPendingProgress();
+    if (event.key === null || event.key === KEYS.reading) refreshReading();
+  }
+  function onCommitted(event) {
+    if (!event.detail || event.detail.key === KEYS.reading) refreshReading();
+  }
+  function resume(path, notify = () => {}) {
+    const key = cleanPath(path), data = readReading()[key];
+    if (!data || data.state !== 'reading') return;
+    if (key !== currentPath()) {
+      sessionStorage.setItem('gb-library-resume-once', key);
+      location.assign(key);
+      return;
+    }
+    const scrollToSavedPosition = () => {
+      // Deferred resume must not replay a record cleared or replaced in another tab.
+      const live = objectMap(parse(KEYS.reading, {}))[key];
+      if (!exact(live,data)) return;
+      const target = data.anchor ? document.getElementById(data.anchor) : null;
+      if (target) {
+        target.scrollIntoView({ block: 'start', behavior: 'instant' });
+        // Heading focus tells keyboard and screen-reader users where reading
+        // resumed; never focus a detached or hidden overlay element.
+        if (target.isConnected && target.focus) {
+          if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+        }
+      } else {
+        const max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+        window.scrollTo({ top: max * Math.min(1, Math.max(0, Number(data.ratio) || 0)), behavior: 'instant' });
+      }
+    };
+    if (isOpen()) {
+      // The Product Library owns the only overlay and scroll lock. Scrolling
+      // before it closes is silently undone by SiteUtils.unlockScroll.
+      if (typeof exitForResume === 'function') exitForResume(scrollToSavedPosition);
+      else notify('Закройте библиотеку, затем повторите переход к месту чтения.', true);
+      return;
+    }
+    scrollToSavedPosition();
+  }
+  function autoResumeOnce() {
+    try {
+      const key = sessionStorage.getItem('gb-library-resume-once');
+      if (key !== currentPath()) return;
+      sessionStorage.removeItem('gb-library-resume-once');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (key === currentPath()) resume(key);
+      }));
+    } catch {}
+  }
+  const lifetime = new AbortController(), {signal} = lifetime;
+  try {
+    window.addEventListener('scroll',onScroll,{passive:true,signal});
+    window.addEventListener('pagehide',onPageHide,{signal});
+    window.addEventListener('load',autoResumeOnce,{once:true,signal});
+    window.addEventListener('storage',onStorage,{signal});
+    window.addEventListener('gb:library-committed',onCommitted,{signal});
+  } catch (error) {
+    lifetime.abort();
+    throw error;
+  }
+  readingProgress = Object.freeze({rememberProgress,resume});
+  if (document.readyState === 'complete') autoResumeOnce();
+  return readingProgress;
+}
+
 export function createLibraryResearch({ overlay, getItems, notify, refresh, isOpen, renderItem, exitForResume }) {
+  let progress;
   let topic = '', sortBy = 'new', tags = objectMap(parse(KEYS.tags, {}));
   let reading = objectMap(parse(KEYS.reading, {}));
   let revisit = objectMap(parse(KEYS.revisit, {}));
@@ -555,74 +680,6 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     const path = currentPath();
     return path !== '/' && !path.startsWith('/izbrannoe') &&
       Boolean(document.querySelector('article,main [data-pagefind-body],main article'));
-  }
-  function anchorAtScroll() {
-    const headings = [...document.querySelectorAll('article h2[id],article h3[id],main [data-pagefind-body] h2[id],main [data-pagefind-body] h3[id]')];
-    const cutoff = Math.max(90, Math.min(window.innerHeight * .35, 250));
-    for (let i = headings.length - 1; i >= 0; i--) {
-      if (headings[i].getBoundingClientRect().top <= cutoff) return headings[i].id;
-    }
-    return '';
-  }
-  let progressTimer = null;
-  async function rememberProgress() {
-    if(isOpen())return;
-    const key=currentPath(), expected=currentStatus();
-    if(expected?.state!=='reading')return;
-    const doc=document.documentElement;
-    const maxScroll=Math.max(1,doc.scrollHeight-window.innerHeight);
-    const progress={anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
-    // A pending scroll save must not resurrect a finished/dismissed status
-    // or overwrite a newer record from another tab.
-    await mutateResearch('reading',map=>updateProgress(map,key,expected,progress));
-    reading=objectMap(parse(KEYS.reading,{}));
-  }
-  function onScroll() {
-    if (currentStatus()?.state !== 'reading') return;
-    clearTimeout(progressTimer); progressTimer = setTimeout(rememberProgress, 800);
-  }
-  function resume(path) {
-    const key = cleanPath(path), data = reading[key];
-    if (!data || data.state !== 'reading') return;
-    if (key !== currentPath()) {
-      sessionStorage.setItem('gb-library-resume-once', key);
-      location.assign(key);
-      return;
-    }
-    const scrollToSavedPosition = () => {
-      // Deferred resume must not replay a record cleared or replaced in another tab.
-      const live = objectMap(parse(KEYS.reading, {}))[key];
-      if (!exact(live,data)) return;
-      const target = data.anchor ? document.getElementById(data.anchor) : null;
-      if (target) {
-        target.scrollIntoView({ block: 'start', behavior: 'instant' });
-        // Heading focus tells keyboard and screen-reader users where reading
-        // resumed; never focus a detached or hidden overlay element.
-        if (target.isConnected && target.focus) {
-          if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-          target.focus({ preventScroll: true });
-        }
-      } else {
-        const max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
-        window.scrollTo({ top: max * Math.min(1, Math.max(0, Number(data.ratio) || 0)), behavior: 'instant' });
-      }
-    };
-    if (isOpen()) {
-      // The Product Library owns the only overlay and scroll lock. Scrolling
-      // before it closes is silently undone by SiteUtils.unlockScroll.
-      if (typeof exitForResume === 'function') exitForResume(scrollToSavedPosition);
-      else notify('Закройте библиотеку, затем повторите переход к месту чтения.', true);
-      return;
-    }
-    scrollToSavedPosition();
-  }
-  function autoResumeOnce() {
-    try {
-      const key = sessionStorage.getItem('gb-library-resume-once');
-      if (key !== currentPath()) return;
-      sessionStorage.removeItem('gb-library-resume-once');
-      requestAnimationFrame(() => requestAnimationFrame(() => resume(key)));
-    } catch {}
   }
 
 
@@ -798,7 +855,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       card.querySelector('.gb-hl-meta')?.before(detail);
       b.setAttribute('aria-expanded', 'true'); return;
     }
-    if (action === 'start-current') { if(await updateReading(currentPath(), 'reading', document.title.split(' · ')[0])) await rememberProgress(); return; }
+    if (action === 'start-current') { if(await updateReading(currentPath(), 'reading', document.title.split(' · ')[0])) await progress.rememberProgress(); return; }
     if (action === 'finish-current') { await updateReading(currentPath(), 'finished', document.title.split(' · ')[0]); return; }
     if (action === 'dismiss-current') { await updateReading(currentPath(), 'dismissed', document.title.split(' · ')[0]); return; }
     if (['start-reading', 'finish-reading', 'dismiss-reading'].includes(action)) {
@@ -806,7 +863,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       await updateReading(value, state, reading[value]?.title || getItems().find((x) => cleanPath(x.url) === value)?.title || value);
       fillManager(); return;
     }
-    if (action === 'resume') { resume(value); return; }
+    if (action === 'resume') { progress.resume(value,notify); return; }
     if (action === 'hide-today' || action === 'never-quote') {
       const choice=action==='hide-today'?today():value;
       const result=await mutateResearch('revisit',map=>updateRevisit(map,action,choice));
@@ -851,8 +908,6 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     if (event.storageArea !== localStorage) return;
     const cleared = event.key === null;
     if (cleared) {
-      clearTimeout(progressTimer);
-      progressTimer = null;
       invalidateImport();
       // A stale tag target is not a new record; keep typed input but revoke
       // its old target. The note editor is owned separately and stays open.
@@ -888,15 +943,12 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   const lifetime = new AbortController();
   const {signal} = lifetime;
   try {
-    window.addEventListener('scroll', onScroll, {passive:true,signal});
-    window.addEventListener('pagehide', rememberProgress, {signal});
-    window.addEventListener('load', autoResumeOnce, {once:true,signal});
     window.addEventListener('storage', onStorage, {signal});
+    progress = warmReadingProgress({isOpen,exitForResume});
   } catch (error) {
     lifetime.abort();
     throw error;
   }
-  if (document.readyState === 'complete') autoResumeOnce();
   return controller;
 }
 

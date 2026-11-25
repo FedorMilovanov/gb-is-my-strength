@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {chromium,webkit}=require('playwright');
+const {chromium,firefox,webkit}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const route='/articles/library-progress-demo/';
 const html='<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Тест продолжения · Господь Бог — Сила Моя</title><style>body{margin:0;background:#f9f4ed;font:18px Georgia}main{max-width:700px;margin:auto}article{padding:25px}section{height:820px}h2{scroll-margin-top:80px}</style></head><body><main><article><h1>Тест продолжения</h1><section><p>Начало исследования</p></section><h2 id="second">Вторая глава</h2><section>Полный текст исследования</section><h2 id="third">Третья глава</h2><section>Заключение</section></article></main><script type="module" src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script></body></html>';
@@ -30,11 +30,22 @@ async function test(engine,driver,base){
  assert.equal(record.state,'reading');
  await page.goto(base+'/articles/elsewhere/');
  await page.locator('#gb-hl-fab').click();
+ const resumeRequests=[];
+ const trackResume=req=>resumeRequests.push(new URL(req.url()).pathname);
+ page.on('request',trackResume);
  await page.locator('[data-research-action=resume]').click();
  await page.waitForURL(/library-progress-demo/,{timeout:5000});
  await page.waitForFunction(()=>window.scrollY>400,null,{timeout:8000});
  const scrolled=await page.evaluate(()=>({anchor:JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor,scrollY}));
  assert(scrolled.scrollY>400,'resumed near saved second section');
+ // The warm document must record progress without mounting or fetching
+ // the optional panel. The navigation was already on a different route.
+ await page.evaluate(()=>window.scrollTo(0,1900));
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/library-progress-demo']?.anchor==='third',null,{timeout:5000});
+ assert.equal(await page.locator('#gb-hl-backdrop').count(),0,'warm progress must not construct the library DOM');
+ assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-presenter.js')).length,0,'warm progress must not request the presenter');
+ page.off('request',trackResume);
+ console.log('PASS '+engine+' warm progress without presenter request or DOM');
  // Revisit a quote, suppress it permanently, then verify it will not reappear.
  await page.locator('#gb-hl-fab').click();
  assert.equal(await page.locator('.gb-hl-daily').count(),1);
@@ -57,5 +68,5 @@ async function test(engine,driver,base){
 }
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));
 try{const base='http://127.0.0.1:'+server.address().port;
-for(const [name,driver] of [['chromium',chromium],['webkit',webkit]])await test(name,driver,base);
-console.log('PROGRESS AND REVISIT 2/2 PASS');}finally{server.close()}})().catch(e=>{console.error(e);process.exitCode=1;server.close()});
+for(const [name,driver] of [['chromium',chromium],['firefox',firefox],['webkit',webkit]])await test(name,driver,base);
+console.log('PROGRESS AND REVISIT 3/3 PASS');}finally{server.close()}})().catch(e=>{console.error(e);process.exitCode=1;server.close()});
