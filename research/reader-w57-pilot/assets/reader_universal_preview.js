@@ -2043,32 +2043,46 @@
  // W16: in pilot Reader, inline Scripture opens the single shared
  // study window instead of creating a huge second floating popup.
  // Product's original tooltip markup remains untouched and is read-only.
- window.addEventListener('click',event=>{
-  const citation=event.target.closest?.('button.bref[data-ref]');
-  if(!citation||!article.contains(citation)||pinnedMarkup.has('scripture'))return;
+ function activateScriptureCitation(citation,keyboard){
+  if(!citation||!article.contains(citation)||pinnedMarkup.has('scripture'))return false;
   const ref=citation.dataset.ref;
   let mod=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
   let pick=mod?.querySelector('[data-np-u-scripture-picker]');
   let idx=pick?[...pick.options].findIndex(x=>x.value===ref):-1;
   if(idx<0){
    const groupIndex=sections.findIndex((_,i)=>getGroupMaterial(i).refs.includes(ref));
-   if(groupIndex<0)return;
+   if(groupIndex<0)return false;
    show(groupIndex);
    mod=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
    pick=mod?.querySelector('[data-np-u-scripture-picker]');
    idx=pick?[...pick.options].findIndex(x=>x.value===ref):-1;
   }
-  if(idx<0)return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  if(idx<0)return false;
+  // Close a native hover/focus popup through its own owner before moving
+  // into the study window; a visually hidden popup must not capture Tab.
+  window.GBArticleTooltips?.close?.('argon-study');
   focusedModule=null;syncModuleFocus();
   mod.querySelector(':scope>details').open=true;
   renderScriptureAt(mod,idx);
   if(isMobile())openMobile('right');
-  else if(root.classList.contains('np-u-hide-right')){
-   root.classList.remove('np-u-hide-right');document.body.classList.remove('np-u-hide-right');syncInteractivity();
-  }
+  else setRightOpen(true);
   mod.scrollIntoView({block:'nearest',behavior:'instant'});
+  if(keyboard)pick.focus({preventScroll:true});
+  return true;
+ }
+ window.addEventListener('click',event=>{
+  if(!activateScriptureCitation(event.target.closest?.('button.bref[data-ref]'),event.detail===0))return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+ },true);
+ // The native citation controller consumes Enter/Space on keydown, so
+ // waiting for a synthesized click leaves keyboard users with a hidden tip.
+ // Share the actual activation path rather than simulating another click.
+ window.addEventListener('keydown',event=>{
+  if(!['Enter',' '].includes(event.key)||event.repeat)return;
+  if(!activateScriptureCitation(event.target.closest?.('button.bref[data-ref]'),true))return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
  },true);
  // Capture before Product's document-level ArrowRight/ArrowLeft shortcuts.
  window.addEventListener('keydown',event=>{

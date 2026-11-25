@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { assertArgonScriptureActivation } from './lib/reader-scripture-owner-browser.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -190,7 +191,7 @@ try {
   {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await context.newPage();
-    await page.goto(base + ROUTES[0][0], { waitUntil: 'networkidle', timeout: 40_000 });
+    await page.goto(base + ROUTES[0][0] + '?reader-pilot=0', { waitUntil: 'networkidle', timeout: 40_000 });
     const trigger = page.locator('.bref[data-ref]').first();
     await trigger.focus();
     const tip = page.locator('.btip.is-open').last();
@@ -204,6 +205,23 @@ try {
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
     await context.close();
+  }
+
+  // Preserve the original desktop Classic focus test, and independently
+  // require default ARGON to render the actual authored passage on activation.
+  {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, serviceWorkers: 'block' });
+    try {
+      const page = await context.newPage();
+      await page.goto(base + ROUTES[0][0], { waitUntil: 'networkidle', timeout: 40_000 });
+      const citation = page.locator('article .bref[data-ref]').first();
+      await assertArgonScriptureActivation(page, citation);
+      await page.locator('#npUEdgeToggle').click();
+      await assertArgonScriptureActivation(page, citation, { key: 'Space' });
+      await page.locator('#npUEdgeToggle').click();
+      await assertArgonScriptureActivation(page, page.locator('article .bref[data-ref]').nth(1), { keyboard: false });
+      console.log('PASS default ARGON scripture keyboard and pointer activation');
+    } finally { await context.close(); }
   }
 
   {
