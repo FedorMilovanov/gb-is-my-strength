@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v248-reader-w280-candidate-20261125';
+const CACHE_VERSION = 'gb-v249-reader-w282-candidate-20261125';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -48,7 +48,7 @@ const PRECACHE_ASSETS = [
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
   '/js/floating-cluster-controller.js?v=ae574042',
-  '/js/reader-preferences-head.js?v=3c69838d',
+  '/js/reader-preferences-head.js?v=23265a5f',
   '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=99cb3413',
   '/pagefind/pagefind.js',

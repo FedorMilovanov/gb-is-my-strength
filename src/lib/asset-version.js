@@ -32,7 +32,7 @@ export const ASSET_VERSIONS = {
   'js/reader-library-selection.js': 'b301d44f',
   'js/reader-library-storage.js': 'c6707892',
   'js/reader-library-v3.js': '54f97aa3',
-  'js/reader-preferences-head.js': '3c69838d',
+  'js/reader-preferences-head.js': '23265a5f',
   'js/reader-preferences.js': 'f7880f37',
   'js/reader-state.js': '99cb3413',
   'js/scroll-perf.js': '454d6f7b',
