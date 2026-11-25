@@ -1397,6 +1397,7 @@
   const pick=module?.querySelector('[data-np-u-scripture-picker]');
   if(!pick||!pick.options.length)return;
   const n=Math.max(0,Math.min(pick.options.length-1,index));
+  for(const [j,option] of [...pick.options].entries())option.defaultSelected=j===n;
   pick.selectedIndex=n;
   const ref=pick.value;
   const counter=module.querySelector('[data-np-u-scripture-count]');
@@ -1735,8 +1736,9 @@
     const live=sectionHost.querySelector('.np-u-research-module[data-np-u-module="'+kind+'"]');
     if(live)pinnedMarkup.set(kind,live.outerHTML);
    }
-   const liveScripture=preserveStudyFocus&&sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
-   let keptScripture=liveScripture&&liveScripture.contains(document.activeElement)?liveScripture:null;
+   const liveScripture=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
+   let keptScripture=liveScripture&&(pinnedMarkup.has('scripture')||
+     (preserveStudyFocus&&liveScripture.contains(document.activeElement)))?liveScripture:null;
    deferredScripture=null;
    if(keptScripture){
     const template=document.createElement('template');template.innerHTML=html;
@@ -1746,8 +1748,9 @@
      // New sections normally initialise several details as open. Their queued
      // toggle events would close the focused live accordion. Set the actual
      // one-open-card policy before attaching the competing windows.
-     for(const card of template.content.querySelectorAll('.np-u-research-module > details.np-u-window[open]'))
-      if(!fresh.contains(card))card.open=false;
+     if(keptScripture.querySelector(':scope > details')?.open)
+      for(const card of template.content.querySelectorAll('.np-u-research-module > details.np-u-window[open]'))
+       if(!fresh.contains(card))card.open=false;
      // Keep the live DOM node connected: even moving it through a fragment
      // would reset focus and dismiss the browser's native select.
      for(const node of [...sectionHost.childNodes])if(node!==keptScripture)node.remove();
@@ -2078,12 +2081,23 @@
  // study window instead of creating a huge second floating popup.
  // Product's original tooltip markup remains untouched and is read-only.
  function activateScriptureCitation(citation,keyboard){
-  if(!citation||!article.contains(citation)||pinnedMarkup.has('scripture'))return false;
+  if(!citation||!article.contains(citation))return false;
   flushDeferredScripture(true);
   const ref=citation.dataset.ref;
   let mod=sectionHost.querySelector('.np-u-research-module[data-np-u-module="scripture"]');
   let pick=mod?.querySelector('[data-np-u-scripture-picker]');
   let idx=pick?[...pick.options].findIndex(x=>x.value===ref):-1;
+  // Pin means do not change with passive scrolling. An explicit citation
+  // is a deliberate choice, not a passive update. Preserve the pin and
+  // its existing references, adding the actual clicked source if needed.
+  if(idx<0&&pinnedMarkup.has('scripture')&&pick&&articleStudyRefs.includes(ref)){
+   pick.add(new Option(ref,ref));
+   idx=pick.options.length-1;
+   const caption=mod.querySelector('.np-u-research-data-caption');
+   if(caption)caption.textContent='Закреплённая подборка и выбранные места из статьи';
+   const meta=mod.querySelector('.np-u-window-meta');
+   if(meta)meta.textContent=String(pick.options.length);
+  }
   if(idx<0){
    const groupIndex=sections.findIndex((_,i)=>getGroupMaterial(i).refs.includes(ref));
    if(groupIndex<0)return false;

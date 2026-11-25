@@ -249,8 +249,39 @@ try {
       await parents.waitForFunction(() => document.getElementById('npUScripturePick') !== window.__teenStudyPicker &&
         document.activeElement?.id === 'npUFollowToggle', null, { timeout: 5000 });
       assert.equal(await parents.locator('#npUScripturePick').count(), 1, 'deferred section projection replaces only the released instrument');
-      await parents.close();
       console.log('PASS scripture live focus continuity and deferred section refresh');
+      await assertArgonScriptureActivation(parents, parents.locator('article .bref[data-ref]').first());
+      const pin = parents.locator('[data-np-u-pin="scripture"]');
+      await pin.click();
+      assert.equal(await pin.getAttribute('aria-pressed'), 'true');
+      const outsideIndex = await parents.evaluate(() => {
+        const pick = document.getElementById('npUScripturePick');
+        const held = new Set([...pick.options].map(o => o.value));
+        return [...document.querySelectorAll('article .bref[data-ref]')].findIndex(el => !held.has(el.dataset.ref));
+      });
+      assert.ok(outsideIndex >= 0, 'fixture must offer a source outside the pinned selection');
+      const chosen = await assertArgonScriptureActivation(parents,
+        parents.locator('article .bref[data-ref]').nth(outsideIndex), { key: 'Space' });
+      assert.equal(await pin.getAttribute('aria-pressed'), 'true', 'explicit source selection preserves pin');
+      await parents.locator('#npUFollowToggle').focus();
+      const prior = await parents.evaluate(() => {
+        window.__pinnedStudy = document.getElementById('npUScripturePick');
+        const section = document.getElementById('npUFollowChapter').textContent;
+        window.scrollTo({top: 0, behavior:'instant'});
+        return section;
+      });
+      await parents.waitForFunction(prior =>
+        window.ReaderState.getSnapshot()?.phase === 'before-content' &&
+        document.getElementById('npUFollowChapter')?.textContent !== prior, prior, { timeout: 10000 });
+      assert.deepEqual(await parents.evaluate(() => {
+        const p = document.getElementById('npUScripturePick');
+        return { same: p === window.__pinnedStudy, ref: p.value, pinned: document.querySelector('[data-np-u-pin="scripture"]').getAttribute('aria-pressed'),
+          open: p.closest('details').open };
+      }), { same: true, ref: chosen.reference, pinned: 'true', open: true }, 'passive section change preserves new pinned reference and open instrument');
+      await pin.click();
+      assert.equal(await pin.getAttribute('aria-pressed'), 'false', 'explicit unpin resumes current projection');
+      await parents.close();
+      console.log('PASS explicit Scripture activation while pinned, passive retention and unpin');
     } finally { await context.close(); }
   }
 
