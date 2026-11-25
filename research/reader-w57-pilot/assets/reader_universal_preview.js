@@ -682,9 +682,14 @@
   const fab=document.getElementById('gb-hl-fab');
   libraryButton.disabled=!(fab&&typeof window.GBHighlights?.open==='function');
   if(!fab)return false;
+  const focused=document.activeElement===fab;
+  const restoreFocus=()=>{
+   if(focused&&(document.activeElement===document.body||document.activeElement===document.documentElement)&&responsiveFocusVisible(fab))fab.focus({preventScroll:true});
+  };
   if((nativeSeriesRoot||nativeLegacyRoot)&&!isMobile()){
    if(fab.parentElement!==document.body)document.body.append(fab);
    fab.classList.remove('np-u-library-native');
+   restoreFocus();
    return true;
   }
   const host=isMobile()?$('.np-u-mobilebar-title',root):$('.np-u-left-foot',root);
@@ -694,6 +699,7 @@
   fab.classList.add('np-u-library-native');
   if(!fab.getAttribute('title'))fab.title='Библиотека: заметки и выделения';
   // The genuine Product FAB keeps its own handlers and stored notes.
+  restoreFocus();
   return true;
  }
  // Original Product supplies all real actions. Reader adds only ONE button:

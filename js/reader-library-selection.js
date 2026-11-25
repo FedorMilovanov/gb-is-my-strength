@@ -180,7 +180,7 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     const sel = window.getSelection?.();
     if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
     const r = sel.getRangeAt(0);
-    return [r.startContainer,r.startOffset,r.endContainer,r.endOffset];
+    return [r.startContainer,r.startOffset,r.endContainer,r.endOffset,r.toString()];
   }
   function clearSelectionFeedback() {
     const previous = selectionFeedback;
