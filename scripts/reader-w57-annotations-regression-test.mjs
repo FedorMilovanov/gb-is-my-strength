@@ -10,6 +10,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const file=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57_annotations.js'),'utf8');
 const highlights=readFileSync(resolve(root,'js/highlights.js'),'utf8');
 const presenterSource=readFileSync(resolve(root,'js/reader-library-presenter.js'),'utf8');
+const selectionActionSource=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
 const preview=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
 const css=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57.css'),'utf8');
 const excerpt=(start,end)=>{
@@ -113,11 +114,11 @@ assert.match(file,/const \{capture,resolve\}\s*=\s*window\.GBReaderAnchors\s*\|\
  'W57 annotations consume the shared positional anchor API');
 // Product selection bar and the native popup must both associate notes only
 // with an already-saved exact source occurrence, not a repeated text string.
-assert.match(highlights,/function noteContextForSelection\(selected\)/,
+assert.match(selectionActionSource,/function noteContextForSelection\(selected\)/,
  'Product selection notes need a shared positional association owner');
-assert.match(highlights,/GBReaderAnchors\.sameRange\(exact, stored\)/,
+assert.match(selectionActionSource,/GBReaderAnchors\.sameRange\(exact, stored\)/,
  'notes must compare real source DOM Ranges');
-assert.match(highlights,/if\s*\(matches\.length === 1\)\s*\{\s*context\.quoteId = matches\[0\]\.id;\s*context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\);\s*\}/,
+assert.match(selectionActionSource,/if\s*\(matches\.length === 1\)\s*\{\s*context\.quoteId = matches\[0\]\.id;\s*context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\);\s*\}/,
  'unknown and ambiguous occurrences must fail closed; unique selection must capture the exact linked record');
 assert.equal((readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8').match(/const context = noteContextForSelection\(s\);/g)||[]).length,2,
  'touch toolbar and native selection popup must share one association rule');
@@ -371,10 +372,10 @@ assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefor
 
 
 // Actual shared quote mutation paths with multiple quotes and a serialized scheduler.
-const markerStart=highlights.indexOf('  function findMarkerIndex(old,record) {');
-const markerEnd=highlights.indexOf('  /* mutateLibrary()',markerStart);
-const quoteStart=highlights.indexOf('  async function saveSelectedQuote() {');
-const quoteEnd=highlights.indexOf('  /* Цветные пометы:',quoteStart);
+const markerStart=selectionActionSource.indexOf('  function findMarkerIndex(old,record) {');
+const markerEnd=selectionActionSource.indexOf('  // Selection toolbar and popup',markerStart);
+const quoteStart=selectionActionSource.indexOf('  async function saveSelectedQuote() {');
+const quoteEnd=markerStart;
 assert.ok(markerStart>=0&&markerEnd>markerStart&&quoteStart>=0&&quoteEnd>quoteStart);
 const keySource=highlights.slice(highlights.indexOf('  function gbHighlightPath('),highlights.indexOf('  const MARK_COLORS'));
 const wQuoteSource=excerpt('    async function save(selection,kind){','    // The Product Library owns the same note list');
@@ -395,7 +396,7 @@ const qFixture=(initial=[],mode='ok')=>{
  const documentFixture={title:'Article',querySelector:()=>({})};
  const noOp=()=>{};
  const product=(selected)=>{
-  const factory=new Function('selection','uid','currentTitle','sourceUrl','transactionCall','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',highlights.slice(quoteStart,quoteEnd)+highlights.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
+  const factory=new Function('selection','uid','currentTitle','sourceUrl','transactionCall','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',selectionActionSource.slice(quoteStart,quoteEnd)+selectionActionSource.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
   return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,(method,...args)=>createRecordTransactions({mutateLibrary:owner.mutateLibrary,libraryFailure:reason=>({ok:false,reason}),gbHighlightKey:keys.gbHighlightKey,NOTES_KEY:n,QUOTES_KEY:q,LIMIT_NOTES:500,LIMIT_QUOTES:200})[method](...args),q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolution:()=>a=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
  };
  const wapi=new Function('window','qKey','nKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,n,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
@@ -502,7 +503,7 @@ for(const [name,opened,current,notes,context,allowed,id] of [
  if(allowed){assert.equal(f.notes()[0].quoteId,id);assert.equal(f.writes.length,1);}
  else {assert.equal(result.draftText,'edited');assert.equal(JSON.stringify(f.notes()),before);assert.deepEqual(f.writes,[]);}
 }
-assert.match(highlights,/context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\)/,'selection path captures exact quote');
+assert.match(selectionActionSource,/context\.quoteSnapshot = JSON\.stringify\(matches\[0\]\)/,'selection path captures exact quote');
 assert.match(presenterSource,/quoteSnapshot: item\.recordSnapshot/,'library card path captures exact quote');
 console.log('W39: 7/7 Product-linked draft cases PASS');
 
@@ -623,7 +624,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 // Painting must not traverse the entire article on a clean or positional-only page.
 {
  const start=highlights.indexOf('  function paintMarks() {');
- const end=highlights.indexOf('  function findMarkerIndex(',start);
+ const end=highlights.indexOf('  /* mutateLibrary()',start);
  assert.ok(start>=0&&end>start,'paint source boundaries');
  const source=highlights.slice(start,end);
  function scene(rows,desktop=false){

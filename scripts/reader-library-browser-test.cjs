@@ -231,8 +231,9 @@ async function checkTransientFocus(name,driver,base) {
       let release, signalRequest, requested=0, timer;
       const gate=new Promise(resolve=>{release=resolve});
       const requestSeen=new Promise(resolve=>{signalRequest=resolve});
-      const errors=[];
+      const errors=[],moduleRequests=[];
       page.on('pageerror',e=>errors.push(e.message));
+      page.on('request',req=>{const path=new URL(req.url()).pathname;if(path.startsWith('/js/reader-library-'))moduleRequests.push(path);});
       const rejected=['failure','unrelated-reject'].includes(termination);
       const unrelated=termination.startsWith('unrelated-');
       const select=async id=>page.evaluate(id=>{
@@ -248,10 +249,14 @@ async function checkTransientFocus(name,driver,base) {
           if(rejected) await route.abort('failed'); else await route.continue();
         });
         await page.goto(base+'/articles/selection-'+surface+'/',{waitUntil:'load'});
-        await page.locator('#gb-hl-fab').waitFor({state:'visible'});
+        await page.locator('#gb-hl-fab.gb-hl-fab--docked').waitFor({state:'visible'});
+        // Cold fixture has no reading-resume state and no user selection.
+        assert.equal(moduleRequests.filter(p=>/reader-library-(selection|presenter|record-transactions|v3)\.js$/.test(p)).length,0,'cold page must not request action/presenter modules before selection');
         await select('more');
         const note=page.locator(surface==='native'?'#ss-note':'#gb-hl-selbar-note');
         await note.waitFor({state:'visible'});
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,1,'first selection loads one action module');
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-presenter.js')).length,0,'selection alone does not load presenter');
         const before=await page.evaluate(()=>scrollY);
         await note.tap();
         await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')==='true');
@@ -306,6 +311,8 @@ async function checkTransientFocus(name,driver,base) {
         else assert.ok(after.id==='more'||after.tag==='H1','stable authored reading target: '+JSON.stringify(after));
         if(!unrelated)assert.ok(Math.abs(after.scroll-before)<=1,'no scroll jump');
         assert.equal(requested,1,'one presenter import across intents');
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,1,'warm actions reuse selection module');
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-record-transactions.js')).length,0,'opening unsaved editor must not load transaction module');
         assert.deepEqual(errors,[]);
         passes++;console.log('PASS',label,'transient selection focus');
       } catch(error){failures.push(label+': '+error.message);console.error('FAIL',label,error.message);}

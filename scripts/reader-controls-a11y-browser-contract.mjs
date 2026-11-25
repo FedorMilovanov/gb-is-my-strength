@@ -1376,6 +1376,28 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
     // W210: short landscape must leave a meaningful scrolling reading area,
     // not just barely clear the historical >45px geometry floor.
     if (width >= 640 && width < 1360 && width > height && height >= 390 && height <= 500) {
+      const scrollWitness = async (selector) => {
+        const panel = page.locator(selector);
+        await panel.evaluate(node => { node.scrollTop = 0; });
+        const before = await panel.evaluate(node => node.scrollTop);
+        const box = await panel.boundingBox();
+        if (!box) return { before, after:before, hit:false };
+        const hit = await panel.evaluate(node => {
+          const r = node.getBoundingClientRect();
+          return node.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+        });
+        if (hit) {
+          await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+          await page.mouse.wheel(0, 80);
+          try { await page.waitForFunction(sel => document.querySelector(sel)?.scrollTop > 0, selector, { timeout: 2000 }); }
+          catch (_) { /* The measured zero remains a blocking assertion. */ }
+        }
+        return { before, after:await panel.evaluate(node => node.scrollTop), hit };
+      };
+      const tocScroll = await scrollWitness('#gbs2PartToc');
+      await page.locator('#gbrMarginaliaTab').click();
+      const researchScroll = await scrollWitness('#gbrMarginalia');
+      const afterScroll = await read();
       const targets = await page.evaluate(() => {
         const root = document.getElementById('partTocOverlay');
         const controls = [...root.querySelectorAll('.toc-sheet__head .back, [role="tab"], .gbat-foot button')];
@@ -1394,9 +1416,12 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
           expanded.research.scrollH > expanded.research.clientH &&
           unfolded.toc.scrollH > unfolded.toc.clientH &&
           unfolded.sheet?.y >= -.8 && unfolded.sheet?.bottom <= height + .8 &&
-          targets.length === 6 && targets.every(t => t.height >= 43.9 && t.hit && t.inside) &&
-          targets.slice(0,3).every(t => t.width >= 43.9)),
-        { first, research, expanded, unfolded, targets });
+          targets.length === 6 && targets.every(t => t.height >= 43.9 && t.width >= 43.9 && t.hit && t.inside) &&
+          tocScroll.hit && tocScroll.after > tocScroll.before &&
+          researchScroll.hit && researchScroll.after > researchScroll.before &&
+          aligned(first.sheet,afterScroll.sheet) && aligned(first.footer,afterScroll.footer) &&
+          afterScroll.xOverflow === 0),
+        { first, research, expanded, unfolded, afterScroll, tocScroll, researchScroll, targets });
     }
     await page.keyboard.press('Escape');
     await page.waitForTimeout(800);

@@ -1088,7 +1088,13 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
      fixed tab/foot geometry or the normal portrait/desktop sheet. */
   @media screen and (min-width:40em) and (max-width:84.999em) and (orientation:landscape) and (max-height:500px) {
     body[data-gbs2-series="dzhon-gill"] #partTocOverlay {
-      padding-block:max(4px, env(safe-area-inset-top, 0px)) 4px !important;
+      padding-block:max(4px, env(safe-area-inset-top, 0px)) max(4px, env(safe-area-inset-bottom, 0px)) !important;
+      padding-inline:max(20px, env(safe-area-inset-left, 0px)) max(20px, env(safe-area-inset-right, 0px)) !important;
+    }
+    @media (max-width:960px) {
+      body[data-gbs2-series="dzhon-gill"] #partTocOverlay {
+        padding-inline:env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px) !important;
+      }
     }
     body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet {
       height:min(95vh, 100%);
@@ -1112,6 +1118,9 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
     }
     body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbr-marginalia-tabs {
       padding-block:4px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbat-foot {
+      grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr) 44px;
     }
   }
 </style>

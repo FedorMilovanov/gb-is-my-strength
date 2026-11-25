@@ -1,7 +1,165 @@
 /* Native selection surface. The synchronous anchor and transaction API remain in highlights.js. */
   const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
   const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
-export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,noteContextForSelection,saveMarker,saveSelectedQuote,open,showEditor,hideToast,element}) {
+export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,sourceUrl,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes}) {
+  // Both touch selection-bar notes and the native selection popup share
+  // exactly one positional quote association. Text-only equivalence is never
+  // sufficient: repeated words and old legacy links are ambiguous.
+  function noteContextForSelection(selected) {
+    if (!selected || selected.text.length < 8) return null;
+    const context = { quoteText: selected.text, url: sourceUrl(selected), title: currentTitle() };
+    if (!selected.positionalAnchor) return context;
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    if (!article) return context;
+    const resolve = GBReaderAnchors.resolution(article);
+    const exact = resolve(selected.positionalAnchor);
+    if (!exact) return context;
+    const here = gbHighlightPath({url:location.href});
+    const matches = quotes().filter(item => {
+      if (item.annotation?.version !== 1 || gbHighlightPath(item) !== here) return false;
+      const stored = resolve(item.annotation.anchor);
+      return stored && GBReaderAnchors.sameRange(exact, stored);
+    });
+    // Keep a useful unlinked note if this occurrence is new, legacy, or
+    // ambiguous. Never assign a quoteId from a coincidental text match.
+    if (matches.length === 1) {
+      context.quoteId = matches[0].id;
+      context.quoteSnapshot = JSON.stringify(matches[0]);
+    }
+    return context;
+  }
+  function undoQuotes(written, previous, message) {
+    return async () => {
+      const result = await transactionCall('undoQuoteRecord',written,previous);
+      if (!result.ok) {
+        toast('Запись уже изменилась или недоступна. Отмена не выполнена.', { label: 'Повторить', run: undoQuotes(written, previous, message) });
+        return;
+      }
+      paintMarks(); sync(); toast(message, null);
+    };
+  }
+
+  async function saveSelectedQuote() {
+    const selected = selection();
+    if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
+    const record = {
+      id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
+      url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
+    };
+    // A quote is an occurrence, not merely its string. The same words may
+    // appear twice in one paragraph; keep both positional sources. Do not
+    // assign an annotation to a legacy record whose position is unknown.
+    if (selected.positionalAnchor) {
+      record.annotation = { version: 1, kind: 'quote',
+        anchor: selected.positionalAnchor, noteId: null };
+    }
+    const result = await transactionCall('saveQuoteRecord',record,gbAddHighlight);
+    if (!result.ok) {
+      statusMessage(result.reason === 'capacity'
+        ? 'Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
+        : 'Не удалось безопасно сохранить цитату. Повторите попытку.', true);
+      return false;
+    }
+    if (result.already) { statusMessage('Такая цитата уже сохранена.'); return true; }
+    sync(); statusMessage('Цитата сохранена вместе с источником.');
+    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
+    return true;
+  }
+  function findMarkerIndex(old,record) {
+    const fragment = gbFragmentKey(record);
+    const context = gbContextKey(record);
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const resolve = article && record.annotation ? GBReaderAnchors.resolution(article) : null;
+    const exact = resolve?.(record.annotation.anchor);
+    let legacyIndex = null;
+    let existingIndex = -1;
+    if (exact && article) {
+      // A saved quote and its colored mark are ONE positional record. Reuse
+      // its ID/anchor/noteId instead of losing the mark to duplicate-key
+      // rejection. If legacy data already contains both, prefer the colored
+      // record to avoid creating a second painter on the same DOM Range.
+      const candidates = [];
+      const here=gbHighlightPath(record);
+      old.forEach((x, i) => {
+        if (gbHighlightPath(x) !== here) return;
+        const found = x.annotation?.version === 1
+          ? resolve(x.annotation.anchor)
+          : locate(legacyIndex ||= textIndex(article),x);
+        if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
+      });
+      existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
+        ?? candidates[0] ?? -1;
+    } else if (!record.annotation) {
+      existingIndex = fragment ? old.findIndex((x) =>
+        gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+    }
+
+    return existingIndex;
+  }
+
+  async function saveMarker(color) {
+    const selected = selection();
+    if (selected.text.length < 3) { statusMessage('Сначала выделите текст.', true); return false; }
+    const nextColor = MARK_COLORS.includes(color) ? color : 'amber';
+    const record = {
+      id: uid('mark'), kind: 'marker', color: nextColor,
+      text: selected.text, articleTitle: currentTitle(),
+      url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
+    };
+    if (selected.positionalAnchor) {
+      record.annotation = { version:1,kind:'marker',color:nextColor,
+        anchor:selected.positionalAnchor,noteId:null };
+    }
+    /* Одна запись на (страница + текст): иначе gbAddHighlight молча отбрасывал
+       вторую запись, а пользователь видел «Помета сохранена». Здесь тот же
+       текст перекрашивается, а одинаковый цвет честно сообщается как уже
+       применённый — без ложного успеха. */
+    const key = gbHighlightKey(record);
+    const mutation = await transactionCall('saveMarkerRecord',record,nextColor,findMarkerIndex,gbAddHighlight);
+    if (!mutation.ok) {
+      statusMessage(mutation.reason === 'capacity'
+        ? 'Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.'
+        : 'Не удалось безопасно сохранить помету. Повторите попытку.', true);
+      return false;
+    }
+    if (mutation.already) {
+      statusMessage('Этот текст уже выделен этим цветом.');
+      toast('Этот текст уже выделен этим цветом', null);
+      return true;
+    }
+    if (mutation.previous) {
+      const painted = paintMarks();
+      sync();
+      const wasMarker = mutation.previous.kind === 'marker';
+      const storedKey = gbHighlightKey(mutation.written);
+      const anchored = painted.supported && painted.placed && painted.placed.has(storedKey);
+      const base = wasMarker ? 'Цвет пометы изменён' : 'Цитата выделена цветом';
+      const message = !painted.supported
+        ? (wasMarker ? 'Цвет пометы сохранён, подсветка недоступна' : 'Цвет сохранён, подсветка недоступна')
+        : anchored ? base
+          : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
+      statusMessage(message + '.');
+      toast(message, { label: 'Вернуть', run: undoQuotes(mutation.written, mutation.previous, 'Цвет возвращён') });
+      return true;
+    }
+    const result = paintMarks();
+    sync();
+    /* Честность сообщения: «подсвечена» говорим только если запись реально
+       получила диапазон в тексте. Иначе пользователь видит успех при пустом
+       экране (так было при выделении через границу абзацев). */
+    const anchored = result.supported && result.placed && result.placed.has(key);
+    const message = !result.supported
+      ? 'Помета сохранена. Подсветка недоступна в этом браузере'
+      : anchored
+        ? 'Помета сохранена и подсвечена'
+        : 'Помета сохранена, но этот фрагмент не удалось подсветить';
+    statusMessage(message + (result.supported && !anchored ? '. Он останется в библиотеке.' : '.'));
+    toast(message, { label: 'Вернуть', run: undoQuotes(record, null, 'Помета убрана') });
+    return true;
+  }
+
+  // Selection toolbar and popup share these action handlers.
+
   function bindSelectionButton(id, label, icon, handler, popup) {
     if (popup.querySelector('#' + id)) return;
     const b = document.createElement('button');
