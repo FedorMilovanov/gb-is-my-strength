@@ -851,7 +851,20 @@ try {
           const pdf = join(formatDir, name + '.pdf');
           await page.pdf({ path: pdf, format, printBackground: true, preferCSSPageSize: true });
           const paper = paperFormatWitness(pdf, format);
-          report.nagornayaFormats.push({name, source, paper, pdf: 'paper-formats/' + name + '.pdf'});
+          // Inspect the actual owner after the physical PDF was generated.
+          // No injected CSS and no screen/print emulation before PDF capture.
+          await page.emulateMedia({ media: 'print' });
+          const chrome = await page.evaluate(() => {
+            const candidates = [...document.body.children].filter(el => el.matches(
+              'header.fixed,aside.fixed,.skip-link,.nag-project-nav,#mobileMenu,#bottomBar,#btocOverlay,#gb-sw-toast,#nag-fn-popup,.gb-mobile-fallback-controls,.gb-anchor-copy-toast,[role="region"]:has(> #read-progress)'));
+            const visible = candidates.filter(el => getComputedStyle(el).display !== 'none')
+              .map(el => el.id || el.tagName + '.' + el.className);
+            return { count: candidates.length, visible,
+              mainVisible: document.querySelector('#main-content').getClientRects().length > 0 };
+          });
+          if (chrome.count < 5 || chrome.visible.length || !chrome.mainVisible)
+            report.failures.push(name + ': screen chrome leaked into print ' + JSON.stringify(chrome));
+          report.nagornayaFormats.push({name, source, paper, chrome, pdf: 'paper-formats/' + name + '.pdf'});
           if (paper.failures.length) report.failures.push(name + ': physical format witness failed');
         } catch (error) {
           report.failures.push(name + ': ' + String(error));
