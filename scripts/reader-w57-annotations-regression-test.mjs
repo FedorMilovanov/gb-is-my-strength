@@ -771,7 +771,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  // W61: coalesce scheduled painting without changing synchronous public API.
 {
  const from=highlights.indexOf('  let paintFrame = null;');
- const to=highlights.indexOf('  /* Мобильный вход',from);
+ const to=highlights.indexOf('  // Mount native selection actions',from);
  assert.ok(from>=0&&to>from);
  let frames=new Map(),next=0,paints=0,cancelled=0,handlers={};
  const target={addEventListener:(event,fn)=>{handlers[event]=fn},getElementById:()=>null};

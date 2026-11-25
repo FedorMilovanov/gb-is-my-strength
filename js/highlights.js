@@ -17,9 +17,9 @@
   // once this single owner is published. No range payload on a clean reading page.
   function ensureRanges() {
     if (rangeRuntime) return Promise.resolve(rangeRuntime);
-    return rangeLoad ||= import('/js/reader-library-ranges.js?v=c3beac81')
+    return rangeLoad ||= import('/js/reader-library-ranges.js?v=9d01527f')
       .then(m=>{
-        const runtime=m.createRangeRuntime({normalizeText,quotes,gbHighlightPath,gbHighlightKey,MARK_COLORS,cancelScheduledPaint});
+        const runtime=m.createRangeRuntime({normalizeText,quotes,gbHighlightPath,gbHighlightKey,MARK_COLORS,cancelScheduledPaint,rememberShareText});
         GBReaderAnchors=runtime.GBReaderAnchors;
         rangeRuntime=runtime;
         window.GBReaderAnchors=GBReaderAnchors;
@@ -166,37 +166,19 @@
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
   }
-  function currentTitle() { return normalizeText(document.title.replace(/\s*[·—|].*$/, '')) || 'Статья'; }
-  let lastSelection = { text: '', anchor: '', url: '' };
+  function rememberShareText() {
+    const selection=window.getSelection?.();
+    if(!selection||selection.isCollapsed||!selection.rangeCount)return null;
+    const text=normalizeText(selection.toString());
+    if(text.length<8)return null;
+    window.__ssLastText__=text;
+    window.__ssLastTextUrl__=location.href;
+    return {selection,text};
+  }
   function rememberSelection() {
-    const selection = window.getSelection && window.getSelection();
-    if (!selection || selection.isCollapsed) return;
-    const text = normalizeText(selection.toString());
-    if (text.length < 8) return;
-    window.__ssLastText__ = text;
-    window.__ssLastTextUrl__ = location.href;
-    // Never downgrade a first selection to text-only because a module is cold.
-    // Attach waits for readiness and captures the still-live selection.
-    if (!GBReaderAnchors) return;
-    let anchor = '';
-    try {
-      const root = document.querySelector('article,main,[data-pagefind-body]') || document.body;
-      for (let e = selection.getRangeAt(0).commonAncestorContainer; e && e !== root.parentElement; e = e.parentElement) {
-        if (e.nodeType === 1 && e.id) { anchor = e.id; break; }
-      }
-    } catch {}
-    const article = document.querySelector('article.article-body') || document.querySelector('article');
-    const positional = article && GBReaderAnchors.capture(article,text);
-    const {before,after}=positional?.context || GBReaderAnchors.selectionContext(selection,text);
-    lastSelection = { text, anchor, url: location.href, before, after,
-      positionalAnchor: positional && normalizeText(positional.text) === text ? positional.anchor : null };
+    if (rangeRuntime) rangeRuntime.rememberSelection();
+    else rememberShareText();
   }
-  function selection() {
-    rememberSelection();
-    return lastSelection.url === location.href ? lastSelection : { text: '', anchor: '', url: '' };
-  }
-  function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
-
 
   let overlay, fab, view, opener = null, editorController = null;
   let presenter = null, presenterPromise = null;
@@ -207,7 +189,7 @@
         import('/js/reader-library-presenter.js?v=729e4f90'),
         import('/js/reader-library-v3.js?v=54f97aa3'),
         ensureRanges(),
-      ]).then(([module,researchModule]) => {
+      ]).then(([module,researchModule,{currentTitle,uid}]) => {
           if (!view) {
             view = module.createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch:researchModule.createLibraryResearch,isOpen});
             ({overlay,editorController}=view);
@@ -464,12 +446,8 @@
     if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();
   }, true);
 
-  /* Мобильный вход в пометы. На страницах серий js/site.js не подключается,
-     поэтому #selection-share-popup не существует: выделенный текст некуда
-     сохранить, хотя сама библиотека предлагает «Выделите цитату…». Показываем
-     собственный мини-тулбар только там, где нет W57-тулбара пилота (он живёт
-     от 1121px и при выделении создаёт #npW57SelectionToolbar) — один владелец,
-     одно хранилище, те же функции сохранения, что и у десктопного попапа. */
+  // Mount native selection actions only on a live selection. ARGON owns its
+  // own toolbar; the lazy controller arbitrates native/fallback surfaces.
   let selectionController, selectionLoad;
   function hide() { selectionController?.hide(); }
   function hasSelection() {
@@ -479,7 +457,7 @@
   function attachSelection() {
     if (selectionController) { selectionController.attachSelection(); return; }
     if (!hasSelection()) return;
-    Promise.all([loadSelectionController(),ensureRanges()]).then(([module]) => {
+    Promise.all([loadSelectionController(),ensureRanges()]).then(([module,{selection,currentTitle,uid}]) => {
       if (!module || selectionController || !hasSelection()) return;
       rememberSelection();
       const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes});

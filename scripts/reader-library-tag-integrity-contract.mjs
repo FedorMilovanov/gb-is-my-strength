@@ -180,7 +180,7 @@ const recoveryQuota=fixture({},{failKey:keys.tags});recoveryQuota.install();
 const recoveryBefore=recoveryQuota.snapshot();
 await assert.rejects(atomicRecovery(archive.raw),/не завершено/);
 assert.deepEqual(recoveryQuota.snapshot(),recoveryBefore);
-const projection=hsrc.slice(hsrc.indexOf('  function visibleRecord('),hsrc.indexOf('  function currentTitle('));
+const projection=hsrc.slice(hsrc.indexOf('  function visibleRecord('),hsrc.indexOf('  function rememberShareText('));
 const rawRows=[{id:42,text:'legacy',url:'/a/'},null,{unknown:true},'invalid',{id:'ok',text:'new'}];
 const beforeRows=JSON.stringify(rawRows);
 const projected=new Function('read','QUOTES_KEY','NOTES_KEY','FAVORITES_KEY','window','location','MARK_COLORS',projection+'return {quotes,notes,favorites,all};')(()=>rawRows,keys.quotes,keys.notes,keys.favorites,{},location,['amber']);
@@ -216,7 +216,7 @@ assert.equal(Object.keys(w36pack({reading:{[w36route]:w36a,'/other/':w36b}}).rea
 {
  const f=fixture({reading:{[w36route+'/']:w36b}});f.install();const before=f.snapshot();await atomicImport(empty);assert.deepEqual(f.snapshot(),before);assert.deepEqual(f.writes,[]);w36cases++;
 }
-const w36norm=hsrc.slice(hsrc.indexOf('  function normalizeText('),hsrc.indexOf('  /* W57/Product share'));
+const w36norm=hsrc.slice(hsrc.indexOf('  function normalizeText('),hsrc.indexOf('  let rangeRuntime'));
 const w36keySource=hsrc.slice(hsrc.indexOf('  function gbHighlightPath('),hsrc.indexOf('  function gbDedupeHighlights('));
 assert.ok(w36norm.includes('function normalizeText('));assert.ok(w36keySource.includes('function gbHighlightKey('));
 const w36key=new Function('location',w36norm+w36keySource+'return gbHighlightKey;')(location);

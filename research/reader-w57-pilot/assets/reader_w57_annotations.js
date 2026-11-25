@@ -362,10 +362,11 @@
       const top=r.top-h-12>=8?r.top-h-12:Math.min(innerHeight-h-9,r.bottom+9);
       toolbar.style.left=left+'px';toolbar.style.top=Math.max(8,top)+'px';
     }
-    let selectFrame=0, selectionEpoch=0;
+    let selectFrame=0, selectionEpoch=0, selectionTimer=0;
     function dismissSelection(){
       selectionEpoch++;
       if(selectFrame)cancelAnimationFrame(selectFrame);
+      clearTimeout(selectionTimer);
       selectFrame=0;lastSelection=null;toolbar.hidden=true;
     }
     function selectionChanged(){
@@ -396,7 +397,6 @@
     },{passive:true});
     // Keyboard text selection (Shift + arrows) has no mouseup event.
     // Let the selection settle before trying to show contextual actions.
-    let selectionTimer=0;
     document.addEventListener('selectionchange',()=>{
       clearTimeout(selectionTimer);
       selectionTimer=setTimeout(()=>{

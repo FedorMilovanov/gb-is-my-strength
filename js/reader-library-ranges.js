@@ -1,5 +1,5 @@
 /* One on-demand visible-prose, anchor and native-paint owner. */
-export function createRangeRuntime({normalizeText,quotes,gbHighlightPath,gbHighlightKey,MARK_COLORS,cancelScheduledPaint}) {
+export function createRangeRuntime({normalizeText,quotes,gbHighlightPath,gbHighlightKey,MARK_COLORS,cancelScheduledPaint,rememberShareText}) {
   /* W57/Product share one positional identity and one exact DOM resolver.
      Reusing the published visible text avoids blind string-index guesses. */
   const GBReaderAnchors = (() => {
@@ -284,5 +284,29 @@ export function createRangeRuntime({normalizeText,quotes,gbHighlightPath,gbHighl
   }
 
 
-  return Object.freeze({GBReaderAnchors, textIndex, locate, paintMarks});
+  let lastSelection = { text: '', anchor: '', url: '' };
+  function rememberSelection() {
+    const selected=rememberShareText();
+    if(!selected)return;
+    const {selection,text}=selected;
+    let anchor = '';
+    try {
+      const root = document.querySelector('article,main,[data-pagefind-body]') || document.body;
+      for (let e = selection.getRangeAt(0).commonAncestorContainer; e && e !== root.parentElement; e = e.parentElement) {
+        if (e.nodeType === 1 && e.id) { anchor = e.id; break; }
+      }
+    } catch {}
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const positional = article && GBReaderAnchors.capture(article,text);
+    const {before,after}=positional?.context || GBReaderAnchors.selectionContext(selection,text);
+    lastSelection = { text, anchor, url: location.href, before, after,
+      positionalAnchor: positional && normalizeText(positional.text) === text ? positional.anchor : null };
+  }
+  function selection() {
+    rememberSelection();
+    return lastSelection.url === location.href ? lastSelection : { text: '', anchor: '', url: '' };
+  }
+  function currentTitle() { return normalizeText(document.title.replace(/\s*[·—|].*$/, '')) || 'Статья'; }
+  function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
+  return Object.freeze({GBReaderAnchors, textIndex, locate, paintMarks, rememberSelection, selection, currentTitle, uid});
 }

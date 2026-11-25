@@ -119,7 +119,7 @@ assert.match(mobileBarSource, /b\.addEventListener\('mousedown',\s*\(event\)\s*=
 assert.match(mobileBarSource, /b\.addEventListener\('pointerdown',\s*rememberSelection\)/,
   'pointerdown may snapshot selection but must not cancel the native touch gesture');
 const rememberStart = source.indexOf('function rememberSelection()');
-const rememberEnd = source.indexOf('\n  function selection()', rememberStart);
+const rememberEnd = source.indexOf('\n  let overlay', rememberStart);
 assert.ok(rememberStart >= 0 && rememberEnd > rememberStart, 'selection snapshot handler exists');
 assert.doesNotMatch(source.slice(rememberStart, rememberEnd), /\bpreventDefault\s*\(/,
   'selection snapshot handler must not cancel pointer/touch compatibility clicks');
