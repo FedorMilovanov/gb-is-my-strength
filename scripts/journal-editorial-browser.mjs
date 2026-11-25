@@ -1241,6 +1241,40 @@ try {
       await second.waitForFunction(() => document.documentElement.dataset.readerTheme === 'light');
       await second.close();
       result.themeTogglePersistenceCrossTab = true;
+      if (route.kind === 'journal') {
+        assert.equal(await page.locator('[data-journal-narration]').count(),0);
+      } else {
+        const player=page.locator('[data-journal-narration]');
+        await player.waitFor({state:'visible'});
+        const speech=await page.evaluate(() => {
+          const projection=window.GBReaderProjection;
+          const segments=projection.getTtsSegments(document);
+          return {
+            root:projection.getRoot(document)?.id,
+            first:segments[0]?.element.tagName,
+            count:segments.length,
+            excluded:segments.filter(s=>s.element.closest('[data-tts-policy="exclude"],aside,footer')).length,
+            history:segments.some(s=>s.text.includes('Пастор Джефф Кроттс')),
+            crisis:segments.some(s=>s.text.includes('Согласно заявлению совета G3 от 12 мая 2025 года')),
+            engine:typeof window.GBReaderTTS?.getState,
+            rate:window.GBReaderRatePolicy?.read(),
+          };
+        });
+        assert.equal(speech.root,'main-content'); assert.equal(speech.first,'H1');
+        assert.ok(speech.count>20); assert.equal(speech.excluded,0);
+        assert.equal(route.kind==='history'?speech.history:speech.crisis,true);
+        assert.equal(speech.engine,'function');
+        assert.equal(await player.locator('[data-fc-action="play"]').count(),1);
+        assert.equal(await player.locator('[data-jn-stop]').isDisabled(),true);
+        const rate=player.locator('[data-jn-rate]');
+        await rate.selectOption('1.25');
+        assert.equal(await page.evaluate(()=>window.GBReaderRatePolicy.read()),1.25);
+        await page.reload({waitUntil:'networkidle'});
+        await player.waitFor({state:'visible'});
+        assert.equal(await rate.inputValue(),'1.25');
+        await rate.selectOption(String(speech.rate));
+        result.journalNarrationProjection= speech;
+      }
       await page.evaluate(() => window.GBReaderPreferences.set({ fontScale: 1.4 }, { source: 'journal-qa' }));
       await page.evaluate(() => document.documentElement.style.fontSize = '200%');
       const resized = await inspect(page);

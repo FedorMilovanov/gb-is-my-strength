@@ -1,4 +1,5 @@
 ---
+import JournalNarration from './JournalNarration.astro';
 /** One presentation owner for long-form Journal headers; no route or SEO authority. */
 interface Cover {
   src: string;
@@ -15,11 +16,12 @@ interface Props {
   series: string;
   period: string;
   readingTime: number;
+  narration?: boolean;
   cover?: Cover;
   publishedAt?: string;
   modifiedAt?: string;
 }
-const { title, label, series, period, readingTime, cover, publishedAt, modifiedAt } = Astro.props;
+const { title, label, series, period, readingTime, cover, publishedAt, modifiedAt, narration = false } = Astro.props;
 const dateLabel = (value: string) => new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
 }).format(new Date(value));
@@ -43,6 +45,7 @@ const sizes = '(min-width: 1024px) 480px, (min-width: 768px) 700px, calc(100vw -
       {modifiedAt && modifiedAt !== publishedAt && <span>Обновлено <time datetime={modifiedAt}>{dateLabel(modifiedAt)}</time></span>}
       <span>{readingTime} мин чтения</span>
     </div>
+    {narration && <JournalNarration />}
   </div>
   {cover && <figure class="je-article-cover">
     <picture>

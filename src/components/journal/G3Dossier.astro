@@ -161,11 +161,11 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
 };
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
-<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-source-navigation data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
+<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-source-navigation data-journal-dossier="g3" data-reader-range data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
   <JournalArticleHeader
     title={G3_PRODUCT_METADATA.title}
     label="Документальное досье" series="G3 Ministries" period="2025–2026"
-    readingTime={G3_PRODUCT_METADATA.readingTimeMinutes}
+    readingTime={G3_PRODUCT_METADATA.readingTimeMinutes} narration
     publishedAt={G3_PRODUCT_METADATA.publishedAt} modifiedAt={G3_PRODUCT_METADATA.modifiedAt}
   >
     <p>Отставка основателя, попытка обновления и новый конфликт.

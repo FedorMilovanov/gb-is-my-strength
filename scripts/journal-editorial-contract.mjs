@@ -401,6 +401,17 @@ if (!process.argv.includes('--source-only')) {
     assert.equal(entity[0].headline, data.title);
     assert.equal(entity[0].datePublished, data.publishedAt);
     assert.equal(entity[0].dateModified, data.modifiedAt);
+    const narration = nodes.filter(node=>attr(node,'data-journal-narration')!==undefined);
+    const ranges = nodes.filter(node=>attr(node,'data-reader-range')!==undefined);
+    assert.equal(narration.length,type==='Article'?1:0,'Journal narration is explicitly article-only');
+    assert.equal(ranges.length,type==='Article'?1:0,'one canonical reader projection range per opted-in article');
+    if(type==='Article') {
+      assert.equal(attr(ranges[0],'id'),'main-content');
+      assert.notEqual(attr(narration[0],'hidden'),undefined,'no inert controls without JS');
+      assert.notEqual(attr(narration[0],'data-pagefind-ignore'),undefined);
+      assert.equal(all(narration[0],node=>attr(node,'data-fc-action')==='play').length,1);
+      assert.deepEqual(all(narration[0],node=>node.tagName==='option').map(node=>Number(attr(node,'value'))),[.75,1,1.25,1.5,1.75,2]);
+    }
     const ids = nodes.map((node) => attr(node, 'id')).filter(Boolean);
     assert.equal(ids.length, new Set(ids).size, `duplicate element IDs at ${route}`);
     for (const node of nodes.filter((node) => node.tagName === 'a' && attr(node, 'href')?.startsWith('#'))) {
