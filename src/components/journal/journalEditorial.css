@@ -344,6 +344,35 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
      within the full text measure when the reader enlarges the text. */
   .journal-edition .journal-lead-phrase { display: inline-block; max-inline-size: 100%; }
 }
+/* The history route explicitly admits two feature chapters. Prose remains
+   the default measure; the TOC owns a separate grid track at every width. */
+@media screen and (min-width: 1440px) {
+  .journal-edition .journal-dossier-shell:has(> [data-editorial-layout="wide"]) {
+    max-width: 1840px; padding-inline: clamp(40px, 2.5vw, 48px);
+  }
+  .journal-edition .journal-dossier-shell:has(> [data-editorial-layout="wide"]) > .je-article-header {
+    max-width: 1200px; margin-inline: 0;
+  }
+  .journal-edition [data-editorial-layout="wide"] {
+    max-width: none; grid-template-columns: minmax(0, 1fr) clamp(220px, 13vw, 248px);
+    column-gap: clamp(32px, 2.1vw, 40px);
+  }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column {
+    --je-prose-measure: 740px; --je-wide-measure: 1000px; --je-feature-measure: 1500px;
+  }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column > .module {
+    width: 100%; max-width: var(--je-prose-measure);
+  }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column > [data-editorial-measure="wide"] { max-width: var(--je-wide-measure); }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column > [data-editorial-measure="feature"] { max-width: var(--je-feature-measure); }
+  .journal-edition [data-editorial-layout="wide"] [data-editorial-measure="feature"] > :is(.je-history-heading, .je-history-origin, .prose),
+  .journal-edition [data-editorial-layout="wide"] [data-editorial-measure="feature"] > .je-history-text > p {
+    max-width: var(--je-prose-measure);
+  }
+  .journal-edition [data-editorial-layout="wide"] [data-editorial-measure="feature"] .jcdi { max-width: 1100px; }
+  .journal-edition .journal-dossier-shell:has(> [data-editorial-layout="wide"]) > .dossier-footer { max-width: 740px; }
+}
+
 @media print {
   .journal-edition, html.dark .journal-edition { --je-paper: #fff; --je-paper-raised: #fff; --je-ink: #111; --je-muted: #333; --je-gold: #333; --je-rule: #aaa; background: #fff; color: #111; }
   .journal-edition :is(.je-masthead, .je-editorial-rail, .skip-link, .je-source-return, .je-reading-exit) { display: none; }

@@ -387,23 +387,71 @@ function g44MeasureFocus(root){
 
 // Standalone links must retain a distinct action cue without a resting
 // underline wall. Inspect real computed geometry and forced-color recovery.
+const historyActionIds = ["cite-g3-invitation-2011","cite-g3-history-challies","cite-g3-year-2013-gnl-2013","cite-g3-year-2013-challies","cite-g3-year-2014-sbts-2014","cite-g3-year-2014-gnl-2014","cite-g3-year-2015-gnl-2015","cite-g3-year-2016-gnl-2016","cite-g3-year-2017-gnl-2017","cite-r6-challies-2018-video","cite-r6-firstlove-2018","cite-r6-challies-2018-lessons","cite-g3-year-2018-ascol-2018","cite-g3-year-2018-statement-2018","cite-g3-year-2018-responses-2018","cite-g3-year-2018-challies","cite-g3-year-2019-announcement-2019","cite-g3-year-2019-gnl-2019","cite-g3-year-2019-piper-2019","cite-g3-year-2020-gnl-2020","cite-r6-white-manuscripts-2022","cite-r6-white-bible-2022","cite-g3-year-2023-announcement-2023","cite-g3-year-2024-reformation-2024","cite-g3-year-2024-316-2024","cite-g3-year-2024-cessationist-2024","cite-g3-year-2024-peters-2024","cite-g3-year-2024-early-venue-2023","cite-r6-crotts-2021","cite-r6-benson-2022","cite-g3-growth-challies","cite-g3-growth-aniol-2021","cite-g3-growth-context-overview"];
+const dossierActionKeys = ["#journal-g3-toc","#documents","#overview","cite-timeline-G3-S001","cite-timeline-G3-S008","cite-timeline-G3-S010","cite-timeline-G3-S096","cite-timeline-G3-S015","cite-timeline-G3-S011","cite-finance-G3-S002","cite-governance-G3-S096","cite-buice-G3-S008","cite-buck-G3-S012","#bibliography","#documents"];
 async function standaloneSourceActions(page, kind, forced = false) {
   const selector = kind === 'history'
     ? '.je-history-footnote > a, .jcdi-records a[data-journal-citation]'
     : '.je-contents-jump, .je-contents > .je-contents-return, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref';
-  const rows = await page.locator(selector).evaluateAll(nodes => nodes.filter(el => el.getClientRects().length > 0).map(el => {
+  const rows = await page.locator(selector).evaluateAll(nodes => nodes.map(el => {
     const style = getComputedStyle(el), arrow = getComputedStyle(el, '::after'), rect = el.getBoundingClientRect();
+    const blockers = [];
+    for (let node = el; node; node = node.parentElement) {
+      const css = getComputedStyle(node);
+      if (css.display === 'none' || css.visibility !== 'visible' || Number(css.opacity) === 0 ||
+          css.pointerEvents === 'none' || node.hasAttribute('inert') || node.getAttribute('aria-hidden') === 'true') blockers.push(node.tagName);
+    }
     return { id: el.id, href: el.getAttribute('href'), height: rect.height, left: rect.left, right: rect.right,
       viewport: document.documentElement.clientWidth, decoration: style.textDecorationLine,
+      width: rect.width, blockers, nativeClosedReturn: el.matches('.je-contents-return') && !el.closest('details').open,
       arrow: arrow.content !== 'none' && arrow.borderTopStyle === 'solid' && arrow.borderRightStyle === 'solid' };
   }));
-  assert.ok(rows.length >= 7, kind + ' standalone action inventory');
+  assert.deepEqual(rows.map(row => row.id || row.href), kind === 'history' ? historyActionIds : dossierActionKeys, kind + ' exact standalone action inventory');
   for (const row of rows) {
-    assert.ok(row.height >= 43.5 && row.left >= -1 && row.right <= row.viewport + 1, JSON.stringify(row));
+    if (row.nativeClosedReturn) continue;
+    assert.ok(!row.blockers.length && row.width > 0 && row.height >= 43.5 && row.left >= -1 && row.right <= row.viewport + 1, JSON.stringify(row));
     assert.ok(row.arrow, 'missing standalone action cue: ' + JSON.stringify(row));
     assert.equal(row.decoration.includes('underline'), forced, 'resting/forced-color action cue: ' + JSON.stringify(row));
   }
   return rows;
+}
+async function wideHistoryGeometry(page) {
+  const state = await page.evaluate(() => {
+    const rect = el => el.getBoundingClientRect().toJSON();
+    const grid = document.querySelector('[data-editorial-layout="wide"]');
+    const rail = grid.querySelector('.je-editorial-rail'), story = grid.querySelector('.journal-story-column');
+    const atlas = story.querySelector('.g3g-history'), index = story.querySelector('#g3-2018-document-index');
+    const svg = atlas.querySelector('.g3g-atlas-map svg'), land = svg.querySelector('.g3g-atlas-land');
+    const frame = rect(svg), painted = rect(land);
+    const label = svg.querySelector('.g3g-atlas-coordinate text');
+    const matrix = label.getScreenCTM();
+    return { viewport: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth,
+      grid: rect(grid), rail: rect(rail), story: rect(story), atlas: rect(atlas), index: rect(index),
+      ordinary: rect(story.querySelector('#g3-speakers')), origin: rect(story.querySelector('.je-history-origin')),
+      paragraph: rect(story.querySelector('#g3-year-2018 .je-history-text > p')), frame, painted,
+      paintedWidth: Math.max(0, Math.min(frame.right, painted.right) - Math.max(frame.left, painted.left)),
+      labelSize: parseFloat(getComputedStyle(label).fontSize) * Math.hypot(matrix.a, matrix.b),
+      markers: svg.querySelectorAll('.g3g-atlas-marker > *').length,
+      mapLinks: atlas.querySelectorAll('.g3g-atlas-list a').length,
+      allAtlasLinks: Array.from(atlas.querySelectorAll('a[data-journal-citation]')).map(a => a.id),
+      scale: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-font-scale') || '1') };
+  });
+  assert.equal(state.scrollWidth, state.viewport, 'wide layout root overflow');
+  assert.equal(state.markers, 4);
+  assert.equal(state.mapLinks, 5);
+  assert.deepEqual(state.allAtlasLinks, Array.from({length:18}, (_,i) => 'cite-g3g-history-' + (i+1)));
+  for (const box of [state.atlas,state.index,state.ordinary,state.origin,state.paragraph]) {
+    assert.ok(box.left >= -1 && box.right <= state.viewport + 1 && box.left >= state.story.left - 1 && box.right <= state.story.right + 1, JSON.stringify(state));
+  }
+  assert.ok(state.ordinary.width <= 741 && state.origin.width <= 741 && state.paragraph.width <= 741, 'prose measure changed');
+  assert.ok(state.paintedWidth >= state.frame.width * .94, 'SVG painted geography must use the actual frame, not a small centered drawing');
+  if (page.viewportSize().width >= 1440) {
+    assert.ok(state.atlas.width >= state.story.width - 2 && state.atlas.width > state.ordinary.width * 1.4, 'wide atlas not using its track');
+    assert.ok(state.atlas.right <= state.rail.left - 16 && state.index.right <= state.rail.left - 16, 'figure intersects separate TOC track');
+    assert.ok(state.index.width >= Math.min(1100,state.story.width) - 2 && state.index.width <= 1101);
+    assert.ok(state.paintedWidth > state.ordinary.width * 1.35 && state.labelSize >= 14, 'map itself must scale and retain readable desktop labels');
+  }
+  return state;
 }
 async function g44RouteWitness(page, js, name, controlOnly=false) {
   const index=page.locator('#g3-2018-document-index'), toc=page.locator('[data-journal-contents]');
@@ -622,6 +670,45 @@ const reviewClippedContrast = async (page, reviews) => {
   return witnesses;
 };
 try {
+  // W64: actual authored history page, not another off-route geometry fixture.
+  // Keep normal viewport captures with neighbouring prose and sticky chrome.
+  if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
+    report.wideHistory = [];
+    for (const width of [390,430,1440,1920]) for (const theme of ['light','dark']) {
+      const viewport = { width, height: width <= 430 ? 844 : 900 };
+      const context = await contextFor(width, theme, { viewport });
+      const page = await context.newPage();
+      const name = 'history-wide-' + width + 'x' + viewport.height + '-' + theme;
+      const item = { name, viewport, theme, runtime: [] };
+      monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
+      try {
+        const response = await ready(page, routes.find(route => route.kind === 'history').url);
+        await assertPublishedHistory(page, response);
+        item.normal = await wideHistoryGeometry(page);
+        await shot(page, name + '-full', { fullPage: true });
+        for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
+          await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
+          await settleWithoutScripts(page);
+          await shot(page, name + '-' + label, { fullPage: false });
+        }
+        await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+        await settleWithoutScripts(page);
+        item.scaled = await wideHistoryGeometry(page);
+        assert.equal(item.scaled.scale,2);
+        for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
+          await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
+          await settleWithoutScripts(page);
+          await shot(page, name + '-' + label + '-200pct', { fullPage: false });
+        }
+        assert.deepEqual(item.runtime, []);
+        console.log('PASS '+name);
+      } catch (error) {
+        item.failure = error.message; report.problems.push(name + ': ' + error.message);
+        console.error('FAIL '+name+': '+error.message);
+        await shot(page,name+'-failure').catch(()=>{});
+      } finally { report.wideHistory.push(item); await context.close(); }
+    }
+  }
   // W50: normal desktop context in a fresh browser context, outside native Tab.
   // Mobile contextual evidence already exists in the mobile suite.
   if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {

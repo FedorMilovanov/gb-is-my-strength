@@ -127,6 +127,12 @@ function assertG44Dist(doc) {
   assert.equal(one(section,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-13','PUB13 exactly once'),paragraphs[2]);
   const index=id(section,'g3-2018-document-index');
   assert.equal(index.parentNode,prose);
+  assert.equal(attr(section,'data-editorial-measure'),'feature','G44 explicit wide admission');
+  const origin=id(doc,'g3-history');
+  assert.equal(attr(origin,'data-editorial-measure'),'feature','atlas explicit wide admission');
+  const grid=one(doc,n=>attr(n,'data-editorial-layout')==='wide','one existing wide editorial grid');
+  assert.deepEqual(all(grid,n=>attr(n,'data-editorial-measure')==='feature').map(n=>attr(n,'id')),['g3-history','g3-year-2018'],'only the first two approved feature chapters');
+  assert.equal(all(grid,n=>attr(n,'data-editorial-measure')==='wide').length,0,'no premature additional wide modules');
   assert.equal(paragraphs[2],(prose.childNodes||[]).filter(n=>n.tagName).at(-2),'index follows original narrative');
   assert.equal(g44VisibleText(text(one(index,n=>n.tagName==='h3','index heading'))),g44VisibleText('Две линии одного года'));
   const groups=all(index,n=>hasClass(n,'jcdi-group'));
