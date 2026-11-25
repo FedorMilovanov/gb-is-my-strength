@@ -209,6 +209,52 @@ export function inspectMobileChrome(lawson) {
       return { errors, topH: topRect?.height, bottomH: bottomRect?.height, playW: playRect?.width, badgeGap: playRect&&badgeRect?Math.abs(badgeRect.left-playRect.right):null };
 }
 
+// Reuse the existing dist server and regression runner for actual Lawson
+// interaction evidence. No alternate production route or fixture renderer.
+async function inspectLawsonCards(page, capture) {
+  const result = [];
+  for (const [kind, triggerSelector, cardSelector, destinationSelector] of [
+    ['source', '.lawson-source-ref > button', '.lawson-source-popover', '.lawson-source-bibliography'],
+    ['term', '.lawson-term[data-enhanced] > .lawson-term-label', '.lawson-term-popover', '.lawson-term-return'],
+  ]) {
+    const trigger = page.locator(triggerSelector).first();
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.focus();
+    await trigger.press('Enter');
+    const card = page.locator(cardSelector + ':not([hidden])');
+    if (await card.count() !== 1 || !await card.isVisible()) throw new Error(kind + ': expected one open card');
+    const metrics = await card.evaluate((el, selector) => {
+      const r=el.getBoundingClientRect(), shell=document.querySelector('[data-mobile-chrome][data-mobile-chrome-engine="article"]');
+      const top=shell?.querySelector('[data-mobile-topbar]'), bottom=shell?.querySelector('[data-mobile-bottombar]');
+      const mobile=matchMedia('(max-width: 1199px)').matches;
+      const link=el.querySelector(selector), dest=link&&document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      const heading=el.querySelector('strong')?.textContent?.trim();
+      return {rect:r.toJSON(),viewport:{width:document.documentElement.clientWidth,height:document.documentElement.clientHeight},
+        topClearance:mobile?(top?.offsetHeight??0):0,bottomClearance:mobile?(bottom?.offsetHeight??0):0,
+        heading,href:link?.getAttribute('href'),destination:dest?.id,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight};
+    },destinationSelector);
+    const {rect:r,viewport:v}=metrics;
+    if(!metrics.heading||!metrics.destination||r.width<=0||r.height<=0||
+      r.left< -1||r.right>v.width+1||r.top<metrics.topClearance-1||r.bottom>v.height-metrics.bottomClearance+1)
+      throw new Error(kind + ': card geometry or native destination: ' + JSON.stringify(metrics));
+    const action = card.locator(destinationSelector);
+    await action.scrollIntoViewIfNeeded();
+    const hit=await action.evaluate(el=>{const r=el.getBoundingClientRect(),h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.height>=44&&!!h&&el.contains(h)});
+    if(!hit)throw new Error(kind + ': destination action blocked or smaller than 44px');
+    if(capture)await capture(kind);
+    await action.focus();
+    await page.keyboard.press('Escape');
+    if(await card.count()!==0||!await trigger.evaluate(el=>el===document.activeElement))
+      throw new Error(kind + ': Escape did not close and restore focus');
+    await trigger.press('Enter');
+    await page.locator(cardSelector + ':not([hidden])').locator(destinationSelector).click();
+    await page.waitForFunction(id=>location.hash==='#'+id&&document.activeElement?.id===id,metrics.destination);
+    if(await card.count()!==0)throw new Error(kind + ': destination left card open');
+    result.push({kind,...metrics,hit,escape:true,destinationFocus:true});
+  }
+  return result;
+}
+
 async function main() {
   const failures = [];
   const { server, origin } = await serve();
@@ -224,6 +270,9 @@ async function main() {
           if (!response?.ok()) throw new Error(`Route failed: ${route} (${response?.status()})`);
           await page.waitForTimeout(600);
           const result = await page.evaluate(inspectMobileChrome, route === ROUTES[0]);
+          if (route === ROUTES[0] && result.errors.length === 0) {
+            result.cards = await inspectLawsonCards(page);
+          }
           if (result.errors.length>0) {
             failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
             console.error(`❌ FAIL ${route} ${vp.w}x${vp.h}: ${result.errors.join('; ')} | topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
