@@ -78,21 +78,40 @@ async function check(engine,driver,width,height,base,advanced){
   await page.locator('[data-library-tab="favorite"]').click();
   assert.equal(await page.locator('[data-library-action="remove-favorite"]').count(),1,'favorite remove action');
   assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'favorite seeded');
+  const originalFavoriteBytes=await page.evaluate(()=>localStorage.getItem('gb-favorites'));
   await page.evaluate(()=>{
     window.__originalFavoriteWrite=Storage.prototype.setItem;
+    window.__favoriteWriteFailures=0;
     Storage.prototype.setItem=function(key,value){
-      if(key==='gb-favorites')throw new DOMException('Storage full','QuotaExceededError');
+      if(key==='gb-favorites'){
+        window.__favoriteWriteFailures++;
+        throw new DOMException('Storage full','QuotaExceededError');
+      }
       return window.__originalFavoriteWrite.call(this,key,value);
     };
   });
+  try {
+    await page.locator('[data-library-action="remove-favorite"]').click();
+    // The shared storage lock is asynchronous. Observe both an actual failed
+    // write and the resulting error UI before removing the injected failure.
+    await page.waitForFunction(()=>window.__favoriteWriteFailures>0 &&
+      document.getElementById('gb-hl-status')?.classList.contains('is-error'),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'failed write preserves favorite');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('gb-favorites')),originalFavoriteBytes,'failed write preserves exact storage bytes');
+    assert.equal(await page.locator('.gb-hl-item').count(),1,'failed write preserves rendered favorite');
+    assert.equal(await page.locator('#gb-hl-status').evaluate(el=>el.classList.contains('is-error')),true,'failed write shows error');
+  } finally {
+    await page.evaluate(()=>{Storage.prototype.setItem=window.__originalFavoriteWrite;delete window.__originalFavoriteWrite;delete window.__favoriteWriteFailures});
+  }
   await page.locator('[data-library-action="remove-favorite"]').click();
-  assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'failed write preserves favorite');
-  assert.equal(await page.locator('#gb-hl-status').evaluate(el=>el.classList.contains('is-error')),true,'failed write shows error');
-  await page.evaluate(()=>{Storage.prototype.setItem=window.__originalFavoriteWrite;delete window.__originalFavoriteWrite});
-  await page.locator('[data-library-action="remove-favorite"]').click();
+  await page.waitForFunction(()=>!window.GBFavoriteStore.has('/articles/kod-da-vinchi/') &&
+    document.querySelectorAll('.gb-hl-item').length===0 &&
+    !!document.querySelector('#gb-hl-status [data-library-action="undo-favorite"]'),null,{timeout:5000});
   assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),false,'favorite removed from canonical store');
   assert.equal(await page.locator('.gb-hl-item').count(),0,'favorite removed from list');
   await page.locator('#gb-hl-status [data-library-action="undo-favorite"]').click();
+  await page.waitForFunction(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/') &&
+    document.querySelectorAll('.gb-hl-item').length===1,null,{timeout:5000});
   assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'favorite undo restored');
   assert.equal(await page.locator('.gb-hl-item').count(),1,'favorite restored in list');
   await page.locator('[data-library-tab="quote"]').click();
