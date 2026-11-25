@@ -714,7 +714,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const anchor={blockId:'p1',blockIndex:0,start:6,end:10,exact:'beta',prefix:'Alpha ',suffix:' gamma'};
  const batch=api.resolution(article);
  assert.deepEqual([batch(anchor).start,batch(anchor).end],[6,10]);
- assert.equal(inventories,1);assert.equal(walks,1);assert.equal(styles,1);
+ assert.equal(inventories,1);assert.equal(walks,1);assert.equal(styles,2);
  assert.equal(batch({...anchor,start:0,end:4}).start,6,'relocation reuses same projection');
  assert.equal(walks,1);
  leaf.nodeValue='Alpha zeta gamma delta';block.textContent=leaf.nodeValue;
@@ -750,7 +750,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  // Block closest resolves authored paragraph except exclusion checks.
  block.closest=selector=>selector==='p,li,blockquote'||selector==='p,li,blockquote,.manuscript-quote--bilingual'?block:null;
  const doc={createTreeWalker:()=>{walks++;let n=0;return{nextNode:()=>n++===0?leaf:null}},createRange:()=>({setStart(){},collapse(){}})};
- const api=new Function('document','NodeFilter','window','location','innerHeight','normalizeText',highlights.slice(from,to)+'return GBReaderAnchors;')(doc,{SHOW_TEXT:4},{getSelection:()=>sel},{pathname:'/a'},844,x=>String(x??'').replace(/\\s+/g,' ').trim());
+ const api=new Function('document','NodeFilter','window','location','innerHeight','normalizeText','getComputedStyle',highlights.slice(from,to)+'return GBReaderAnchors;')(doc,{SHOW_TEXT:4},{getSelection:()=>sel},{pathname:'/a'},844,x=>String(x??'').replace(/\\s+/g,' ').trim(),()=>({display:'block',visibility:'visible'}));
  const capture=api.capture(article,'beta gamma');
  assert.equal(capture.text,'beta gamma');assert.equal(capture.anchor.start,6);assert.equal(capture.anchor.end,16);
  assert.deepEqual(capture.context,{before:'Alpha ',after:' delta'});assert.equal(walks,1,'capture and context one tree traversal');

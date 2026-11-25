@@ -37,19 +37,28 @@
       return faces.get(host);
     }
     const ignored=el=>{
-      if(!el||el===block)return false;
+      if(!el)return false;
       if(cached.has(el))return cached.get(el);
       // A bilingual quote is one authored block with two mutually exclusive
       // reading faces. Never capture the toggle label or the hidden language
       // as positional prose, even when UA details styles report display:block.
-      const host=bilingual||(legacy?el.closest('.manuscript-quote--bilingual'):null);
+      const host=bilingual||el.closest('.manuscript-quote--bilingual');
       const inactiveFace=host&&(
         !!el.closest('.mq-translation-toggle') ||
         !!el.closest(originalOpen(host)?'.mq-translation-russian':'.mq-translation-original')
       );
       let excluded=inactiveFace || el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
         (legacy&&el.matches('script,style,textarea,input,#gb-hl-panel,#gb-hl-selbar'));
-      if(!excluded){const style=getComputedStyle(el);excluded=style.display==='none'||style.visibility==='hidden'||ignored(el.parentElement);}
+      const parent=el.parentElement;
+      // The root and its ancestors must also be visible. Closed native
+      // details hide all direct children except their first summary even
+      // where computedStyle still reports normal display/visibility.
+      if(!excluded&&parent?.matches('details:not([open])'))
+        excluded=el!==parent.querySelector(':scope > summary');
+      if(!excluded){
+        const style=getComputedStyle(el);
+        excluded=style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse'||ignored(parent);
+      }
       cached.set(el,excluded);return excluded;
     };
     const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
@@ -599,9 +608,15 @@
     if (!pattern) return null;
     let match = null;
     try {
-      const expression = new RegExp('(' + tolerantPattern(before) + '\\s*)(' + pattern + ')\\s*' + tolerantPattern(after), 'ig');
+      const prefix=tolerantPattern(before),suffix=tolerantPattern(after);
+      const expression = new RegExp('(' + (prefix?prefix+'\\s*':'') + ')(' + pattern + ')' + (suffix?'\\s*'+suffix:''), 'ig');
       match = expression.exec(index.raw);
-      if (match && expression.exec(index.raw)) return null;
+      if (match) {
+        // Non-overlapping RegExp iteration misses a second occurrence that
+        // begins inside the first match. Such a legacy anchor is ambiguous.
+        expression.lastIndex=match.index+1;
+        if(expression.exec(index.raw))return null;
+      }
     }
     catch { return null; }
     if (!match) return null;

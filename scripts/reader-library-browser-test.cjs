@@ -469,7 +469,10 @@ async function checkVisibleLegacy(name, driver, base) {
         <details class="mq-translation-flip"><summary class="mq-translation-toggle">Переключатель языка</summary>
         <span class="mq-translation-original">Original language</span></details></div>
         <p><span id="edge">Граничный отрывок</span><span hidden>Скрытый хвост</span><span>Следующий текст</span></p>
-        <p>Неоднозначный фрагмент</p><p>Неоднозначный фрагмент</p>`;
+        <p>Неоднозначный фрагмент</p><p>Неоднозначный фрагмент</p>
+        <p id="overlap">Контекст абаба конец.</p>
+        <div id="ancestor"><p id="positional">Начало. Позиционный отрывок. Конец.</p></div>
+        <details id="native-details"><summary>Обычное оглавление</summary><p>Закрытое содержание</p></details>`;
       const resolve=text=>window.GBHighlights.resolveRange({text,url:location.href},article);
       const range=resolve('Видимая фраза');
       const data={
@@ -480,8 +483,29 @@ async function checkVisibleLegacy(name, driver, base) {
         closedRussian:!!resolve('Русская сторона'),
         closedOriginal:!!resolve('Original language'),
         toggle:!!resolve('Переключатель языка'),
-        ambiguous:!!resolve('Неоднозначный фрагмент')
+        ambiguous:!!resolve('Неоднозначный фрагмент'),
+        overlapping:!!resolve('аба'),
+        overlapBefore:window.GBHighlights.resolveRange({text:'аба',before:'Контекст',url:location.href},article)?.toString()||null,
+        overlapAfter:window.GBHighlights.resolveRange({text:'аба',after:'конец.',url:location.href},article)?.toString()||null,
+        closedDetails:!!resolve('Закрытое содержание'),
+        summary:!!resolve('Обычное оглавление')
       };
+      const block=article.querySelector('#positional'),parent=block.parentElement;
+      const selected=document.createRange();selected.selectNodeContents(block);
+      block.scrollIntoView({block:'center'});
+      const sel=window.getSelection();sel.removeAllRanges();sel.addRange(selected);
+      const saved=window.GBReaderAnchors.capture(article);
+      sel.removeAllRanges();
+      if(!saved)throw Error('failed to capture visible positional fixture');
+      const positional=()=>!!window.GBReaderAnchors.resolve(article,saved.anchor);
+      data.visiblePositional=positional();
+      block.hidden=true;data.hiddenRoot=positional();block.hidden=false;
+      parent.setAttribute('aria-hidden','true');data.hiddenAncestor=positional();parent.removeAttribute('aria-hidden');
+      parent.style.display='none';data.displayAncestor=positional();parent.style.display='';
+      parent.inert=true;data.inertAncestor=positional();parent.inert=false;
+      data.restoredPositional=positional();
+      const details=article.querySelector('#native-details');
+      details.open=true;data.openDetails=!!resolve('Закрытое содержание');details.open=false;
       article.querySelector('details').open=true;
       data.openRussian=!!resolve('Русская сторона');
       data.openOriginal=!!resolve('Original language');
@@ -490,7 +514,10 @@ async function checkVisibleLegacy(name, driver, base) {
     assert.deepEqual(results,{
       visible:'Видимая фраза',source:'visible',edge:'Граничный отрывок',hidden:Array(7).fill(false),
       closedRussian:true,closedOriginal:false,toggle:false,ambiguous:false,
-      openRussian:false,openOriginal:true
+      openRussian:false,openOriginal:true,
+      overlapping:false,overlapBefore:'аба',overlapAfter:'аба',
+      closedDetails:false,summary:true,openDetails:true,
+      visiblePositional:true,hiddenRoot:false,hiddenAncestor:false,displayAncestor:false,inertAncestor:false,restoredPositional:true
     });
     assert.deepEqual(errors,[]);
     console.log('PASS',name,'legacy visible projection');

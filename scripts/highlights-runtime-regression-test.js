@@ -202,6 +202,11 @@ assert.equal(paintOnce([firstMark], undefined, 'https://gospod-bog.ru/articles/b
 assert.equal(paintRegistry.has('gb-hl-amber'), false, 'old custom highlights removed on route change');
 assert.equal(paintOnce([{ ...firstMark, before: '', after: '' }]).painted, 0,
   'ambiguous legacy first-match must remain unresolved');
+const overlapMark={...firstMark,text:'аба',before:'',after:''};
+assert.equal(paintOnce([overlapMark],'Контекст абаба конец.').painted,0,'overlapping legacy occurrences are ambiguous');
+assert.equal(paintOnce([{...overlapMark,before:'Контекст'}],'Контекст абаба конец.').painted,1,'unique prefix identifies first overlap');
+assert.equal(paintOnce([{...overlapMark,after:'конец.'}],'Контекст абаба конец.').painted,1,'unique suffix identifies second overlap');
+assert.equal(paintOnce([overlapMark],'   аба   ').painted,1,'leading whitespace is not a second match');
 assert.equal(paintOnce([firstMark], 'Заменено Бог благ конец. Далее Бог благ снова.').painted, 0,
   'changed source context cannot reattach the marker to another quote');
 const positionalMark = { ...firstMark, annotation: {
