@@ -1728,11 +1728,33 @@
     var deskMq = window.matchMedia && window.matchMedia('(min-width:85em)');
     if (deskMq && deskMq.addEventListener) {
       addCleanListener(deskMq, 'change', function () {
-        [seriesToc, partToc, settingsOverlay].forEach(function (ov) {
-          if (!ov || !ov.classList.contains('is-open')) return;
+        var active = document.activeElement;
+        var opened = [seriesToc, partToc, settingsOverlay].filter(function (ov) {
+          return ov && ov.classList.contains('is-open');
+        });
+        var lostFocus = !active || active === document.body || active === document.documentElement;
+        var focusOwner = opened.find(function (ov) { return active && ov.contains(active); });
+        // A browser may already have dropped focus when the old opener
+        // becomes display:none. Recover only for an unambiguous open sheet.
+        if (!focusOwner && lostFocus && opened.length === 1) focusOwner = opened[0];
+        opened.forEach(function (ov) {
           if (ov === settingsOverlay) closeGillSheet(ov, false, 'breakpoint');
           else closeOverlay(ov, 'breakpoint', false);
         });
+        if (!focusOwner) return;
+        var runtime = getOverlayRuntime();
+        if (runtime && runtime.topLayer && runtime.topLayer()) return;
+        var current = document.activeElement;
+        if (current && current !== document.body && current !== document.documentElement &&
+            !focusOwner.contains(current)) return;
+        var target = focusOwner === settingsOverlay
+          ? qs(deskMq.matches ? '#railSettingsBtn' : '#mobSettingsBtn')
+          : (deskMq.matches ? qs('#gbsTocToggle') : (mobPartTocBtn || mobTocBtn));
+        if (target && target.isConnected && target.getClientRects().length &&
+            !target.disabled && !target.closest('[inert],[hidden],[aria-hidden="true"]') &&
+            getComputedStyle(target).visibility === 'visible' && target.focus) {
+          try { target.focus({ preventScroll: true }); } catch (_) {}
+        }
       });
     }
 

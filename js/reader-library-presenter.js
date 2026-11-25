@@ -505,4 +505,96 @@ function button(action, label, text) {
   return Object.freeze({showEditor,hideEditor,saveNote,clearUndo,deleteItem,statusMessage});
   }
 
-export { createLibraryEditor, createLibraryPanel, renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab, handleLibraryClick };
+  // No pending intent state here: the bootstrap alone owns cancellation.
+  function createMountedLifecycle({overlay,editor,research,editorController,reset,render,close}) {
+    function activate(fab,opener) {
+      reset();
+      overlay.removeAttribute('inert');
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      fab.setAttribute('aria-expanded', 'true');
+      if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') {
+        opener.setAttribute('aria-controls','gb-hl-panel');
+        opener.setAttribute('aria-expanded','true');
+      }
+      if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
+      else document.body.classList.add('no-scroll');
+      overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
+      render();
+    }
+    function deactivate(fab,opener) {
+    editorController.hideEditor(false);
+    editorController.clearUndo();
+    research?.resetMenu();
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('inert', '');
+    fab.setAttribute('aria-expanded', 'false');
+    if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') opener.setAttribute('aria-expanded','false');
+    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
+    else document.body.classList.remove('no-scroll');
+    }
+    function keydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (!editor.hidden) editorController.hideEditor();
+      else if (!research?.handleEscape()) close();
+    }
+    else if (e.key === 'Tab' ) trapTab(e, overlay);
+    }
+    return {activate,deactivate,keydown};
+  }
+
+  // The mounted view owns all list state and event bindings. Opening intent
+  // and scroll/focus ownership remain with the synchronous bootstrap.
+  function createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch,isOpen}) {
+    const {overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}=createLibraryPanel(penSvg);
+    let tab='all',filter='all',searchTerm='',shown=BATCH_SIZE;
+    const expanded=new Set();
+    let research;
+    function reset() {
+      tab='all';filter='all';searchTerm='';shown=BATCH_SIZE;search.value='';
+    }
+    function render() {
+      const items=all();
+      research?.reconcileTopic?.(items);
+      filter=renderList({list,items,titleCount,sourceSelect,overlay,tab,filter,searchTerm,shown,expanded,research});
+    }
+    try {
+    const editorController=createLibraryEditor({overlay,panel,status,editor,textArea,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,render,sync,
+      selectNotes:()=>{tab='note';filter='all';shown=BATCH_SIZE;}
+    });
+      overlay.querySelector('#gb-hl-close').addEventListener('click',close);
+      overlay.querySelector('#gb-hl-export').addEventListener('click',()=>{
+        try {exportMarkdown(all(),statusMessage);}
+        catch {statusMessage('Не удалось подготовить экспорт. Повторите попытку.',true);}
+      });
+      overlay.querySelector('#gb-hl-new-note').addEventListener('click',()=>editorController.showEditor());
+      overlay.querySelector('#gb-hl-note-cancel').addEventListener('click',editorController.hideEditor);
+      overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+      overlay.querySelector('#gb-hl-tabs').addEventListener('click',e=>{
+        const b=e.target.closest('[data-library-tab]');
+        if(!b)return;
+        tab=b.dataset.libraryTab;shown=BATCH_SIZE;render();
+      });
+      search.addEventListener('input',()=>{searchTerm=normalizeText(search.value).toLocaleLowerCase();shown=BATCH_SIZE;render();});
+      sourceSelect.addEventListener('change',()=>{filter=sourceSelect.value;shown=BATCH_SIZE;render();});
+      list.addEventListener('click',e=>handleLibraryClick(e,{
+        quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,all,expanded,
+        deleteItem:editorController.deleteItem,clearUndo:editorController.clearUndo,showEditor:editorController.showEditor,
+        more:()=>{shown+=BATCH_SIZE;render();},
+        clearFilters:()=>{searchTerm='';search.value='';filter='all';research?.resetFilters();shown=BATCH_SIZE;render();}
+      }));
+      editor.addEventListener('submit',editorController.saveNote);
+      research=createResearch({overlay,getItems:all,notify:statusMessage,refresh:render,isOpen,renderItem,
+        exitForResume:scrollToSavedPosition=>{close();requestAnimationFrame(()=>requestAnimationFrame(scrollToSavedPosition));}
+      });
+      const lifecycle=createMountedLifecycle({overlay,editor,research,editorController,reset,render,close});
+      return Object.freeze({overlay,editorController,reset,render,...lifecycle});
+    } catch(error) {
+      overlay.remove();
+      throw error;
+    }
+  }
+
+export { createLibraryView, createLibraryEditor, createLibraryPanel, renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab, handleLibraryClick };

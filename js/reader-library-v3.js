@@ -577,11 +577,10 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     await mutateResearch('reading',map=>updateProgress(map,key,expected,progress));
     reading=objectMap(parse(KEYS.reading,{}));
   }
-  window.addEventListener('scroll', () => {
+  function onScroll() {
     if (currentStatus()?.state !== 'reading') return;
     clearTimeout(progressTimer); progressTimer = setTimeout(rememberProgress, 800);
-  }, { passive: true });
-  window.addEventListener('pagehide', rememberProgress);
+  }
   function resume(path) {
     const key = cleanPath(path), data = reading[key];
     if (!data || data.state !== 'reading') return;
@@ -622,8 +621,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       requestAnimationFrame(() => requestAnimationFrame(() => resume(key)));
     } catch {}
   }
-  window.addEventListener('load', autoResumeOnce, { once: true });
-  if (document.readyState === 'complete') autoResumeOnce();
+
 
   function fillManager() {
     readingManager.replaceChildren();
@@ -848,12 +846,12 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       });
     } catch (error) { if (generation !== importGeneration) return; invalidateImport(); notify('Импорт отменён: ' + error.message, true); }
   });
-  window.addEventListener('storage', (event) => {
+  function onStorage(event) {
     if (event.key === KEYS.tags) { tags = objectMap(parse(KEYS.tags, {})); refresh(); }
     if (event.key === KEYS.reading) { reading = objectMap(parse(KEYS.reading, {})); refresh(); }
     if (event.key === KEYS.revisit) { revisit = objectMap(parse(KEYS.revisit, {})); refresh(); }
-  });
-  return Object.freeze({
+  }
+  const controller = Object.freeze({
     getTags, itemMatches, orderItems, decorate, renderGroups, decorateList, reconcileTopic,
     resetMenu() { invalidateImport(); menu.hidden = true; confirmation.hidden = true; tagEditor.hidden = true; manage.setAttribute('aria-expanded', 'false'); },
     handleEscape() {
@@ -866,6 +864,21 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     resetFilters() { topic = ''; },
     refreshState() { tags = objectMap(parse(KEYS.tags, {})); reading = objectMap(parse(KEYS.reading, {})); revisit = objectMap(parse(KEYS.revisit, {})); },
   });
+  // Publish global side effects only after all DOM bindings and the controller
+  // are ready. A partially registered factory must not survive a failed mount.
+  const lifetime = new AbortController();
+  const {signal} = lifetime;
+  try {
+    window.addEventListener('scroll', onScroll, {passive:true,signal});
+    window.addEventListener('pagehide', rememberProgress, {signal});
+    window.addEventListener('load', autoResumeOnce, {once:true,signal});
+    window.addEventListener('storage', onStorage, {signal});
+  } catch (error) {
+    lifetime.abort();
+    throw error;
+  }
+  if (document.readyState === 'complete') autoResumeOnce();
+  return controller;
 }
 
 // Pure fail-closed backup contract functions (Node regression tests).

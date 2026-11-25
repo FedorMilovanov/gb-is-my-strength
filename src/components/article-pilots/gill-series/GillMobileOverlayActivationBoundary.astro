@@ -17,17 +17,26 @@
 ---
 
 <script>
+  // The processed Astro module is a single owner, even if the route DOM
+  // is replaced. Keep only the current pair and its teardown.
+  let disposeBoundary = () => {};
+  let isCurrentBoundary = () => false;
+
   function installGillMobileOverlayActivationBoundary() {
+    if (isCurrentBoundary()) return;
+    disposeBoundary();
     const trigger = document.getElementById('mobPartTocBtn');
     const overlay = document.getElementById('partTocOverlay');
     if (!(trigger instanceof HTMLButtonElement) || !(overlay instanceof HTMLElement)) return;
-    if (trigger.dataset.gbActivationBoundary === '1') return;
-
+    const subscriptions = new AbortController();
+    const signal = subscriptions.signal;
     trigger.dataset.gbActivationBoundary = '1';
     if (!overlay.id) overlay.id = 'partTocOverlay';
     trigger.setAttribute('aria-controls', overlay.id);
     let pending = false;
+    let generation = 0;
     let replaying = false;
+    const desktop = window.matchMedia('(min-width:85em)');
     let frameId = 0;
     let fallbackTimer = 0;
 
@@ -43,11 +52,23 @@
       fallbackTimer = 0;
     };
 
-    const replayNativeActivation = () => {
-      if (!pending) return;
+    const cancelPending = () => {
+      generation += 1;
       pending = false;
       clearReplayHandles();
-      if (!trigger.isConnected || trigger.disabled) return;
+    };
+
+    const canActivate = () => !desktop.matches && trigger.isConnected &&
+      overlay.isConnected && document.getElementById(trigger.id) === trigger &&
+      document.getElementById(overlay.id) === overlay && !trigger.disabled &&
+      trigger.getClientRects().length > 0 &&
+      !trigger.closest('[inert],[hidden],[aria-hidden="true"]') &&
+      getComputedStyle(trigger).visibility === 'visible';
+
+    const replayNativeActivation = (ticket) => {
+      if (!pending || ticket !== generation) return;
+      cancelPending();
+      if (!canActivate()) return;
       replaying = true;
       try {
         trigger.click();
@@ -60,27 +81,57 @@
       if (replaying) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (pending) return;
+      if (pending || !canActivate()) return;
       pending = true;
+      const ticket = ++generation;
+      const replay = () => replayNativeActivation(ticket);
       if (document.hidden) {
-        fallbackTimer = window.setTimeout(replayNativeActivation, 0);
+        fallbackTimer = window.setTimeout(replay, 0);
       } else {
-        frameId = window.requestAnimationFrame(replayNativeActivation);
-        fallbackTimer = window.setTimeout(replayNativeActivation, 120);
+        frameId = window.requestAnimationFrame(replay);
+        fallbackTimer = window.setTimeout(replay, 120);
       }
-    }, true);
+    }, { capture: true, signal });
 
-    window.addEventListener('pagehide', () => {
-      pending = false;
-      clearReplayHandles();
-    }, { once: true });
+    // A deferred native click belongs only to this activation, not a
+    // later mode, another control, Escape or a subsequent page lifecycle.
+    desktop.addEventListener('change', cancelPending, { signal });
+    document.addEventListener('click', (event) => {
+      if (pending && !trigger.contains(event.target)) cancelPending();
+    }, { capture: true, signal });
+    document.addEventListener('keydown', (event) => {
+      if (pending && (event.key === 'Escape' || event.key === 'Esc')) cancelPending();
+    }, { capture: true, signal });
+    // An overlay can open from a keyboard shortcut or programmatically,
+    // without a click reaching the capture handler.
+    document.addEventListener('gb:overlay-open', cancelPending, { signal });
+    document.addEventListener('gb:gill-sheet-open', cancelPending, { signal });
+    window.addEventListener('pagehide', cancelPending, { signal });
 
-    new MutationObserver(syncExpanded).observe(overlay, {
+    const observer = new MutationObserver(syncExpanded);
+    observer.observe(overlay, {
       attributes: true,
       attributeFilter: ['class', 'aria-hidden'],
     });
+    isCurrentBoundary = () => trigger.isConnected && overlay.isConnected &&
+      document.getElementById(trigger.id) === trigger &&
+      document.getElementById(overlay.id) === overlay;
+    disposeBoundary = () => {
+      cancelPending();
+      subscriptions.abort();
+      observer.disconnect();
+      delete trigger.dataset.gbActivationBoundary;
+      isCurrentBoundary = () => false;
+      disposeBoundary = () => {};
+    };
     syncExpanded();
   }
+
+  // Astro's processed scripts are not re-executed on every client swap.
+  // On ordinary full loads these events are harmless; BFCache pagehide
+  // only cancels pending work, preserving the still-mounted listeners.
+  document.addEventListener('astro:before-swap', () => disposeBoundary());
+  document.addEventListener('astro:page-load', installGillMobileOverlayActivationBoundary);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', installGillMobileOverlayActivationBoundary, { once: true });

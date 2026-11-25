@@ -541,6 +541,9 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const to=highlights.indexOf('  function sync()',from);
  assert.ok(from>=0&&to>from,'lazy dialog lifecycle source boundaries');
  const lifecycle=highlights.slice(from,to);
+ const mountStart=presenterSource.indexOf('  function createMountedLifecycle('),mountEnd=presenterSource.indexOf('  // The mounted view owns',mountStart);
+ assert.ok(mountStart>=0&&mountEnd>mountStart);
+ const mounted=presenterSource.slice(mountStart,mountEnd);
  function fixture(){
   let requests=[],opened=false,locked=0,focus=0,paint=0,errors=0,broken=false;
   const attributes=new Map(), triggerAttributes=new Map([['aria-haspopup','dialog']]), returnAttributes=new Map();
@@ -553,7 +556,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   const loadPresenter=()=>new Promise((resolve,reject)=>requests.push({resolve,reject}));
   const render=()=>{paint++;if(broken)throw Error('render failure')};
   const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo','getComputedStyle',
-   "let research=null, opener=null, tab='', filter='', searchTerm='', shown=0; const BATCH_SIZE=30, search={value:''};"+lifecycle+'return {open,close,keydown,pendingFocusChanged};');
+   mounted+"let opener=null; const view=createMountedLifecycle({overlay,editor:{hidden:true},research:null,editorController:{hideEditor,clearUndo},reset(){},render,close:()=>close()});"+lifecycle+'return {open,close,keydown,pendingFocusChanged};');
   const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{},()=>({visibility:'visible'}));
   return {api,requests,trigger,fab,returnTarget,returnAttributes,attributes,triggerAttributes,hideTrigger:()=>{hidden=true},unrelated:(notify=true)=>{active='unrelated';document.activeElement={isConnected:true,getClientRects:()=>[{}],closest:()=>null};if(notify)api.pendingFocusChanged();},active:()=>active,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
  }
@@ -765,3 +768,108 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  handlers.mouseup();handlers.touchend();handlers.selectionchange();
  assert.equal(captures,3);assert.equal(attaches,3);
 }
+
+
+ // W62: execute the actual mounted view owner with deterministic event nodes.
+{
+ const start=presenterSource.indexOf('  function createLibraryView(');
+ const end=presenterSource.indexOf('export { createLibraryView',start);
+ assert.ok(start>=0&&end>start,'mounted view boundaries');
+ const lifecycleStart=presenterSource.indexOf('  function createMountedLifecycle(');
+ const source=presenterSource.slice(lifecycleStart,end);
+ function fixture(fail=false){
+   const snapshots=[],nodes=new Map();let removed=0,exported=0,closed=0,shownNote=0,resets=0,actions,editorOptions;
+   function node(){return {value:'',listeners:new Map(),addEventListener(type,fn){assert.ok(!this.listeners.has(type),'one event binding per node/type');this.listeners.set(type,fn)},fire(type,e={}){return this.listeners.get(type)(e)}}}
+   const overlay=node();overlay.querySelector=id=>{if(!nodes.has(id))nodes.set(id,node());return nodes.get(id)};overlay.remove=()=>removed++;
+   const panel=node(),list=node(),titleCount=node(),search=node(),sourceSelect=node(),status=node(),editor=node(),textArea=node();
+   const items=[{id:'q'}],research={reconcileTopic(){},resetFilters(){resets++}};
+   const factory=new Function('createLibraryPanel','createLibraryEditor','renderList','renderItem','handleLibraryClick','exportMarkdown',source+'return createLibraryView;')(
+     ()=>({overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}),
+     options=>{if(fail==='editor')throw Error('init failed');editorOptions=options;return {showEditor(){shownNote++},hideEditor(){},saveNote(){},deleteItem(){},clearUndo(){}}},
+     state=>{snapshots.push({tab:state.tab,filter:state.filter,term:state.searchTerm,shown:state.shown});return state.filter},
+     ()=>{},(_,a)=>{actions=a},()=>exported++);
+   const deps={all:()=>items,close:()=>closed++,BATCH_SIZE:30,normalizeText:s=>s.trim(),createResearch:()=>{if(fail)throw Error('init failed');return research}};
+   return {mount:()=>factory(deps),snapshots,overlay,list,search,sourceSelect,editor,actions:()=>actions,options:()=>editorOptions,stats:()=>({removed,exported,closed,shownNote,resets})};
+ }
+ const f=fixture(),view=f.mount();
+ view.render();assert.deepEqual(f.snapshots.at(-1),{tab:'all',filter:'all',term:'',shown:30});
+ f.overlay.querySelector('#gb-hl-tabs').fire('click',{target:{closest:()=>({dataset:{libraryTab:'quote'}})}});
+ f.search.value='  ФРАЗА  ';f.search.fire('input');f.sourceSelect.value='source-A';f.sourceSelect.fire('change');
+ assert.deepEqual(f.snapshots.at(-1),{tab:'quote',filter:'source-A',term:'фраза',shown:30});
+ f.list.fire('click',{});f.actions().more();assert.equal(f.snapshots.at(-1).shown,60);
+ f.actions().clearFilters();assert.deepEqual(f.snapshots.at(-1),{tab:'quote',filter:'all',term:'',shown:30});assert.equal(f.stats().resets,1);
+ f.options().selectNotes();view.render();assert.equal(f.snapshots.at(-1).tab,'note');
+ view.reset();view.render();assert.deepEqual(f.snapshots.at(-1),{tab:'all',filter:'all',term:'',shown:30});
+ f.overlay.querySelector('#gb-hl-export').fire('click');f.overlay.querySelector('#gb-hl-new-note').fire('click');f.overlay.querySelector('#gb-hl-close').fire('click');
+ assert.deepEqual(f.stats(),{removed:0,exported:1,closed:1,shownNote:1,resets:1});
+ for(const mode of ['editor','research']){
+ const failed=fixture(mode);let threw=false;try{failed.mount()}catch(e){threw=e.message==='init failed'}
+ assert.equal(threw,true);assert.equal(failed.stats().removed,1,'failed '+mode+' mount must not leave orphan overlay');
+ }
+}
+
+ // W63: shared parallel import, mount after both, retry after rejected import or mount.
+{
+ const start=highlights.indexOf('  let overlay, fab, view,');
+ const end=highlights.indexOf('  const stylesheet',start);
+ assert.ok(start>=0&&end>start);
+ const source=highlights.slice(start,end).replace(/\bimport\(/g,'load(');
+ function fixture(){
+   const imports=[],attrs=new Map();let mounts=0,failMount=false;
+   const module={createLibraryView(){mounts++;if(failMount)throw Error('mount');return {overlay:{},editorController:{}}}};
+   const api=new Function('load','deps',source.replace('function loadPresenter() {','fab=deps.fab; const {penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,isOpen}=deps; function loadPresenter() {')+'return {loadPresenter,published:()=>presenter};')(
+    path=>new Promise((resolve,reject)=>imports.push({path,resolve,reject})),{fab:{setAttribute:(k,v)=>attrs.set(k,v)}});
+   return {api,imports,module,mounts:()=>mounts,attrs,setFailure:value=>failMount=value};
+ }
+ const f=fixture(),p=f.api.loadPresenter(),q=f.api.loadPresenter();
+ assert.equal(p,q,'parallel modules share one readiness promise');
+ assert.equal(f.imports.length,2);assert.match(f.imports[0].path,/reader-library-presenter\.js/);assert.match(f.imports[1].path,/reader-library-v3\.js/);
+ f.imports[1].resolve({});await Promise.resolve();assert.equal(f.mounts(),0);assert.equal(f.api.published(),null);
+ f.imports[0].resolve(f.module);assert.equal(await p,f.module);assert.equal(f.mounts(),1);assert.equal(f.attrs.get('aria-controls'),'gb-hl-panel');
+ assert.equal(await f.api.loadPresenter(),f.module);assert.equal(f.imports.length,2);
+ for(const failure of ['import','mount']){
+   const x=fixture(),first=x.api.loadPresenter();
+   if(failure==='import'){x.imports[0].reject(Error('offline'));x.imports[1].resolve({});}
+   else{x.setFailure(true);x.imports[0].resolve(x.module);x.imports[1].resolve({});}
+   let rejected=false;try{await first}catch{rejected=true}
+   assert.equal(rejected,true);assert.equal(x.api.published(),null);assert.equal(x.attrs.has('aria-controls'),false);
+   x.setFailure(false);const retry=x.api.loadPresenter();assert.equal(x.imports.length,4);
+   x.imports[2].resolve(x.module);x.imports[3].resolve({});assert.equal(await retry,x.module);
+   assert.equal(x.mounts(),failure==='import'?1:2);
+ }
+}
+
+ // W65: a failed research factory must leave no live global listener and
+ // must not consume the one-time resume intent before successful setup.
+ {
+  const researchSource=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
+  const from=researchSource.indexOf('export function createLibraryResearch(');
+  const to=researchSource.indexOf('// Pure fail-closed backup contract functions',from);
+  assert.ok(from>=0&&to>from);
+  const body=researchSource.slice(from,to).replace('export function','function');
+  for(const fault of ['dom:click','dom:change','dom:keydown','global:scroll','global:pagehide','global:load','global:storage',null]){
+   const listeners=[];let sessionReads=0,fail=fault;
+   const window={addEventListener(type,fn,opts={}){
+    if(fail==='global:'+type)throw Error('injected');
+    listeners.push({type,fn,opts});
+   }};
+   class Controller {constructor(){this.signal={aborted:false}} abort(){this.signal.aborted=true}}
+   const node=()=>({append(){},after(){},insertBefore(){},setAttribute(){},querySelector(){return node()},
+    addEventListener(type){if(fail==='dom:'+type)throw Error('injected')}});
+   const document={createElement:node,readyState:'complete'};
+   const sessionStorage={getItem(){sessionReads++;return null}};
+   const factory=new Function('window','document','sessionStorage','AbortController','KEYS','objectMap','parse','btn','node','Option','location','cleanPath',body+';return createLibraryResearch;')(
+    window,document,sessionStorage,Controller,{tags:'tags',reading:'reading',revisit:'revisit'},x=>x,()=>({}),node,node,function(){},{pathname:'/a'},x=>x);
+   const mount=()=>factory({overlay:node(),getItems:()=>[],notify(){},refresh(){},isOpen:()=>false,renderItem(){}});
+   const live=()=>listeners.filter(x=>!x.opts.signal?.aborted).map(x=>x.type);
+   if(fault){
+    assert.throws(mount,/injected/,fault);
+    assert.deepEqual(live(),[],fault+' leaked global listeners');
+    assert.equal(sessionReads,0,fault+' consumed resume read');
+    fail=null;
+   }
+   assert.ok(mount());
+   assert.deepEqual(live(),['scroll','pagehide','load','storage'],'one listener per event after success/retry');
+   assert.equal(sessionReads,1);
+  }
+ }

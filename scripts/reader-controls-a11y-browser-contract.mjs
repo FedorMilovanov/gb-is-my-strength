@@ -1375,7 +1375,11 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
       { first, returned, unfolded });
     // W210: short landscape must leave a meaningful scrolling reading area,
     // not just barely clear the historical >45px geometry floor.
-    if (width >= 640 && width < 1360 && width > height && height >= 390 && height <= 500) {
+    const veryShort = width >= 480 && width < 1360 && width > height && height >= 320 && height < 390;
+    if (veryShort || (width >= 640 && width < 1360 && width > height && height >= 390 && height <= 500)) {
+      // Maintain W210's 100px contract; the compact grid must also
+      // deliver at least two 44px interaction rows at 320–389px.
+      const minReadingHeight = veryShort ? 88 : 100;
       const scrollWitness = async (selector) => {
         const panel = page.locator(selector);
         await panel.evaluate(node => { node.scrollTop = 0; });
@@ -1398,9 +1402,32 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
       await page.locator('#gbrMarginaliaTab').click();
       const researchScroll = await scrollWitness('#gbrMarginalia');
       const afterScroll = await read();
+      const heading = await page.evaluate(() => {
+        const root = document.getElementById('partTocOverlay');
+        const inspect = node => {
+          if (!node) return null;
+          const r = node.getBoundingClientRect();
+          return { text:node.textContent.trim(), width:r.width,height:r.height,
+            clientWidth:node.clientWidth,clientHeight:node.clientHeight,
+            scrollWidth:node.scrollWidth,scrollHeight:node.scrollHeight };
+        };
+        return { title:inspect(root.querySelector('.toc-head-txt h3')),
+          label:inspect(root.querySelector('.toc-head-txt .lab')),
+          progress:inspect(root.querySelector('.toc-sheet__progress-caption')) };
+      });
+      if (veryShort) {
+        record(checks,caseId+'-compact-heading-readable',
+          'actual authored title and series label are not clipped by compact header',
+          [heading.title,heading.label,heading.progress].every(x => x && x.text && x.width > 0 && x.height > 0 &&
+            x.scrollWidth <= x.clientWidth + 1 && x.scrollHeight <= x.clientHeight + 1),
+          heading);
+      }
       const targets = await page.evaluate(() => {
         const root = document.getElementById('partTocOverlay');
         const controls = [...root.querySelectorAll('.toc-sheet__head .back, [role="tab"], .gbat-foot button')];
+        if (matchMedia('(min-width:30em) and (max-width:84.999em) and (orientation:landscape) and (height < 390px)').matches) {
+          controls.unshift(root.querySelector('.toc-sheet__handle'));
+        }
         return controls.map(node => {
           const r = node.getBoundingClientRect();
           const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
@@ -1410,13 +1437,13 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
         });
       });
       record(checks, caseId+'-short-landscape-reading-area',
-        'both panels have >=100px usable scroll viewport; header, tabs and footer controls remain visible and hittable',
-        Boolean(first.toc?.clientH >= 100 && research.research?.clientH >= 100 &&
-          expanded.research?.clientH >= 100 && unfolded.toc?.clientH >= 100 &&
+        'both panels retain usable scroll viewport; header, tabs and footer controls remain visible and hittable',
+        Boolean(first.toc?.clientH >= minReadingHeight && research.research?.clientH >= minReadingHeight &&
+          expanded.research?.clientH >= minReadingHeight && unfolded.toc?.clientH >= minReadingHeight &&
           expanded.research.scrollH > expanded.research.clientH &&
           unfolded.toc.scrollH > unfolded.toc.clientH &&
           unfolded.sheet?.y >= -.8 && unfolded.sheet?.bottom <= height + .8 &&
-          targets.length === 6 && targets.every(t => t.height >= 43.9 && t.width >= 43.9 && t.hit && t.inside) &&
+          targets.length === (veryShort ? 7 : 6) && targets.every(t => t.height >= 43.9 && t.width >= 43.9 && t.hit && t.inside) &&
           tocScroll.hit && tocScroll.after > tocScroll.before &&
           researchScroll.hit && researchScroll.after > researchScroll.before &&
           aligned(first.sheet,afterScroll.sheet) && aligned(first.footer,afterScroll.footer) &&
@@ -1433,6 +1460,33 @@ async function auditGillStableMobileChrome(browser, origin, width, height, dark 
         aligned(normal.actionCluster,closed.actionCluster) &&
         closed.xOverflow === 0),
       { normal, closed });
+    if (veryShort) {
+      const opener = page.locator('#mobPartTocBtn');
+      const close = page.locator('#partTocOverlay .toc-sheet__handle');
+      const waitClosed = () => page.waitForFunction(() => {
+        const panel = document.getElementById('partTocOverlay');
+        const trigger = document.getElementById('mobPartTocBtn');
+        return !panel.classList.contains('is-open') && panel.getAttribute('aria-hidden') === 'true' &&
+          trigger.getAttribute('aria-expanded') === 'false' &&
+          document.documentElement.getAttribute('data-scroll-locked') !== '1' &&
+          Number(document.documentElement.getAttribute('data-overlay-count') || 0) === 0 &&
+          document.activeElement === trigger;
+      }, null, {timeout:8000});
+      for (const action of ['tap','Enter','Space']) {
+        await opener.focus();
+        if (action === 'tap') await opener.tap();
+        else await opener.press('Enter');
+        await close.waitFor({state:'visible',timeout:8000});
+        if (action === 'tap') await close.tap();
+        else { await close.focus(); await close.press(action); }
+        let restored = true;
+        try { await waitClosed(); } catch (_) { restored = false; }
+        record(checks,caseId+'-explicit-close-'+action,
+          'explicit compact close releases lock, synchronizes ARIA and restores actual opener focus',
+          restored,{action,state:await read()});
+        if (!restored) throw new Error('Compact close failed: '+action);
+      }
+    }
     if (width <= 526 && height >= 700) {
       const directOpener = page.locator('.mobile-top-bar [data-gill-marginalia-open]');
       await directOpener.click();
@@ -1479,7 +1533,8 @@ async function auditGillChromeBreakpoint(browser, origin, kind) {
         desktop:matchMedia('(min-width:85em)').matches,
         locked:document.documentElement.getAttribute('data-scroll-locked') === '1',
         count:Number(document.documentElement.getAttribute('data-overlay-count') || 0),
-        focusInside:Boolean(panel?.contains(document.activeElement)) };
+        focusInside:Boolean(panel?.contains(document.activeElement)),
+        activeId:document.activeElement?.id || null };
     }, { selector, opener });
     await page.locator(opener).click();
     await page.locator(selector+'.is-open').waitFor({ state:'visible',timeout:8000 });
@@ -1489,10 +1544,13 @@ async function auditGillChromeBreakpoint(browser, origin, kind) {
     const tablet = await state();
     await page.setViewportSize({ width:1359,height:844 });
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    // Establish actual keyboard focus inside the currently visible sheet
+    // before crossing. Do not let a body-focus false positive certify handoff.
+    await page.locator(selector + ' .toc-sheet__handle').focus();
     const edge = await state();
     record(checks,caseId+'-compact-retained',
       '1023→1024→1359 retains the same open compact panel and its scroll lock',
-      [first,tablet,edge].every(x => x.open && x.locked && x.compact && !x.desktop && x.count === 1),
+      edge.focusInside && [first,tablet,edge].every(x => x.open && x.locked && x.compact && !x.desktop && x.count === 1),
       {first,tablet,edge});
     await page.setViewportSize({ width:1360,height:844 });
     await page.waitForFunction(sel => !document.querySelector(sel)?.classList.contains('is-open'),selector,{timeout:8000});
@@ -1501,20 +1559,22 @@ async function auditGillChromeBreakpoint(browser, origin, kind) {
       '1359→1360 closes native sheet, clears lock/ARIA, and leaves no focus inside hidden panel',
       desktop.desktop && desktop.rail && !desktop.compact && !desktop.open &&
       desktop.hidden === 'true' && desktop.triggerExpanded === 'false' &&
-      !desktop.locked && desktop.count === 0 && !desktop.focusInside,
+      !desktop.locked && desktop.count === 0 && !desktop.focusInside &&
+      desktop.activeId === (kind === 'settings' ? 'railSettingsBtn' : 'gbsTocToggle'),
       desktop);
     if (kind === 'settings') {
       await page.locator('#railSettingsBtn').click();
       await page.locator(selector+'.is-open').waitFor({ state:'visible',timeout:8000 });
+      await page.locator(selector + ' button[data-overlay-close]:visible').first().focus();
       const reopened = await state();
       await page.setViewportSize({ width:1359,height:844 });
       await page.waitForFunction(sel => !document.querySelector(sel)?.classList.contains('is-open'),selector,{timeout:8000});
       const compact = await state();
       record(checks,caseId+'-compact-cleanup',
         'desktop settings close on return to compact mode without stale lock or focus',
-        reopened.open && reopened.locked && compact.compact && !compact.desktop &&
+        reopened.open && reopened.locked && reopened.focusInside && compact.compact && !compact.desktop &&
         !compact.open && compact.hidden === 'true' && compact.triggerExpanded === 'false' &&
-        !compact.locked && compact.count === 0 && !compact.focusInside,
+        !compact.locked && compact.count === 0 && !compact.focusInside && compact.activeId === 'mobSettingsBtn',
         {reopened,compact});
     }
     await page.setViewportSize({ width:1023,height:844 });
@@ -1533,6 +1593,146 @@ async function auditGillChromeBreakpoint(browser, origin, kind) {
       {message:String(error.stack || error).slice(0,1300)});
     return {caseId,checks};
   } finally { await ctx.close(); }
+}
+
+// Deterministic scheduling fault injection in the actual authored page.
+// Hold only callbacks synchronously requested by the one native activation;
+// restore the browser APIs immediately, then release obsolete callbacks.
+async function auditGillPendingActivation(browser, origin) {
+  const caseId = 'gill-pending-activation-crossing';
+  const checks = [];
+  const ctx = await browser.newContext({viewport:{width:1359,height:844},
+    serviceWorkers:'block', reducedMotion:'reduce'});
+  try {
+    const page = await ctx.newPage();
+    await gotoNativeReader(page,origin+'/articles/dzhon-gill-chast-2-uchenyi/',{waitUntil:'load'});
+    const scheduled = await page.evaluate(() => {
+      const trigger = document.getElementById('mobPartTocBtn');
+      if (trigger?.dataset.gbActivationBoundary !== '1') throw new Error('Missing actual activation boundary');
+      const callbacks = [];
+      const raf = window.requestAnimationFrame, timer = window.setTimeout;
+      try {
+        window.requestAnimationFrame = callback => { callbacks.push(callback); return -101; };
+        window.setTimeout = (callback,delay) => {
+          if (typeof callback === 'function' && delay === 120) { callbacks.push(callback); return -102; }
+          return timer(callback,delay);
+        };
+        trigger.click();
+      } finally { window.requestAnimationFrame=raf; window.setTimeout=timer; }
+      window.__gbPendingActivationWitness = callbacks;
+      return {count:callbacks.length,open:document.getElementById('partTocOverlay').classList.contains('is-open')};
+    });
+    record(checks,caseId+'-held','actual boundary scheduled without opening',
+      scheduled.count===2 && !scheduled.open,scheduled);
+    await page.setViewportSize({width:1360,height:844});
+    await page.waitForFunction(()=>matchMedia('(min-width:85em)').matches);
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const stale = await page.evaluate(()=>{
+      const callbacks=window.__gbPendingActivationWitness || [];
+      delete window.__gbPendingActivationWitness;
+      callbacks.forEach(callback=>callback(performance.now()));
+      return {open:document.getElementById('partTocOverlay').classList.contains('is-open'),
+        count:Number(document.documentElement.getAttribute('data-overlay-count')||0),
+        lock:document.documentElement.getAttribute('data-scroll-locked')};
+    });
+    record(checks,caseId+'-stale-rejected','obsolete callbacks cannot open native TOC after desktop crossing',
+      !stale.open && stale.count===0 && stale.lock!=='1',stale);
+    await page.setViewportSize({width:1359,height:844});
+    await page.waitForFunction(()=>!matchMedia('(min-width:85em)').matches);
+    await page.locator('#mobPartTocBtn').click();
+    await page.locator('#partTocOverlay.is-open').waitFor({state:'visible',timeout:8000});
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(()=>!document.getElementById('partTocOverlay').classList.contains('is-open') &&
+      document.documentElement.getAttribute('data-scroll-locked')!=='1',null,{timeout:8000});
+    record(checks,caseId+'-fresh-activation','fresh real click and Escape remain functional',true,{});
+    return {caseId,checks};
+  } catch(error) {
+    record(checks,caseId+'-exception','pending activation scenario completes',false,
+      {message:String(error.stack||error).slice(0,1300)});
+    return {caseId,checks};
+  } finally { await ctx.close(); }
+}
+
+// Actual source in a separate minimal browser document. This witnesses
+// listener/observer ownership, not real Astro navigation or product layout.
+async function auditGillActivationTeardown(browser) {
+  const caseId = 'gill-activation-teardown-source';
+  const checks = [];
+  const ctx = await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
+  try {
+    const page = await ctx.newPage();
+    await page.setContent('<button id="mobPartTocBtn">Оглавление</button><div id="partTocOverlay" aria-hidden="true"></div>');
+    const source = fs.readFileSync(path.join(ROOT,'src/components/article-pilots/gill-series/GillMobileOverlayActivationBoundary.astro'),'utf8');
+    const match = source.match(/<script>([\s\S]*?)<\/script>/);
+    assert.ok(match,'activation boundary source script required');
+    await page.addScriptTag({content:match[1]});
+    const witness = await page.evaluate(async () => {
+      let delivered = 0;
+      const callbacks = [];
+      const nativeRAF = window.requestAnimationFrame, nativeTimer = window.setTimeout;
+      const holdClick = trigger => {
+        try {
+          window.requestAnimationFrame = callback => {callbacks.push(callback);return -101;};
+          window.setTimeout = (callback,delay) => {
+            if (typeof callback === 'function' && delay === 120) {callbacks.push(callback);return -102;}
+            return nativeTimer(callback,delay);
+          };
+          trigger.click();
+        } finally {window.requestAnimationFrame=nativeRAF;window.setTimeout=nativeTimer;}
+      };
+      const release = () => callbacks.splice(0).forEach(callback=>callback(performance.now()));
+      const node = id => document.getElementById(id);
+      const trigger = () => node('mobPartTocBtn');
+      const panel = () => node('partTocOverlay');
+      const lifecycle = name => document.dispatchEvent(new Event(name));
+      const flush = () => Promise.resolve();
+      document.addEventListener('click',event=>{if(event.target.id==='mobPartTocBtn') delivered++;});
+      holdClick(trigger());
+      document.dispatchEvent(new CustomEvent('gb:overlay-open',{detail:{ownerId:'foreign'}}));
+      release();
+      const superseded = delivered===0;
+      const oldTrigger = trigger(), oldPanel = panel();
+      holdClick(oldTrigger);
+      lifecycle('astro:before-swap');
+      const removedMarker = oldTrigger.dataset.gbActivationBoundary !== '1';
+      const ariaBefore = oldTrigger.getAttribute('aria-expanded');
+      oldPanel.classList.add('is-open');
+      oldPanel.setAttribute('aria-hidden','false');
+      await flush();
+      const observerDetached = oldTrigger.getAttribute('aria-expanded')===ariaBefore;
+      for(let i=0;i<20;i++) {
+        if(i) lifecycle('astro:before-swap');
+        trigger().replaceWith(Object.assign(document.createElement('button'),{id:'mobPartTocBtn',textContent:'Оглавление'}));
+        panel().replaceWith(Object.assign(document.createElement('div'),{id:'partTocOverlay'}));
+        panel().setAttribute('aria-hidden','true');
+        lifecycle('astro:page-load');
+        lifecycle('astro:page-load');
+      }
+      const marker = trigger().dataset.gbActivationBoundary;
+      const initialHeld = callbacks.length;
+      const beforeFresh = delivered;
+      holdClick(trigger());
+      const freshHeld = callbacks.length-initialHeld;
+      release();
+      const replayOnce = delivered===beforeFresh+1;
+      const finalTrigger=trigger(), finalPanel=panel();
+      finalPanel.classList.add('is-open');
+      finalPanel.setAttribute('aria-hidden','false');
+      await flush();
+      const newObserver = finalTrigger.getAttribute('aria-expanded')==='true';
+      return {superseded,removedMarker,observerDetached,marker,freshHeld,replayOnce,newObserver,delivered};
+    });
+    record(checks,caseId+'-programmatic-supersession','foreign overlay cancels queued activation',witness.superseded,witness);
+    record(checks,caseId+'-teardown','old marker and observer released',witness.removedMarker&&witness.observerDetached,witness);
+    record(checks,caseId+'-bounded-rebind','20 replacement cycles leave one current activation and ignore obsolete callbacks',
+      witness.marker==='1'&&witness.freshHeld===2&&witness.replayOnce,witness);
+    record(checks,caseId+'-aria-rebind','new observer follows actual current overlay',witness.newObserver,witness);
+    return {caseId,checks};
+  } catch(error) {
+    record(checks,caseId+'-exception','isolated source lifecycle completes',false,
+      {message:String(error.stack||error).slice(0,1300)});
+    return {caseId,checks};
+  } finally {await ctx.close();}
 }
 
 async function auditGillTooltipSelection(browser, origin) {
@@ -1618,9 +1818,11 @@ try {
   for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
   cases.push(await auditGillNestedScrollLock(browser, origin));
   for (const kind of ['toc','settings']) cases.push(await auditGillChromeBreakpoint(browser, origin, kind));
+  cases.push(await auditGillPendingActivation(browser, origin));
+  cases.push(await auditGillActivationTeardown(browser));
   cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));
-  for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[844,390,true],[960,390,false],[961,390,false],[1024,390,false],[1024,390,true],[1359,390,false],[1359,390,true],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
+  for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[480,320,false],[568,320,false],[568,320,true],[639,360,false],[640,360,false],[667,375,false],[768,320,false],[768,320,true],[844,390,false],[844,390,true],[960,390,false],[961,390,false],[1024,390,false],[1024,390,true],[1359,390,false],[1359,390,true],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {

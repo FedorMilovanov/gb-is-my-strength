@@ -355,27 +355,20 @@
   function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
 
 
-  let overlay, panel, list, fab, titleCount, search, sourceSelect, status, editor, textArea;
-  let tab = 'all', filter = 'all', searchTerm = '', shown = BATCH_SIZE, opener = null;
-  let expanded = new Set(), editorController = null;
-  let presenter = null, presenterPromise = null, research = null;
+  let overlay, fab, view, opener = null, editorController = null;
+  let presenter = null, presenterPromise = null;
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=e0eb7d74')
-        .then(async (module) => {
-          const researchModule = await import('/js/reader-library-v3.js?v=d6fdb5cb');
-          mountPanel(module);
-          if (!research) research = researchModule.createLibraryResearch({
-            overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
-            renderItem: module.renderItem,
-            exitForResume: (scrollToSavedPosition) => {
-              close();
-              // Wait until SiteUtils has lifted its original scroll lock and
-              // restored the underlying page; do not create a second overlay.
-              requestAnimationFrame(() => requestAnimationFrame(scrollToSavedPosition));
-            },
-          });
+      presenterPromise = Promise.all([
+        import('/js/reader-library-presenter.js?v=35ef9be2'),
+        import('/js/reader-library-v3.js?v=d6fdb5cb'),
+      ]).then(([module,researchModule]) => {
+          if (!view) {
+            view = module.createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch:researchModule.createLibraryResearch,isOpen});
+            ({overlay,editorController}=view);
+            fab.setAttribute('aria-controls','gb-hl-panel');
+          }
           presenter = module;
           return module;
         })
@@ -453,28 +446,6 @@
     dock();
     sync();
   }
-  function mountPanel(module) {
-    if (overlay) return;
-    ({overlay,panel,list,titleCount,search,sourceSelect,status,editor,textArea}=module.createLibraryPanel(penSvg));
-    editorController = module.createLibraryEditor({overlay,panel,status,editor,textArea,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,render,sync,
-      selectNotes: () => { tab = 'note'; filter = 'all'; shown = BATCH_SIZE; },
-    });
-    fab.setAttribute('aria-controls', 'gb-hl-panel');
-    overlay.querySelector('#gb-hl-close').addEventListener('click', close);
-    overlay.querySelector('#gb-hl-export').addEventListener('click', async () => { try { (await loadPresenter()).exportMarkdown(all(), statusMessage); } catch { statusMessage('Не удалось подготовить экспорт. Повторите попытку.', true); } });
-    overlay.querySelector('#gb-hl-new-note').addEventListener('click', () => showEditor());
-    overlay.querySelector('#gb-hl-note-cancel').addEventListener('click', hideEditor);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-    overlay.querySelector('#gb-hl-tabs').addEventListener('click', (e) => {
-      const b = e.target.closest('[data-library-tab]');
-      if (!b) return;
-      tab = b.dataset.libraryTab; shown = BATCH_SIZE; render();
-    });
-    search.addEventListener('input', () => { searchTerm = normalizeText(search.value).toLocaleLowerCase(); shown = BATCH_SIZE; render(); });
-    sourceSelect.addEventListener('change', () => { filter = sourceSelect.value; shown = BATCH_SIZE; render(); });
-    list.addEventListener('click', listClick);
-    editor.addEventListener('submit', editorController.saveNote);
-  }
   function keydown(e) {
     if (!isOpen()) {
       if (opening && e.key === 'Escape') {
@@ -483,12 +454,7 @@
       }
       return;
     }
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      if (!editor.hidden) hideEditor();
-      else if (!research?.handleEscape()) close();
-    }
-    else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
+    view.keydown(e);
   }
   let opening = null, openGeneration = 0, pendingTrigger = null;
   let pendingReturn = null, focusReturn = null, pendingInitialFocus = null;
@@ -550,20 +516,7 @@
       if (!ownsPendingFocus()) { cancelPending(false); return false; }
       opener = activeTrigger;
       focusReturn = activeReturn;
-      tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
-      search.value = '';
-      overlay.removeAttribute('inert');
-      overlay.classList.add('is-open');
-      overlay.setAttribute('aria-hidden', 'false');
-      fab.setAttribute('aria-expanded', 'true');
-      if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') {
-        opener.setAttribute('aria-controls','gb-hl-panel');
-        opener.setAttribute('aria-expanded','true');
-      }
-      if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
-      else document.body.classList.add('no-scroll');
-      overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
-      render();
+      view.activate(fab,opener);
       return true;
     }).catch(() => {
       if (generation === openGeneration) {
@@ -582,16 +535,7 @@
   function close() {
     if (opening) cancelPending(!isOpen() && ownsPendingFocus());
     if (!isOpen()) return;
-    hideEditor(false);
-    clearUndo();
-    research?.resetMenu();
-    overlay.classList.remove('is-open');
-    overlay.setAttribute('aria-hidden', 'true');
-    overlay.setAttribute('inert', '');
-    fab.setAttribute('aria-expanded', 'false');
-    if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') opener.setAttribute('aria-expanded','false');
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
-    else document.body.classList.remove('no-scroll');
+    view.deactivate(fab,opener);
     restoreReadingFocus(focusReturn);
     opener = null;
     focusReturn = null;
@@ -605,26 +549,8 @@
       .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter().catch(() => {}); })
       .catch(() => { dockLoad = null; });
   }
-  function render() {
-    if (!list || !presenter) return;
-    const items = all();
-    research?.reconcileTopic?.(items);
-    filter = presenter.renderList({
-      list, items, titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
-    });
-  }
-  function listClick(e) {
-    if (!presenter) return;
-    presenter.handleLibraryClick(e, {
-      quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,all,expanded,deleteItem,clearUndo,showEditor,
-      more: () => { shown += BATCH_SIZE; render(); },
-      clearFilters: () => { searchTerm = ''; search.value = ''; filter = 'all'; research?.resetFilters(); shown = BATCH_SIZE; render(); },
-    });
-  }
+  function render() { view?.render(); }
   function showEditor(...args) { return editorController?.showEditor(...args); }
-  function hideEditor(...args) { return editorController?.hideEditor(...args); }
-  function clearUndo() { return editorController?.clearUndo(); }
-  function deleteItem(item) { return editorController?.deleteItem(item); }
 
   /* Цветные пометы: одно хранилище (gb-highlights-v1), один владелец.
      Запись — обычная цитата плюс kind:'marker' и color. Рисуем через
