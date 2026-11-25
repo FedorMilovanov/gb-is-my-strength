@@ -23,7 +23,6 @@
     "tokens:check": "node scripts/check-design-tokens.js",
     "gill:chrome:guard": "node scripts/gill-canonical-chrome-guard.js",
     "series:facade:guard": "node scripts/series-reader-facade-regression-test.js",
-    "reader:search:handoff:unit": "node scripts/reader-search-handoff-unit-contract.mjs",
     "overlay:runtime:test": "node scripts/runtime-integrity-test.js && node scripts/overlay-runtime-contract-test.js",
     "overlay:browser:test": "node scripts/overlay-runtime-browser-test.js",
     "engine:contracts": "node scripts/check-engine-contracts.js && npm run series:facade:guard && npm run nagornaya:bar-asset:contract",

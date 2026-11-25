@@ -6,6 +6,8 @@ on:
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-controls-a11y.js"
+      - "src/runtime/reader-search-handoff.js"
+      - "scripts/reader-search-handoff-unit-contract.mjs"
       - "src/components/article-pilots/_shared/ReaderRail.astro"
       - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
@@ -77,6 +79,8 @@ on:
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-controls-a11y.js"
+      - "src/runtime/reader-search-handoff.js"
+      - "scripts/reader-search-handoff-unit-contract.mjs"
       - "src/components/article-pilots/_shared/ReaderRail.astro"
       - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
@@ -184,6 +188,8 @@ jobs:
         id: reader_source
         run: |
           node --check src/runtime/reader-controls-a11y.js
+          node --check src/runtime/reader-search-handoff.js
+          node scripts/reader-search-handoff-unit-contract.mjs
           node --check scripts/reader-controls-a11y-browser-contract.mjs
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
