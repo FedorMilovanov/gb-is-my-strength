@@ -9,6 +9,8 @@ import { readFile, mkdir, writeFile, stat } from 'node:fs/promises';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import assert from 'node:assert/strict';
+import desktopContract from './lib/reader-desktop-contract.js';
 import { chromium, firefox, webkit } from 'playwright';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -24,6 +26,7 @@ const routes=[
  ['baptist-chapter','/baptisty-rossii/dva-sezda-1884/'],
  ['baptist-index','/baptisty-rossii/'],
 ];
+const desktopRoutes=new Set(desktopContract.buildDesktopReaderContract().routes);
 const sha=process.env.GITHUB_SHA||execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8',
  '.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8',
@@ -50,17 +53,23 @@ try{
 for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
  browser=await driver.launch({headless:true});
  for(const [label,route] of routes){
-  const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
+  for(const width of widths){
+  // Desktop delivery intentionally reloads at its breakpoint. A fresh page
+  // per width makes every witness a settled document, not a navigation race.
+  const expectedDesktop=desktopRoutes.has(route)&&width>=1121;
+  const page=await browser.newPage({viewport:{width,height:width<=430?844:900},reducedMotion:'reduce',serviceWorkers:'block'});
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   try{
    const response=await page.goto(url+route,{waitUntil:'domcontentloaded',timeout:30000});
+   if(expectedDesktop)await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&
+      window.__NP_UNIVERSAL_PREVIEW__?.ready&&window.__NP_W57_ANNOTATIONS__?.ready,null,{timeout:20000});
+   assert.equal(new URL(page.url()).pathname,route,'actual loaded route');
+   assert.equal(new URL(page.url()).searchParams.has('reader-pilot'),false,'unexpected Classic fallback');
    await page.evaluate(()=>document.querySelectorAll('img[loading=lazy]').forEach(el=>el.loading='eager'));
    await Promise.race([page.evaluate(()=>document.fonts?.ready),page.waitForTimeout(4500)]);
    await page.waitForFunction(()=>[...document.querySelectorAll('main img, article img')]
      .every(img=>img.complete),null,{timeout:4500}).catch(()=>{});
-   for(const width of widths){
-    await page.setViewportSize({width,height:width<=430?844:900});
     for(const theme of themes){
      await page.evaluate(t=>{
       if(typeof window.GBReaderPreferences?.setTheme==='function')
@@ -96,13 +105,16 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
        imagesPending:imgs.filter(img=>!img.complete).map(img=>img.currentSrc).slice(0,6),
        imageOverflow:boxes,
        appliedTheme:document.documentElement.getAttribute('data-reader-theme')||'',
+       actualDesktop:document.body.classList.contains('np-w57-ready')&&Boolean(window.__NP_UNIVERSAL_PREVIEW__?.ready&&window.__NP_W57_ANNOTATIONS__?.ready),
+       fallback:new URL(location.href).searchParams.has('reader-pilot'),
       };
      });
-     const row={sha,engine,label,route,width,theme,status:response.status(),...data};
+     const row={sha,engine,label,route,width,theme,expectedDesktop,status:response.status(),...data,screenshots:[]};
      results.push(row);
      if((width===390&&(theme==='light'||theme==='dark'))||(width===1440&&theme==='light')){
       const file=[label,engine,width,theme,sha.slice(0,12)].join('--')+'.png';
-      await page.screenshot({path:join(REPORT,file),timeout:18000}).catch(()=>{});
+      await page.screenshot({path:join(REPORT,file),timeout:18000});
+      row.screenshots.push(file);
      }
      // A visible lower-bar TOC remains usable after the top bar has
      // intentionally auto-hidden on downward scroll. Do not try to click
@@ -115,7 +127,8 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
        return Math.max(document.body.scrollWidth,document.documentElement.scrollWidth)-vw;
       });
       const scrolledFile=[label,engine,'390','scrolled',sha.slice(0,12)].join('--')+'.png';
-      await page.screenshot({path:join(REPORT,scrolledFile),timeout:18000}).catch(()=>{});
+      await page.screenshot({path:join(REPORT,scrolledFile),timeout:18000});
+      row.screenshots.push(scrolledFile);
       const bottomSelector=label==='gill'?'#mobPartTocBtn':
         label==='hermenevtika'?'#hmBottomBtn':null;
       const overlaySelector=label==='gill'?'#partTocOverlay':
@@ -127,7 +140,8 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
         await page.waitForFunction(selector=>
           document.querySelector(selector)?.classList.contains('is-open'),overlaySelector,{timeout:6500});
         const tocFile=[label,engine,'390','toc-scrolled',sha.slice(0,12)].join('--')+'.png';
-        await page.screenshot({path:join(REPORT,tocFile),timeout:18000}).catch(()=>{});
+        await page.screenshot({path:join(REPORT,tocFile),timeout:18000});
+        row.screenshots.push(tocFile);
         await page.keyboard.press('Escape');
         await page.waitForFunction(selector=>
           !document.querySelector(selector)?.classList.contains('is-open'),overlaySelector,{timeout:6500});
@@ -136,21 +150,47 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
       }
      }
     }
-   }
-  }catch(e){results.push({sha,engine,label,route,error:String(e)})}
-  await page.close();
+  }catch(e){results.push({sha,engine,label,route,width,error:String(e)})}
+  finally {
+   await page.close();
+   if(errors.length)results.push({sha,engine,label,route,width,error:'pageerror',pageErrors:errors});
+  }
+  }
  }
  await browser.close();browser=null;
  console.log('[READER-REAL-ASSETS] '+engine+' complete');
 }
 }finally{await browser?.close();await new Promise(done=>server.close(done));}
 await writeFile(join(REPORT,'manifest.json'),JSON.stringify({sha,fast:FAST,results},null,2));
-const failures=results.filter(row=>row.error||row.status!==200||row.overflow>2||
+function rowFailed(row){
+ const bottomTocExpected=row.width===390&&row.theme==='light'&&['gill','hermenevtika'].includes(row.label);
+ const requiredShots=(row.width===390&&['light','dark'].includes(row.theme)||row.width===1440&&row.theme==='light'?1:0)
+   +(row.width===390&&row.theme==='light'?1:0)+(bottomTocExpected?1:0);
+ return Boolean(row.error||row.status!==200||row.overflow>2||
  row.fontStatus!=='loaded'||row.imagesBroken?.length>0||row.imagesPending?.length>0||row.imageOverflow?.length>0||
  row.scrolledOverflow>2||row.bottomTocRestored===false||row.bottomTocError||
- (row.appliedTheme&&row.appliedTheme!==row.theme));
+ (bottomTocExpected&&row.bottomTocRestored!==true)||
+ row.appliedTheme!==row.theme||row.expectedDesktop!==row.actualDesktop||row.fallback||
+ (row.screenshots?.length||0)!==requiredShots);
+}
+const failures=results.filter(rowFailed);
+const expectedScenarios=3*routes.length*widths.length*themes.length;
+const scenarios=results.filter(row=>!row.error);
+const unique=new Set(scenarios.map(row=>[row.engine,row.route,row.width,row.theme].join('|')));
+if(scenarios.length!==expectedScenarios||unique.size!==expectedScenarios)
+ failures.push({error:'incomplete or duplicate visual matrix',expectedScenarios,actual:scenarios.length,unique:unique.size});
+// Keep a mutation witness so a later refactor cannot silently restore the
+// old fail-open conditions. These cases exercise the actual summary predicate.
+const good={label:'heart',width:1440,theme:'light',status:200,overflow:0,fontStatus:'loaded',
+ expectedDesktop:true,actualDesktop:true,fallback:false,appliedTheme:'light',screenshots:['witness.png']};
+assert.equal(rowFailed(good),false);
+for(const mutation of [{actualDesktop:false},{fallback:true},{error:'pageerror'},{appliedTheme:''},{screenshots:[]}])
+ assert.equal(rowFailed({...good,...mutation}),true,JSON.stringify(mutation));
+assert.equal(rowFailed({...good,label:'gill',width:390,expectedDesktop:false,actualDesktop:false,
+ screenshots:['a','b','c'],bottomTocRestored:undefined}),true,'missing focus receipt');
+console.log('Visual evidence mutation contract: 7/7');
 const summary={sha,fast:FAST,routes:routes.length,engines:3,widths:widths.length,themes:themes.length,
- scenarios:results.length,failures:failures.length,failed:failures.slice(0,25)};
+ expectedScenarios,scenarios:scenarios.length,failures:failures.length,failed:failures.slice(0,25)};
 await writeFile(join(REPORT,'summary.json'),JSON.stringify(summary,null,2));
 console.log(JSON.stringify(summary,null,2));
 if(failures.length)process.exitCode=1;
