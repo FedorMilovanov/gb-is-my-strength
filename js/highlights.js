@@ -29,29 +29,33 @@
   }
   // Source coordinates refer only to VISIBLE authored prose, not inline
   // glossary popovers hidden inside the published article's DOM.
-  function visibleProjection(block){
-    const segments=[],cached=new WeakMap();
-    const bilingual=block.matches('.manuscript-quote--bilingual');
-    const originalOpen=bilingual&&!!block.querySelector('details.mq-translation-flip[open]');
+  function visibleProjection(block, legacy = false){
+    const segments=[],cached=new WeakMap(),faces=new WeakMap();
+    const bilingual=block.matches('.manuscript-quote--bilingual')?block:null;
+    function originalOpen(host){
+      if(!faces.has(host))faces.set(host,!!host.querySelector('details.mq-translation-flip[open]'));
+      return faces.get(host);
+    }
     const ignored=el=>{
       if(!el||el===block)return false;
       if(cached.has(el))return cached.get(el);
       // A bilingual quote is one authored block with two mutually exclusive
       // reading faces. Never capture the toggle label or the hidden language
       // as positional prose, even when UA details styles report display:block.
-      const inactiveFace=bilingual&&(
+      const host=bilingual||(legacy?el.closest('.manuscript-quote--bilingual'):null);
+      const inactiveFace=host&&(
         !!el.closest('.mq-translation-toggle') ||
-        (!originalOpen&&!!el.closest('.mq-translation-original')) ||
-        (originalOpen&&!!el.closest('.mq-translation-russian'))
+        !!el.closest(originalOpen(host)?'.mq-translation-russian':'.mq-translation-original')
       );
-      let excluded=inactiveFace || el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]');
+      let excluded=inactiveFace || el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
+        (legacy&&el.matches('script,style,textarea,input,#gb-hl-panel,#gb-hl-selbar'));
       if(!excluded){const style=getComputedStyle(el);excluded=style.display==='none'||style.visibility==='hidden'||ignored(el.parentElement);}
       cached.set(el,excluded);return excluded;
     };
     const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
     let text='',node;
     while((node=walker.nextNode())){
-      if(!node.nodeValue||ignored(node.parentElement))continue;
+      if(!node.nodeValue||(legacy&&!node.nodeValue.trim())||ignored(node.parentElement))continue;
       const start=text.length;text+=node.nodeValue;
       segments.push({node,start,end:text.length});
     }
@@ -571,35 +575,11 @@
      не мутируется, поэтому аннотации не ломают якоря, озвучку и поиск.
      Если браузер не поддерживает ::highlight() — помета всё равно сохраняется
      и видна в библиотеке, просто не подсвечивается в тексте. */
-  /* Индекс текста статьи: список текстовых узлов и их смещений в склейке.
-     Поиск ведётся регуляркой по «терпимому к пробелам» шаблону прямо по
-     склейке — это важно по трём причинам:
-       1) Selection.toString() вставляет пробелы на границах блоков, а
-          textContent — нет, поэтому выделение через границу абзаца иначе
-          не находится;
-       2) text-transform меняет регистр в отрисованном выделении («ЧАСТЬ II»),
-          поэтому сравнение регистронезависимое;
-       3) посимвольное построение нормализованной карты стоило ~200 мс на
-          статье в 82 000 символов на каждом перерисовывании — регулярка
-          по склейке укладывается в единицы миллисекунд. */
+  // Legacy records use the same visible prose as positional anchors, but
+  // retain their original whitespace-only-node exclusion and text search.
   function textIndex(scope) {
-    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
-      acceptNode: (n) => {
-        const host = n.parentElement;
-        if (!host || host.closest('script, style, textarea, input, #gb-hl-panel, #gb-hl-selbar')) return NodeFilter.FILTER_REJECT;
-        return n.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-      },
-    });
-    const nodes = [];
-    const parts = [];
-    let length = 0;
-    let n;
-    while ((n = walker.nextNode())) {
-      nodes.push({ node: n, start: length });
-      parts.push(n.textContent);
-      length += n.textContent.length;
-    }
-    return { nodes, raw: parts.join('') };
+    const {text,segments}=GBReaderAnchors.visibleProjection(scope,true);
+    return {nodes:segments,raw:text};
   }
 
   const REGEXP_SPECIAL = /[.*+?^${}()|[\]\\]/g;

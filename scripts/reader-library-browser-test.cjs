@@ -447,6 +447,54 @@ async function checkStorageAndSelectionRaces(name,driver,base) {
   } finally {await context.close();await browser.close();}
 }
 
+// Legacy quotations must resolve against visible authored prose only.
+// Keep actual DOM Range/CSS Highlight semantics; hidden duplicates used to
+// either paint invisible content or make a visible match look ambiguous.
+async function checkVisibleLegacy(name, driver, base) {
+  const browser=await driver.launch({headless:true});
+  try {
+    const page=await browser.newPage({viewport:{width:390,height:720}});
+    const errors=[];page.on('pageerror',err=>errors.push(err.message));
+    await page.goto(base+'/articles/sample/');
+    await page.waitForFunction(()=>!!window.GBHighlights);
+    const results=await page.evaluate(()=>{
+      const article=document.querySelector('article');
+      article.innerHTML=`<p id="visible">Начало. Видимая фраза. Конец.</p>
+        <p><span class="gtip">Видимая фраза</span></p>
+        <p><span hidden>Скрытая фраза А</span><span aria-hidden="true">Скрытая фраза Б</span>
+        <span inert>Скрытая фраза В</span><span style="display:none">Скрытая фраза Г</span>
+        <span style="visibility:hidden">Скрытая фраза Д</span></p>
+        <p><span role="tooltip">Скрытая фраза Е</span><span class="btip">Скрытая фраза Ж</span></p>
+        <p class="manuscript-quote--bilingual"><span class="mq-translation-russian">Русская сторона</span>
+        <details class="mq-translation-flip"><summary class="mq-translation-toggle">Переключатель языка</summary>
+        <span class="mq-translation-original">Original language</span></details></p>
+        <p>Неоднозначный фрагмент</p><p>Неоднозначный фрагмент</p>`;
+      const resolve=text=>window.GBHighlights.resolveRange({text,url:location.href},article);
+      const range=resolve('Видимая фраза');
+      const data={
+        visible:range?.toString()||null,
+        source:range?.startContainer.parentElement.id||null,
+        hidden:['А','Б','В','Г','Д','Е','Ж'].map(x=>!!resolve('Скрытая фраза '+x)),
+        closedRussian:!!resolve('Русская сторона'),
+        closedOriginal:!!resolve('Original language'),
+        toggle:!!resolve('Переключатель языка'),
+        ambiguous:!!resolve('Неоднозначный фрагмент')
+      };
+      article.querySelector('details').open=true;
+      data.openRussian=!!resolve('Русская сторона');
+      data.openOriginal=!!resolve('Original language');
+      return data;
+    });
+    assert.deepEqual(results,{
+      visible:'Видимая фраза',source:'visible',hidden:Array(7).fill(false),
+      closedRussian:true,closedOriginal:false,toggle:false,ambiguous:false,
+      openRussian:false,openOriginal:true
+    });
+    assert.deepEqual(errors,[]);
+    console.log('PASS',name,'legacy visible projection');
+  }finally{await browser.close();}
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -460,6 +508,7 @@ async function checkStorageAndSelectionRaces(name,driver,base) {
       if(name!=='firefox') await run(name+' transient focus',()=>checkTransientFocus(name,browser,new URL(url).origin));
       await run(name+' native dock focus',()=>checkNativeDockFocus(name,browser,new URL(url).origin));
       await run(name+' storage and selection races',()=>checkStorageAndSelectionRaces(name,browser,new URL(url).origin));
+      await run(name+' legacy visible projection',()=>checkVisibleLegacy(name,browser,new URL(url).origin));
     }
     console.log('Reader Library browser groups: '+passed+'/'+total);
     assert.deepEqual(failures,[],'browser integration failures');
