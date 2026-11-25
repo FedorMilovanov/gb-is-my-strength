@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v240-reader-w224-preview-20261125';
+const CACHE_VERSION = 'gb-v241-reader-w226-candidate-20261125';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -36,11 +36,11 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=66cfd564',
+  '/js/highlights.js?v=8dfe082a',
   '/js/reader-library-storage.js?v=74af6e6a',
   '/js/reader-library-record-transactions.js?v=ecb28bb6',
   '/js/reader-library-presenter.js?v=e0eb7d74',
-  '/js/reader-library-selection.js?v=f0732680',
+  '/js/reader-library-selection.js?v=1778ffcd',
   '/js/reader-library-v3.js?v=d6fdb5cb',
   '/js/reader-library-dock.js?v=adffc6aa',
   '/js/sw-register.js?v=921dd6a2',
