@@ -249,13 +249,25 @@
   function libraryFailure(reason, current = []) {
     return {ok:false,conflict:reason==='conflict',reason,current};
   }
+  // Capture intent before either lazy module starts loading. The storage
+  // owner independently protects the period spent waiting for its lock.
+  let clearIntent = 0;
+  const receiptIntents = new WeakMap();
+  window.addEventListener('storage', e => {
+    if (e.storageArea === localStorage && e.key === null) clearIntent++;
+  });
   async function storageCall(method,...args) {
+    const intent = clearIntent;
     try {
       if(window.GBLibraryStorage?.version!==1)
         await import('/js/reader-library-storage.js?v=74af6e6a');
+      if (intent !== clearIntent) return libraryFailure('storage-changed');
       const owner=window.GBLibraryStorage;
       if(owner?.version!==1||typeof owner[method]!=='function')return libraryFailure('lock-unavailable');
-      return await owner[method](...args);
+      const result = await owner[method](...args);
+      if (result.ok && intent !== clearIntent) return libraryFailure('storage-changed');
+      if (result.ok && result.receipt && typeof result.receipt === 'object') receiptIntents.set(result.receipt,intent);
+      return result;
     } catch { return libraryFailure('lock-unavailable'); }
   }
   function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
@@ -265,14 +277,19 @@
   // A conflict never rewinds a newer quote or note; detached copy is explicit.
   let recordTransactions, recordTransactionsLoad;
   async function transactionCall(method,...args) {
+    const intent = clearIntent;
     try {
+      if (method === 'restoreDeleted' && receiptIntents.get(args[0]) !== intent)
+        return libraryFailure('storage-changed');
       if(!recordTransactions) {
         recordTransactionsLoad ||= import('/js/reader-library-record-transactions.js?v=ecb28bb6')
           .then(m=>m.createRecordTransactions({mutateLibrary,libraryFailure,gbHighlightKey,NOTES_KEY,QUOTES_KEY,LIMIT_NOTES,LIMIT_QUOTES}))
           .catch(error=>{recordTransactionsLoad=null;throw error});
         recordTransactions=await recordTransactionsLoad;
       }
-      return await recordTransactions[method](...args);
+      if (intent !== clearIntent) return libraryFailure('storage-changed');
+      const result = await recordTransactions[method](...args);
+      return result.ok && intent !== clearIntent ? libraryFailure('storage-changed') : result;
     } catch { return libraryFailure('lock-unavailable'); }
   }
   function restoreDeleted(receipt, copyId = null) {
@@ -438,7 +455,17 @@
     document.addEventListener('focusin', pendingFocusChanged);
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
-    window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
+    window.addEventListener('storage', e => {
+      if (e.storageArea !== localStorage) return;
+      if (e.key === null) {
+        // Revoke obsolete Undo UI without closing the editor or losing its draft.
+        editorController?.clearUndo();
+        clearTimeout(toast.timer);
+        hideToast();
+        document.getElementById('gb-hl-toast')?.replaceChildren();
+      }
+      if (e.key === null || [QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync();
+    });
     document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); schedulePaint(); });
     document.addEventListener('gb:mobile-fallback-ready', dock);
     window.addEventListener('resize', dock, { passive: true });
@@ -689,7 +716,7 @@
   window.addEventListener('gb:library-committed', e => {
     if (!e?.detail || e.detail.key === QUOTES_KEY) schedulePaint();
   });
-  window.addEventListener('storage', e => { if (e?.key === QUOTES_KEY) schedulePaint(); });
+  window.addEventListener('storage', e => { if (e.storageArea === localStorage && (e.key === null || e.key === QUOTES_KEY)) schedulePaint(); });
   window.addEventListener('resize', schedulePaint, {passive:true});
   document.addEventListener('toggle', e => {
     if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();

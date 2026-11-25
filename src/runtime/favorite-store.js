@@ -195,10 +195,19 @@ import '../../js/reader-library-storage.js';
       return Array.isArray(rows)?rows:null;
     } catch { return null; }
   }
+  // Local Undo receipts are capabilities scoped to the observed clear epoch.
+  // A transferred receipt cannot prove an epoch after this tab observes clear.
+  let clearGeneration = 0;
+  const receiptIntents = new WeakMap();
   async function transact(prepare) {
+    const generation = clearGeneration;
     const owner=window.GBLibraryStorage;
     if(owner?.version!==1)return {ok:false,reason:'lock-unavailable'};
-    return owner.mutateLibrary([STORAGE_KEY],stores=>prepare(stores[STORAGE_KEY]));
+    const result = await owner.mutateLibrary([STORAGE_KEY],stores=>
+      generation === clearGeneration ? prepare(stores[STORAGE_KEY]) : {reason:'storage-changed'});
+    if (result.ok && generation !== clearGeneration) return {ok:false,reason:'storage-changed'};
+    if (result.ok && result.receipt) receiptIntents.set(result.receipt,generation);
+    return result;
   }
   function get(path = location.pathname) {
     const normalized = normalizePath(path);
@@ -286,7 +295,13 @@ import '../../js/reader-library-storage.js';
   async function restore(receipt,options={}) {
     const path=receipt?.path, entry=receipt?.entry;
     if(!path||rawPath(entry)!==path||!Number.isInteger(receipt.index))return {saved:false,error:'invalid-receipt'};
+    const issued = receiptIntents.get(receipt);
+    if (issued !== undefined ? issued !== clearGeneration : clearGeneration !== 0)
+      return {saved:false,error:'storage-changed'};
     const result=await transact(rows=>{
+      // remove() always writes a collection, even when its last row is removed.
+      // Absence therefore cannot be the post-delete state of a valid Undo.
+      if (localStorage.getItem(STORAGE_KEY) === null) return {reason:'storage-changed'};
       if(match(rows,path).length)return {reason:'conflict'};
       if(rows.length>=MAX_ITEMS)return {reason:'capacity'};
       const next=rows.slice();next.splice(Math.min(Math.max(0,receipt.index),next.length),0,entry);
@@ -362,7 +377,8 @@ import '../../js/reader-library-storage.js';
   }
 
   window.addEventListener('storage', (event) => {
-    if (event.key !== STORAGE_KEY) return;
+    if (event.storageArea !== localStorage || (event.key !== null && event.key !== STORAGE_KEY)) return;
+    if (event.key === null || event.newValue === null) clearGeneration++;
     publish('external-sync', '', null, 'storage');
   });
   document.addEventListener('astro:page-load', () => lifecycle('astro:page-load'));

@@ -76,8 +76,17 @@ function button(action, label, text) {
     return card;
   }
 
-  let favoriteUndoTimer = null;
+  let favoriteUndoTimer = null, favoriteUndoGeneration = 0, favoriteUndoButton = null;
+  function clearFavoriteUndo() {
+    favoriteUndoGeneration++;
+    clearTimeout(favoriteUndoTimer);
+    favoriteUndoTimer = null;
+    favoriteUndoButton?.remove();
+    favoriteUndoButton = null;
+  }
   async function removeFavorite(item, statusMessage) {
+    clearFavoriteUndo();
+    const generation = favoriteUndoGeneration;
     const store = window.GBFavoriteStore;
     if (!store?.remove || !store?.restore || !store?.get) {
       statusMessage('Хранилище избранного недоступно. Повторите попытку.', true); return;
@@ -85,6 +94,7 @@ function button(action, label, text) {
     const previous = store.get(item.id);
     if (!previous) { statusMessage('Статья уже отсутствует в избранном.'); return; }
     const result = await store.remove(item.id, { source: 'reader-library' });
+    if (generation !== favoriteUndoGeneration) return;
     if (result.saved || result.error || !result.receipt) {
       statusMessage('Не удалось убрать статью. Сохранённые данные не изменены.', true); return;
     }
@@ -92,22 +102,35 @@ function button(action, label, text) {
     statusMessage('Статья убрана из избранного.');
     const host = document.querySelector('#gb-hl-status');
     const undo = button('undo-favorite', 'Восстановить статью в избранном', 'Отменить');
+    favoriteUndoButton = undo;
     host.append(undo);
     undo.focus({ preventScroll: true });
     undo.addEventListener('click', async () => {
-      if(undo.disabled)return;
+      if (generation !== favoriteUndoGeneration || undo.disabled || !undo.isConnected) return;
       undo.disabled=true;
       const restored = await store.restore(result.receipt, { source: 'reader-library-undo' });
+      if (generation !== favoriteUndoGeneration) return;
       if (!restored.saved || restored.error) {
+        if (restored.error === 'storage-changed') {
+          clearFavoriteUndo();
+          statusMessage('Данные библиотеки изменились. Прежняя отмена недоступна.', true);
+          return;
+        }
         statusMessage('Не удалось восстановить статью. Возможно, она уже сохранена.', true);
         const retryHost=document.querySelector('#gb-hl-status');
         retryHost?.append(undo);undo.disabled=false;return;
       }
-      clearTimeout(favoriteUndoTimer); favoriteUndoTimer = null;
+      clearFavoriteUndo();
       statusMessage('Статья восстановлена.');
       document.querySelector('#gb-hl-list')?.focus({ preventScroll: true });
     });
-    favoriteUndoTimer = setTimeout(() => host.classList.remove('is-visible'), 5000);
+    favoriteUndoTimer = setTimeout(() => {
+      if (generation !== favoriteUndoGeneration) return;
+      const stillOwned = undo.parentNode === host;
+      clearFavoriteUndo();
+      // Do not hide a newer status message that replaced this action.
+      if (stillOwned) host.classList.remove('is-visible');
+    }, 5000);
   }
 
   function exportMarkdown(items, statusMessage) {
@@ -443,6 +466,7 @@ function button(action, label, text) {
     statusMessage(editing ? 'Заметка обновлена.' : 'Заметка сохранена.');
   }
   function clearUndo() {
+    clearFavoriteUndo();
     if (pendingUndo) clearTimeout(pendingUndo.timer);
     pendingUndo = null;
     if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }

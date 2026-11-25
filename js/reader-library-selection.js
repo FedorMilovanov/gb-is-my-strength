@@ -301,30 +301,53 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     bar.style.left = Math.round(clampX) + 'px';
     bar.style.top = Math.round(Math.max(8, top)) + 'px';
   }
-  let fallbackAttached = false;
+  let fallbackCleanup = null;
   function attachSelection() {
     const popup = document.getElementById('selection-share-popup');
     if (!popup) {
-      if (fallbackAttached) return;
-      fallbackAttached = true;
+      if (fallbackCleanup) return;
+      const bindings = [];
       let pending = 0;
-      const schedule = () => { clearTimeout(pending); pending = setTimeout(placeSelectionBar, 40); };
-      document.addEventListener('selectionchange', schedule, { passive: true });
-      document.addEventListener('mouseup', schedule, { passive: true });
-      document.addEventListener('touchend', schedule, { passive: true });
-      window.addEventListener('scroll', hide, { passive: true, capture: true });
-      window.addEventListener('resize', hide, { passive: true });
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
-      document.addEventListener('pointerdown', (e) => {
-        if (!e.target.closest('#gb-hl-selbar')) hide();
-      }, { passive: true });
-      // Sheet navigation supersedes the short-lived save confirmation. Keep
-      // Undo in storage; only dismiss its transient toast and selection bar.
-      document.addEventListener('click', (e) => {
-        if (e.target.closest('#mobPartTocBtn, [data-gill-marginalia-open]')) { hide(); hideToast(); }
-      }, true);
+      let active = true;
+      const listen = (target, type, handler, options) => {
+        const guarded = event => { if (active) handler(event); };
+        bindings.push(() => target.removeEventListener(type, guarded, options));
+        target.addEventListener(type, guarded, options);
+      };
+      const schedule = () => {
+        clearTimeout(pending);
+        pending = setTimeout(() => { if (active) placeSelectionBar(); }, 40);
+      };
+      const cleanup = () => {
+        active = false;
+        clearTimeout(pending);
+        clearTimeout(selBarHideTimer);
+        for (const remove of bindings) remove();
+        const quote = document.getElementById('gb-hl-selbar-quote');
+        if (quote) quote.textContent = 'Цитата';
+        fallbackCleanup = null;
+      };
+      try {
+        listen(document, 'selectionchange', schedule, { passive: true });
+        listen(document, 'mouseup', schedule, { passive: true });
+        listen(document, 'touchend', schedule, { passive: true });
+        listen(window, 'scroll', hide, { passive: true, capture: true });
+        listen(window, 'resize', hide, { passive: true });
+        listen(document, 'keydown', e => { if (e.key === 'Escape') hide(); });
+        listen(document, 'pointerdown', e => {
+          if (!e.target.closest('#gb-hl-selbar')) hide();
+        }, { passive: true });
+        listen(document, 'click', e => {
+          if (e.target.closest('#mobPartTocBtn, [data-gill-marginalia-open]')) { hide(); hideToast(); }
+        }, true);
+      } catch (error) {
+        cleanup();
+        throw error;
+      }
+      fallbackCleanup = cleanup;
       return;
     }
+    fallbackCleanup?.();
     hide();
     if (popup.querySelector('#ss-save')) return;
     popup.append(element('span', 'ss-sep'));

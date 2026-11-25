@@ -53,7 +53,7 @@ const makeFixture=(options={})=>{
   if(options.lock==='held')return new Promise((_,reject)=>opts.signal.addEventListener('abort',()=>reject(new Error('aborted'))));
   return Promise.resolve().then(()=>task({name}));
  }}};
- const windowFixture={dispatchEvent:()=>{if(options.failNotify)throw new Error('notify failed');return true}};
+ const windowFixture={addEventListener(){},dispatchEvent:()=>{if(options.failNotify)throw new Error('notify failed');return true}};
  const CustomEventFixture=class{constructor(type,init){this.type=type;this.detail=init&&init.detail}};
  // Deterministic abort timer, not a claim of native browser-lock acceptance.
  const AbortControllerFixture=class{
@@ -388,7 +388,7 @@ const qFixture=(initial=[],mode='ok')=>{
   if(mode==='rejected')return Promise.reject(Error('lock refused'));
   const run=queue.then(()=>fn({name}));queue=run.catch(()=>{});return run;
  }}};
- const windowFixture={dispatchEvent:()=>true};
+ const windowFixture={addEventListener(){},dispatchEvent:()=>true};
  const keys=new Function('location','normalizeText','LIMIT_QUOTES',keySource+'return {gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey};')(loc,v=>String(v??'').replace(/\s+/g,' ').trim(),200);
  const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary};')(n,q,500,200,ls,nav,windowFixture,class{},AbortController,()=>1,()=>{},keys.gbHighlightKey);
  windowFixture.GBHighlights={...owner,highlightKey:keys.gbHighlightKey,addHighlight:keys.gbAddHighlight};
@@ -648,26 +648,53 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 }
 
 
-// W55: the native selection surface has exactly one fallback event owner.
+// W67: one active fallback owner; rollback every partially registered set.
 {
  const selectionSource=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
  const make=new Function('document','window','setTimeout','clearTimeout',selectionSource.replace('export function','function')+'return createSelectionController;');
- let popup=null, listeners=[], timers=[];
- const document={getElementById:id=>id==='selection-share-popup'?popup:null,addEventListener:(type,cb)=>listeners.push(['document',type,cb])};
- const window={addEventListener:(type,cb)=>listeners.push(['window',type,cb]),getSelection:()=>null};
- const controller=make(document,window,fn=>{timers.push(fn);return timers.length},()=>{})({});
- controller.attachSelection();
- const first=listeners.length;
- assert.ok(first>0,'fallback installs real listeners');
- controller.attachSelection();controller.attachSelection();
- assert.equal(listeners.length,first,'repeated attach must not duplicate fallback listeners');
- popup={querySelector:()=>({})};
- controller.attachSelection();
- assert.equal(listeners.length,first,'existing native popup must not install more fallback listeners');
- controller.placeSelectionBar();
- assert.equal(timers.length,0,'native popup must exclude fallback placement');
+ const scene=(fault=0,after=false)=>{
+   let popup=null, next=0, registrations=0, barLookups=0;
+   const listeners=new Set(),timers=new Map();
+   const target=()=>({
+     addEventListener(type,cb,options){
+       const fail=++registrations===fault;
+       if(fail&&!after)throw Error('injected registration failure');
+       listeners.add({owner:this,type,cb,capture:options===true||!!options?.capture});
+       if(fail)throw Error('injected registration failure');
+     },
+     removeEventListener(type,cb,options){for(const l of listeners)if(l.owner===this&&l.type===type&&l.cb===cb&&l.capture===(options===true||!!options?.capture))listeners.delete(l);}
+   });
+   const document=Object.assign(target(),{getElementById:id=>{if(id==='gb-hl-selbar')barLookups++;return id==='selection-share-popup'?popup:null;}});
+   const window=Object.assign(target(),{getSelection:()=>null});
+   const api=make(document,window,fn=>{timers.set(++next,fn);return next},id=>timers.delete(id))({});
+   return {api,listeners,timers,native:()=>{popup={querySelector:()=>({})};},fallback:()=>{popup=null;},lookups:()=>barLookups};
+ };
+ const f=scene();
+ for(let cycle=0;cycle<3;cycle++){
+   f.api.attachSelection();assert.equal(f.listeners.size,8);
+   f.api.attachSelection();assert.equal(f.listeners.size,8);
+   const old=[...f.listeners].find(l=>l.type==='selectionchange').cb;
+   old();assert.equal(f.timers.size,1);
+   const late=[...f.timers.values()][0];
+   f.native();f.api.attachSelection();
+   assert.equal(f.listeners.size,0,'native releases all fallback listeners');
+   assert.equal(f.timers.size,0,'native cancels pending placement');
+   const before=f.lookups();old();late();
+   assert.equal(f.lookups(),before,'obsolete callbacks do not touch DOM');
+   assert.equal(f.timers.size,0,'obsolete callbacks cannot requeue');
+   f.api.attachSelection();f.api.placeSelectionBar();
+   assert.equal(f.listeners.size,0);
+   f.fallback();
+ }
+ for(const after of [false,true])for(let fault=1;fault<=8;fault++){
+   const f=scene(fault,after);
+   assert.throws(()=>f.api.attachSelection(),/injected registration failure/);
+   assert.equal(f.listeners.size,0,'partial registration rolled back');
+   assert.equal(f.timers.size,0);
+   f.api.attachSelection();assert.equal(f.listeners.size,8,'successful retry owns exactly one set');
+   f.native();f.api.attachSelection();assert.equal(f.listeners.size,0);
+ }
 }
-
 
  // W58: actual anchor resolution reuses a projection only inside one synchronous batch.
 {
@@ -741,15 +768,18 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  assert.ok(from>=0&&to>from);
  let frames=new Map(),next=0,paints=0,cancelled=0,handlers={};
  const target={addEventListener:(event,fn)=>{handlers[event]=fn}};
- const api=new Function('window','document','requestAnimationFrame','cancelAnimationFrame','paintMarks','QUOTES_KEY','HTMLDetailsElement',
-  highlights.slice(from,to)+'return {schedulePaint,cancelScheduledPaint};')(target,target,fn=>{frames.set(++next,fn);return next},id=>{cancelled++;frames.delete(id)},()=>paints++,'quotes',class{});
+ const localStorage={};
+ const api=new Function('window','document','requestAnimationFrame','cancelAnimationFrame','paintMarks','QUOTES_KEY','HTMLDetailsElement','localStorage',
+  highlights.slice(from,to)+'return {schedulePaint,cancelScheduledPaint};')(target,target,fn=>{frames.set(++next,fn);return next},id=>{cancelled++;frames.delete(id)},()=>paints++,'quotes',class{},localStorage);
  const flush=()=>{const ready=[...frames.values()];frames.clear();ready.forEach(fn=>fn());};
  handlers['gb:library-committed']({detail:{key:'notes'}});assert.equal(frames.size,0);
  handlers['gb:library-committed']({detail:{key:'quotes'}});
- handlers.storage({key:'quotes'});handlers.resize();api.schedulePaint();
+ handlers.storage({key:'quotes',storageArea:localStorage});handlers.resize();api.schedulePaint();
  assert.equal(frames.size,1);assert.equal(paints,0);flush();assert.equal(paints,1);
  api.schedulePaint();api.cancelScheduledPaint();assert.equal(cancelled,1);assert.equal(frames.size,0);flush();assert.equal(paints,1);
  api.schedulePaint();flush();assert.equal(paints,2,'new independent invalidation is not lost');
+ handlers.storage({key:null,storageArea:{}});assert.equal(frames.size,0,'session clear ignored');
+ handlers.storage({key:null,storageArea:localStorage});assert.equal(frames.size,1,'local clear repaints');flush();assert.equal(paints,3);
  assert.match(highlights,/function paintMarks\(\) \{\s*cancelScheduledPaint\(\);/,'immediate painting consumes queued repaint');
 }
 
@@ -873,3 +903,214 @@ console.log('W40: 6/6 Undo integrity cases PASS');
    assert.equal(sessionReads,1);
   }
  }
+
+// W68: local clear invalidates a queued writer, but unrelated storage events do not.
+// Direct external clear is not serialized by Web Locks; only delivered events
+// are covered by this guard, while applyStaged retains its byte-level checks.
+{
+ const source=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
+ const start=source.indexOf('  function libraryFailure('),end=source.indexOf('  function libraryStoreSpec(',start);
+ assert.ok(start>=0&&end>start);
+ const localStorage={},queue=[];
+ const navigator={locks:{request(name,options,fn){return new Promise(resolve=>queue.push(()=>resolve(fn({name}))))}}};
+ class AbortController {constructor(){this.signal={aborted:false}}abort(){this.signal.aborted=true}}
+ const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY',source.slice(start,end)+'return {withLibraryLock,onLibraryStorage};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes');
+ let writes=0;
+ const task=()=>{writes++;return {ok:true}};
+ const pending=api.withLibraryLock(task);
+ api.onLibraryStorage({key:null,storageArea:localStorage});queue.shift()();
+ assert.equal((await pending).reason,'storage-changed');assert.equal(writes,0);
+ const fresh=api.withLibraryLock(task);queue.shift()();assert.equal((await fresh).ok,true);assert.equal(writes,1);
+ const unrelated=api.withLibraryLock(task);
+ api.onLibraryStorage({key:null,storageArea:{}});api.onLibraryStorage({key:'other',storageArea:localStorage});queue.shift()();
+ assert.equal((await unrelated).ok,true);assert.equal(writes,2);
+}
+
+// W68: all mounted consumers honor the same native localStorage event,
+// ignore sessionStorage and re-read current bytes rather than trust event payload.
+{
+ const coreSource=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+ const favoriteSource=readFileSync(resolve(root,'src/runtime/favorite-store.js'),'utf8');
+ const researchSource=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
+ const localStorage={},other={};
+ const event=(key,storageArea=localStorage)=>({key,storageArea,newValue:'obsolete'});
+ const a=coreSource.indexOf("    window.addEventListener('storage', e => {");
+ const b=coreSource.indexOf("    document.addEventListener('astro:page-load'",a);
+ assert.ok(a>=0&&b>a);
+ let coreListener,syncs=0,undo=0,toastHidden=0,toastRemoved=0,timerCancelled=0;
+ new Function('window','localStorage','editorController','clearTimeout','toast','hideToast','document','QUOTES_KEY','NOTES_KEY','FAVORITES_KEY','sync',coreSource.slice(a,b))(
+  {addEventListener:(_,fn)=>coreListener=fn},localStorage,{clearUndo(){undo++;}},()=>timerCancelled++,{timer:1},()=>toastHidden++,{getElementById:()=>({replaceChildren(){toastRemoved++;}})},'q','n','f',()=>syncs++);
+ coreListener(event(null,other));assert.equal(syncs,0);assert.equal(undo,0);
+ coreListener(event('unrelated'));assert.equal(syncs,0);
+ coreListener(event('q'));assert.equal(syncs,1);assert.equal(undo,0);
+ coreListener(event(null));assert.equal(syncs,2);assert.equal(undo,1);assert.equal(toastHidden,1);assert.equal(toastRemoved,1);assert.equal(timerCancelled,1);
+ const fa=favoriteSource.indexOf("  window.addEventListener('storage', (event) => {");
+ const fb=favoriteSource.indexOf("  document.addEventListener('astro:page-load'",fa);
+ assert.ok(fa>=0&&fb>fa);
+ let favoriteListener,published=0;
+ new Function('window','localStorage','STORAGE_KEY','publish','let clearGeneration=0;'+favoriteSource.slice(fa,fb))({addEventListener:(_,fn)=>favoriteListener=fn},localStorage,'f',()=>published++);
+ favoriteListener(event(null,other));favoriteListener(event('q'));assert.equal(published,0);
+ favoriteListener(event('f'));favoriteListener(event(null));assert.equal(published,2);
+ const ra=researchSource.indexOf('  function onStorage(event) {');
+ const rb=researchSource.indexOf('  const controller = Object.freeze({',ra);
+ assert.ok(ra>=0&&rb>ra);
+ let reads=[],refreshes=0,manager=0,cancels=0,imports=0,focuses=0;
+ const tagEditor={hidden:false,contains:()=>true},menu={hidden:false};
+ const keys={tags:'t',reading:'r',revisit:'v'},live={t:{new:'tag'},r:{},v:{new:'revisit'}};
+ const factory=new Function('localStorage','KEYS','objectMap','parse','refresh','fillManager','clearTimeout','invalidateImport','tagEditor','menu','document','h',
+  'let tags={old:1},reading={old:1},revisit={old:1},progressTimer=9,selectedItem={id:"old"};'+researchSource.slice(ra,rb)+'return {onStorage,state:()=>({tags,reading,revisit,progressTimer,selectedItem})};');
+ const api=factory(localStorage,keys,x=>x,key=>{reads.push(key);return live[key]},()=>refreshes++,()=>manager++,()=>cancels++,()=>imports++,tagEditor,menu,{},()=>({focus(){focuses++;}}));
+ api.onStorage(event(null,other));api.onStorage(event('q'));assert.equal(reads.length,0);
+ api.onStorage(event('t'));assert.equal(reads.join(','),'t');assert.equal(refreshes,1);
+ reads=[];
+ api.onStorage(event(null));assert.equal(reads.join(','),'t,r,v');assert.equal(refreshes,2);assert.equal(manager,2);assert.equal(cancels,1);assert.equal(imports,1);
+ assert.equal(api.state().tags.new,'tag');assert.equal(Object.keys(api.state().reading).length,0);assert.equal(api.state().revisit.new,'revisit');
+ assert.equal(api.state().progressTimer,null);assert.equal(api.state().selectedItem,null);assert.equal(tagEditor.hidden,true);assert.equal(focuses,1);
+}
+
+// W69: exercise exact bootstrap functions across both lazy boundaries and
+// reject expired Undo receipts, including those produced by the ARGON adapter.
+{
+ const source=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+ const start=source.indexOf('  function libraryFailure('),end=source.indexOf('  // Invalid historical rows',start);
+ assert.ok(start>=0&&end>start);
+ function scene(){
+  let listener,loads=[],calls=0,held=null;
+  const localStorage={},window={addEventListener:(type,fn)=>{assert.equal(type,'storage');listener=fn}};
+  const receipt={key:'q',entry:{id:'q1'}};
+  const owner={version:1,mutateLibrary:async()=>{calls++;return held?await held:{ok:true,receipt}}};
+  const factory=()=>({createRecordTransactions:({mutateLibrary})=>({saveQuoteRecord:()=>mutateLibrary([],()=>{}),restoreDeleted:()=>mutateLibrary([],()=>{})})});
+  const load=path=>new Promise(resolve=>loads.push(()=>{if(path.includes('record-transactions'))resolve(factory());else{window.GBLibraryStorage=owner;resolve({});}}));
+  const api=new Function('window','localStorage','load','gbHighlightKey','NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',source.slice(start,end).replace(/\bimport\(/g,'load(')+'return {mutateLibrary,transactionCall,restoreDeleted};')(window,localStorage,load,()=>'', 'n','q',500,200);
+  return {api,loads,owner,window,receipt,calls:()=>calls,clear:()=>listener({key:null,storageArea:localStorage}),session:()=>listener({key:null,storageArea:{}}),hold:p=>held=p};
+ }
+ const s=scene(),cold=s.api.mutateLibrary([],()=>{});
+ s.clear();s.loads.shift()();assert.equal((await cold).reason,'storage-changed');assert.equal(s.calls(),0);
+ const t=scene(),tx=t.api.transactionCall('saveQuoteRecord');
+ t.clear();t.loads.shift()();assert.equal((await tx).reason,'storage-changed');assert.equal(t.calls(),0);assert.equal(t.loads.length,0);
+ const u=scene();u.window.GBLibraryStorage=u.owner;
+ const r=await u.api.mutateLibrary([],()=>{});assert.equal(r.ok,true);assert.equal(r.receipt,u.receipt);
+ const restore=u.api.restoreDeleted(r.receipt);u.loads.shift()();assert.equal((await restore).ok,true);
+ u.clear();assert.equal((await u.api.restoreDeleted(r.receipt)).reason,'storage-changed');assert.equal(u.calls(),2);
+ const v=scene();v.window.GBLibraryStorage=v.owner;
+ let release;v.hold(new Promise(resolve=>release=resolve));
+ const pending=v.api.mutateLibrary([],()=>{});v.clear();release({ok:true,receipt:v.receipt});
+ assert.equal((await pending).reason,'storage-changed');assert.equal((await v.api.restoreDeleted(v.receipt)).ok,false);
+ const w=scene(),fresh=w.api.mutateLibrary([],()=>{});w.session();w.loads.shift()();assert.equal((await fresh).ok,true);assert.equal(w.calls(),1);
+}
+// W69: research import acknowledgement never reinstates a stale merged map.
+{
+ const src=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
+ const a=src.indexOf("    if (action === 'confirm-import') {"),b=src.indexOf("    if (action === 'topic')",a);
+ assert.ok(a>=0&&b>a);
+ for(const recovery of [false,true]){
+  let release,notices=0,refreshes=0;
+  const live={tags:{fresh:1},reading:{},revisit:{}};
+  const deferred=new Promise(resolve=>release=resolve);
+  const factory=new Function('atomicImport','atomicRecovery','objectMap','parse','KEYS','notify','refresh','recovery',
+   'let pendingImport={recovery,raw:{},data:{}},importGeneration=1,importInFlight=false,confirm={disabled:false},confirmation={hidden:false},tags={},reading={},revisit={};async function run(action){'+src.slice(a,b)+'}return {run,clear(){importGeneration++;pendingImport=null;confirmation.hidden=true},state:()=>({tags,reading,revisit,disabled:confirm.disabled})};');
+  const api=factory(()=>deferred,()=>deferred,x=>x,k=>live[k],{tags:'tags',reading:'reading',revisit:'revisit'},()=>notices++,()=>refreshes++,recovery);
+  const p=api.run('confirm-import');api.clear();
+  release({tags:{old:1},reading:{old:1},revisit:{old:1}});await p;
+  assert.equal(api.state().tags.fresh,1);assert.equal(Object.keys(api.state().reading).length,0);assert.equal(Object.keys(api.state().revisit).length,0);assert.equal(notices,0);assert.equal(refreshes,1);assert.equal(api.state().disabled,false);
+ }
+}
+
+// W69: a committed task can be cleared before the Web Lock result arrives.
+// Its stale receipt must not be published as current, and partial errors survive.
+{
+ const source=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
+ const a=source.indexOf('  function libraryFailure('),b=source.indexOf('  function libraryStoreSpec(',a);
+ assert.ok(a>=0&&b>a);
+ const localStorage={};let grant,ack,writes=0;
+ const navigator={locks:{request(name,opts,fn){return new Promise(resolve=>{grant=()=>{const result=fn({name});ack=()=>resolve(result)}})}}};
+ class AbortController{constructor(){this.signal={aborted:false}}abort(){this.signal.aborted=true}}
+ const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY',source.slice(a,b)+'return {withLibraryLock,onLibraryStorage};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes');
+ const run=async(result,clear)=>{const p=api.withLibraryLock(()=>{writes++;return result});grant();if(clear)api.onLibraryStorage({key:null,storageArea:localStorage});ack();return await p;};
+ assert.equal((await run({ok:true,receipt:{}},true)).reason,'storage-changed');
+ assert.equal((await run({ok:false,reason:'partial-write'},true)).reason,'partial-write');
+ assert.equal((await run({ok:true},false)).ok,true);
+ assert.equal(writes,3);
+}
+
+// W70: favorite Undo must not recreate an absent collection or use an
+// issuer-local receipt after observed clear. Normal transfer still works
+// before observed invalidation; this is not a persistent cross-tab epoch.
+{
+ const src=readFileSync(resolve(root,'src/runtime/favorite-store.js'),'utf8');
+ const a=src.indexOf('  // Local Undo receipts'),b=src.indexOf('  function get(',a);
+ const c=src.indexOf('  async function restore('),d=src.indexOf('  async function toggle(',c);
+ const e=src.indexOf("  window.addEventListener('storage', (event) => {"),f=src.indexOf("  document.addEventListener('astro:page-load'",e);
+ assert.ok(a>=0&&b>a&&c>=0&&d>c&&e>=0&&f>e);
+ function scene(){
+   let listener,raw='[]',writes=0,held=null;
+   const localStorage={getItem:()=>raw};
+   const receipt={path:'/a',entry:{path:'/a'},index:0};
+   const owner={version:1,async mutateLibrary(keys,prepare){
+     if(held)await held;
+     const result=prepare({f:JSON.parse(raw||'[]')});
+     if(result.reason)return {ok:false,reason:result.reason};
+     if(result.changes?.f){raw=JSON.stringify(result.changes.f);writes++;}
+     return {ok:true,...result.result};
+   }};
+   const window={GBLibraryStorage:owner,addEventListener:(_,fn)=>listener=fn};
+   const api=new Function('window','localStorage','STORAGE_KEY','MAX_ITEMS','rawPath','match','finish','publish',
+    src.slice(a,b)+src.slice(c,d)+src.slice(e,f)+'return {transact,restore};')(window,localStorage,'f',50,x=>x?.path,(rows,p)=>rows.filter(x=>x.path===p),result=>({saved:result.ok,error:result.reason,receipt:result.receipt}),()=>{});
+   return {api,receipt,issue:()=>api.transact(()=>({changes:{},result:{receipt}})),clear(){raw=null;listener({storageArea:localStorage,key:null,newValue:null})},session(){listener({storageArea:{},key:null,newValue:null})},reset(){raw='[]'},writes:()=>writes,hold:p=>held=p};
+ }
+ const a1=scene();await a1.issue();assert.equal((await a1.api.restore(a1.receipt)).saved,true);
+ const a2=scene();await a2.issue();a2.clear();a2.reset();assert.equal((await a2.api.restore(a2.receipt)).error,'storage-changed');assert.equal(a2.writes(),0);
+ const a3=scene();assert.equal((await a3.api.restore({...a3.receipt})).saved,true);
+ const a4=scene();a4.clear();a4.reset();assert.equal((await a4.api.restore({...a4.receipt})).error,'storage-changed');assert.equal(a4.writes(),0);
+ const a5=scene();await a5.issue();let release;a5.hold(new Promise(resolve=>release=resolve));const p=a5.api.restore(a5.receipt);a5.clear();release();assert.equal((await p).error,'storage-changed');assert.equal(a5.writes(),0);
+ const a6=scene();await a6.issue();a6.session();assert.equal((await a6.api.restore(a6.receipt)).saved,true);
+ const a7=scene();a7.clear();a7.reset();await a7.issue();assert.equal((await a7.api.restore(a7.receipt)).saved,true);
+}
+// W70: ARGON invalidates Undo and recolor without touching the active draft.
+{
+ const src=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57_annotations.js'),'utf8');
+ const a=src.indexOf('    function onExternalLibraryStorage('),b=src.indexOf("    window.addEventListener('gb:library-committed'",a);
+ assert.ok(a>=0&&b>a);
+ const localStorage={},labels=[],messages=[],commits=[];let listener;
+ const api=new Function('window','localStorage','palette','say','onLibraryCommit',
+  'let lastUndo={},recolorGeneration=7,pendingRecolorId="q",pendingRecolorSnapshot="old",pendingNoteId="note",noteText={value:"draft"};'+src.slice(a,b)+'return ()=>({lastUndo,recolorGeneration,pendingRecolorId,pendingRecolorSnapshot,pendingNoteId,draft:noteText.value});')(
+  {addEventListener:(_,fn)=>listener=fn},localStorage,{setAttribute:(_,v)=>labels.push(v)},x=>messages.push(x),k=>commits.push(k));
+ listener({storageArea:{},key:null});assert.equal(commits.length,0);assert.equal(api().recolorGeneration,7);
+ listener({storageArea:localStorage,key:'q'});assert.equal(commits.length,1);assert.equal(api().pendingRecolorId,'q');
+ listener({storageArea:localStorage,key:null});assert.equal(commits.length,2);assert.equal(api().lastUndo,null);assert.equal(api().recolorGeneration,8);assert.equal(api().pendingRecolorId,null);assert.equal(api().pendingRecolorSnapshot,null);assert.equal(api().pendingNoteId,'note');assert.equal(api().draft,'draft');assert.equal(labels.at(-1),'Цвет выделения');assert.equal(messages.length,1);
+}
+
+// W70: obsolete favorite Undo promises and timers cannot reinstall a button
+// or write a status into a newer presentation intent.
+{
+ const src=readFileSync(resolve(root,'js/reader-library-presenter.js'),'utf8');
+ const a=src.indexOf('  let favoriteUndoTimer'),b=src.indexOf('  function exportMarkdown(',a);
+ assert.ok(a>=0&&b>a);
+ function scene(){
+   const children=[],messages=[],timers=new Map(),buttons=[];
+   let next=0,removeResolve,restoreResolve,restoreCalls=0,hidden=0;
+   const host={append(node){if(node.parentNode)node.remove();children.push(node);node.parentNode=this},classList:{remove(){hidden++}}};
+   const button=()=>{const node={disabled:false,parentNode:null,focus(){},remove(){const i=children.indexOf(this);if(i>=0)children.splice(i,1);this.parentNode=null},get isConnected(){return !!this.parentNode},addEventListener(_,fn){this.click=fn}};buttons.push(node);return node;};
+   const status=message=>{while(children.length)children[0].remove();messages.push(message)};
+   const store={get:()=>({}),remove:()=>new Promise(resolve=>removeResolve=resolve),restore:()=>{restoreCalls++;return new Promise(resolve=>restoreResolve=resolve)}};
+   const api=new Function('window','document','button','setTimeout','clearTimeout',src.slice(a,b)+'return {removeFavorite,clearFavoriteUndo};')(
+    {GBFavoriteStore:store},{querySelector:id=>id==='#gb-hl-status'?host:{focus(){}}},button,fn=>{timers.set(++next,fn);return next},id=>timers.delete(id));
+   return {api,children,messages,timers,buttons,hidden:()=>hidden,restoreCalls:()=>restoreCalls,
+    start:()=>api.removeFavorite({id:'/a'},status),finish:()=>removeResolve({saved:false,receipt:{}}),settle:result=>restoreResolve(result),status};
+ }
+ const a1=scene(),p=a1.start();a1.api.clearFavoriteUndo();a1.finish();await p;
+ assert.equal(a1.buttons.length,0);assert.equal(a1.messages.length,0);
+ const a2=scene(),q=a2.start();a2.finish();await q;
+ const undo=a2.buttons[0],oldTimer=[...a2.timers.values()][0];assert.equal(undo.isConnected,true);
+ const pending=undo.click();a2.api.clearFavoriteUndo();a2.status('new');a2.settle({saved:false,error:'storage-changed'});await pending;
+ assert.equal(a2.children.length,0);assert.equal(a2.messages.at(-1),'new');oldTimer();assert.equal(a2.hidden(),0);
+ await undo.click();assert.equal(a2.restoreCalls(),1);
+ const a3=scene(),r=a3.start();a3.finish();await r;
+ const active=a3.buttons[0],save=active.click();a3.settle({saved:true});await save;
+ assert.equal(a3.messages.at(-1),'Статья восстановлена.');assert.equal(active.isConnected,false);
+ const a4=scene(),s=a4.start();a4.finish();await s;
+ const expired=a4.buttons[0];[...a4.timers.values()][0]();assert.equal(expired.isConnected,false);assert.equal(a4.hidden(),1);
+ await expired.click();assert.equal(a4.restoreCalls(),0);
+ const a5=scene(),t=a5.start();a5.finish();await t;
+ a5.status('newer status');[...a5.timers.values()][0]();assert.equal(a5.hidden(),0);assert.equal(a5.messages.at(-1),'newer status');
+}

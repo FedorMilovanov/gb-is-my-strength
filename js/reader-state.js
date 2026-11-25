@@ -569,8 +569,18 @@
   function onUserInput() { userInteracted = true; }
   function onScroll() { scheduleMeasure(false); }
   function onResize() { scheduleMeasure(true); }
-  function onVisibility() { if (document.visibilityState === 'hidden') saveSnapshot(true); }
-  function onPageHide() { saveSnapshot(true); }
+  function saveLifecycleSnapshot() {
+    if (destroyed || !root) return;
+    // A scroll/resize can occur immediately before pagehide, before the
+    // scheduled frame runs. Flush the same measurement owner; measure()
+    // deliberately preserves the last truthful state while scroll-locked.
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    measure(true);
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = 0; }
+    saveSnapshot(true);
+  }
+  function onVisibility() { if (document.visibilityState === 'hidden') saveLifecycleSnapshot(); }
+  function onPageHide() { saveLifecycleSnapshot(); }
   function onHashChange() { window.setTimeout(function () { scheduleMeasure(true); }, 0); }
 
   function init() {

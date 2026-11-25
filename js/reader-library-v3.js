@@ -590,6 +590,9 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       return;
     }
     const scrollToSavedPosition = () => {
+      // Deferred resume must not replay a record cleared or replaced in another tab.
+      const live = objectMap(parse(KEYS.reading, {}))[key];
+      if (!exact(live,data)) return;
       const target = data.anchor ? document.getElementById(data.anchor) : null;
       if (target) {
         target.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -749,13 +752,11 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       importInFlight=true; confirm.disabled=true;
       try {
         const current=()=>generation===importGeneration && pendingImport===next;
-        if(next.recovery) {
-          await atomicRecovery(next.raw,current);
-          tags=objectMap(parse(KEYS.tags,{}));reading=objectMap(parse(KEYS.reading,{}));revisit=objectMap(parse(KEYS.revisit,{}));
-        } else {
-          const merged=await atomicImport(next.data,current);
-          tags=merged.tags;reading=merged.reading;revisit=merged.revisit;
-        }
+        if(next.recovery) await atomicRecovery(next.raw,current);
+        else await atomicImport(next.data,current);
+        // A commit receipt describes its own transaction, not the current
+        // storage after another tab clears or changes it before completion.
+        tags=objectMap(parse(KEYS.tags,{}));reading=objectMap(parse(KEYS.reading,{}));revisit=objectMap(parse(KEYS.revisit,{}));
         if(generation===importGeneration) {
           pendingImport=null; confirmation.hidden=true;
           notify(next.recovery?'Точное восстановление завершено без замены данных.':'Импорт завершён без замены существующих записей.');
@@ -847,9 +848,27 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     } catch (error) { if (generation !== importGeneration) return; invalidateImport(); notify('Импорт отменён: ' + error.message, true); }
   });
   function onStorage(event) {
-    if (event.key === KEYS.tags) { tags = objectMap(parse(KEYS.tags, {})); refresh(); }
-    if (event.key === KEYS.reading) { reading = objectMap(parse(KEYS.reading, {})); refresh(); }
-    if (event.key === KEYS.revisit) { revisit = objectMap(parse(KEYS.revisit, {})); refresh(); }
+    if (event.storageArea !== localStorage) return;
+    const cleared = event.key === null;
+    if (cleared) {
+      clearTimeout(progressTimer);
+      progressTimer = null;
+      invalidateImport();
+      // A stale tag target is not a new record; keep typed input but revoke
+      // its old target. The note editor is owned separately and stays open.
+      selectedItem = null;
+      if (!tagEditor.hidden) {
+        tagEditor.hidden = true;
+        if (tagEditor.contains(document.activeElement)) h('#gb-hl-list')?.focus({preventScroll:true});
+      }
+    }
+    if (cleared || event.key === KEYS.tags) tags = objectMap(parse(KEYS.tags, {}));
+    if (cleared || event.key === KEYS.reading) reading = objectMap(parse(KEYS.reading, {}));
+    if (cleared || event.key === KEYS.revisit) revisit = objectMap(parse(KEYS.revisit, {}));
+    if (cleared || [KEYS.tags,KEYS.reading,KEYS.revisit].includes(event.key)) {
+      if (!menu.hidden) fillManager();
+      refresh();
+    }
   }
   const controller = Object.freeze({
     getTags, itemMatches, orderItems, decorate, renderGroups, decorateList, reconcileTopic,

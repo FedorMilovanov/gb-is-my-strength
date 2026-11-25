@@ -511,7 +511,24 @@
       if(key!==qKey&&key!==nKey&&key!==null)return;
       if(!libraryFrame)libraryFrame=requestAnimationFrame(()=>{libraryFrame=0;repaint()});
     }
-    window.addEventListener('storage',e=>onLibraryCommit(e.key));
+    function onExternalLibraryStorage(event) {
+      if (event.storageArea !== localStorage) return;
+      if (event.key === null) {
+        const hadUndo = lastUndo !== null, hadRecolor = pendingRecolorId !== null;
+        lastUndo = null;
+        recolorGeneration++;
+        pendingRecolorId = null;
+        pendingRecolorSnapshot = null;
+        palette.setAttribute('aria-label','Цвет выделения');
+        // say() replaces the obsolete Undo button, but not the note editor.
+        if (hadUndo || hadRecolor || pendingNoteId !== null)
+          say(pendingNoteId !== null
+            ? 'Данные библиотеки очищены в другой вкладке. Текст заметки остаётся в редакторе.'
+            : 'Данные библиотеки очищены в другой вкладке. Прежнее действие недоступно.');
+      }
+      onLibraryCommit(event.key);
+    }
+    window.addEventListener('storage',onExternalLibraryStorage);
     window.addEventListener('gb:library-committed',e=>onLibraryCommit(e.detail?.key));
     window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
     repaint();

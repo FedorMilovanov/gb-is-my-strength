@@ -9,19 +9,28 @@
   }
   // One cross-tab owner for notes and the quotes they reference. A localStorage
   // lease cannot provide atomic exclusion; unsupported/rejected locks refuse.
+  let clearGeneration = 0;
+  function onLibraryStorage(event) {
+    if (event.storageArea === localStorage && event.key === null) clearGeneration++;
+  }
   async function withLibraryLock(task) {
+    const generation = clearGeneration;
     let timer;
     try {
       const locks = navigator.locks;
       if (!locks || typeof locks.request !== 'function') return libraryFailure('lock-unavailable');
       const controller = new AbortController();
       timer = setTimeout(() => controller.abort(), 3000);
-      return await locks.request('gb-library:' + NOTES_KEY,
+      const result = await locks.request('gb-library:' + NOTES_KEY,
         { mode: 'exclusive', signal: controller.signal }, lock => {
           clearTimeout(timer);
           if (!lock || controller.signal.aborted) return libraryFailure('lock-unavailable');
+          if (generation !== clearGeneration) return libraryFailure('storage-changed');
           return task();
         });
+      // A delivered clear after the task but before its acknowledgement must
+      // not publish a stale successful receipt or dismiss an unsaved draft.
+      return result.ok && generation !== clearGeneration ? libraryFailure('storage-changed') : result;
     } catch {
       return libraryFailure('lock-or-task-failed');
     } finally {
@@ -169,5 +178,6 @@
       return applyStaged(before,staged,{restored:staged.length});
     });
   }
+  window.addEventListener('storage', onLibraryStorage);
   window.GBLibraryStorage = Object.freeze({version:1,mutateLibrary,snapshotRaw,restoreRaw});
 })();
