@@ -384,6 +384,31 @@ for (const name of ['G3HistoryArticle', 'G3HistoryFeature']) {
   const source = read(`src/components/journal/${name}.astro`);
   assert.doesNotMatch(source, /PUBLICATION_HOLD|RESEARCH_DRAFT|Не опубликовано|data-research-candidates/, `${name} must be public-ready`);
 }
+// HIST-09/10: the 10 Sep 2018 sponsored invitation is not a record of
+// who spoke in January 2019. Paul Washer is absent from its advertised
+// speaker list, but his titled session is present in the GNL catalog.
+// Sources: announcement-2019 and gnl-2019 in the public registry.
+function assertMissionAttribution(doc) {
+  const row = byId(doc, 'g3-year-2019');
+  assert.ok(row, '2019 mission chapter is present');
+  const paragraphs = all(row, node => node.tagName === 'p' && !hasClass(node, 'je-history-footnote'));
+  const advertised = paragraphs.filter(node => text(node).includes('В рекламном анонсе'));
+  const recorded = paragraphs.filter(node => text(node).includes('В опубликованных записях 2019 года'));
+  assert.equal(advertised.length, 1, 'advertising witness is separate');
+  assert.equal(recorded.length, 1, 'recorded-session witness is separate');
+  assert.ok(paragraphs.indexOf(advertised[0]) < paragraphs.indexOf(recorded[0]), 'announcement precedes recorded sessions');
+  const announcement = g44VisibleText(text(advertised[0]));
+  for (const name of ['Джон Пайпер','Дэвид Платт','Марк Девер','Водди Бокам','Конрад Мбеве','Стивен Лоусон','Тим Чаллис']) {
+    assert.ok(announcement.includes(name), 'advertised name preserved: ' + name);
+  }
+  assert.doesNotMatch(announcement, /Вошер|Уошер|Washer/iu, 'do not place Washer in the sponsored invitation');
+  assert.match(g44VisibleText(text(recorded[0])), /Пол Вошер — обсуждением определения миссии/u, 'preserve the separately catalogued session');
+  for (const id of ['cite-g3-year-2019-announcement-2019', 'cite-g3-year-2019-gnl-2019']) {
+    assert.equal(all(row, node => node.tagName === 'a' && attr(node, 'id') === id).length, 1, 'retain separate source: ' + id);
+  }
+}
+
+assertMissionAttribution(parse(read('src/components/journal/G3HistoryFeature.astro')));
 const historyRoute = '/journal/dossiers/g3/history/';
 assert.ok(fs.existsSync(path.join(root, 'src/pages/journal/dossiers/g3/history/index.astro')));
 assert.equal(JSON.parse(read('migration/page-ownership.json')).routes[historyRoute]?.status, 'production-dist');
@@ -625,6 +650,7 @@ if (!process.argv.includes('--source-only')) {
           assert.ok(byId(doc,'cite-r6-'+id));
         }
       }
+      assertMissionAttribution(doc);
       const christYear=assertLaterConferenceChronology(doc);
       assert.equal(all(christYear,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-14').length,1,'2021 testimony belongs to its chronological chapter');
       assert.equal(all(christYear,n=>attr(n,'id')==='cite-r6-crotts-2021').length,1,'2021 source remains next to testimony');
