@@ -478,8 +478,41 @@ async function openPartToc(page) {
 
 async function auditSeries(page, engine, origin, entry, viewport) {
   const route = entry.route;
-  await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
-  await waitForReader(page);
+  const deliveryErrors = [];
+  const onConsole = message => {
+    if (message.type() === 'error' && message.text().startsWith('Reader desktop:'))
+      deliveryErrors.push({ text: message.text(), url: message.location().url, page: page.url() });
+  };
+  const onPageError = error => deliveryErrors.push({ error: String(error), page: page.url() });
+  page.on('console', onConsole);
+  page.on('pageerror', onPageError);
+  try {
+    const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+    await waitForReader(page);
+    if (viewport === 'desktop' && desktopReaderRoutes.has(route)) {
+      // Do not leave a newly admitted route with required delivery scripts
+      // still loading. An aborted outgoing script can otherwise race the
+      // next goto through the real Classic rollback path.
+      await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+        window.__NP_UNIVERSAL_PREVIEW__?.ready === true &&
+        window.__NP_W57_ANNOTATIONS__?.ready === true, null, { timeout: 15000 });
+      const owner = await page.evaluate(() => ({
+        explicit: new URLSearchParams(location.search).has('reader-pilot'),
+        ready: document.body.classList.contains('np-w57-ready'),
+        state: Boolean(window.ReaderState?.getSnapshot?.()),
+        path: location.pathname
+      }));
+      check(engine, viewport, route, 'default series Reader fully mounted before traversal',
+        response?.status() === 200 && owner.path === route && !owner.explicit && owner.ready && owner.state &&
+        deliveryErrors.length === 0, { owner, deliveryErrors });
+    }
+  } catch (error) {
+    throw new Error('Series navigation or Reader delivery failed: ' +
+      JSON.stringify({ engine, viewport, route, actual: page.url(), deliveryErrors }), { cause: error });
+  } finally {
+    page.off('console', onConsole);
+    page.off('pageerror', onPageError);
+  }
   const listChildren = await page.evaluate(() => Array.from(document.querySelectorAll('ul.gbs2-toc')).flatMap((list) => Array.from(list.children).map((node) => node.tagName)));
   check(engine, viewport, route, 'series TOC direct children are list items', listChildren.length > 0 && listChildren.every((tag) => tag === 'LI'), listChildren);
   const missingBefore = await relationAudit(page);
