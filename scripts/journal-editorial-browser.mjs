@@ -502,6 +502,45 @@ async function sourceActionHoverWitness(page) {
   } finally { await page.mouse.move(0,0); }
   return {supported:true,results};
 }
+async function captureWideHistoryEvidence(page, name) {
+  const failures = [];
+  const capture = async (label, operation) => {
+    try { await operation(); }
+    catch (error) { failures.push({ label, message: error.message }); }
+  };
+  const contextShots = async (suffix) => {
+    for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
+      await capture(label + suffix, async () => {
+        await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
+        await settleWithoutScripts(page);
+        await shot(page, name + '-' + label + suffix, { fullPage: false });
+      });
+    }
+  };
+  const original = await page.evaluate(() => {
+    const style = document.documentElement.style;
+    return { value:style.getPropertyValue('--gb-reader-font-scale'), priority:style.getPropertyPriority('--gb-reader-font-scale'), x:scrollX, y:scrollY };
+  });
+  try {
+    await capture('full', () => shot(page, name + '-full', { fullPage: true }));
+    await contextShots('');
+    await capture('200pct', async () => {
+      await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+      await settleWithoutScripts(page);
+      await contextShots('-200pct');
+    });
+  } finally {
+    await page.evaluate(prior => {
+      const style = document.documentElement.style;
+      if (prior.value) style.setProperty('--gb-reader-font-scale',prior.value,prior.priority);
+      else style.removeProperty('--gb-reader-font-scale');
+      window.scrollTo({left:prior.x,top:prior.y,behavior:'instant'});
+    }, original);
+    await settleWithoutScripts(page);
+  }
+  return failures;
+}
+
 async function wideHistoryGeometry(page) {
   const state = await page.evaluate(() => {
     const rect = el => el.getBoundingClientRect().toJSON();
@@ -778,7 +817,7 @@ try {
   // Keep normal viewport captures with neighbouring prose and sticky chrome.
   if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
     report.wideHistory = [];
-    for (const width of [390,430,1440,1920]) for (const theme of ['light','dark']) {
+    for (const width of [390,430,768,1024,1440,1920]) for (const theme of ['light','dark']) {
       const viewport = { width, height: width <= 430 ? 844 : 900 };
       const context = await contextFor(width, theme, { viewport });
       const page = await context.newPage();
@@ -788,26 +827,21 @@ try {
       try {
         const response = await ready(page, routes.find(route => route.kind === 'history').url);
         await assertPublishedHistory(page, response);
+        // Capture both clean composition states before any geometry/action
+        // assertion can abort the case. Capture errors still fail the report.
+        item.captureProblems = await captureWideHistoryEvidence(page,name);
+        for (const problem of item.captureProblems)
+          report.problems.push(name + ': capture ' + problem.label + ': ' + problem.message);
         item.normal = await wideHistoryGeometry(page);
         item.atlasSourceActions = await atlasSourceActions(page);
         if (width <= 430) item.sourceActions = await standaloneSourceActions(page,'history');
-        await shot(page, name + '-full', { fullPage: true });
-        for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
-          await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
-          await settleWithoutScripts(page);
-          await shot(page, name + '-' + label, { fullPage: false });
-        }
         await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
         await settleWithoutScripts(page);
         item.scaled = await wideHistoryGeometry(page);
         item.scaledAtlasSourceActions = await atlasSourceActions(page);
         assert.equal(item.scaled.scale,2);
         assert.ok(item.scaled.atlasTextSizes.every((size,i)=>Math.abs(size-item.normal.atlasTextSizes[i]*2)<.25),'atlas text alternative must follow 200% Reader scale');
-        for (const [label, selector] of [['atlas','.g3g-history'], ['g44','#g3-2018-document-index']]) {
-          await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
-          await settleWithoutScripts(page);
-          await shot(page, name + '-' + label + '-200pct', { fullPage: false });
-        }
+        assert.deepEqual(item.captureProblems,[],'required visual evidence must be present');
         if (width===390 && theme==='light') {
           await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','1'));
           await settleWithoutScripts(page);
