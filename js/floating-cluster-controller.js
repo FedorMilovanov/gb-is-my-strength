@@ -2554,6 +2554,8 @@
     function openSheet(opener) {
       if (!sheet || sheet.classList.contains('gbs2-open')) return;
       sheet.setAttribute('aria-hidden', 'false');
+      sheet.removeAttribute('inert');
+      if (bbar) bbar.setAttribute('aria-expanded', 'true');
       sheet.style.display = 'block';
       sheet.classList.add('gbs2-open');
       var runtime = window.OverlayRuntime;
@@ -2561,7 +2563,7 @@
         runtime.open(GBS2_OVERLAY_OWNER, {
           element: sheet,
           opener: opener || document.activeElement,
-          focusTarget: sheet.querySelector('[data-gbs2-close], [data-gbs2-tab], a[href], button'),
+          focusTarget: sheet.querySelector('button[data-gbs2-close]') || sheet.querySelector('[data-gbs2-tab], a[href], button'),
           onRequestClose: function(reason) { closeSheet(reason, true); },
           closeOnEscape: true,
           trapFocus: true,
@@ -2574,16 +2576,19 @@
     }
     function closeSheet(reason, restoreFocus) {
       if (!sheet) return;
-      sheet.setAttribute('aria-hidden', 'true');
-      sheet.classList.remove('gbs2-open');
-      sheet.style.display = '';
+      if (bbar) bbar.setAttribute('aria-expanded', 'false');
       var runtime = window.OverlayRuntime;
       if (runtime && typeof runtime.close === 'function') {
         runtime.close(GBS2_OVERLAY_OWNER, reason || 'programmatic', { restoreFocus: restoreFocus !== false });
       } else {
         var utils = window.SiteUtils;
         if (utils && typeof utils.unlockScroll === 'function') utils.unlockScroll(GBS2_OVERLAY_OWNER);
+        if (restoreFocus !== false && bbar && sheet.contains(document.activeElement)) bbar.focus({ preventScroll: true });
       }
+      sheet.setAttribute('aria-hidden', 'true');
+      sheet.setAttribute('inert', '');
+      sheet.classList.remove('gbs2-open');
+      sheet.style.display = '';
     }
 
     // Bottom bar opens sheet

@@ -10,6 +10,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const URL = String(process.env.AUDIT_BASE || 'https://gospod-bog.ru').replace(/\/$/,'');
 const ROOTS = [
+  {path:'/baptisty-rossii/',open:'#gbs2Bbar',owner:'gbs2-sheet',label:'baptists-book'},
+  {path:'/nagornaya/chast-1/',open:'#barSectionBtn',owner:'nagornaya-btoc',label:'nagornaya-toc'},
+  {path:'/nagornaya/chast-1/',open:'#menuBtn',owner:'nagornaya-menu',label:'nagornaya-menu'},
   {path:'/articles/dzhon-gill-istoricheskiy-kontekst/',open:'#mobPartTocBtn',owner:'gill-part-toc',label:'gill'},
   {path:'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',open:'#hmSectionBtn',owner:'hermenevtika-toc',label:'hermenevtika'},
   {path:'/baptisty-rossii/noch-na-kure/',open:'#mobPartTocBtn',owner:'gill-part-toc',label:'baptists'},
@@ -27,7 +30,7 @@ async function assertState(page,owner,locked,context) {
  assert.equal(actual.lock,locked?'1':null,context+' scroll lock');
  if(locked){
   assert(actual.overlay.includes(owner),context+' overlay remains open');
-  assert(actual.sources.includes('overlay:'+owner),context+' owner source retained');
+  assert.deepEqual(actual.sources,['overlay:'+owner],context+' exactly one canonical lock owner');
   assert.equal(actual.body,'fixed',context+' position');
  }else assert.equal(actual.body,'static',context+' unlocked position');
  return actual;
@@ -70,6 +73,9 @@ async function assertState(page,owner,locked,context) {
      const after=await assertState(page,item.owner,true,item.label+' after printing');
      assert.equal(after.sources.length,before.sources.length,item.label+' owner source count restored');
      assert.deepEqual(after.overlay,before.overlay,item.label+' overlay identity intact');
+     await page.keyboard.press('Escape');
+     await page.waitForFunction(owner=>!window.OverlayRuntime.isOpen(owner)&&!document.documentElement.hasAttribute('data-scroll-locked'),item.owner);
+     await assertState(page,item.owner,false,item.label+' after Escape');
      results.push({browser:engineName,route:item.label,pass:true,cleanPages,lockedPages});
      console.log('PASS '+engineName+'/'+item.label+' PDF '+(lockedPages?lockedPages+'/'+cleanPages:'WebKit owner lifecycle'));
     }catch(e){
