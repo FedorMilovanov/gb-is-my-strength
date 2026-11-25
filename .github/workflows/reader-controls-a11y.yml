@@ -54,6 +54,10 @@ on:
       - "research/reader-w57-pilot/assets/reader_w57_annotations.js"
       - "scripts/reader-library-v3-browser-test.cjs"
       - "scripts/reader-library-v3-progress-test.cjs"
+      - "scripts/reader-library-dist-coverage.cjs"
+      - "scripts/cache-bust-assets.js"
+      - "sw.js"
+      - "src/lib/asset-version.js"
       - "scripts/reader-w57-annotations-regression-test.mjs"
       - "scripts/reader-w57-two-tab-browser-contract.mjs"
       - "src/lib/reader-semantic-snapshot.mjs"
@@ -112,6 +116,10 @@ on:
       - "research/reader-w57-pilot/assets/reader_w57_annotations.js"
       - "scripts/reader-library-v3-browser-test.cjs"
       - "scripts/reader-library-v3-progress-test.cjs"
+      - "scripts/reader-library-dist-coverage.cjs"
+      - "scripts/cache-bust-assets.js"
+      - "sw.js"
+      - "src/lib/asset-version.js"
       - "scripts/reader-w57-annotations-regression-test.mjs"
       - "scripts/reader-w57-two-tab-browser-contract.mjs"
       - "src/lib/reader-semantic-snapshot.mjs"
@@ -169,6 +177,7 @@ jobs:
           node --check js/reader-library-storage.js
           node --check js/reader-library-research-core.js
           node --check scripts/reader-library-v3-progress-test.cjs
+          node --check scripts/reader-library-dist-coverage.cjs
           node --check scripts/reader-library-v3-browser-test.cjs
           node scripts/reader-library-tag-integrity-contract.mjs
           node --check scripts/reader-w57-annotations-regression-test.mjs
@@ -220,6 +229,15 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
 
+      - name: Verify exact-head Reader publication and module revisions
+        if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            node scripts/reader-library-dist-coverage.cjs
+          } 2>&1 | tee reports/reader-library-dist-coverage.log
+
       - name: Run exact-head Gill whole-page and atlas contracts
         if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
         run: |
@@ -264,6 +282,7 @@ jobs:
             reports/reader-library-browser-test.log
             reports/reader-library-v3-browser-test.log
             reports/reader-library-v3-progress-test.log
+            reports/reader-library-dist-coverage.log
             reports/reader-library-v3/**
             reports/shared-play-and-series-number-browser-contract.log
             reports/reader-mobile-canonical-browser-contract.log
