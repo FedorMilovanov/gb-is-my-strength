@@ -39,6 +39,7 @@ const ASSETS = [
   'js/reader-library-storage.js',
   'js/reader-library-record-transactions.js',
   'js/reader-library-selection.js',
+  'js/reader-library-ranges.js',
   'js/reader-library-presenter.js',
   'js/reader-library-v3.js',
   'js/reader-library-research-core.js',
