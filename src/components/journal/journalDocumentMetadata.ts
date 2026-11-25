@@ -9,11 +9,16 @@ export interface JournalDocumentMetadata {
 
 function timestamp(value: string, name: string): number {
   const parts = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/);
+  const invalid = () => new Error(`JournalDocumentHead: ${name} must be an explicit valid ISO timestamp with timezone`);
+  if (!parts) throw invalid();
+  const [, year, month, day, hour, minute, second] = parts.map(Number);
+  // Date.parse normalizes 24:00 to tomorrow. Check the authored calendar and
+  // clock before parsing; Date.UTC also remaps years 00–99 into 1900–1999.
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (month < 1 || month > 12 || day < 1 || day > days[month - 1] || hour > 23 || minute > 59 || second > 59) throw invalid();
   const parsed = Date.parse(value);
-  const invalidCalendar = parts && (Number(parts[2]) < 1 || Number(parts[2]) > 12 || Number(parts[3]) < 1 || Number(parts[3]) > new Date(Date.UTC(Number(parts[1]), Number(parts[2]), 0)).getUTCDate());
-  if (!parts || invalidCalendar || !Number.isFinite(parsed)) {
-    throw new Error(`JournalDocumentHead: ${name} must be an explicit valid ISO timestamp with timezone`);
-  }
+  if (!Number.isFinite(parsed)) throw invalid();
   return parsed;
 }
 

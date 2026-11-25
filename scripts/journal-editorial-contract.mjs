@@ -160,7 +160,21 @@ function assertG44Dist(doc) {
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const load = (name) => import(pathToFileURL(path.join(root, name)).href);
 
-const { journalBreadcrumbItems } = await load('src/components/journal/journalDocumentMetadata.ts');
+const { journalBreadcrumbItems, assertJournalDocumentMetadata } = await load('src/components/journal/journalDocumentMetadata.ts');
+const metadataDateWitness = Object.freeze({
+  kind: 'Article',
+  publishedAt: '2024-02-29T23:59:59+03:00',
+  modifiedAt: '2026-11-25T00:00:00Z',
+  socialImage: 'https://gospod-bog.ru/images/journal/g3-ministries-og-1200x630.webp',
+  socialImageAlt: 'Обложка G3 Ministries.',
+});
+for (const date of ['2024-02-29T23:59:59+03:00', '2000-02-29T00:00:00Z', '0000-02-29T00:00:00Z', '0096-02-29T00:00:00Z']) {
+  assert.doesNotThrow(() => assertJournalDocumentMetadata({ ...metadataDateWitness, publishedAt: date }), 'valid calendar timestamp: '+date);
+}
+for (const date of ['2026-11-24T24:00:00Z', '2026-11-24T23:60:00Z', '2026-11-24T23:59:60Z', '1900-02-29T00:00:00Z', '2026-04-31T00:00:00Z', '2026-11-24T00:00:00+24:00', Symbol('date'), null]) {
+  assert.throws(() => assertJournalDocumentMetadata({ ...metadataDateWitness, publishedAt: date }), /JournalDocumentHead: publishedAt must be an explicit valid ISO timestamp with timezone/);
+}
+assert.throws(() => assertJournalDocumentMetadata({ ...metadataDateWitness, modifiedAt: '2026-11-24T24:00:00Z' }), /JournalDocumentHead: modifiedAt/);
 // Independent expected vectors: do not derive expectations from the production helper.
 const breadcrumbVectors = new Map([
   ['https://gospod-bog.ru/journal/', [
