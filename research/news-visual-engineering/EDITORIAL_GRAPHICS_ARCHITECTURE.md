@@ -16,3 +16,41 @@ For each admitted real route: before/after same commit lineage, native themes, 3
 Research remains authority. Caller projects only admitted claim references and rights into an existing route; no duplicate evidence registry. Document component renders all mandatory references from that projection, without asserting factual truth or granting publication. Missing dates explicit; no facsimile or quote rights inferred. First citation retains stable ID; extra citation IDs disjoint from section tokens. Native source return remains shared implementation.
 ## Ownership / coordinated intake
 AGENT2 owns src/components/journal/editorial/ and research/news-visual-engineering/ new paths in #2384. AGENT1 owns ART #2385; MAX0 owns #2380 G3 candidate and transferred graphics. Shared runtime, G3 routes, global CSS, data registries and workflows excluded until explicit coherent handoff. Propose adding dedicated exhibit harness to existing journal CI job after coordinator assignment, using existing dependency setup and engines; retain default 72 cases, artifacts and PDF checks, no new engine/workflow without approval. No production route until real article/data scope assigned. No CUDA, no new dependencies, no competing branch.
+
+## W63 — one wide editorial composition, first vertical slice
+Authority: MAX0 #2384 comment 7163766809; companion ART directive #2385 comment 7163767616. Exact production preimage 34b2ba92063fe90293eb0b3091e320bf8d49dde4; W62 integrated candidate 25c01b1c40e6f34f7dfdbc1420dfee5ee4d9ab1e. This is a design/ownership admission record, not a second production engine or visual sign-off. Do not apply the shared-path changes until MAX0 dispositions and ART/GRAPHICS composition agreement are recorded.
+
+### Actual bottleneck and placement
+- journalEditorial.css L8 caps the whole shell at 1280px; L47 caps story+rail at 1100px with a 740px story, 250px rail and 64px gap. The graphic SVG already uses width:100%; its parent, not the SVG, is the limiting geometry.
+- G3HistoryArticle.astro contains one existing feature grid, native JournalContents and one story column. G3HistoryFeature.astro L33 mounts G3HistoricalPanorama after the origins prose; L121–164 mounts the seven-source G44 inside the 2018 text wrapper. Preserve these two positions, all anchors, semantic wrappers and source-return behavior. The 2018 text wrapper must no longer impose a narrow measure on G44; restrict only its prose children.
+- Use a single screen-only, explicit measure contract on the existing Journal grid: prose max 740px (existing 68ch constraints remain), wide max 1000px, feature available story track up to 1500px. Use an opt-in layout modifier at the existing route owner; explicit measure attributes/classes on the two approved chapters and their existing wrappers, with all unmarked modules defaulting to prose. No display:contents, nested scroll engine, 100vw escape, negative margin, absolute figure overlay, duplicated TOC, DOM reordering or global reset.
+- At >=1440 CSS px, proposed shell max 1840px, inline padding clamp(40px,2.5vw,48px), grid columns minmax(0,1fr) clamp(220px,13vw,248px), gap clamp(32px,2.1vw,40px), no legacy 1100px cap for the opted-in grid. Rail remains a separate sticky grid item, never underneath the figure. Keep original header/footer editorial measures and existing compact/tablet layouts. Keep only semantic figure modules wider; normal chapters and bibliography preserve accepted measure. The 1000px wide measure is for future admitted analytical modules; do not automatically upgrade every figure.
+- First slice: existing historical atlas + G44 only. In ART/GRAPHICS agreement, atlas must exploit width using a map with a readable, adjacent key/legend and ordered source list, not just stretched SVG; mobile stacks map, legend and readable records. G44 retains its two evidence lanes and distinct retrospective coda. Reuse approved W62 standalone source actions, no fabricated media or data. Finance waterfall and ecosystem remain next slice after exact semantic owner review; do not move crisis graphics during this first slice.
+- All changes to layout/measure and source-action art must be screen-scoped. Do not change paper markup, route text, claim IDs, date roles or print CSS. A matching actual PDF comparison is mandatory because source-level scope alone does not prove unchanged pagination.
+
+### Measured geometry evidence (not route acceptance)
+Actual local Chromium 144.0.7559.96, isolated HTML geometry fixture with the existing shell/grid dimensions and proposed screen tracks, 9 widths x JS enabled/disabled = 18/18. Both abstract feature blocks equal width; prose <=740px; zero root overflow; desktop rail separation nonnegative; two sample native links retain DOM order. No site build, real atlas pixels, actual sticky scroll interaction or cross-engine result claimed.
+
+| viewport CSS px | proposed feature px | prose px | desktop rail px | gap px |
+|---:|---:|---:|---:|---:|
+|320|280|280|stacked|—|
+|390|350|350|stacked|—|
+|430|390|390|stacked|—|
+|768|712|712|stacked|—|
+|1024|684|684|220|40|
+|1280|740|740|250|64|
+|1440|1108|740|220|32|
+|1600|1266|740|220|34|
+|1920|1456|740|248|40|
+
+Numbers are measured in the isolated viewport with its scrollbar configuration, not hard-coded production assertions. Real non-overlay gutters and text scale may reduce available width. Assert safe track containment and available-width relation instead of demanding exact viewport numbers on every engine.
+
+### Exact path disposition before production writes
+- Already assigned W40: G3HistoryFeature.astro, editorial/JournalCompactDocumentIndex.astro, scripts/journal-editorial-browser.mjs, scripts/journal-editorial-contract.mjs. Existing support overlaps: #2339/#2340/#2341/#2343 on G3HistoryFeature; #2340 on runner/contract.
+- Requested shared layout ownership for first slice: src/components/journal/journalEditorial.css, G3HistoryArticle.astro, g3History.css. Current active #2339/#2340/#2341/#2343 touch all three. Closed predecessor #2380 touches all three; verify exact source delta and path-specific continuation, not blanket supersession.
+- Requested graphics handoff: src/components/journal/g3-graphics/G3HistoricalPanorama.astro and graphics.css, both touched by open #2381. GRAPHICS owner must accept exact selective reuse of current main/evolved artwork; no wholesale merge of conflicting donor. No write to G3ExpenseWaterfall, G3EcosystemSpread or finance-model in first slice.
+- Checked #2385/#2345/#2346 file lists: none overlap these nine first-slice paths at observed heads. Separate JournalDocumentHead ownership blocker (#2345/#2346) remains unresolved and must not be hidden by this design intake. Exact active heads: #2381 4e1728d1, #2340 c42ef708, #2341 42d827bf, #2339 d7646aa0, #2343 86f59f52. Recheck all heads and complete overlaps before ref update.
+- ART approves composition and GRAPHICS approves internal art placements; Engineering is the sole production writer. Existing W62 candidate is the only intake queue; no extra active branch or release.
+
+### Real-route acceptance (required after intake)
+One existing journal runner, capture 320/360/390/430/768/1024/1440/1920, light/dark and supported palette, normal/200% Reader scale, JS/noJS as applicable, desktop short and normal-height viewports. At 1440/1920 verify actual atlas/G44 use widened track, ordinary chapter/prose and footer retain measure, rail remains inside non-overlapping track when sticky; no root or element overflow. At mobile verify no shrunk desktop rendering, visible map/legend text, source rows and touch targets, actual native Tab/Shift+Tab, citations and returns, both breakpoint directions and newer focus intent. Real normal-reading-scale screenshots + full page for ART/VISUAL inspection (matched pre/post conditions). Chromium/Firefox/WebKit, Forced Colors actual Chromium, 24 A4/Letter PDF cases plus matched baseline text/typography/geometry and selected raster/physical page review. Canonical source/SEO/index guards remain mandatory. No visual PASS inferred from geometry fixture.
