@@ -1616,20 +1616,46 @@ try {
                 if (!await toc.evaluate(el => el.open)) await summary.click();
                 const link = toc.locator('nav a').first();
                 const hash = await link.getAttribute('href');
-                // Same-task competing focus: use the actual bound click handler
-                // and native fragment navigation, not a copied implementation.
-                item.staleTocFocusTrace = await link.evaluate((el, outsideId) => {
-                  const sample = () => ({id:document.activeElement?.id, tag:document.activeElement?.tagName, hash:location.hash});
-                  const before = sample();
-                  el.click();
-                  const afterActivation = sample();
-                  document.getElementById(outsideId).focus();
-                  return {before,afterActivation,afterCompetingFocus:sample(),outsideId};
+                // Separate the adapter's cancellable fallback from native fragment
+                // navigation. Firefox may deliver the latter after el.click()
+                // returns; a same-task focus() cannot cancel a native navigation.
+                // Observe the real scheduled/cancelled frame IDs and actual JS
+                // focus calls without preventing the default fragment action.
+                item.staleTocFocusTrace = await link.evaluate(async (el, outsideId) => {
+                  const sample=()=>({id:document.activeElement?.id,tag:document.activeElement?.tagName,hash:location.hash});
+                  const before=sample(), target=document.getElementById(decodeURIComponent(el.hash.slice(1))), outside=document.getElementById(outsideId);
+                  const frame=window.requestAnimationFrame, cancel=window.cancelAnimationFrame, nativeFocus=target.focus, ownFocus=Object.getOwnPropertyDescriptor(target,'focus');
+                  const scheduled=[],cancelled=[],scriptFocus=[];let competing=false,resolveHash,timer;
+                  const navigated=new Promise((resolve,reject)=>{resolveHash=()=>{if(location.hash===el.hash)resolve()};window.addEventListener('hashchange',resolveHash);timer=setTimeout(()=>reject(Error('native fragment did not settle')),5000)});
+                  try {
+                    target.focus=function(...args){scriptFocus.push({competing,state:sample()});return nativeFocus.apply(this,args)};
+                    window.requestAnimationFrame=function(callback){const id=frame.call(window,callback);scheduled.push(id);return id};
+                    window.cancelAnimationFrame=function(id){cancelled.push(id);return cancel.call(window,id)};
+                    let afterActivation,afterCompetingFocus;
+                    try {el.click();afterActivation=sample();competing=true;outside.focus();afterCompetingFocus=sample()}
+                    finally {window.requestAnimationFrame=frame;window.cancelAnimationFrame=cancel}
+                    resolveHash();await navigated;await new Promise(resolve=>frame.call(window,()=>frame.call(window,resolve)));
+                    const nativeSettled=sample();
+                    outside.focus();await new Promise(resolve=>frame.call(window,()=>frame.call(window,resolve)));
+                    return {before,afterActivation,afterCompetingFocus,nativeSettled,afterLaterFocus:sample(),scheduled,cancelled,scriptFocus,outsideId};
+                  } finally {
+                    window.requestAnimationFrame=frame;window.cancelAnimationFrame=cancel;
+                    if(ownFocus)Object.defineProperty(target,'focus',ownFocus);else delete target.focus;
+                    clearTimeout(timer);window.removeEventListener('hashchange',resolveHash);
+                  }
                 }, await middle.getAttribute('id'));
+                const trace=item.staleTocFocusTrace;
+                assert.notEqual(trace.before.hash, hash, 'probe requires actual fragment navigation');
+                assert.equal(trace.afterCompetingFocus.id,trace.outsideId,'competing focus must really occur');
+                assert.ok(trace.scheduled.some(id=>trace.cancelled.includes(id)), 'competing focus must cancel the scheduled adapter frame: '+JSON.stringify(trace));
+                assert.ok(!trace.scriptFocus.some(call=>call.competing), 'adapter must not issue stale focus: '+JSON.stringify(trace));
+                assert.equal(trace.nativeSettled.hash,hash,'native fragment must remain authoritative');
+                if(trace.afterActivation.hash===hash) assert.equal(trace.nativeSettled.id,trace.outsideId,'already-completed native navigation must not override newer focus');
+                else assert.ok([trace.outsideId,decodeURIComponent(hash.slice(1))].includes(trace.nativeSettled.id),'only the native fragment may finish after the competing focus');
                 await settleWithoutScripts(page);
-                item.staleTocFocusTrace.settled = await page.evaluate(() => ({id:document.activeElement?.id,tag:document.activeElement?.tagName,hash:location.hash}));
-                assert.equal(new URL(page.url()).hash, hash);
-                assert.equal(await middle.evaluate(el => el === document.activeElement), true, 'queued focus must not override newer intent: '+JSON.stringify(item.staleTocFocusTrace));
+                assert.equal(new URL(page.url()).hash,hash);
+                assert.equal(trace.afterLaterFocus.id,trace.outsideId);
+                assert.equal(await middle.evaluate(el=>el===document.activeElement),true,'later focus after native navigation must remain authoritative: '+JSON.stringify(trace));
                 item.staleTocFocus = true;
                 if (!await toc.evaluate(el => el.open)) await summary.click();
                 const last = toc.locator('nav a').last();
