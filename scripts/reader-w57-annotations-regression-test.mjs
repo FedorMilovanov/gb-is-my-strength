@@ -554,7 +554,9 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   function target(attrs,kind,tabIndex=0){return {isConnected:true,tabIndex,getClientRects:()=>[{}],closest:()=>kind==='trigger'&&hidden?{}:null,hasAttribute:k=>attrs.has(k),focus:opts=>{assert.equal(opts.preventScroll,true);active=kind;document.activeElement=kind==='trigger'?trigger:kind==='return'?returnTarget:fab;focus++},setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getAttribute:k=>attrs.get(k),addEventListener(){}};}
   const fab=target(attributes,'fab'),trigger=target(triggerAttributes,'trigger'),returnTarget=target(returnAttributes,'return',-1);
   const overlay={classList:{add:()=>{opened=true},remove:()=>{opened=false}},setAttribute(){},removeAttribute(){},querySelector:()=>({focus(){}})};
-  const document={activeElement:trigger,getElementById:()=>null,querySelector:()=>null};
+  // This deterministic fixture exercises the legacy lock fallback; canonical
+  // overlay-close recovery is covered by the real three-engine browser test.
+  const document={activeElement:trigger,getElementById:()=>null,querySelector:()=>null,addEventListener(){}};
   const window={SiteUtils:{lockScroll:()=>{locked++},unlockScroll:()=>{locked--}}};
   const loadPresenter=()=>new Promise((resolve,reject)=>requests.push({resolve,reject}));
   const render=()=>{paint++;if(broken)throw Error('render failure')};
