@@ -4,7 +4,7 @@ import re
 root=Path(__file__).parent
 css=(root/'editorial.css').read_text()
 # Preserve previously tested bodies as input specimens; exact copies packaged.
-for name,src in [('atlas',root/'input-atlas.html'),('spread',root/'input-spread.html')]:
+for name,src in [('atlas',root/'input-atlas.html.txt'),('spread',root/'input-spread.html.txt')]:
  s=BeautifulSoup(src.read_text(),'html.parser')
  if name=='atlas':
   entries=s.select('.entry');entries[-1].decompose()
@@ -17,4 +17,4 @@ for name,src in [('atlas',root/'input-atlas.html'),('spread',root/'input-spread.
    a=w.a; label='Источник: '+w.h3.get_text(strip=True)+', '+w.select_one('.year').get_text(strip=True);a.string=label;a.attrs.pop('aria-label',None)
  main=str(s.main).replace('viewbox=','viewBox=')
  title='G41 · '+('Тематический атлас' if name=='atlas' else 'Две линии 2018 года')
- (root/f'{name}.html').write_text(f'<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body>{main}</body></html>')
+ (root/f'{name}.html.txt').write_text(f'<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body>{main}</body></html>')

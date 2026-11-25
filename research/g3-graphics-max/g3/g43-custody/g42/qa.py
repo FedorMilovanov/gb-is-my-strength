@@ -10,7 +10,7 @@ with sync_playwright() as p:
    for width in [320,390,1440]:
     c=browser.new_context(java_script_enabled=js,viewport={'width':width,'height':800});page=c.new_page()
     try:
-     page.set_content((root/'combined-navigation.html').read_text());ids=page.locator('[id]').evaluate_all('(els)=>els.map(x=>x.id)');assert len(ids)==len(set(ids));assert page.locator('.bibliography-item').count()==15;assert page.locator('[data-journal-citation]').count()==16
+     page.set_content((root/'combined-navigation.html.txt').read_text());ids=page.locator('[id]').evaluate_all('(els)=>els.map(x=>x.id)');assert len(ids)==len(set(ids));assert page.locator('.bibliography-item').count()==15;assert page.locator('[data-journal-citation]').count()==16
      for r in manifest:
       cid=r['citationId'];target=r['href'];a=page.locator('#'+cid);a.focus();a.press('Enter');assert page.evaluate('location.hash')==target,(cid,page.url)
       focus=page.evaluate('document.activeElement.id');assert focus==target[1:],(cid,focus,target)

@@ -7,7 +7,7 @@ probe=r'''()=>{const lum=c=>c.map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
  for name,links in [('atlas',9),('spread',7)]:
-  html=(root/f'{name}.html').read_text()
+  html=(root/f'{name}.html.txt').read_text()
   for w,theme,mode in [(w,t,m) for m in ['normal','text200','forced'] for w in [320,390,1440] for t in ['light','dark']]:
    c=b.new_context(viewport={'width':w,'height':900},color_scheme=theme,forced_colors='active' if mode=='forced' else 'none',java_script_enabled=False);page=c.new_page();page.set_content(html)
    if mode=='text200':page.evaluate('''()=>{const elements=[...document.querySelectorAll('main,main *')].filter(e=>!e.closest('svg'));const sizes=elements.map(e=>parseFloat(getComputedStyle(e).fontSize));elements.forEach((e,i)=>e.style.fontSize=(sizes[i]*2)+'px')}''')
@@ -32,4 +32,4 @@ for name,links in [('atlas',9),('spread',7)]:
    words=[len(page.get_text('words')) for page in d];n=sum(len(page.get_links()) for page in d);bbox=all(0<=x[0]<=x[2]<=page.rect.width and 0<=x[1]<=x[3]<=page.rect.height for page in d for x in page.get_text('words'));text=' '.join(' '.join(page.get_text().split()) for page in d);ok=len(d)==1 and n==links and bbox and 'Исследовательский' in text and (name!='spread' or '23 мая 2025' in text)
    for i,page in enumerate(d):page.get_pixmap(matrix=fitz.Matrix(1.25,1.25),alpha=False).save(root/f'{name}-{fmt}-{i+1}.png')
    prints.append(dict(name=name,format=fmt,pages=len(d),words=words,links=n,bbox=bbox,passed=ok))
-r=dict(screens=results,print=prints,sha256={f:hashlib.sha256((root/f).read_bytes()).hexdigest() for f in ['editorial.css','atlas.html','spread.html','build.py','qa.py']});(root/'qa.json').write_text(json.dumps(r,ensure_ascii=False,indent=2));print('screens',len(results),'fail',len(failures),'transitions',sum(x['forward']+x['backward'] for x in results),'contrast samples',sum(x['samples'] for x in results));print('FAIL',json.dumps(failures[:3],ensure_ascii=False));print('print',prints);print(r['sha256'])
+r=dict(screens=results,print=prints,sha256={f:hashlib.sha256((root/f).read_bytes()).hexdigest() for f in ['editorial.css','atlas.html.txt','spread.html.txt','build.py','qa.py']});(root/'qa.json').write_text(json.dumps(r,ensure_ascii=False,indent=2));print('screens',len(results),'fail',len(failures),'transitions',sum(x['forward']+x['backward'] for x in results),'contrast samples',sum(x['samples'] for x in results));print('FAIL',json.dumps(failures[:3],ensure_ascii=False));print('print',prints);print(r['sha256'])
