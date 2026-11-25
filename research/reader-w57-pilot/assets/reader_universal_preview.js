@@ -274,11 +274,6 @@
  }
  positionFontPanel();
  syncFontDialog(false);
- window.addEventListener('resize',()=>{
-  if(!fontPanel.hidden)setFontOpen(false);
-  positionFontPanel();
-  syncFontDialog(false);
- },{passive:true});
  function setFontOpen(open){
   fontPanel.hidden=!open;
   syncFontDialog(open);
@@ -1100,19 +1095,31 @@
   glossaryOccurrences.set(id,el);
   return id;
  }
+ function glossaryProjection(el){
+  if(!el?.matches('.gterm[data-term]')||el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]'))return null;
+  const key=(el.dataset.term||'').trim();
+  if(!key)return null;
+  const tip=window.SiteUtils?.getGlossaryTip?.(el)||el;
+  const brief=tip.querySelector('.gtip-brief')?.textContent?.replace(/\s+/g,' ').trim()||'';
+  return brief?{key,title:(el.dataset.termTitle||'').trim()||key,brief,
+   detail:tip.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',category:el.dataset.category||''}:null;
+ }
  function collectGlossaryTerms(items,limit=Infinity){
   const seen=new Set(),terms=[];
   for(const el of items){
-   const key=(el.dataset.term||'').trim();
-   const title=(el.dataset.termTitle||'').trim()||key;
-   const brief=el.querySelector('.gtip-brief')?.textContent?.replace(/\s+/g,' ').trim()||'';
-   if(!key||!brief||seen.has(key)||el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]'))continue;
-   seen.add(key);
-   terms.push({key,title,brief,detail:el.querySelector('.gtip-papyrus')?.textContent?.replace(/\s+/g,' ').trim()||'',
-    category:el.dataset.category||'',index:glossaryOccurrence(el)});
+   const term=glossaryProjection(el);
+   if(!term||seen.has(term.key))continue;
+   seen.add(term.key);
+   terms.push({...term,index:glossaryOccurrence(el)});
    if(terms.length>=limit)break;
   }
   return terms;
+ }
+ function glossaryTermsForSection(index){
+  const group=sections[index];
+  if(!group)return [];
+  const start=document.getElementById(group.id),end=sections[index+1]?document.getElementById(sections[index+1].id):null;
+  return collectGlossaryTerms($$('.gterm[data-term]',article).filter(el=>inRange(el,start,end)));
  }
  function getGroupMaterial(index){
   const group=sections[index],start=document.getElementById(group.id),end=sections[index+1]?document.getElementById(sections[index+1].id):null;
@@ -1130,8 +1137,7 @@
   const notes=$$('.fn-marker,.footnote-ref,[data-footnote-ref]',article).filter(el=>inRange(el,start,end));
   // Real Product glossary terms, never illustrative/fabricated terms from
   // the standalone ARGON demo. Brief definitions retain their source text.
-  const allTerms=$$('.gterm[data-term]',article);
-  const terms=collectGlossaryTerms(allTerms.filter(el=>inRange(el,start,end)));
+  const terms=glossaryTermsForSection(index);
   const figuresAll=$$('figure',article);
   const figures=figuresAll.filter(el=>inRange(el,start,end)).map(el=>{
     const caption=el.querySelector('figcaption')?.textContent?.replace(/\s+/g,' ').trim()||'';
@@ -1465,13 +1471,13 @@
   return notes.every((note,i)=>nodes[i].text.length===note.len&&
    editorialTextChecksum(nodes[i].text)===note.hash)?notes:null;
  }
- function lexiconContent(studyTerms,lexiconScope){
+ function lexiconContent(studyTerms,lexiconScope,articleWide=false){
   const lex=studyTerms.map((term,i)=>
    '<div class="np-u-lexicon-entry" data-np-u-lex-entry="'+term.index+'" data-np-u-lex-key="'+escape(term.key)+'"'+(i?' hidden':'')+'>'+
      '<div class="np-u-lexicon-kicker">'+escape(term.category)+'</div>'+
      '<h4>'+escape(term.title)+'</h4><p>'+escape(term.brief)+'</p>'+
      (term.detail?'<details open class="np-u-lex-definition"><summary>Определение и границы понятия</summary><p>'+escape(term.detail)+'</p></details>':'')+
-     '<button type="button" data-np-u-term-index="'+term.index+'">Найти в тексте ↗</button></div>').join('');
+     '<button type="button" data-np-u-term-index="'+term.index+'" data-np-u-term-key="'+escape(term.key)+'">Найти в тексте ↗</button></div>').join('');
   const lexContent=studyTerms.length?
    '<p class="np-u-research-data-caption">'+lexiconScope+'</p>'+
    '<div class="np-u-study-picker"><label for="npULexiconPick">Богословское понятие</label>'+
@@ -1480,26 +1486,57 @@
     '</select><span class="np-u-study-picker-counter" data-np-u-lex-count>1 / '+studyTerms.length+'</span>'+
     '<button type="button" data-np-u-lex-step="-1" aria-label="Предыдущее понятие">‹</button>'+
     '<button type="button" data-np-u-lex-step="1" aria-label="Следующее понятие">›</button></div></div>'+
-    '<div class="np-u-lexicon-list">'+lex+'</div>':
+    '<div class="np-u-lexicon-list" data-np-u-term-scope="'+(articleWide?'article':'section')+'">'+lex+'</div>':
     '<p class="np-u-muted">В этом разделе нет отмеченных терминов.</p>';
   return lexContent;
  }
+ function contextTermMarkup(terms,hasRefs){
+  return terms.length?'<div class="np-u-context-links">'+terms.slice(0,8).map(term=>
+   '<button type="button" data-np-u-term-index="'+term.index+'" data-np-u-term-key="'+escape(term.key)+'">'+escape(term.title)+'</button>').join('')+'</div>':
+   (hasRefs?'':'<p class="np-u-muted">Связанные ссылки и понятия в этом разделе не размечены.</p>');
+ }
+ function refreshContextTerms(){
+  const region=sectionHost.querySelector('[data-np-u-context-section]');
+  if(!region||region.contains(document.activeElement))return;
+  const local=glossaryTermsForSection(Number(region.dataset.npUContextSection)).slice(0,8);
+  const hasRefs=!!region.parentElement.querySelector('[data-np-u-ref]');
+  const buttons=[...region.querySelectorAll('[data-np-u-term-index]')];
+  const unchanged=buttons.length===local.length&&buttons.every((button,i)=>
+   button.dataset.npUTermIndex===String(local[i].index)&&button.dataset.npUTermKey===local[i].key&&button.textContent===local[i].title);
+  if(unchanged&&(local.length||!!region.querySelector('.np-u-muted')===!hasRefs))return;
+  region.innerHTML=contextTermMarkup(local,hasRefs);
+ }
+ function resolveGlossaryAction(target){
+  const key=target.dataset.npUTermKey;
+  if(!key)return null;
+  const source=glossaryOccurrences.get(Number(target.dataset.npUTermIndex));
+  const context=target.closest('[data-np-u-context-section]');
+  const articleWide=target.closest('[data-np-u-term-scope]')?.dataset.npUTermScope==='article';
+  const index=context?Number(context.dataset.npUContextSection):(pinnedLexiconIndex??browserStore.active);
+  const group=sections[index],start=group&&document.getElementById(group.id),end=sections[index+1]?document.getElementById(sections[index+1].id):null;
+  if(source&&article.contains(source)&&glossaryProjection(source)?.key===key&&
+   (articleWide||inRange(source,start,end)))return source;
+  const terms=articleWide?collectGlossaryTerms($$('.gterm[data-term]',article)):glossaryTermsForSection(index);
+  const match=terms.find(term=>term.key===key);
+  return match?glossaryOccurrences.get(match.index):null;
+ }
  function refreshLexicon(){
+  if(browserStore.active<0)return;
+  collectArticleTerms();
+  refreshContextTerms();
   const module=sectionHost.querySelector('.np-u-research-module[data-np-u-module="lexicon"]');
-  if(!module||browserStore.active<0)return;
+  if(!module)return;
   const body=module.querySelector('.np-u-window-body');
   if(!body||body.contains(document.activeElement))return;
   const index=pinnedLexiconIndex??browserStore.active;
-  const group=sections[index],start=document.getElementById(group.id),end=sections[index+1]?document.getElementById(sections[index+1].id):null;
-  collectArticleTerms();
-  const local=collectGlossaryTerms($$('.gterm[data-term]',article).filter(el=>inRange(el,start,end)));
+  const local=glossaryTermsForSection(index);
   const terms=local.length?local:articleStudyTerms;
   const scope=local.length?'Понятия текущего раздела':'Понятия из всей статьи';
   const stamp=JSON.stringify([scope,terms]);
   if(stamp===lexiconStamp)return;
   const previous=body.querySelector('[data-np-u-lex-picker]')?.selectedOptions[0]?.dataset.npULexKey;
   const disclosure=new Map([...body.querySelectorAll('[data-np-u-lex-entry]')].map(el=>[el.dataset.npULexKey,el.querySelector('details')?.open]));
-  body.innerHTML=lexiconContent(terms,scope);
+  body.innerHTML=lexiconContent(terms,scope,!local.length);
   const meta=module.querySelector('.np-u-window-meta');
   if(meta)meta.textContent=terms.length?String(terms.length):'—';
   for(const el of body.querySelectorAll('[data-np-u-lex-entry]')){
@@ -1517,6 +1554,13 @@
  }
  function glossaryMutation(record){
   const target=record.target.nodeType===1?record.target:record.target.parentElement;
+  if(record.type==='attributes'&&record.attributeName==='class'){
+   // Ignore hover, reveal, selection and other class churn unrelated to glossary eligibility.
+   const before=new Set((record.oldValue||'').split(/\s+/));
+   if(!['gterm','related-articles','faq-accordion','gtip-brief','gtip-papyrus'].some(c=>before.has(c)!==target.classList.contains(c)))return false;
+   return !!(target.closest('.gterm')||target.querySelector('.gterm')||before.has('gterm'));
+  }
+  if(record.type==='attributes'&&record.attributeName==='data-reader-exclude')return !!(target.closest('.gterm')||target.querySelector('.gterm'));
   return !!target?.closest('.gterm')||[...record.addedNodes,...record.removedNodes].some(el=>
    el.nodeType===1&&(el.matches('.gterm')||el.querySelector('.gterm')));
  }
@@ -1565,7 +1609,7 @@
     '<button type="button" data-np-u-scripture-copy>Копировать текст</button></div>'
    :'<p class="np-u-muted">В этом разделе нет размеченных ссылок на Писание.</p>';
   html+=sectionCard('Писание',scriptureContent,!!studyRefs.length,studyRefs.length?String(studyRefs.length):'—','scripture');
-  html+=sectionCard('Лексикон',lexiconContent(studyTerms,lexiconScope),!!studyTerms.length,studyTerms.length?String(studyTerms.length):'—','lexicon');
+  html+=sectionCard('Лексикон',lexiconContent(studyTerms,lexiconScope,!data.terms.length),!!studyTerms.length,studyTerms.length?String(studyTerms.length):'—','lexicon');
   if(!pinnedMarkup.has('lexicon'))lexiconStamp=JSON.stringify([lexiconScope,studyTerms]);
   // ARGON's three argument views. Never generate a theological conclusion:
   // all statements and links below come from the already published chapter.
@@ -1582,9 +1626,7 @@
      '<p class="np-u-muted">Подходящие фрагменты не обнаружены. Изучайте полный текст раздела.</p>');
   const connections='<p class="np-u-research-data-caption">Связи по разметке статьи</p>'+
    (data.refs.length?'<div class="np-u-verse-chips">'+data.refs.slice(0,12).map(ref=>'<button type="button" class="np-u-verse-chip" data-np-u-ref="'+escape(ref)+'">'+escape(ref)+'</button>').join('')+'</div>':'')+
-   (data.terms.length?'<div class="np-u-context-links">'+data.terms.slice(0,8).map(term=>
-    '<button type="button" data-np-u-term-index="'+term.index+'">'+escape(term.title)+'</button>').join('')+'</div>':'')+
-   (!data.refs.length&&!data.terms.length?'<p class="np-u-muted">Связанные ссылки и понятия в этом разделе не размечены.</p>':'');
+   '<div data-np-u-context-section="'+index+'">'+contextTermMarkup(data.terms,!!data.refs.length)+'</div>';
   // Do not end a five-step route on a short paragraph introducing a quote
   // with a colon; prefer the next complete source paragraph instead.
   const thoughtNodes=data.evidence.filter(item=>
@@ -1670,6 +1712,11 @@
   }
   const sub=group.items.filter(x=>x.id!==group.id);
   if(sub.length)html+=sectionCard('Подразделы','<div class="np-u-context-links">'+sub.slice(0,15).map(x=>'<button type="button" data-np-u-goto="'+escape(x.id)+'">'+escape(x.label)+'</button>').join('')+'</div>',false,String(sub.length),'outline');
+   // Capture live disclosure/tab/selection state before replacing the host.
+   for(const kind of pinnedMarkup.keys()){
+    const live=sectionHost.querySelector('.np-u-research-module[data-np-u-module="'+kind+'"]');
+    if(live)pinnedMarkup.set(kind,live.outerHTML);
+   }
    sectionHost.innerHTML=html;
    // A pinned research instrument preserves its original chapter's content
    // while the other windows follow the reader's current position.
@@ -1952,8 +1999,8 @@
   }
   const termIndex=target.dataset.npUTermIndex;
   if(termIndex!==undefined){
-   const source=glossaryOccurrences.get(Number(termIndex));
-   if(source&&article.contains(source)&&source.matches('.gterm[data-term]')){
+   const source=resolveGlossaryAction(target);
+   if(source){
     closeMobile();source.scrollIntoView({behavior:'instant',block:'center'});source.focus?.({preventScroll:true});
    }
    return;
@@ -2077,7 +2124,49 @@
   if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
   else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
  });
- addEventListener('resize',()=>{if(!isMobile())closeMobile(false);syncNativeSeriesControlMode();syncNativeLegacyControlMode();syncNarrowNativeSeriesNavigation();positionProductGlobalActions();positionSeriesAudio();applyIntermediateWidth();syncInteractivity();requestAnimationFrame(dockNativeLibrary);},{passive:true});
+ function responsiveFocusVisible(el){
+  return !!(el?.isConnected&&el!==document.body&&el!==document.documentElement&&!el.disabled&&!el.closest('[inert],[hidden],[aria-hidden="true"]')&&
+   el.getClientRects().length&&getComputedStyle(el).visibility==='visible');
+ }
+ let layoutWidth=innerWidth,layoutHeight=innerHeight,lostResponsiveFocus=null;
+ document.addEventListener('focusout',event=>{
+  if(!event.relatedTarget&&(innerWidth!==layoutWidth||innerHeight!==layoutHeight)&&
+   (root.contains(event.target)||fontToggles.includes(event.target))&&!responsiveFocusVisible(event.target))lostResponsiveFocus=event.target;
+ },true);
+ document.addEventListener('focusin',()=>{lostResponsiveFocus=null;},true);
+ function resizeReader(){
+  const before=document.activeElement;
+  const previous=(before===document.body||before===document.documentElement)?lostResponsiveFocus||before:before;
+  lostResponsiveFocus=null;layoutWidth=innerWidth;layoutHeight=innerHeight;
+  const closingFont=!fontPanel.hidden;
+  const fontOwned=closingFont&&fontPanel.contains(previous);
+  const fontControlOwned=fontToggles.includes(previous);
+  const leftOwned=left.contains(previous)||previous===tocMobile;
+  const rightOwned=right.contains(previous)||rightEdge.contains(previous)||previous===rightMobile;
+  const hadMobilePanel=!!mobileOpener;
+  const mobileSide=mobileOpener===rightMobile?'right':'left';
+  if(closingFont)setFontOpen(false);
+  positionFontPanel();
+  syncFontDialog(false);
+  if(!isMobile()&&hadMobilePanel)closeMobile(false);
+  syncNativeSeriesControlMode();syncNativeLegacyControlMode();syncNarrowNativeSeriesNavigation();
+  positionProductGlobalActions();positionSeriesAudio();applyIntermediateWidth();syncInteractivity();
+  requestAnimationFrame(dockNativeLibrary);
+  // Only repair displaced focus. Never take it from an unrelated active dialog.
+  const active=document.activeElement;
+  if(active!==previous&&active!==document.body&&active!==document.documentElement&&responsiveFocusVisible(active))return;
+  if(!fontOwned&&responsiveFocusVisible(previous)&&active===previous)return;
+  const lostMobile=hadMobilePanel&&!isMobile()&&(previous===document.body||previous===document.documentElement);
+  const candidates=fontOwned?[fontOpener,...fontToggles,isMobile()?tocMobile:fold]:
+   fontControlOwned?[previous,...fontToggles,isMobile()?tocMobile:fold]:
+   leftOwned||(lostMobile&&mobileSide==='left')?[previous,isMobile()?tocMobile:fold,...fontToggles]:
+   rightOwned||(lostMobile&&mobileSide==='right')?[previous,isMobile()?rightMobile:edgeToggle]:
+   [previous];
+  if(!fontOwned&&!fontControlOwned&&!leftOwned&&!rightOwned&&!lostMobile)return;
+  const next=candidates.find(responsiveFocusVisible);
+  if(next&&next!==active)next.focus({preventScroll:true});
+ }
+ addEventListener('resize',resizeReader,{passive:true});
  applyIntermediateWidth();
  syncInteractivity();
  installArgonCentralOverview();
@@ -2087,7 +2176,7 @@
  // document relinquishes the presenter subscription.
  const glossaryReady=new MutationObserver(records=>{if(records.some(glossaryMutation))scheduleLexiconRefresh();});
  glossaryReady.observe(article,{subtree:true,childList:true,characterData:true,attributes:true,
-  attributeFilter:['data-term','data-term-title','data-category']});
+  attributeFilter:['data-term','data-term-title','data-category','data-reader-exclude','class'],attributeOldValue:true});
  sectionHost.addEventListener('focusout',scheduleLexiconRefresh);
  window.addEventListener('pagehide',event=>{
   if(lexiconFrame)cancelAnimationFrame(lexiconFrame);

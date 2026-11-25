@@ -199,12 +199,6 @@
     catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
   }
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
-  /* Ключ фрагмента — страница + текст без контекста. По нему ищем запись,
-     когда пользователь перекрашивает уже сохранённую цитату. */
-  function gbFragmentKey(x) {
-    const t = gbHighlightText(x);
-    return !t ? '' : gbHighlightPath(x) + '\n' + t;
-  }
   function gbContextKey(x) {
     const before = normalizeText(x && x.before).toLocaleLowerCase();
     const after = normalizeText(x && x.after).toLocaleLowerCase();
@@ -253,9 +247,7 @@
   // owner independently protects the period spent waiting for its lock.
   let clearIntent = 0;
   const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
-  window.addEventListener('storage', e => {
-    if (e.storageArea === localStorage && e.key === null) clearIntent++;
-  });
+
   async function storageCall(method,...args) {
     const intent = clearIntent;
     try {
@@ -452,17 +444,6 @@
     document.addEventListener('focusin', pendingFocusChanged);
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
-    window.addEventListener('storage', e => {
-      if (e.storageArea !== localStorage) return;
-      if (e.key === null) {
-        // Revoke obsolete Undo UI without closing the editor or losing its draft.
-        editorController?.clearUndo();
-        clearTimeout(toast.timer);
-        hideToast();
-        document.getElementById('gb-hl-toast')?.replaceChildren();
-      }
-      if (e.key === null || [QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync();
-    });
     document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); schedulePaint(); });
     document.addEventListener('gb:mobile-fallback-ready', dock);
     window.addEventListener('resize', dock, { passive: true });
@@ -713,7 +694,21 @@
   window.addEventListener('gb:library-committed', e => {
     if (!e?.detail || e.detail.key === QUOTES_KEY) schedulePaint();
   });
-  window.addEventListener('storage', e => { if (e.storageArea === localStorage && (e.key === null || e.key === QUOTES_KEY)) schedulePaint(); });
+  function onLibraryStorage(e) {
+    if (e.storageArea !== localStorage) return;
+    const cleared = e.key === null;
+    if (cleared) {
+      clearIntent++;
+      // Revoke obsolete Undo UI, retaining the open draft.
+      editorController?.clearUndo();
+      clearTimeout(toast.timer);
+      hideToast();
+      document.getElementById('gb-hl-toast')?.replaceChildren();
+    }
+    if (cleared || e.key === QUOTES_KEY) schedulePaint();
+    if (cleared || [QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync();
+  }
+  window.addEventListener('storage', onLibraryStorage);
   window.addEventListener('resize', schedulePaint, {passive:true});
   document.addEventListener('toggle', e => {
     if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();
@@ -736,7 +731,7 @@
     if (!hasSelection()) return;
     loadSelectionController().then(module => {
       if (!module || selectionController || !hasSelection()) return;
-      const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes});
+      const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes});
       controller.attachSelection();
       selectionController = controller;
       controller.placeSelectionBar();

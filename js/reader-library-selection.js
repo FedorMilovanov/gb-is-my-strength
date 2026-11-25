@@ -1,7 +1,7 @@
 /* Native selection surface. The synchronous anchor and transaction API remain in highlights.js. */
   const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
   const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
-export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes}) {
+export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes}) {
   function fragment(text) {
     const words = normalizeText(text).split(/\s+/);
     return words.length <= 14 ? 'text=' + encodeURIComponent(text)
@@ -73,6 +73,12 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     sync(); statusMessage('Цитата сохранена вместе с источником.');
     toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
+  }
+  /* Ключ фрагмента — страница + текст без контекста. По нему ищем запись,
+     когда пользователь перекрашивает уже сохранённую цитату. */
+  function gbFragmentKey(x) {
+    const t = gbHighlightText(x);
+    return !t ? '' : gbHighlightPath(x) + '\n' + t;
   }
   function findMarkerIndex(old,record) {
     const fragment = gbFragmentKey(record);
@@ -167,16 +173,56 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     return true;
   }
 
-  // Selection toolbar and popup share these action handlers.
+  // Selection toolbar and popup share one feedback intent, never a stale
+  // asynchronous continuation from a previous text range.
+  let activeAction = null, selectionFeedback = null;
+  function liveRange() {
+    const sel = window.getSelection?.();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+    const r = sel.getRangeAt(0);
+    return [r.startContainer,r.startOffset,r.endContainer,r.endOffset];
+  }
+  function clearSelectionFeedback() {
+    const previous = selectionFeedback;
+    selectionFeedback = null;
+    clearTimeout(selBarHideTimer);
+    if (previous) previous.reset();
+  }
+  function beginSelectionAction(surface, visible) {
+    clearSelectionFeedback();
+    const range = liveRange(), url = location.href;
+    const current = () => {
+      const now = liveRange();
+      return activeAction === current && surface.isConnected && visible() &&
+        url === location.href && !!range && !!now && range.every((value,i)=>value===now[i]);
+    };
+    current.surface = surface;
+    activeAction = current;
+    return current;
+  }
+  function reconcileSelectionFeedback() {
+    if (activeAction && !activeAction()) activeAction = null;
+    if (selectionFeedback && !selectionFeedback.current()) clearSelectionFeedback();
+  }
+  function showSelectionFeedback(current, reset, finish, delay) {
+    selectionFeedback = {current,reset};
+    selBarHideTimer = setTimeout(() => {
+      if (selectionFeedback?.current !== current) return;
+      const stillCurrent = current();
+      clearSelectionFeedback();
+      if (stillCurrent) finish();
+    },delay);
+  }
 
-  function bindSelectionButton(id, label, icon, handler, popup) {
+  function bindSelectionButton(id, label, icon, handler, popup, created) {
     if (popup.querySelector('#' + id)) return;
     const b = document.createElement('button');
     b.id = id; b.type = 'button';
     b.setAttribute('aria-label', label);
     b.innerHTML = icon + '<span>' + (id === 'ss-save' ? 'Сохранить' : 'Заметка') + '</span>';
-    popup.append(b);
+    created.push(b);
     b.addEventListener('click', handler);
+    popup.append(b);
   }
   function selectionReturnTarget() {
     const sel = window.getSelection?.();
@@ -225,7 +271,8 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     colors.addEventListener('click', async (e) => {
       const swatch = e.target.closest('[data-hl-color]');
       if (!swatch) return;
-      if (await saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
+      const current = beginSelectionAction(bar,()=>bar.dataset.open==='true');
+      if (await saveMarker(swatch.dataset.hlColor) && current()) dismissSelectionBar();
     });
     document.body.appendChild(bar);
     /* Pointerdown snapshots the selection without cancelling the native gesture.
@@ -237,10 +284,10 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
       b.addEventListener('mousedown', (event) => event.preventDefault(), { passive: false });
     }
     quote.addEventListener('click', async () => {
-      if (await saveSelectedQuote()) {
+      const current = beginSelectionAction(bar,()=>bar.dataset.open==='true');
+      if (await saveSelectedQuote() && current()) {
         quote.textContent = 'Сохранено';
-        clearTimeout(selBarHideTimer);
-        selBarHideTimer = setTimeout(() => { quote.textContent = 'Цитата'; dismissSelectionBar(); }, 700);
+        showSelectionFeedback(current,()=>{quote.textContent='Цитата';},dismissSelectionBar,700);
       }
     });
     note.addEventListener('click', () => {
@@ -255,6 +302,10 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
   function hide() {
     const bar = document.getElementById('gb-hl-selbar');
     if (!bar) return;
+    if (activeAction?.surface === bar) {
+      activeAction = null;
+      clearSelectionFeedback();
+    }
     bar.dataset.open = 'false';
     bar.setAttribute('aria-hidden', 'true');
   }
@@ -286,9 +337,7 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     const rect = range.getBoundingClientRect();
     if (!rect || (!rect.width && !rect.height)) { hide(); return; }
     const bar = mobileSelectionBar();
-    /* Сброс «отложенного» скрытия: таймер от предыдущего действия не должен
-       гасить тулбар, который только что открылся для нового выделения. */
-    clearTimeout(selBarHideTimer);
+    reconcileSelectionFeedback();
     bar.dataset.open = 'true';
     bar.setAttribute('aria-hidden', 'false');
     const bw = bar.offsetWidth || 180;
@@ -312,6 +361,7 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
   }
   let fallbackCleanup = null;
   function attachSelection() {
+    reconcileSelectionFeedback();
     const popup = document.getElementById('selection-share-popup');
     if (!popup) {
       if (fallbackCleanup) return;
@@ -330,7 +380,8 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
       const cleanup = () => {
         active = false;
         clearTimeout(pending);
-        clearTimeout(selBarHideTimer);
+        clearSelectionFeedback();
+        activeAction = null;
         for (const remove of bindings) remove();
         const quote = document.getElementById('gb-hl-selbar-quote');
         if (quote) quote.textContent = 'Цитата';
@@ -358,28 +409,44 @@ export function createSelectionController({MARK_COLORS,penSvg,rememberSelection,
     }
     fallbackCleanup?.();
     hide();
-    if (popup.querySelector('#ss-save')) return;
-    popup.append(element('span', 'ss-sep'));
-    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, async () => {
-      if (await saveSelectedQuote()) {
-        const label = popup.querySelector('#ss-save span');
-        if (label) label.textContent = 'Сохранено';
-        popup.classList.add('gb-hl-selection-saved');
-        setTimeout(() => {
-          if (label && label.isConnected) label.textContent = 'Сохранить';
-          popup.classList.remove('gb-hl-selection-saved', 'ss-visible');
-          popup.setAttribute('aria-hidden', 'true');
-        }, 660);
+    const hasSave=popup.querySelector('#ss-save'),hasNote=popup.querySelector('#ss-note');
+    if (hasSave && hasNote) return;
+    const created=[];
+    try {
+      if (!hasSave && !hasNote) {
+        const separator=element('span','ss-sep');
+        created.push(separator);
+        popup.append(separator);
       }
-    }, popup);
-    bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
-      const s = selection();
-      const context = noteContextForSelection(s);
-      const returnTarget = selectionReturnTarget();
-      popup.classList.remove('ss-visible');
-      popup.setAttribute('aria-hidden', 'true');
-      open(document.getElementById('ss-note'),returnTarget).then((opened) => { if (opened) showEditor(context); });
-    }, popup);
+      bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, async () => {
+        const current = beginSelectionAction(popup,()=>popup.classList.contains('ss-visible'));
+        if (await saveSelectedQuote() && current()) {
+          const label = popup.querySelector('#ss-save span');
+          if (label) label.textContent = 'Сохранено';
+          popup.classList.add('gb-hl-selection-saved');
+          showSelectionFeedback(current,()=>{
+            if (label?.isConnected) label.textContent='Сохранить';
+            popup.classList.remove('gb-hl-selection-saved');
+          },()=>{
+            popup.classList.remove('ss-visible');
+            popup.setAttribute('aria-hidden','true');
+          },660);
+        }
+      }, popup, created);
+      bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
+        const s = selection();
+        const context = noteContextForSelection(s);
+        const returnTarget = selectionReturnTarget();
+        activeAction = null;
+        clearSelectionFeedback();
+        popup.classList.remove('ss-visible');
+        popup.setAttribute('aria-hidden', 'true');
+        open(document.getElementById('ss-note'),returnTarget).then((opened) => { if (opened) showEditor(context); });
+      }, popup, created);
+    } catch (error) {
+      for (const node of created) node.remove();
+      throw error;
+    }
   }
   return Object.freeze({attachSelection,hide,placeSelectionBar});
 }

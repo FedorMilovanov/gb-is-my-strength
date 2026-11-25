@@ -326,6 +326,80 @@ async function checkTransientFocus(name,driver,base) {
   assert.deepEqual(failures,[],'transient focus failures');
 }
 
+// W73: real same-origin tabs, the actual shared Web Lock and the native
+// selection surface. No user data: all keys belong to a disposable context.
+async function checkStorageAndSelectionRaces(name,driver,base) {
+  const browser=await driver.launch({headless:true});
+  const context=await browser.newContext({viewport:{width:390,height:844}});
+  const a=await context.newPage(),b=await context.newPage(),errors=[];
+  const key='gb-reader-notes-v1',quoteKey='gb-highlights-v1';
+  const lockName='gb-library:'+key;
+  for(const page of [a,b])page.on('pageerror',e=>errors.push(e.message));
+  const url=base+'/articles/selection-native/';
+  try {
+    await a.goto(url,{waitUntil:'load'});await b.goto(url,{waitUntil:'load'});
+    for(const page of [a,b])await page.waitForFunction(()=>!!window.GBLibraryStorage&&!!window.GBHighlights&&!!navigator.locks);
+    const hold=async()=>{
+      await b.evaluate(lockName=>{
+        window.qaHeld=false;
+        window.qaLock=navigator.locks.request(lockName,()=>new Promise(resolve=>{window.qaRelease=resolve;window.qaHeld=true}));
+      },lockName);
+      await b.waitForFunction(()=>window.qaHeld===true);
+    };
+    const release=async()=>{await b.evaluate(async()=>{window.qaRelease?.();await window.qaLock;window.qaHeld=false});};
+    const queued=()=>b.waitForFunction(async name=>(await navigator.locks.query()).pending.some(lock=>lock.name===name),lockName,{timeout:2500});
+    const select=async id=>{
+      await a.evaluate(id=>{
+        const range=document.createRange();range.selectNodeContents(document.getElementById(id));
+        const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+        const popup=document.getElementById('selection-share-popup');popup.classList.add('ss-visible');popup.setAttribute('aria-hidden','false');
+        document.dispatchEvent(new Event('selectionchange'));
+      },id);
+      await a.locator('#ss-save').waitFor({state:'visible'});
+    };
+    // A completed save for the previous range must not conceal the newer popup.
+    await select('more');await hold();
+    await a.evaluate(()=>document.getElementById('ss-save').click());
+    await queued();await select('demo');await release();
+    await a.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'[]').length===1,quoteKey);
+    // Allow the old feedback timer's full deadline, then inspect the actual DOM.
+    await a.waitForTimeout(750);
+    const selected=await a.evaluate(key=>({
+      rows:JSON.parse(localStorage.getItem(key)||'[]'),
+      text:getSelection().toString(),
+      visible:document.getElementById('selection-share-popup').classList.contains('ss-visible'),
+      hidden:document.getElementById('selection-share-popup').getAttribute('aria-hidden'),
+      label:document.querySelector('#ss-save span').textContent
+    }),quoteKey);
+    assert.match(selected.rows[0].text,/Достаточно длинный/,'committed the original range');
+    assert.match(selected.text,/Размышление/,'new selection preserved');
+    assert.equal(selected.visible,true);assert.equal(selected.hidden,'false');assert.equal(selected.label,'Сохранить');
+    // A pending writer may not repopulate a collection cleared by another tab.
+    await a.evaluate(key=>localStorage.setItem(key,JSON.stringify([{id:'old',text:'old note'}])),key);
+    await hold();
+    await a.evaluate(key=>{
+      window.qaPrepareCalls=0;
+      window.qaWrite=window.GBLibraryStorage.mutateLibrary([key],stores=>{
+        window.qaPrepareCalls++;
+        return {changes:{[key]:[...stores[key],{id:'new',text:'new note'}]}};
+      });
+    },key);
+    await queued();
+    await a.evaluate(()=>{window.qaClearDelivered=false;window.addEventListener('storage',event=>{if(event.key===null&&event.storageArea===localStorage)window.qaClearDelivered=true;});});
+    await b.evaluate(()=>localStorage.clear());
+    await release();
+    const result=await a.evaluate(async key=>({result:await window.qaWrite,calls:window.qaPrepareCalls,raw:localStorage.getItem(key)}),key);
+    assert.equal(result.result.ok,false);assert.equal(result.result.reason,'storage-changed');
+    assert.equal(result.calls,0,'cancelled before preparation');assert.equal(result.raw,null,'collection was not resurrected');
+    // A fresh writer after the clear must still work, under the same owner.
+    await a.waitForFunction(()=>window.qaClearDelivered===true);
+    const fresh=await a.evaluate(async key=>({result:await window.GBLibraryStorage.mutateLibrary([key],()=>({changes:{[key]:[{id:'fresh',text:'fresh note'}]}})),raw:localStorage.getItem(key)}),key);
+    assert.equal(fresh.result.ok,true);assert.equal(JSON.parse(fresh.raw)[0].id,'fresh');
+    assert.deepEqual(errors,[]);
+    console.log('PASS',name,'same-origin storage and selection races');
+  } finally {await context.close();await browser.close();}
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -337,6 +411,7 @@ async function checkTransientFocus(name,driver,base) {
       for (const width of [320, 390]) await run(name+' '+width,()=>check(name,browser,url,width));
       await run(name+' GBS2',()=>checkGbs2(name,browser,url.replace('/articles/sample/','/baptisty-rossii/')));
       if(name!=='firefox') await run(name+' transient focus',()=>checkTransientFocus(name,browser,new URL(url).origin));
+      await run(name+' storage and selection races',()=>checkStorageAndSelectionRaces(name,browser,new URL(url).origin));
     }
     console.log('Reader Library browser groups: '+passed+'/'+total);
     assert.deepEqual(failures,[],'browser integration failures');

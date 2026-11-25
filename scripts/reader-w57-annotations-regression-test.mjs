@@ -372,7 +372,7 @@ assert.equal(JSON.stringify([undoQuota.notes(),undoQuota.record]),undoQuotaBefor
 
 
 // Actual shared quote mutation paths with multiple quotes and a serialized scheduler.
-const markerStart=selectionActionSource.indexOf('  function findMarkerIndex(old,record) {');
+const markerStart=selectionActionSource.indexOf('  /* Ключ фрагмента');
 const markerEnd=selectionActionSource.indexOf('  // Selection toolbar and popup',markerStart);
 const quoteStart=selectionActionSource.indexOf('  async function saveSelectedQuote() {');
 const quoteEnd=markerStart;
@@ -389,15 +389,15 @@ const qFixture=(initial=[],mode='ok')=>{
   const run=queue.then(()=>fn({name}));queue=run.catch(()=>{});return run;
  }}};
  const windowFixture={addEventListener(){},dispatchEvent:()=>true};
- const keys=new Function('location','normalizeText','LIMIT_QUOTES',keySource+'return {gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey};')(loc,v=>String(v??'').replace(/\s+/g,' ').trim(),200);
+ const keys=new Function('location','normalizeText','LIMIT_QUOTES',keySource+'return {gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey};')(loc,v=>String(v??'').replace(/\s+/g,' ').trim(),200);
  const owner=new Function('NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES','localStorage','navigator','window','CustomEvent','AbortController','setTimeout','clearTimeout','gbHighlightKey',ownerSource+'return {mutateLibrary};')(n,q,500,200,ls,nav,windowFixture,class{},AbortController,()=>1,()=>{},keys.gbHighlightKey);
  windowFixture.GBHighlights={...owner,highlightKey:keys.gbHighlightKey,addHighlight:keys.gbAddHighlight};
  const selection=(text,anchor)=>({text,anchor,positionalAnchor:anchor,before:anchor.prefix,after:anchor.suffix});
  const documentFixture={title:'Article',querySelector:()=>({})};
  const noOp=()=>{};
  const product=(selected)=>{
-  const factory=new Function('selection','uid','currentTitle','sourceUrl','transactionCall','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbFragmentKey','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',selectionActionSource.slice(quoteStart,quoteEnd)+selectionActionSource.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
-  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,(method,...args)=>createRecordTransactions({mutateLibrary:owner.mutateLibrary,libraryFailure:reason=>({ok:false,reason}),gbHighlightKey:keys.gbHighlightKey,NOTES_KEY:n,QUOTES_KEY:q,LIMIT_NOTES:500,LIMIT_QUOTES:200})[method](...args),q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbFragmentKey,keys.gbContextKey,documentFixture,{resolution:()=>a=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
+  const factory=new Function('selection','uid','currentTitle','sourceUrl','transactionCall','QUOTES_KEY','NOTES_KEY','LIMIT_QUOTES','MARK_COLORS','gbHighlightKey','gbAddHighlight','gbHighlightPath','gbHighlightText','gbContextKey','document','GBReaderAnchors','locate','textIndex','paintMarks','sync','statusMessage','toast','undoQuotes',selectionActionSource.slice(quoteStart,quoteEnd)+selectionActionSource.slice(markerStart,markerEnd)+'return {saveSelectedQuote,saveMarker};');
+  return factory(()=>selected,()=> 'product-'+(++id),()=> 'Article',()=>loc.origin+loc.pathname,(method,...args)=>createRecordTransactions({mutateLibrary:owner.mutateLibrary,libraryFailure:reason=>({ok:false,reason}),gbHighlightKey:keys.gbHighlightKey,NOTES_KEY:n,QUOTES_KEY:q,LIMIT_NOTES:500,LIMIT_QUOTES:200})[method](...args),q,n,200,['amber','sage','rose'],keys.gbHighlightKey,keys.gbAddHighlight,keys.gbHighlightPath,keys.gbHighlightText,keys.gbContextKey,documentFixture,{resolution:()=>a=>a,sameRange:(a,b)=>JSON.stringify(a)===JSON.stringify(b)},()=>null,()=>null,()=>({supported:false}),noOp,m=>messages.push(m),noOp,()=>noOp);
  };
  const wapi=new Function('window','qKey','nKey','kinds','currentColor','document','location','normalize','sameId','say','repaint',wQuoteSource+'return {save,updateRecord};')(windowFixture,q,n,['quote','marker','underline'],'amber',documentFixture,loc,v=>String(v), (a,b)=>a!=null&&b!=null&&String(a)===String(b),m=>messages.push(m),noOp);
  return {selection,product,wapi,rows:()=>JSON.parse(raw),raw:()=>raw,writes:()=>count,messages,owner};
@@ -767,10 +767,10 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const to=highlights.indexOf('  /* Мобильный вход',from);
  assert.ok(from>=0&&to>from);
  let frames=new Map(),next=0,paints=0,cancelled=0,handlers={};
- const target={addEventListener:(event,fn)=>{handlers[event]=fn}};
+ const target={addEventListener:(event,fn)=>{handlers[event]=fn},getElementById:()=>null};
  const localStorage={};
  const api=new Function('window','document','requestAnimationFrame','cancelAnimationFrame','paintMarks','QUOTES_KEY','HTMLDetailsElement','localStorage',
-  highlights.slice(from,to)+'return {schedulePaint,cancelScheduledPaint};')(target,target,fn=>{frames.set(++next,fn);return next},id=>{cancelled++;frames.delete(id)},()=>paints++,'quotes',class{},localStorage);
+  "let clearIntent=0,editorController=null;const toast={},NOTES_KEY='notes',FAVORITES_KEY='favorites';function clearTimeout(){}function hideToast(){}function sync(){}"+highlights.slice(from,to)+'return {schedulePaint,cancelScheduledPaint};')(target,target,fn=>{frames.set(++next,fn);return next},id=>{cancelled++;frames.delete(id)},()=>paints++,'quotes',class{},localStorage);
  const flush=()=>{const ready=[...frames.values()];frames.clear();ready.forEach(fn=>fn());};
  handlers['gb:library-committed']({detail:{key:'notes'}});assert.equal(frames.size,0);
  handlers['gb:library-committed']({detail:{key:'quotes'}});
@@ -911,10 +911,10 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const source=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
  const start=source.indexOf('  function libraryFailure('),end=source.indexOf('  function libraryStoreSpec(',start);
  assert.ok(start>=0&&end>start);
- const localStorage={},queue=[];
+ const localStorage={getItem:()=>null},queue=[];
  const navigator={locks:{request(name,options,fn){return new Promise(resolve=>queue.push(()=>resolve(fn({name}))))}}};
  class AbortController {constructor(){this.signal={aborted:false}}abort(){this.signal.aborted=true}}
- const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY',source.slice(start,end)+'return {withLibraryLock,onLibraryStorage};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes');
+ const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY','QUOTES_KEY',source.slice(start,end)+'return {withLibraryLock,onLibraryStorage};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes','quotes');
  let writes=0;
  const task=()=>{writes++;return {ok:true}};
  const pending=api.withLibraryLock(task);
@@ -934,16 +934,16 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const researchSource=readFileSync(resolve(root,'js/reader-library-v3.js'),'utf8');
  const localStorage={},other={};
  const event=(key,storageArea=localStorage)=>({key,storageArea,newValue:'obsolete'});
- const a=coreSource.indexOf("    window.addEventListener('storage', e => {");
- const b=coreSource.indexOf("    document.addEventListener('astro:page-load'",a);
+ const a=coreSource.indexOf('  function onLibraryStorage(e) {');
+ const b=coreSource.indexOf("  window.addEventListener('resize', schedulePaint",a);
  assert.ok(a>=0&&b>a);
- let coreListener,syncs=0,undo=0,toastHidden=0,toastRemoved=0,timerCancelled=0;
- new Function('window','localStorage','editorController','clearTimeout','toast','hideToast','document','QUOTES_KEY','NOTES_KEY','FAVORITES_KEY','sync',coreSource.slice(a,b))(
-  {addEventListener:(_,fn)=>coreListener=fn},localStorage,{clearUndo(){undo++;}},()=>timerCancelled++,{timer:1},()=>toastHidden++,{getElementById:()=>({replaceChildren(){toastRemoved++;}})},'q','n','f',()=>syncs++);
+ let coreListener,syncs=0,undo=0,toastHidden=0,toastRemoved=0,timerCancelled=0,paints=0;
+ const epoch=new Function('window','localStorage','editorController','clearTimeout','toast','hideToast','document','QUOTES_KEY','NOTES_KEY','FAVORITES_KEY','sync','schedulePaint','let clearIntent=0;'+coreSource.slice(a,b)+'return ()=>clearIntent;')(
+  {addEventListener:(_,fn)=>coreListener=fn},localStorage,{clearUndo(){undo++;}},()=>timerCancelled++,{timer:1},()=>toastHidden++,{getElementById:()=>({replaceChildren(){toastRemoved++;}})},'q','n','f',()=>syncs++,()=>paints++);
  coreListener(event(null,other));assert.equal(syncs,0);assert.equal(undo,0);
  coreListener(event('unrelated'));assert.equal(syncs,0);
  coreListener(event('q'));assert.equal(syncs,1);assert.equal(undo,0);
- coreListener(event(null));assert.equal(syncs,2);assert.equal(undo,1);assert.equal(toastHidden,1);assert.equal(toastRemoved,1);assert.equal(timerCancelled,1);
+ coreListener(event(null));assert.equal(syncs,2);assert.equal(undo,1);assert.equal(toastHidden,1);assert.equal(toastRemoved,1);assert.equal(timerCancelled,1);assert.equal(epoch(),1);assert.equal(paints,2);
  const fa=favoriteSource.indexOf("  window.addEventListener('storage', (event) => {");
  const fb=favoriteSource.indexOf("  document.addEventListener('astro:page-load'",fa);
  assert.ok(fa>=0&&fb>fa);
@@ -981,7 +981,8 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   const owner={version:1,mutateLibrary:async()=>{calls++;return held?await held:{ok:true,receipt}}};
   const factory=()=>({createRecordTransactions:({mutateLibrary})=>({saveQuoteRecord:()=>mutateLibrary([],()=>{}),restoreDeleted:()=>mutateLibrary([],()=>{})})});
   const load=path=>new Promise(resolve=>loads.push(()=>{if(path.includes('record-transactions'))resolve(factory());else{window.GBLibraryStorage=owner;resolve({});}}));
-  const api=new Function('window','localStorage','load','gbHighlightKey','NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',source.slice(start,end).replace(/\bimport\(/g,'load(')+'return {mutateLibrary,transactionCall,restoreDeleted};')(window,localStorage,load,()=>'', 'n','q',500,200);
+  const ea=source.indexOf('  function onLibraryStorage(e) {'),eb=source.indexOf("  window.addEventListener('resize', schedulePaint",ea);
+  const api=new Function('window','localStorage','load','gbHighlightKey','NOTES_KEY','QUOTES_KEY','LIMIT_NOTES','LIMIT_QUOTES',source.slice(start,end).replace(/\bimport\(/g,'load(')+"const FAVORITES_KEY='f',editorController=null,toast={},document={getElementById:()=>null};function clearTimeout(){}function hideToast(){}function schedulePaint(){}function sync(){}"+source.slice(ea,eb)+'return {mutateLibrary,transactionCall,restoreDeleted};')(window,localStorage,load,()=>'', 'n','q',500,200);
   return {api,loads,owner,window,receipt,calls:()=>calls,clear:()=>listener({key:null,storageArea:localStorage}),session:()=>listener({key:null,storageArea:{}}),hold:p=>held=p};
  }
  const s=scene(),cold=s.api.mutateLibrary([],()=>{});
@@ -1022,10 +1023,10 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const source=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
  const a=source.indexOf('  function libraryFailure('),b=source.indexOf('  function libraryStoreSpec(',a);
  assert.ok(a>=0&&b>a);
- const localStorage={};let grant,ack,writes=0;
+ const localStorage={getItem:()=>null};let grant,ack,writes=0;
  const navigator={locks:{request(name,opts,fn){return new Promise(resolve=>{grant=()=>{const result=fn({name});ack=()=>resolve(result)}})}}};
  class AbortController{constructor(){this.signal={aborted:false}}abort(){this.signal.aborted=true}}
- const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY',source.slice(a,b)+'return {withLibraryLock,onLibraryStorage};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes');
+ const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY','QUOTES_KEY',source.slice(a,b)+'return {withLibraryLock,onLibraryStorage};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes','quotes');
  const run=async(result,clear)=>{const p=api.withLibraryLock(()=>{writes++;return result});grant();if(clear)api.onLibraryStorage({key:null,storageArea:localStorage});ack();return await p;};
  assert.equal((await run({ok:true,receipt:{}},true)).reason,'storage-changed');
  assert.equal((await run({ok:false,reason:'partial-write'},true)).reason,'partial-write');
@@ -1124,7 +1125,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  function scene(){
    let pending=[],live=false,loads=0,creates=0,attaches=0,places=0,failAttach=false;
    const window={getSelection:()=>live?{isCollapsed:false,rangeCount:1,toString:()=> 'long selected text'}:null};
-   const names='MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbFragmentKey,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes'.split(',');
+   const names='MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes'.split(',');
    const deps=names.map(n=>n==='normalizeText'?s=>s:()=>{});
    const load=()=>{loads++;return new Promise((resolve,reject)=>pending.push({resolve,reject}))};
    const module={createSelectionController(){creates++;return {attachSelection(){attaches++;if(failAttach)throw Error('mount');},placeSelectionBar(){places++}}}};
@@ -1204,4 +1205,69 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const pending=api.restoreDeleted(receipt);
  assert.equal((await api.restoreDeleted(receipt)).reason,'restore-pending');release();assert.equal((await pending).ok,true);
  assert.equal((await api.restoreDeleted(receipt)).reason,'storage-changed');assert.equal(writes,2);
+}
+
+// W73: disappearing collection while waiting for a Web Lock is an
+// observable clear boundary even before delivery of the storage event.
+{
+ const src=readFileSync(resolve(root,'js/reader-library-storage.js'),'utf8');
+ const a=src.indexOf('  function libraryFailure('),b=src.indexOf('  function libraryStoreSpec(',a);
+ assert.ok(a>=0&&b>a);
+ const data=new Map([['notes','[]'],['quotes','[]']]);let grants=[],writes=0;
+ const localStorage={getItem:k=>data.get(k)??null};
+ const navigator={locks:{request(name,opts,fn){return new Promise(resolve=>grants.push(()=>resolve(fn({name}))))}}};
+ class AbortController{constructor(){this.signal={aborted:false}}abort(){this.signal.aborted=true}}
+ const api=new Function('localStorage','navigator','AbortController','setTimeout','clearTimeout','NOTES_KEY','QUOTES_KEY',src.slice(a,b)+'return {withLibraryLock};')(localStorage,navigator,AbortController,()=>1,()=>{},'notes','quotes');
+ const run=()=>api.withLibraryLock(()=>{writes++;return {ok:true}});
+ const pending=run();data.clear();grants.shift()();
+ assert.equal((await pending).reason,'storage-changed');assert.equal(writes,0);
+ data.set('notes','[]');const fresh=run();data.set('notes','[{"id":"new"}]');data.set('quotes','[]');grants.shift()();
+ assert.equal((await fresh).ok,true);assert.equal(writes,1);
+ const missing=run();data.delete('quotes');grants.shift()();
+ assert.equal((await missing).reason,'storage-changed');assert.equal(writes,1);
+ data.clear();const empty=run();grants.shift()();assert.equal((await empty).ok,true);assert.equal(writes,2);
+}
+// W73: native popup installation is transactional, including faults before
+// and after append/listener registration; preserve foreign existing nodes.
+{
+ const src=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
+ const factory=new Function('document','window','location','setTimeout','clearTimeout',src.replace('export function','function')+'return createSelectionController;');
+ function scene(fault=0,after=false,existing=false){
+  let calls=0,fail=fault,children=[];
+  function check(fn){const shouldFail=++calls===fail;if(shouldFail&&!after)throw Error('injected');fn();if(shouldFail)throw Error('injected');}
+  function node(tag){return {tag,id:'',isConnected:false,setAttribute(){},addEventListener(){check(()=>{})},remove(){children=children.filter(x=>x!==this);this.isConnected=false;}}}
+  const popup={append(n){check(()=>{children.push(n);n.isConnected=true;});},querySelector(s){return children.find(n=>'#'+n.id===s)||null}};
+  const document={getElementById:id=>id==='selection-share-popup'?popup:null,createElement:node};
+  const window={getSelection:()=>null};
+  const api=factory(document,window,{href:'/a'},()=>1,()=>{})({element:node});
+  if(existing){const n=node('button');n.id='ss-save';n.isConnected=true;children.push(n)}
+  return {api,children:()=>children,disable:()=>fail=0};
+ }
+ for(const after of [false,true])for(let fault=1;fault<=5;fault++){
+  const f=scene(fault,after);assert.throws(()=>f.api.attachSelection(),/injected/);
+  assert.equal(f.children().length,0,'no partial native nodes');
+  f.disable();f.api.attachSelection();assert.equal(f.children().length,3);
+  f.api.attachSelection();assert.equal(f.children().length,3);
+ }
+ const partial=scene(0,false,true);const foreign=partial.children()[0];partial.api.attachSelection();
+ assert.equal(partial.children().length,2);assert.equal(partial.children()[0],foreign);
+}
+// W73: exact range/surface identity gates both delayed action results and
+// delayed feedback; same words in a different DOM range do not qualify.
+{
+ const src=readFileSync(resolve(root,'js/reader-library-selection.js'),'utf8');
+ const a=src.indexOf('  let activeAction = null'),b=src.indexOf('  function bindSelectionButton(',a);
+ assert.ok(a>=0&&b>a);
+ const first={},second={},surface={isConnected:true};let visible=true,range=[first,1,first,8],timers=new Map(),next=0,reset=0,finish=0;
+ const location={href:'/a'},window={getSelection:()=>range?{isCollapsed:false,rangeCount:1,getRangeAt:()=>({startContainer:range[0],startOffset:range[1],endContainer:range[2],endOffset:range[3]})}:null};
+ const api=new Function('window','location','setTimeout','clearTimeout','let selBarHideTimer=0;'+src.slice(a,b)+'return {beginSelectionAction,reconcileSelectionFeedback,showSelectionFeedback};')(window,location,fn=>{timers.set(++next,fn);return next},id=>timers.delete(id));
+ const begin=()=>api.beginSelectionAction(surface,()=>visible);
+ const feedback=current=>api.showSelectionFeedback(current,()=>reset++,()=>finish++,700);
+ const old=begin();assert.equal(old(),true);range=[second,1,second,8];api.reconcileSelectionFeedback();assert.equal(old(),false);
+ range=[first,1,first,8];assert.equal(old(),false,'reselecting same range cannot revive old intent');
+ const fresh=begin();feedback(fresh);const callback=[...timers.values()][0];range=[second,1,second,8];api.reconcileSelectionFeedback();assert.equal(reset,1);callback();assert.equal(finish,0);
+ const nextAction=begin();feedback(nextAction);const stale=[...timers.values()][0];const newer=begin();feedback(newer);stale();assert.equal(finish,0);assert.equal(reset,2);
+ const newest=[...timers.values()][0];newest();assert.equal(reset,3);assert.equal(finish,1);
+ const close=begin();visible=false;api.reconcileSelectionFeedback();visible=true;assert.equal(close(),false);
+ const route=begin();location.href='/b';assert.equal(route(),false);
 }

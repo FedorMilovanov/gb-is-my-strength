@@ -9,6 +9,7 @@
   }
   // One cross-tab owner for notes and the quotes they reference. A localStorage
   // lease cannot provide atomic exclusion; unsupported/rejected locks refuse.
+  const recoveryKeys=()=>[QUOTES_KEY,NOTES_KEY,'gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
   let clearGeneration = 0;
   function onLibraryStorage(event) {
     if (event.storageArea === localStorage && event.key === null) clearGeneration++;
@@ -19,6 +20,12 @@
     try {
       const locks = navigator.locks;
       if (!locks || typeof locks.request !== 'function') return libraryFailure('lock-unavailable');
+      // Cooperating writers retain their collection key, even when empty.
+      // Detect a disappearing collection before a delayed storage event;
+      // identical recreation/ABA is not observable without a durable epoch.
+      let present;
+      try { present = recoveryKeys().filter(key => localStorage.getItem(key) !== null); }
+      catch { return libraryFailure('storage-read-or-prepare'); }
       const controller = new AbortController();
       timer = setTimeout(() => controller.abort(), 3000);
       const result = await locks.request('gb-library:' + NOTES_KEY,
@@ -26,6 +33,9 @@
           clearTimeout(timer);
           if (!lock || controller.signal.aborted) return libraryFailure('lock-unavailable');
           if (generation !== clearGeneration) return libraryFailure('storage-changed');
+          try {
+            if (present.some(key => localStorage.getItem(key) === null)) return libraryFailure('storage-changed');
+          } catch { return libraryFailure('storage-read-or-prepare'); }
           return task();
         });
       // A delivered clear after the task but before its acknowledgement must
@@ -139,7 +149,6 @@
     return { ok: true, conflict: false, ...result };
 
   }
-  const recoveryKeys=()=>[QUOTES_KEY,NOTES_KEY,'gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
   function rawRecoveryShape(raw) {
     const keys=recoveryKeys();
     return raw!==null&&typeof raw==='object'&&!Array.isArray(raw)&&

@@ -691,6 +691,37 @@ async function auditArgonSettings(page, prefix, checks) {
   record(checks,p+'-08','Escape closes surface, collapses trigger and restores opener focus',after.hidden===true&&after.expanded==='false'&&after.focusReturned,after);
 }
 
+// Authored responsive transition, not a DOM fixture: the existing ARGON
+// settings owner must restore focus to its actual visible equivalent.
+async function auditArgonResponsiveFocus(browser,origin) {
+  const caseId='gill-argon-responsive-focus',checks=[];
+  const ctx=await browser.newContext({viewport:{width:1359,height:900},reducedMotion:'reduce',serviceWorkers:'block'});
+  const page=await ctx.newPage(),errors=[];
+  page.on('pageerror',error=>errors.push(String(error)));
+  try {
+    await page.goto(origin+ROUTES[1].route,{waitUntil:'load'});
+    await page.waitForFunction(()=>window.__NP_UNIVERSAL_PREVIEW__?.ready===true,null,{timeout:15000});
+    for(const [from,to] of [[1359,1360],[1360,1359],[1359,1359]]){
+      const height=from===to?800:900;
+      await page.setViewportSize({width:from,height:900});
+      const trigger=page.locator('[aria-controls="npUFontPanel"]:visible').first();
+      await trigger.click();
+      const panel=page.locator('#npUFontPanel');
+      await panel.waitFor({state:'visible'});
+      await page.waitForFunction(()=>document.getElementById('npUFontPanel').contains(document.activeElement));
+      await page.setViewportSize({width:to,height});
+      await panel.waitFor({state:'hidden'});
+      await page.waitForFunction(()=>{const el=document.activeElement;return el?.getAttribute('aria-controls')==='npUFontPanel'&&el.getClientRects().length&&!el.closest('[inert],[hidden],[aria-hidden="true"]');},null,{timeout:3000});
+      const evidence=await page.evaluate(()=>({active:document.activeElement.outerHTML.slice(0,300),expanded:document.activeElement.getAttribute('aria-expanded'),panels:document.querySelectorAll('#npUFontPanel').length,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth}));
+      record(checks,caseId+'-'+from+'-'+to+'-'+height,'resize closes settings, restores an actually visible equivalent control and retains one panel',evidence.expanded==='false'&&evidence.panels===1&&evidence.overflow===0,evidence);
+    }
+    record(checks,caseId+'-errors','no page errors during responsive settings transitions',errors.length===0,errors);
+  }catch(error){
+    record(checks,caseId+'-exception','authored responsive focus scenario completes',false,String(error.stack||error).slice(0,1600));
+  }finally{await ctx.close();}
+  return {caseId,checks};
+}
+
 async function auditDesktop(browser, origin, routeInfo, {classic=false,width=DESKTOP.width}={}) {
   const viewportId=classic?'desktop-classic':width===DESKTOP.width?'desktop':'desktop-'+width;
   const context = await browser.newContext({ viewport: {...DESKTOP,width} });
@@ -1863,9 +1894,121 @@ async function auditGillLexiconProjection(browser) {
         result.firstValid&&result.distinct,result);
       record(checks,id+'-source-target','source is unmodified; a new preceding occurrence cannot redirect old action',
         result.unchanged&&result.stableTarget,result);
+      // A portaled tip is still the source term's existing definition; the
+      // shared tooltip controller supplies that exact node, never a second dictionary.
+      const portal=await page.evaluate(()=>{
+        const {collectTerms,termTitle,collectGlossaryTerms}=window.__gbLexProjection();
+        const article=document.querySelector('article'),source=[...article.querySelectorAll('.gterm')].find(el=>el.dataset.term==='баптист');
+        const tip=document.createElement('span');tip.className='gtip';
+        tip.append(source.querySelector('.gtip-brief'));document.body.append(tip);
+        window.SiteUtils={getGlossaryTip:el=>el===source?tip:null};
+        try {
+          const classic=collectTerms([source]).map(termTitle),argon=collectGlossaryTerms([source]);
+          return {classic,argon:argon.map(el=>el.title),brief:argon[0]?.brief,oneNode:tip.isConnected&&!source.querySelector('.gtip-brief')};
+        } finally {delete window.SiteUtils;tip.remove();}
+      });
+      record(checks,id+'-portaled-definition','both consumers retain canonical term using existing active tooltip identity',
+        portal.classic[0]==='Баптист'&&portal.argon[0]==='Баптист'&&portal.brief==='Определение'&&portal.oneNode,portal);
+      const pinBlock=extract(desktopSource,'// Capture live disclosure/tab/selection state','root.querySelector(\'#npUFollowChapter\')');
+      await page.addScriptTag({content:`window.__gbLexPinWitness=()=>{const sectionHost=document.createElement('div');sectionHost.innerHTML='<section class="np-u-research-module" data-np-u-module="lexicon"><details open><summary>Definition</summary></details></section>';document.body.append(sectionHost);const pinnedMarkup=new Map([['lexicon',sectionHost.firstElementChild.outerHTML]]);sectionHost.querySelector('details').open=false;const html='<section class="np-u-research-module" data-np-u-module="lexicon"><details open><summary>Fresh</summary></details></section>';${pinBlock}const preserved=!sectionHost.querySelector('details').open;sectionHost.remove();return preserved;};`});
+      const pinned=await page.evaluate(()=>window.__gbLexPinWitness());
+      record(checks,id+'-pinned-live-disclosure','pin restoration uses live disclosure state rather than obsolete snapshot',pinned);
     } catch(error) {
       record(checks,id+'-exception','lexicon projection completes',false,{message:String(error.stack||error).slice(0,1300)});
     } finally {await ctx.close();}
+  }
+  return {caseId,checks};
+}
+
+// Exercise the actual resolver and mutation predicates on native DOM. A
+// focused action can outlive an occurrence's eligibility until focus leaves.
+async function auditGillGlossaryEligibility(browser) {
+  const caseId='gill-lexicon-eligibility',checks=[];
+  const desktop=fs.readFileSync(path.join(ROOT,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
+  const mobile=fs.readFileSync(path.join(ROOT,'src/components/article-pilots/gill-series/GillMobileMarginalia.astro'),'utf8');
+  const cut=(source,a,b)=>{
+    const start=source.indexOf(a),end=source.indexOf(b,start);
+    assert.ok(start>=0&&end>start,'required glossary source '+a);
+    return source.slice(start,end);
+  };
+  const resolver=cut(desktop,'function resolveGlossaryAction(','function refreshLexicon(');
+  const collector=cut(desktop,'const glossaryOccurrenceIds=','function getGroupMaterial(');
+  const range=cut(desktop,'function inRange(','// ReaderState owns reading geometry');
+  const predicates=[
+    {name:'argon',source:cut(desktop,'function glossaryMutation(','function makeSection('),registration:desktop.match(/glossaryReady\.observe\(article,(\{[^}]+\})\)/)?.[1]},
+    {name:'classic',source:cut(mobile,'function glossaryMutation(','  var lexiconObserver ='),registration:mobile.match(/lexiconObserver\.observe\(article, (\{[^}]+\})\)/)?.[1]}
+  ];
+  assert.ok(predicates.every(p=>p.registration),'actual observer options must be present');
+  for(const width of [1024,1440]){
+    const ctx=await browser.newContext({viewport:{width,height:width===1024?390:900},serviceWorkers:'block'});
+    const prefix=caseId+'-'+width;
+    try {
+      const page=await ctx.newPage();
+      await page.setContent('<article></article><section data-np-u-context-section="0"><button id="jump" data-np-u-term-key="key">Jump</button></section>');
+      const setup=()=>{
+        const article=document.querySelector('article');
+        article.innerHTML='<h2 id="a">A</h2><p id="wrap"><abbr id="first" class="gterm" data-term="key" tabindex="0">first<span class="gtip-brief">Definition</span></abbr></p><p id="wrap2"><abbr id="second" class="gterm" data-term="key" tabindex="0">second<span class="gtip-brief">Definition</span></abbr></p><h2 id="b">B</h2><abbr id="other" class="gterm" data-term="key" tabindex="0">other<span class="gtip-brief">Definition</span></abbr>';
+      };
+      await page.evaluate(setup);
+      await page.addScriptTag({content:"const article=document.querySelector('article'),sections=[{id:'a'},{id:'b'}],browserStore={active:0},pinnedLexiconIndex=null;const $=(q,s)=>[...s.querySelectorAll(q)];\n"+range+collector+resolver+"\nwindow.__gbEligibility={collectGlossaryTerms,resolveGlossaryAction};"});
+      const cases=[
+        ['normal','none','first'],['excluded','exclude','second'],['class-excluded','class','second'],
+        ['blank','blank','second'],['missing','missing','second'],['brief-class','brief-class','second'],
+        ['removed','removed','second'],['key-changed','key','second'],['no-local','no-local',null],['other-section','move','second']
+      ];
+      for(const [name,mutation,expected] of cases){
+        await page.evaluate(setup);
+        const result=await page.evaluate(mutation=>{
+          const api=window.__gbEligibility,article=document.querySelector('article'),button=document.getElementById('jump');
+          const first=document.getElementById('first'),wrap=document.getElementById('wrap'),brief=first.querySelector('.gtip-brief');
+          button.dataset.npUTermIndex=api.collectGlossaryTerms([...article.querySelectorAll('.gterm')])[0].index;
+          if(mutation==='exclude'||mutation==='no-local')wrap.setAttribute('data-reader-exclude','');
+          if(mutation==='no-local')document.getElementById('wrap2').setAttribute('data-reader-exclude','');
+          if(mutation==='class')wrap.classList.add('related-articles');
+          if(mutation==='blank')brief.textContent=' ';
+          if(mutation==='missing')brief.remove();
+          if(mutation==='brief-class')brief.classList.remove('gtip-brief');
+          if(mutation==='removed')first.remove();
+          if(mutation==='key')first.dataset.term='different';
+          if(mutation==='move')article.append(first);
+          const source=api.resolveGlossaryAction(button);
+          source?.focus();
+          return {target:source?.id??null,focus:document.activeElement.id};
+        },mutation);
+        record(checks,prefix+'-jump-'+name,'stale action selects only a currently eligible canonical occurrence in its original scope',
+          result.target===expected&&(!expected||result.focus===expected),{expected,result});
+      }
+      for(const predicate of predicates){
+        await page.addScriptTag({content:"window.__gbObserveEligibility=()=>{"+predicate.source+
+          "let hits=0;const observer=new MutationObserver(records=>{if(records.some(glossaryMutation))hits++});observer.observe(document.querySelector('article'),"+predicate.registration+");return {count:()=>hits,stop:()=>observer.disconnect()};};"});
+        const mutations=[['exclude',true],['unexclude',true],['class',true],['unclass',true],['term-class',true],['brief-class',true],['hover',false],['reveal',false],['title',true],['text',true],['remove',true]];
+        for(const [mutation,expected] of mutations){
+          await page.evaluate(setup);
+          const hits=await page.evaluate(async mutation=>{
+            const wrap=document.getElementById('wrap'),first=document.getElementById('first'),brief=first.querySelector('.gtip-brief');
+            if(mutation==='unexclude')wrap.setAttribute('data-reader-exclude','');
+            if(mutation==='unclass')wrap.classList.add('faq-accordion');
+            const probe=window.__gbObserveEligibility();
+            if(mutation==='exclude')wrap.setAttribute('data-reader-exclude','');
+            if(mutation==='unexclude')wrap.removeAttribute('data-reader-exclude');
+            if(mutation==='class')wrap.classList.add('faq-accordion');
+            if(mutation==='unclass')wrap.classList.remove('faq-accordion');
+            if(mutation==='term-class')first.classList.remove('gterm');
+            if(mutation==='brief-class')brief.classList.remove('gtip-brief');
+            if(mutation==='hover')first.classList.add('hovered');
+            if(mutation==='reveal')wrap.classList.add('visible');
+            if(mutation==='title')first.dataset.termTitle='New';
+            if(mutation==='text')brief.textContent='New';
+            if(mutation==='remove')first.remove();
+            await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+            const count=probe.count();probe.stop();return count;
+          },mutation);
+          record(checks,prefix+'-'+predicate.name+'-'+mutation,'observer sees semantic eligibility changes but ignores unrelated class churn',(hits>0)===expected,{expected,hits});
+        }
+      }
+    }catch(error){
+      record(checks,prefix+'-exception','native glossary eligibility fixture completes',false,String(error.stack||error).slice(0,1600));
+    }finally{await ctx.close();}
   }
   return {caseId,checks};
 }
@@ -1975,6 +2118,60 @@ async function auditGillLateLexicon(browser, origin, desktop) {
       },chosen);
       record(checks,caseId+'-replacement','semantic selection and disclosure survive replacement while jump receives a new occurrence',
         Object.values(rebound).every(Boolean),{chosen,rebound});
+      // A late term in the current section must appear in Thought → Links,
+      // without replacing the existing Scripture window or focused control.
+      const late=await page.evaluate(()=>{
+        const region=document.querySelector('[data-np-u-context-section]');
+        const index=Number(region.dataset.npUContextSection);
+        const id=window.__NP_UNIVERSAL_PREVIEW__.groups[index]?.id;
+        const heading=document.getElementById(id);
+        if(!heading?.closest('article'))throw new Error('No authored section heading');
+        const p=document.createElement('p'),term=document.createElement('abbr');
+        term.className='gterm';term.dataset.term='__w223_context_probe';term.dataset.termTitle='W223 context';term.tabIndex=0;
+        term.append(document.createTextNode('Test source '));
+        const tip=document.createElement('span');tip.className='gtip';
+        const brief=document.createElement('span');brief.className='gtip-brief';brief.textContent='Fixture definition';tip.append(brief);term.append(tip);
+        p.append(term);heading.insertAdjacentElement('afterend',p);
+        window.__gbContextProbe={term,peer:document.querySelector('[data-np-u-module="scripture"]')};
+        document.activeElement?.blur();
+        return {key:term.dataset.term};
+      });
+      const thought=page.locator('[data-np-u-module="section"] > details');
+      if(!await thought.evaluate(el=>el.open))await thought.locator(':scope > summary').click();
+      await page.locator('[data-np-u-thought-tab="links"]').click();
+      const link=page.locator('[data-np-u-context-section] [data-np-u-term-key="'+late.key+'"]');
+      await link.waitFor({state:'visible',timeout:8000});
+      await link.focus();
+      const deferred=await page.evaluate(async key=>{
+        const w=window.__gbContextProbe,button=document.querySelector('[data-np-u-context-section] [data-np-u-term-key="'+key+'"]');
+        const next=w.term.cloneNode(true);next.dataset.termTitle='W223 replacement';w.term.replaceWith(next);w.next=next;
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+        return {sameFocus:document.activeElement===button,oldLabel:button.textContent==='W223 context',samePeer:w.peer===document.querySelector('[data-np-u-module="scripture"]')};
+      },late.key);
+      await link.click();
+      await page.waitForFunction(()=>document.activeElement===window.__gbContextProbe.next,null,{timeout:5000});
+      const exact=await page.evaluate(()=>document.activeElement===window.__gbContextProbe.next&&!window.__gbContextProbe.term.isConnected);
+      record(checks,caseId+'-context-late-jump','late context link retains focus and jumps to its same-key replacement, not another section',
+        Object.values(deferred).every(Boolean)&&exact,{deferred,exact});
+    }else{
+      const concepts=page.locator('#gbrMarginalia .gbr-marginalia-group').filter({has:page.locator('.gbr-marginalia-term')}).first();
+      if(!await concepts.evaluate(el=>el.open))await concepts.locator(':scope > summary').click();
+      const row=concepts.locator('.gbr-marginalia-term').first();
+      if(!await row.evaluate(el=>el.open))await row.locator(':scope > summary').click();
+      const key=await row.evaluate(el=>el.dataset.termKey);
+      await page.evaluate(key=>{
+        const handle=document.querySelector('#partTocOverlay .toc-sheet__handle');
+        if(!handle||!key)throw new Error('Missing Classic close or canonical key');
+        handle.addEventListener('click',()=>{
+          const old=[...document.querySelectorAll('article .gterm[data-term]')].filter(el=>el.dataset.term===key);
+          const replacements=old.map(el=>{const next=el.cloneNode(true);el.replaceWith(next);return next;});
+          window.__gbClassicJumpProbe={old,replacements};
+        },{capture:true,once:true});
+      },key);
+      await row.locator('.gbr-marginalia-jump').tap();
+      await page.waitForFunction(()=>window.__gbClassicJumpProbe?.replacements.includes(document.activeElement),null,{timeout:5000});
+      const exact=await page.evaluate(()=>{const w=window.__gbClassicJumpProbe;return w.old.length>0&&w.old.every(el=>!el.isConnected)&&w.replacements.includes(document.activeElement);});
+      record(checks,caseId+'-delayed-jump','Classic resolves same-key replacement after real close and focus delay',exact,{key});
     }
     return {caseId,checks};
   }catch(error){
@@ -2066,10 +2263,12 @@ try {
   for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
   cases.push(await auditGillNestedScrollLock(browser, origin));
   for (const kind of ['toc','settings']) cases.push(await auditGillChromeBreakpoint(browser, origin, kind));
+  cases.push(await auditArgonResponsiveFocus(browser,origin));
   cases.push(await auditGillPendingActivation(browser, origin));
   cases.push(await auditGillActivationTeardown(browser));
   cases.push(await auditGillActivationFocusDeparture(browser));
   cases.push(await auditGillLexiconProjection(browser));
+  cases.push(await auditGillGlossaryEligibility(browser));
   for(const desktop of [false,true]) cases.push(await auditGillLateLexicon(browser,origin,desktop));
   cases.push(await auditGillTooltipSelection(browser, origin));
   for (const [width,dark] of [[195,false],[195,true],[220,false],[260,false],[268,false],[320,false]]) cases.push(await auditGillNarrowZoomBar(browser, origin, width, dark));

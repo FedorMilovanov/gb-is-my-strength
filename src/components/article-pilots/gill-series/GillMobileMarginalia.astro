@@ -41,11 +41,14 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     clone.querySelectorAll('.gtip,.btip,.tooltip,.fn-marker,.footnote-ref,[data-reader-exclude],[data-no-speech],[hidden],[inert],[aria-hidden="true"],script,style').forEach(function (child) { child.remove(); });
     return text(clone);
   }
-  function jumpTo(el) {
-    if (!el) return;
+  function jumpTo(destination) {
+    var resolve = typeof destination === 'function' ? destination : function () { return destination; };
+    if (!resolve()?.isConnected) return;
     var close = sheet.querySelector('.toc-sheet__handle');
     if (close) close.click();
     window.setTimeout(function () {
+      var el = resolve();
+      if (!el?.isConnected) return;
       if (!el.hasAttribute('tabindex')) {
         el.setAttribute('tabindex', '-1');
         el.addEventListener('blur', function () { el.removeAttribute('tabindex'); }, { once: true });
@@ -83,15 +86,19 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   // Visible prose is an inflected occurrence, never a lexicon heading.
   function termKey(el) { return (el.dataset.term || '').trim(); }
   function termTitle(el) { return (el.dataset.termTitle || '').trim() || termKey(el); }
+  function termTip(el) { return window.SiteUtils?.getGlossaryTip?.(el) || el; }
   function collectTerms(items) {
     return uniqueBy(items.filter(function (el) {
-      return !!termKey(el) && !!text(el.querySelector('.gtip-brief'));
+      return !!termKey(el) && !!text(termTip(el).querySelector('.gtip-brief'));
     }), termKey);
   }
-  function lexiconData(active, end) {
-    var all = Array.from(article.querySelectorAll('.gterm[data-term]')).filter(function (el) {
+  function articleGlossaryTerms() {
+    return Array.from(article.querySelectorAll('.gterm[data-term]')).filter(function (el) {
       return !el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]');
     });
+  }
+  function lexiconData(active, end) {
+    var all = articleGlossaryTerms();
     var terms = collectTerms(all.filter(function (el) {
       return !active || (!!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
         && (!end || !!(el.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING)));
@@ -228,7 +235,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   var lexiconGroup = null, lexiconContext = null, lexiconSignature = '', lexiconFrame = 0, lexiconSources = [];
   function lexiconStamp(data) {
     return JSON.stringify([data.termScope, data.terms.map(function (el) {
-      return [termKey(el), termTitle(el), el.dataset.category || '', text(el.querySelector('.gtip-brief')), text(el.querySelector('.gtip-papyrus'))];
+      return [termKey(el), termTitle(el), el.dataset.category || '', text(termTip(el).querySelector('.gtip-brief')), text(termTip(el).querySelector('.gtip-papyrus'))];
     })]);
   }
   function renderLexiconGroup(lex, data) {
@@ -245,10 +252,18 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
         item.appendChild(node('summary', '', termTitle(source)));
         var body = node('div', 'gbr-marginalia-term-body');
         if (source.dataset.category) body.appendChild(node('span', 'gbr-marginalia-category', source.dataset.category));
-        body.appendChild(node('p', '', text(source.querySelector('.gtip-brief'))));
-        var detail = text(source.querySelector('.gtip-papyrus'));
+        var tip = termTip(source);
+        body.appendChild(node('p', '', text(tip.querySelector('.gtip-brief'))));
+        var detail = text(tip.querySelector('.gtip-papyrus'));
         if (detail) body.appendChild(node('p', 'gbr-marginalia-detail', detail));
-        action(body, 'Показать в статье ↗', source);
+        var key = termKey(source), context = lexiconContext, articleWide = data.termScope === 'Из всей статьи';
+        action(body, 'Показать в статье ↗', function () {
+          if (!context) return null;
+          var current = lexiconData(context.active, context.end);
+          var terms = articleWide ? collectTerms(articleGlossaryTerms()) :
+            current.termScope === 'В текущем разделе' ? current.terms : [];
+          return terms.find(function (el) { return termKey(el) === key; }) || null;
+        });
         item.appendChild(body); lex.appendChild(item);
       });
     } else lex.appendChild(node('p', 'gbr-marginalia-empty', 'В статье пока нет опубликованных определений.'));
@@ -270,6 +285,12 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   // Source mutations only; never rebuild Scripture, notes or scroll state.
   function glossaryMutation(record) {
     var target = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+    if (record.type === 'attributes' && record.attributeName === 'class') {
+      var before = new Set((record.oldValue || '').split(/\s+/));
+      if (!['gterm','related-articles','faq-accordion','gtip-brief','gtip-papyrus'].some(function (c) { return before.has(c) !== target.classList.contains(c); })) return false;
+      return !!(target.closest('.gterm') || target.querySelector('.gterm') || before.has('gterm'));
+    }
+    if (record.type === 'attributes' && record.attributeName === 'data-reader-exclude') return !!(target.closest('.gterm') || target.querySelector('.gterm'));
     if (target && target.closest('.gterm')) return true;
     return Array.from(record.addedNodes || []).concat(Array.from(record.removedNodes || [])).some(function (el) {
       return el.nodeType === 1 && (el.matches('.gterm') || el.querySelector('.gterm'));
@@ -279,7 +300,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     if (records.some(glossaryMutation)) scheduleLexiconRefresh();
   });
   if (article) lexiconObserver.observe(article, { subtree: true, childList: true, characterData: true,
-    attributes: true, attributeFilter: ['data-term','data-term-title','data-category'] });
+    attributes: true, attributeFilter: ['data-term','data-term-title','data-category','data-reader-exclude','class'],attributeOldValue:true });
   panel.addEventListener('focusout', scheduleLexiconRefresh);
   window.addEventListener('pagehide', function (event) {
     if (lexiconFrame) cancelAnimationFrame(lexiconFrame);
