@@ -136,6 +136,34 @@ function normalize(html) {
 }
 function wordCount(html) { return (stripTags(html).match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length; }
 function h2Count(html) { return (String(html || '').match(/<h2\b/gi) || []).length; }
+function editorialH2Count(html) {
+  // The postbuild relation engine owns a labelled navigation landmark, not
+  // editorial prose. Exclude only its own route-specific heading, not an
+  // arbitrary added heading or all headings inside nav.
+  const generated = /<nav\b(?=[^>]*\bclass="gb-relations-panel")(?=[^>]*\bdata-relation-engine="1")(?=[^>]*\bdata-relation-source="dzhon-gill-istoricheskiy-kontekst")(?=[^>]*\baria-labelledby="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst")[^>]*>[\s\S]*?<\/nav>/gi;
+  const matches = [...String(html).matchAll(generated)];
+  if (matches.length > 1) throw new Error('Duplicate Gill context relation owner');
+  if (!matches.length) return h2Count(html);
+  const panel = matches[0][0];
+  const heading = /<h2\b(?=[^>]*\bid="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst")[^>]*>[\s\S]*?<\/h2>/gi;
+  if (h2Count(panel) !== 1 || [...panel.matchAll(heading)].length !== 1) {
+    throw new Error('Unexpected Gill context relation heading structure');
+  }
+  return h2Count(html) - 1;
+}
+function assertEditorialH2Contract() {
+  const h = '<h2>Editorial</h2>';
+  const nav = '<nav class="gb-relations-panel" data-relation-engine="1" data-relation-source="dzhon-gill-istoricheskiy-kontekst" aria-labelledby="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst"><h2 id="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst">Relation</h2></nav>';
+  const assert = require('node:assert/strict');
+  assert.equal(editorialH2Count(h), 1);
+  assert.equal(editorialH2Count(h + nav), 1);
+  assert.equal(editorialH2Count(h + nav + h), 2);
+  assert.equal(editorialH2Count(h + nav.replace('data-relation-engine="1"', 'data-relation-engine="0"')), 2);
+  assert.throws(() => editorialH2Count(nav + nav), /Duplicate/);
+  assert.throws(() => editorialH2Count(nav.replace('</nav>', h + '</nav>')), /Unexpected/);
+  ok('Editorial H2 projection contract: 6 positive/negative fixtures');
+}
+assertEditorialH2Contract();
 function themeBtn(cls) {
   const c = [cls].filter(Boolean).join(' ');
   return `<button type="button" class="${c}" aria-label="Переключить тему" title="Тема" aria-pressed="false" data-gbs2-theme=""><span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button>`;
@@ -343,7 +371,7 @@ if (!problems.length) {
       const distArticle = articleInner(distHtml);
       if (!distArticle) bad('dist article-body scope missing');
       else {
-        const dh = h2Count(distArticle);
+        const dh = editorialH2Count(distArticle);
         lh === dh ? ok(`H2 parity (dist article body): ${dh}`) : bad(`H2 drift: legacyArticle=${lh}, distArticle=${dh}`);
       }
     } else {
