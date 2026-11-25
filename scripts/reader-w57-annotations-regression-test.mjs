@@ -699,3 +699,32 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  sync();assert.equal(reads,3);assert.equal(aria,'Моя библиотека — сохранено 6');assert.equal(hidden,false);assert.equal(renders,0);
  open=true;sync();assert.equal(renders,1);assert.equal(reads,6);
 }
+
+
+ // W59: capture and context share one actual visible projection; dock is not needed.
+{
+ const from=highlights.indexOf('  const GBReaderAnchors = (() => {');
+ const to=highlights.indexOf('  window.GBReaderAnchors = GBReaderAnchors;',from);
+ assert.ok(from>=0&&to>from);
+ let walks=0;
+ const prose='Alpha beta gamma delta';
+ const block={id:'p1',nodeType:1,textContent:prose,matches:()=>false,closest:()=>block,getClientRects:()=>[{}],contains:n=>n===leaf};
+ const leaf={nodeType:3,nodeValue:prose,parentElement:block};
+ const range={startContainer:leaf,endContainer:leaf,startOffset:6,endOffset:16,cloneRange:()=>range,getBoundingClientRect:()=>({width:80,height:18,bottom:50,top:32})};
+ const sel={isCollapsed:false,rangeCount:1,getRangeAt:()=>range};
+ const article={contains:b=>b===block,querySelectorAll:()=>[block]};
+ // Block closest resolves authored paragraph except exclusion checks.
+ block.closest=selector=>selector==='p,li,blockquote'||selector==='p,li,blockquote,.manuscript-quote--bilingual'?block:null;
+ const doc={createTreeWalker:()=>{walks++;let n=0;return{nextNode:()=>n++===0?leaf:null}},createRange:()=>({setStart(){},collapse(){}})};
+ const api=new Function('document','NodeFilter','window','location','innerHeight','normalizeText',highlights.slice(from,to)+'return GBReaderAnchors;')(doc,{SHOW_TEXT:4},{getSelection:()=>sel},{pathname:'/a'},844,x=>String(x??'').replace(/\\s+/g,' ').trim());
+ const capture=api.capture(article,'beta gamma');
+ assert.equal(capture.text,'beta gamma');assert.equal(capture.anchor.start,6);assert.equal(capture.anchor.end,16);
+ assert.deepEqual(capture.context,{before:'Alpha ',after:' delta'});assert.equal(walks,1,'capture and context one tree traversal');
+ assert.deepEqual(api.selectionContext(sel,'beta gamma'),capture.context);assert.equal(walks,2,'standalone fallback matches');
+ assert.deepEqual(api.selectionContext(sel,'wrong text'),{before:'',after:''});
+ const plain=api.capture(article);assert.equal(plain.context,undefined,'existing capture consumers retain result shape');
+ assert.deepEqual(plain.anchor,capture.anchor);
+ const dockSource=readFileSync(resolve(root,'js/reader-library-dock.js'),'utf8');
+ const dock=new Function('window',dockSource.replace(/export function/g,'function')+'return contextFromSelection;')({GBReaderAnchors:api});
+ assert.deepEqual(dock(sel,'beta gamma'),capture.context,'dock compatibility delegates to canonical projection');
+}

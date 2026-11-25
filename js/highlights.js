@@ -78,7 +78,31 @@
     r.setEnd(to.node,end-to.start);
     return r;
   }
-  function capture(article){
+  function contextBlock(range){
+    const origin=range.startContainer.nodeType===1?range.startContainer:range.startContainer.parentElement;
+    const block=origin?.closest('p,li,blockquote');
+    return block?.contains(range.endContainer)?block:null;
+  }
+  function contextAt(p,start,end,text){
+    if(start===null||end===null||start<0||end<=start||end>p.text.length||
+       normalize(p.text.slice(start,end))!==normalize(text))return {before:'',after:''};
+    return {
+      before:p.text.slice(Math.max(0,start-240),start).replace(/\s+/g,' '),
+      after:p.text.slice(end,end+240).replace(/\s+/g,' ')
+    };
+  }
+  function selectionContext(selection,text){
+    try{
+      if(!selection?.rangeCount||selection.isCollapsed)return {before:'',after:''};
+      const r=selection.getRangeAt(0),block=contextBlock(r);
+      if(block){
+        const p=visibleProjection(block);
+        return contextAt(p,projectedOffset(p,r.startContainer,r.startOffset),projectedOffset(p,r.endContainer,r.endOffset),text);
+      }
+    }catch{}
+    return {before:'',after:''};
+  }
+  function capture(article,selectedText){
     const sel=window.getSelection?.();
     if(!sel||sel.isCollapsed||!sel.rangeCount)return null;
     const r=sel.getRangeAt(0).cloneRange(),block=chooseBlock(r.startContainer,article);
@@ -101,7 +125,8 @@
       blockHash:hash(normalize(p.text)),
       fingerprint:hash(pathname()+'|'+index+'|'+start+':'+end+'|'+text)
     };
-    return{text,anchor,range:r,rect:visual};
+    const context=selectedText!==undefined&&contextBlock(r)===block?contextAt(p,start,end,selectedText):undefined;
+    return{text,anchor,range:r,rect:visual,...(context?{context}:{})};
   }
   function resolution(article){
     let list;
@@ -164,7 +189,7 @@
         && a.compareBoundaryPoints(Range.END_TO_END,b)===0; }
       catch(_) {return false;}
     }
-    return Object.freeze({blocks,visibleProjection,capture,resolve,resolution,sameRange});
+    return Object.freeze({blocks,visibleProjection,capture,resolve,resolution,sameRange,selectionContext});
   })();
   window.GBReaderAnchors = GBReaderAnchors;
 
@@ -311,9 +336,9 @@
         if (e.nodeType === 1 && e.id) { anchor = e.id; break; }
       }
     } catch {}
-    const { before, after } = contextFromSelection(selection, text);
     const article = document.querySelector('article.article-body') || document.querySelector('article');
-    const positional = article && GBReaderAnchors.capture(article);
+    const positional = article && GBReaderAnchors.capture(article,text);
+    const {before,after}=positional?.context || GBReaderAnchors.selectionContext(selection,text);
     lastSelection = { text, anchor, url: location.href, before, after,
       positionalAnchor: positional && normalizeText(positional.text) === text ? positional.anchor : null };
     window.__ssLastText__ = text;
@@ -609,12 +634,12 @@
     focusReturn = null;
   }
   function sync() { if (fab) { const count=quotes().length+notes().length+favorites().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
-  let dockImpl, dockLoad, contextFromSelection = () => ({ before: '', after: '' });
+  let dockImpl, dockLoad;
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
-    dockLoad ||= import('/js/reader-library-dock.js?v=706a54b0')
-      .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter().catch(() => {}); })
+    dockLoad ||= import('/js/reader-library-dock.js?v=adffc6aa')
+      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter().catch(() => {}); })
       .catch(() => { dockLoad = null; });
   }
   function render() {

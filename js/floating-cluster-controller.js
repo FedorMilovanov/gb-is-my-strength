@@ -1726,7 +1726,8 @@
     if (deskMq && deskMq.addEventListener) {
       deskMq.addEventListener('change', function () {
         qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open').forEach(function (ov) {
-          closeOverlay(ov, 'breakpoint', false);
+          if (ov === settingsOverlay) closeGillSheet(ov, false, 'breakpoint');
+          else closeOverlay(ov, 'breakpoint', false);
         });
         qsa('[aria-expanded="true"][data-gill-settings-open]')
           .forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
@@ -1790,6 +1791,7 @@
     // given viewport width, but keeping both in sync is free and correct).
     var settingsBtns = qsa('[data-gill-settings-open]');
     var settingsOpener = null;
+    var settingsFocusGeneration = 0;
     var extraOverlays = [settingsOverlay].filter(function(el) { return !!el; });
 
     extraOverlays.forEach(function(overlay) {
@@ -1804,6 +1806,7 @@
     }
     function openGillSheet(overlay, triggers, opener) {
       if (!overlay) return;
+      var generation = ++settingsFocusGeneration;
       var focusable = overlay.querySelector('input, button:not([data-overlay-close]):not(.toc-sheet__handle)');
       openOverlay(overlay, opener || (triggers && triggers[0]), {
         focusTarget: focusable,
@@ -1812,12 +1815,16 @@
       (triggers || []).forEach(function(t) { t.setAttribute('aria-expanded', 'true'); });
       if (!getOverlayRuntime() && focusable) setTimeout(function() {
         // A delayed legacy focus task must not target a dismissed sheet.
-        if (!overlay.classList.contains('is-open') || settingsOpener !== opener) return;
+        if (generation !== settingsFocusGeneration || getOverlayRuntime() ||
+            !overlay.classList.contains('is-open') || settingsOpener !== opener) return;
+        // Focus may already have been deliberately moved inside this sheet.
+        if (overlay.contains(document.activeElement)) return;
         try { focusable.focus({ preventScroll: true }); } catch(_) {}
       }, 20);
     }
     function closeGillSheet(overlay, restoreFocus, reason) {
       if (!overlay) return;
+      ++settingsFocusGeneration;
       var triggers = triggersFor(overlay);
       closeOverlay(overlay, reason || 'programmatic', restoreFocus !== false);
       triggers.forEach(function(t) { t.setAttribute('aria-expanded', 'false'); });
@@ -1852,6 +1859,7 @@
       var handle = overlay.querySelector('.toc-sheet__handle');
       if (handle) addCleanListener(handle, 'click', function() { closeGillSheet(overlay, true, 'handle'); });
       overlay.querySelectorAll('[data-overlay-close]').forEach(function(btn) {
+        if (btn === handle) return; // The handle already has its own close listener.
         addCleanListener(btn, 'click', function() { closeGillSheet(overlay, true, 'button'); });
       });
       // Focus trap while this sheet is open.
