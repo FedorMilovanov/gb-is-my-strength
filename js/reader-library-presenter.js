@@ -531,6 +531,8 @@ function button(action, label, text) {
 
   // No pending intent state here: the bootstrap alone owns cancellation.
   function createMountedLifecycle({overlay,editor,research,editorController,reset,render,close}) {
+    const ownerId='reader-library';
+    let layerRuntime=null;
     function activate(fab,opener) {
       reset();
       overlay.removeAttribute('inert');
@@ -541,7 +543,14 @@ function button(action, label, text) {
         opener.setAttribute('aria-controls','gb-hl-panel');
         opener.setAttribute('aria-expanded','true');
       }
-      if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
+      // Participate in the canonical overlay/print lock authority. The library
+      // retains its nested editor Escape/Tab and bootstrap focus-return policy.
+      layerRuntime=window.OverlayRuntime?.open&&window.OverlayRuntime?.close?window.OverlayRuntime:null;
+      if(layerRuntime)layerRuntime.open(ownerId,{element:overlay,opener,
+        focusTarget:()=>overlay.querySelector('#gb-hl-close'),closeOnEscape:false,
+        trapFocus:false,restoreFocus:false,lockScroll:true,
+        onRequestClose:()=>{close();return false;}});
+      else if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
       else document.body.classList.add('no-scroll');
       overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
       render();
@@ -555,7 +564,8 @@ function button(action, label, text) {
     overlay.setAttribute('inert', '');
     fab.setAttribute('aria-expanded', 'false');
     if (opener !== fab && opener?.getAttribute?.('aria-haspopup') === 'dialog') opener.setAttribute('aria-expanded','false');
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
+    if(layerRuntime){layerRuntime.close(ownerId,'library-close',{restoreFocus:false});layerRuntime=null;}
+    else if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
     else document.body.classList.remove('no-scroll');
     }
     function keydown(e) {
