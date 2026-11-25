@@ -888,6 +888,106 @@ const reviewClippedContrast = async (page, reviews) => {
   return witnesses;
 };
 try {
+  // The hosted workflow invokes --suite=mobile, not --suite=full.
+  // One bounded capability witness per route/browser, outside the large
+  // viewport matrix; the speech transport alone is mocked, never the reader.
+  if (['full','mobile'].includes(suite)) {
+    report.narrationCases = [];
+    for (const route of routes) {
+      const item = { kind: route.kind, transport: 'controlled Web Speech; not audible playback', runtime: [] };
+      const context = await contextFor(320,'light',{reducedMotion:'reduce'});
+      try {
+        const page = await context.newPage();
+        monitorRuntime(page,item.runtime,{isIgnoredConsole:isExpectedJournalConsole});
+        await page.addInitScript(() => {
+          const fixture={speak:0,pause:0,resume:0,cancel:0,last:null};
+          window.__journalSpeechFixture=fixture;
+          Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class { constructor(text){this.text=text;} }});
+          Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
+            getVoices:()=>[],addEventListener:()=>{},
+            speak(u){fixture.last=u;fixture.speak++;u.onstart?.();},
+            pause(){fixture.pause++;},resume(){fixture.resume++;},cancel(){fixture.cancel++;}
+          }});
+          window.VoskTTSEngine={isSupported:()=>false,isReady:()=>false};
+        });
+        await ready(page,route.url);
+        const slot=page.locator('[data-journal-narration]');
+        if(route.kind==='journal') {
+          assert.equal(await slot.count(),0);
+          assert.equal(await page.evaluate(()=>typeof window.GBReaderTTS),'undefined','landing must not mount the TTS runtime');
+          item.landingWithoutNarration=true;
+        } else {
+          await slot.waitFor({state:'visible'});
+          const play=slot.locator('[data-fc-action="play"]'), stop=slot.locator('[data-jn-stop]'), rate=slot.locator('[data-jn-rate]');
+          const speech=await page.evaluate(() => {
+            const projection=window.GBReaderProjection, segments=projection.getTtsSegments(document);
+            const search=projection.getSearchText(document);
+            return {
+              root:projection.getRoot(document)?.id, first:segments[0]?.element.tagName,
+              count:segments.length, excluded:segments.filter(s=>s.element.closest('[data-tts-policy="exclude"],aside,footer')).length,
+              history:segments.some(s=>s.text.includes('Пастор Джефф Кроттс')),
+              crisis:segments.some(s=>s.text.includes('Согласно заявлению совета G3 от 12 мая 2025 года')),
+              bibliographyInSearch:search.includes('Библиография')||search.includes('Источники истории'),
+              engine:typeof window.GBReaderTTS?.getState, rate:window.GBReaderRatePolicy?.read()
+            };
+          });
+          assert.equal(speech.root,'main-content'); assert.equal(speech.first,'H1');
+          assert.ok(speech.count>20); assert.equal(speech.excluded,0);
+          assert.equal(route.kind==='history'?speech.history:speech.crisis,true);
+          assert.equal(speech.bibliographyInSearch,true,'speech-only exclusions preserve document search');
+          assert.equal(speech.engine,'function'); assert.equal(await play.count(),1);
+          assert.equal(await stop.isDisabled(),true);
+          await rate.selectOption('1.25');
+          assert.equal(await page.evaluate(()=>window.GBReaderRatePolicy.read()),1.25);
+          await page.reload({waitUntil:'load'});
+          await slot.waitFor({state:'visible'});
+          assert.equal(await rate.inputValue(),'1.25');
+          await play.focus(); await page.keyboard.press('Enter');
+          await page.waitForFunction(()=>window.GBReaderTTS?.getState().phase==='playing'&&window.__journalSpeechFixture.speak===1);
+          const first=await page.evaluate(()=>({spoken:window.__journalSpeechFixture.last.text,title:document.querySelector('h1').textContent.replace(/\s+/g,' ').replace(/\s+([,.;:!?»])/g,'$1').replace(/([«])\s+/g,'$1').trim(),rate:window.__journalSpeechFixture.last.rate}));
+          assert.equal(first.spoken,first.title,'single canonical first narration segment');
+          assert.equal(first.rate,1.25,'shared speed reaches the canonical transport');
+          await page.evaluate(()=>window.__journalSpeechFixture.last.onboundary({charIndex:10}));
+          assert.ok(Number(await play.evaluate(el=>el.style.getPropertyValue('--p')))>0,'canonical progress ring receives progress');
+          await play.click();
+          await page.waitForFunction(()=>window.GBReaderTTS.getState().phase==='paused');
+          assert.equal(await page.evaluate(()=>window.__journalSpeechFixture.pause),1);
+          await play.click();
+          await page.waitForFunction(()=>window.GBReaderTTS.getState().phase==='playing');
+          assert.equal(await page.evaluate(()=>window.__journalSpeechFixture.resume),1);
+          await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+          await page.waitForFunction(()=>document.querySelector('[data-journal-narration]').hasAttribute('data-jn-docked'));
+          await stop.click();
+          assert.equal(await page.evaluate(()=>window.GBReaderTTS.getState().phase),'idle');
+          assert.equal(await play.evaluate(el=>el===document.activeElement),true);
+          const geometry=await slot.locator('.jn-controls').evaluate(el=>({rect:el.getBoundingClientRect().toJSON(),w:innerWidth,h:innerHeight}));
+          assert.ok(geometry.rect.left>=0&&geometry.rect.right<=geometry.w&&geometry.rect.bottom<=geometry.h&&geometry.rect.top>=0,JSON.stringify(geometry));
+          assert.equal(await stop.isDisabled(),true);
+          await shot(page,route.kind+'-narration-320-stopped');
+          await page.emulateMedia({media:'print'});
+          assert.equal(await slot.isVisible(),false);
+          item.projection=speech; item.firstSegment=true; item.playPauseResumeStop=true;
+          item.progress=true; item.focus=true; item.geometry=geometry; item.printHidden=true;
+        }
+        assert.deepEqual(item.runtime,[]);
+      } catch(error) {
+        item.failure=error.message; item.stack=error.stack;
+        report.problems.push(route.kind+' narration: '+error.message);
+      } finally { await context.close(); }
+      if (route.kind!=='journal') {
+        const noJs=await contextFor(320,'light',{javaScriptEnabled:false});
+        try {
+          const page=await noJs.newPage(); await ready(page,route.url);
+          assert.equal(await page.locator('[data-journal-narration]').count(),1);
+          assert.equal(await page.locator('[data-journal-narration]').isVisible(),false);
+          assert.equal(await page.locator('h1').isVisible(),true);
+          item.noJsReading=true;
+        } catch(error) { report.problems.push(route.kind+' narration no-JS: '+error.message); }
+        finally { await noJs.close(); }
+      }
+      report.narrationCases.push(item);
+    }
+  }
   // W64: actual authored history page, not another off-route geometry fixture.
   // Keep normal viewport captures with neighbouring prose and sticky chrome.
   if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
@@ -1243,83 +1343,6 @@ try {
       await second.waitForFunction(() => document.documentElement.dataset.readerTheme === 'light');
       await second.close();
       result.themeTogglePersistenceCrossTab = true;
-      if (route.kind === 'journal') {
-        assert.equal(await page.locator('[data-journal-narration]').count(),0);
-      } else {
-        const player=page.locator('[data-journal-narration]');
-        await player.waitFor({state:'visible'});
-        const speech=await page.evaluate(() => {
-          const projection=window.GBReaderProjection;
-          const segments=projection.getTtsSegments(document);
-          return {
-            root:projection.getRoot(document)?.id,
-            first:segments[0]?.element.tagName,
-            count:segments.length,
-            excluded:segments.filter(s=>s.element.closest('[data-tts-policy="exclude"],aside,footer')).length,
-            history:segments.some(s=>s.text.includes('Пастор Джефф Кроттс')),
-            crisis:segments.some(s=>s.text.includes('Согласно заявлению совета G3 от 12 мая 2025 года')),
-            engine:typeof window.GBReaderTTS?.getState,
-            rate:window.GBReaderRatePolicy?.read(),
-          };
-        });
-        assert.equal(speech.root,'main-content'); assert.equal(speech.first,'H1');
-        assert.ok(speech.count>20); assert.equal(speech.excluded,0);
-        assert.equal(route.kind==='history'?speech.history:speech.crisis,true);
-        assert.equal(speech.engine,'function');
-        assert.equal(await player.locator('[data-fc-action="play"]').count(),1);
-        assert.equal(await player.locator('[data-jn-stop]').isDisabled(),true);
-        const rate=player.locator('[data-jn-rate]');
-        await rate.selectOption('1.25');
-        assert.equal(await page.evaluate(()=>window.GBReaderRatePolicy.read()),1.25);
-        await page.reload({waitUntil:'networkidle'});
-        await player.waitFor({state:'visible'});
-        assert.equal(await rate.inputValue(),'1.25');
-        await rate.selectOption(String(speech.rate));
-        result.journalNarrationProjection= speech;
-        // Actual route + actual canonical TTS lifecycle; only the audio
-        // transport is deterministic. This is not an audible voice witness.
-        const speechContext=await contextFor(320,'light',{reducedMotion:'reduce'});
-        try {
-          const voicePage=await speechContext.newPage();
-          await voicePage.addInitScript(() => {
-            const fixture={speak:0,pause:0,resume:0,cancel:0,last:null};
-            window.__journalSpeechFixture=fixture;
-            Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class { constructor(text){this.text=text;} }});
-            Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
-              getVoices:()=>[],addEventListener:()=>{},
-              speak(u){fixture.last=u;fixture.speak++;u.onstart?.();},
-              pause(){fixture.pause++;},resume(){fixture.resume++;},cancel(){fixture.cancel++;}
-            }});
-            window.VoskTTSEngine={isSupported:()=>false,isReady:()=>false};
-          });
-          await ready(voicePage,route.url);
-          const slot=voicePage.locator('[data-journal-narration]');
-          const play=slot.locator('[data-fc-action="play"]'), stop=slot.locator('[data-jn-stop]');
-          await slot.waitFor({state:'visible'});
-          await play.focus(); await voicePage.keyboard.press('Enter');
-          await voicePage.waitForFunction(()=>window.GBReaderTTS?.getState().phase==='playing'&&window.__journalSpeechFixture.speak===1);
-          const first=await voicePage.evaluate(()=>({spoken:window.__journalSpeechFixture.last.text,title:document.querySelector('h1').textContent.replace(/\\s+/g,' ').trim()}));
-          assert.equal(first.spoken,first.title,'single canonical first narration segment');
-          await voicePage.evaluate(()=>window.__journalSpeechFixture.last.onboundary({charIndex:10}));
-          assert.ok(Number(await play.evaluate(el=>el.style.getPropertyValue('--p')))>0,'canonical progress ring receives progress');
-          await play.click();
-          await voicePage.waitForFunction(()=>window.GBReaderTTS.getState().phase==='paused');
-          assert.equal(await voicePage.evaluate(()=>window.__journalSpeechFixture.pause),1);
-          await play.click();
-          await voicePage.waitForFunction(()=>window.GBReaderTTS.getState().phase==='playing');
-          assert.equal(await voicePage.evaluate(()=>window.__journalSpeechFixture.resume),1);
-          await voicePage.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
-          await voicePage.waitForFunction(()=>document.querySelector('[data-journal-narration]').hasAttribute('data-jn-docked'));
-          await stop.click();
-          assert.equal(await voicePage.evaluate(()=>window.GBReaderTTS.getState().phase),'idle');
-          assert.equal(await play.evaluate(el=>el===document.activeElement),true);
-          const geometry=await slot.locator('.jn-controls').evaluate(el=>({rect:el.getBoundingClientRect().toJSON(),w:innerWidth,h:innerHeight}));
-          assert.ok(geometry.rect.left>=0&&geometry.rect.right<=geometry.w&&geometry.rect.bottom<=geometry.h&&geometry.rect.top>=0,JSON.stringify(geometry));
-          await voicePage.emulateMedia({media:'print'});
-          assert.equal(await slot.isVisible(),false);
-          result.journalNarrationTransport={transport:'controlled Web Speech, not audible playback',firstSegment:true,playPauseResumeStop:true,progress:true,focus:true,geometry,printHidden:true};
-        } finally { await speechContext.close(); }
-      }
       await page.evaluate(() => window.GBReaderPreferences.set({ fontScale: 1.4 }, { source: 'journal-qa' }));
       await page.evaluate(() => document.documentElement.style.fontSize = '200%');
       const resized = await inspect(page);
