@@ -658,6 +658,7 @@
       prepared: true,
       route: location.pathname,
       pageContentHeight: Math.round(pageHeight),
+      atomicLimitPx: pageHeight * 0.84,
       paperGeometry: paperGeometry,
       stats: stats
     };
