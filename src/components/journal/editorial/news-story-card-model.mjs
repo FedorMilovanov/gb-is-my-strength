@@ -39,16 +39,18 @@ function sizes(value) {
 /** @param {any} card */
 export function assertNewsStoryCard(card) {
   if (!card || !text(card.title) || !text(card.label) || typeof card.href !== 'string' || !route.test(card.href)) throw new Error('Required editorial title, label and canonical internal article route');
-  if (!['feature','analysis','brief'].includes(card.variant ?? 'analysis')) throw new Error('Unknown story variant');
-  if (![2,3].includes(card.headingLevel ?? 3)) throw new Error('Invalid heading level');
+  const variant = card.variant === undefined ? 'analysis' : card.variant;
+  const headingLevel = card.headingLevel === undefined ? 3 : card.headingLevel;
+  if (!['feature','analysis','brief'].includes(variant)) throw new Error('Unknown story variant');
+  if (![2,3].includes(headingLevel)) throw new Error('Invalid heading level');
   for (const key of ['deck','readingLabel','actionLabel']) if (card[key] !== undefined && !text(card[key])) throw new Error('Empty optional editorial text: '+key);
   if (card.publishedAt !== undefined || card.publishedLabel !== undefined) {
     if (!date(card.publishedAt) || !text(card.publishedLabel)) throw new Error('Explicit valid publication timestamp and label required');
   }
   if (card.companion !== undefined && typeof card.companion !== 'boolean') throw new Error('Invalid companion flag');
-  if (card.companion && (card.variant ?? 'analysis') !== 'analysis') throw new Error('Companion uses analysis variant');
+  if (card.companion && variant !== 'analysis') throw new Error('Companion uses analysis variant');
   if (card.landingLead !== undefined && typeof card.landingLead !== 'boolean') throw new Error('Invalid landing image hook');
-  if (card.landingLead && ((card.variant ?? 'analysis') !== 'feature' || !card.media)) throw new Error('Landing image hook requires illustrated feature');
+  if (card.landingLead && (variant !== 'feature' || !card.media)) throw new Error('Landing image hook requires illustrated feature');
   const m=card.media;
   if (m !== undefined) {
     if (!m || !text(m.alt) || !text(m.caption) || !sizes(m.sizes) || typeof m.src !== 'string' || !image.test(m.src) || !Number.isInteger(m.width) || !Number.isInteger(m.height) || m.width<1 || m.height<1) throw new Error('Local image, intrinsic dimensions, alt, caption and sizes required');
