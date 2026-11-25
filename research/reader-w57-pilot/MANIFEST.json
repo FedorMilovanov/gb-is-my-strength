@@ -43,8 +43,8 @@
     },
     {
       "name": "reader_editorial_refinement.js",
-      "sha256": "09fc3bc9f7a964ad2950011e082258b1cf9d2b3ac879015c2ff14b47a88cfb0a",
-      "bytes": 8067
+      "sha256": "86b39353bda06734907214fae6bb5a09265409999ac50cd8cb6f7616ba5d72ed",
+      "bytes": 8115
     },
     {
       "name": "reader_editorial_consolidation.js",
