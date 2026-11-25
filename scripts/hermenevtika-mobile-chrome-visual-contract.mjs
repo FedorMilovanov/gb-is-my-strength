@@ -271,30 +271,58 @@ try {
         }];
         localStorage.setItem('gb-highlights-v1', JSON.stringify(seeded));
       });
-      const page = await context.newPage();
       for (const entry of entries) {
         for (const viewport of VIEWPORTS) {
-          await page.setViewportSize({ width: viewport.width, height: viewport.height });
-          await page.goto(origin + entry.route, { waitUntil: 'domcontentloaded' });
-          await waitForStable(page);
-          const state = await snapshot(page);
-          check(engine, viewport.name, entry.route, 'reader chrome never creates horizontal overflow', state.scrollWidth <= state.viewport.width + 1, state);
+          // Resize a blank document, never an outgoing live Reader that may
+          // legitimately reload when crossing the ARGON admission boundary.
+          const page = await context.newPage();
+          try {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            const url = new URL(entry.route, origin);
+            if (viewport.width >= 1121) {
+              const response = await page.goto(url.href, { waitUntil: 'domcontentloaded' });
+              assert.equal(response.status(), 200);
+              await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+                window.__NP_UNIVERSAL_PREVIEW__?.ready && window.__NP_W57_ANNOTATIONS__?.ready,
+                null, { timeout: 15000 });
+              const argon = await page.evaluate(() => ({
+                width: innerWidth, overflow: document.documentElement.scrollWidth - innerWidth,
+                explicit: new URLSearchParams(location.search).has('reader-pilot'),
+                outline: !!document.querySelector('#npUOutline')?.getClientRects().length
+              }));
+              check(engine, viewport.name, entry.route, 'default ARGON owns admitted desktop route without overflow',
+                argon.width === viewport.width && argon.overflow <= 1 && !argon.explicit && argon.outline, argon);
+              url.searchParams.set('reader-pilot', '0');
+            }
+            const response = await page.goto(url.href, { waitUntil: 'domcontentloaded' });
+            assert.equal(response.status(), 200);
+            await waitForStable(page);
+            const classic = await page.evaluate(() => ({
+              explicit: new URLSearchParams(location.search).get('reader-pilot'),
+              runtime: !!window.__NP_UNIVERSAL_PREVIEW__ || !!window.__NP_W57_ANNOTATIONS__,
+              ready: document.body.classList.contains('np-w57-ready')
+            }));
+            check(engine, viewport.name, entry.route, 'native Classic owner is selected without ARGON runtime',
+              !classic.runtime && !classic.ready && (viewport.width >= 1121 ? classic.explicit === '0' : classic.explicit === null), classic);
+            const state = await snapshot(page);
+            check(engine, viewport.name, entry.route, 'reader chrome never creates horizontal overflow', state.scrollWidth <= state.viewport.width + 1, state);
 
-          if (viewport.width <= 1199) {
-            check(engine, viewport.name, entry.route, 'Hermenevtika mobile bars own <=1199 and desktop floater is absent', state.top.visible && state.bottom.visible && !state.floater.visible && !state.rail.visible, state);
-            await assertHighlightsGeometry(page, engine, viewport.name, entry.route);
-          } else {
-            check(engine, viewport.name, entry.route, 'desktop rail/floater own >=1200 and mobile bars are absent', state.floater.visible && state.rail.visible && !state.top.visible && !state.bottom.visible, state);
-          }
+            if (viewport.width <= 1199) {
+              check(engine, viewport.name, entry.route, 'Hermenevtika mobile bars own <=1199 and desktop floater is absent', state.top.visible && state.bottom.visible && !state.floater.visible && !state.rail.visible, state);
+              await assertHighlightsGeometry(page, engine, viewport.name, entry.route);
+            } else {
+              check(engine, viewport.name, entry.route, 'desktop rail/floater own >=1200 and mobile bars are absent', state.floater.visible && state.rail.visible && !state.top.visible && !state.bottom.visible, state);
+            }
 
-          if (viewport.width === 390) {
-            await exerciseHighlights(page, engine, viewport.name, entry.route);
-          }
+            if (viewport.width === 390) {
+              await exerciseHighlights(page, engine, viewport.name, entry.route);
+            }
 
-          if (engine === 'chromium' && [390, 900, 1199, 1200].includes(viewport.width)) {
-            const safeRoute = entry.route.replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9]+/gi, '-');
-            await page.screenshot({ path: path.join(REPORTS, `hermenevtika-mobile-chrome-${safeRoute}-${viewport.width}.png`), fullPage: false });
-          }
+            if (engine === 'chromium' && [390, 900, 1199, 1200].includes(viewport.width)) {
+              const safeRoute = entry.route.replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9]+/gi, '-');
+              await page.screenshot({ path: path.join(REPORTS, `hermenevtika-mobile-chrome-${safeRoute}-${viewport.width}.png`), fullPage: false });
+            }
+          } finally { await page.close(); }
         }
       }
       await context.close();
