@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v239-reader-atlas-print-candidate-20261124';
+const CACHE_VERSION = 'gb-v240-reader-w224-preview-20261125';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -17,12 +17,12 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=3758e4c9',
+  '/css/site.css?v=6455310d',
   '/css/home.css?v=4a2fa9a3',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
   '/css/nagornaya-mobile-toc.css?v=623e0845',
-  '/css/floating-cluster.css?v=6a62a50f',
+  '/css/floating-cluster.css?v=0457785a',
   '/css/series-samizdat.css?v=6d9658bd',
   '/css/reader-preferences.css?v=9f01260b',
   '/css/enhancements-runtime.css?v=d195a91d',
@@ -36,16 +36,16 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=73fb9705',
+  '/js/highlights.js?v=66cfd564',
   '/js/reader-library-storage.js?v=74af6e6a',
   '/js/reader-library-record-transactions.js?v=ecb28bb6',
   '/js/reader-library-presenter.js?v=e0eb7d74',
   '/js/reader-library-selection.js?v=f0732680',
   '/js/reader-library-v3.js?v=d6fdb5cb',
-  '/js/reader-library-dock.js?v=706a54b0',
+  '/js/reader-library-dock.js?v=adffc6aa',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
-  '/js/floating-cluster-controller.js?v=3f65d478',
+  '/js/floating-cluster-controller.js?v=8a5870b1',
   '/js/reader-preferences-head.js?v=ac352cfd',
   '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=af589b59',
