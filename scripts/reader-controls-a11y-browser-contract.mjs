@@ -5,6 +5,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import ts from 'typescript';
 import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -1696,7 +1697,11 @@ async function auditGillActivationTeardown(browser) {
     const source = fs.readFileSync(path.join(ROOT,'src/components/article-pilots/gill-series/GillMobileOverlayActivationBoundary.astro'),'utf8');
     const match = source.match(/<script>([\s\S]*?)<\/script>/);
     assert.ok(match,'activation boundary source script required');
-    await page.addScriptTag({content:match[1]});
+    // Astro's processed script may contain TypeScript. Execute its emitted
+    // JavaScript, not raw TS; keep the same source owner and all assertions.
+    const emitted=ts.transpileModule(match[1],{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext},reportDiagnostics:true});
+    assert.equal(emitted.diagnostics?.length||0,0,'activation boundary transpilation must succeed');
+    await page.addScriptTag({content:emitted.outputText});
     const witness = await page.evaluate(async () => {
       let delivered = 0;
       const callbacks = [];
@@ -1778,7 +1783,11 @@ async function auditGillActivationFocusDeparture(browser) {
     const source = fs.readFileSync(path.join(ROOT,'src/components/article-pilots/gill-series/GillMobileOverlayActivationBoundary.astro'),'utf8');
     const match = source.match(/<script>([\s\S]*?)<\/script>/);
     assert.ok(match,'activation boundary script required');
-    await page.addScriptTag({content:match[1]});
+    // Astro's processed script may contain TypeScript. Execute its emitted
+    // JavaScript, not raw TS; keep the same source owner and all assertions.
+    const emitted=ts.transpileModule(match[1],{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext},reportDiagnostics:true});
+    assert.equal(emitted.diagnostics?.length||0,0,'activation boundary transpilation must succeed');
+    await page.addScriptTag({content:emitted.outputText});
     await page.evaluate(()=>{
       const state = {callbacks:[], delivered:0};
       window.__gbFocusDepartureWitness=state;
