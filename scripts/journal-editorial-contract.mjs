@@ -389,6 +389,7 @@ const readerLinks = new Map([
   ['G3-S012', 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html'],
   ['G3-S015', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
   ['G3-S017', 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/'],
+  ['G3-S035', 'https://protestia.com/2026/08/17/g3-promised-cooperative-not-competitive-the-anonymous-targeting-continued/4/'],
   ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
 ]);
 for (const [id, href] of readerLinks) {
