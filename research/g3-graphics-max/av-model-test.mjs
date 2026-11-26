@@ -23,4 +23,10 @@ test('non-string source fragment fails closed without throwing',()=>assert.equal
 test('coerced source fragment is not a reviewed string',()=>{const href=[v.sourceLinks[0].href];assert.equal(exhibitView({...v,sourceLinks:[{...v.sourceLinks[0],href}],publication:{...v.publication,sourceLinks:[{...v.publication.sourceLinks[0],href}]}}),null)});
 test('non-string frame hash omits frame without throwing',()=>assert.equal(exhibitView({...v,frame:{...v.frame,sha256:Symbol('bad')}}).frame,null));
 test('coerced frame hash is not an approved hash string',()=>{const sha256=[v.frame.sha256];assert.equal(exhibitView({...v,frame:{...v.frame,sha256,rights:{...v.frame.rights,sha256}}}).frame,null)});
+// URL(string) without a base can accept a different destination than an HTML href.
+const withUrl=(field,url)=>({...v,[field]:url,publication:{...v.publication,[field]:url},audio:{...v.audio,[field]:url}});
+for(const field of ['recordingUrl','playbackHref']){
+ for(const [name,url] of Object.entries({'same-scheme relative':'https:example.invalid/test-recording','extra slash':'https:///example.invalid/test-recording','embedded tab':'https://example.invalid/te\tst','backslash':'https:\\example.invalid\\test-recording','raw space':'https://example.invalid/raw space'}))test(field+' rejects '+name,()=>assert.equal(exhibitView(withUrl(field,url)),null));
+ for(const [name,url] of Object.entries({'encoded space':'https://example.invalid/test%20recording','query and fragment':'https://example.invalid/watch?v=abc&start=12#time','IPv6 with port':'https://[2001:db8::1]:8443/test','uppercase scheme':'HTTPS://example.invalid/recording'}))test(field+' accepts '+name,()=>assert.ok(exhibitView(withUrl(field,url))));
+}
 console.log('AV_MODEL_PASS='+passes);

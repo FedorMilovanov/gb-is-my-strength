@@ -2,7 +2,7 @@
 const clean=v=>typeof v==='string'&&v.trim().length>0&&v===v.trim();
 const token=v=>clean(v)&&/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(v);
 const integer=v=>Number.isSafeInteger(v)&&v>=0;
-const https=v=>{if(!clean(v))return false;try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password;}catch{return false}};
+const https=v=>{if(!clean(v)||!/^https:\/\/[^/?#\\]+/i.test(v)||/[\s\\\u0000-\u001f\u007f]/.test(v))return false;try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password;}catch{return false}};
 const local=v=>clean(v)&&/^\/(?!\/)[A-Za-z0-9/_.,~-]+\.(?:avif|webp|png|jpe?g)$/i.test(v)&&!v.split('/').some(x=>x==='..'||x==='.');
 const date=v=>{if(!clean(v)||!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const d=new Date(v+'T00:00:00Z');return !Number.isNaN(+d)&&d.toISOString().slice(0,10)===v};
 const approval=(a,sessionId,excerptId)=>a?.status==='accepted'&&token(a.reviewRef)&&a.sessionId===sessionId&&a.excerptId===excerptId;
