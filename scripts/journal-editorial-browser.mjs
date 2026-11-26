@@ -977,6 +977,16 @@ try {
         report.problems.push('Isolated Firefox audio diagnostic harness: '+String(error));
       } finally { await context.close(); }
     }
+    // Hosted Firefox now provides an isolated real audio server. Its output
+    // is virtual, but both unmuted streams must actually decode and advance.
+    // Local runs retain diagnostic-only behavior without a provisioned sink.
+    if (process.env.G3_REQUIRE_AUDIO_SINK==='1') {
+      report.audioSinkProbe.diagnosticOnly=false;
+      const cases=report.audioSinkProbe.cases;
+      if (cases.length!==4 || cases.some(item=>item.progressed!==true)) {
+        report.problems.push('Provisioned Firefox audio sink did not pass all four playback probes');
+      }
+    }
   }
   // The hosted workflow invokes --suite=mobile, not --suite=full.
   // One bounded capability witness per route/browser, outside the large

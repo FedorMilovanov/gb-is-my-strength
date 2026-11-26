@@ -130,6 +130,34 @@ jobs:
           npm run pagefind:build:dist
       - name: Install real browser engine
         run: npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Provision and verify isolated Firefox CI audio sink
+        if: matrix.engine == 'firefox'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
+          audio_root="$(mktemp -d "${RUNNER_TEMP}/g3-audio-XXXXXX")"
+          chmod 700 "$audio_root"
+          export PULSE_SERVER="unix:$audio_root/native"
+          # A real audio server and dedicated virtual output, not muted media.
+          # Keep this private to the runner user; do not expose a TCP listener.
+          printf '%s\n' \
+            "load-module module-native-protocol-unix socket=$audio_root/native auth-anonymous=1" \
+            'load-module module-null-sink sink_name=g3_ci_audio rate=48000 channels=2' \
+            'set-default-sink g3_ci_audio' > "$audio_root/daemon.pa"
+          pulseaudio --daemonize=yes --exit-idle-time=-1 --use-pid-file=no \
+            --log-target="file:$audio_root/pulse.log" -n --file="$audio_root/daemon.pa"
+          ready=0
+          for attempt in {1..30}; do
+            if pactl info > "$audio_root/info.txt" 2>&1; then ready=1; break; fi
+            sleep .2
+          done
+          if (( ! ready )); then cat "$audio_root/info.txt" "$audio_root/pulse.log" >&2; exit 1; fi
+          test "$(pactl get-default-sink)" = g3_ci_audio
+          pactl list short sinks
+          cat "$audio_root/info.txt"
+          printf 'PULSE_SERVER=%s\nG3_REQUIRE_AUDIO_SINK=1\n' "$PULSE_SERVER" >> "$GITHUB_ENV"
       - name: Source-check published-only browser witness
         run: node --check scripts/journal-editorial-browser.mjs
       - name: Exercise three public routes and native noJS keyboard
