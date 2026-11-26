@@ -1029,6 +1029,23 @@ try {
           assert.equal(await slot.count(),0);
           assert.equal(await page.evaluate(()=>typeof window.GBReaderTTS),'undefined','landing must not mount the TTS runtime');
           item.landingWithoutNarration=true;
+          // Reuse the already loaded landing, not another browser matrix.
+          // Preserve lazy-image evidence without changing production attributes.
+          try {
+            const images=page.locator('main img:visible');
+            for (const image of await images.all()) await image.scrollIntoViewIfNeeded({timeout:5000});
+            await page.waitForFunction(() => [...document.querySelectorAll('main img')]
+              .filter(image=>image.getClientRects().length)
+              .every(image=>image.complete && image.naturalWidth>0), {}, {timeout:10000});
+            await page.evaluate(() => window.scrollTo({top:0,left:0,behavior:'instant'}));
+            await settle(page);
+            await shot(page,'journal-landing-320-light-viewport',{fullPage:false});
+            await shot(page,'journal-landing-320-light-full',{fullPage:true});
+            item.landingEvidence={width:320,theme:'light',viewport:'after/journal-landing-320-light-viewport.png',
+              full:'after/journal-landing-320-light-full.png',images:await images.count()};
+          } catch(error) {
+            item.landingEvidenceFailure=String(error);
+          }
         } else {
           await slot.waitFor({state:'visible'});
           const play=slot.locator('[data-fc-action="play"]'), stop=slot.locator('[data-jn-stop]'), rate=slot.locator('[data-jn-rate]');
