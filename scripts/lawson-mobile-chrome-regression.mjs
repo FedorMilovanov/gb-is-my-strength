@@ -185,7 +185,20 @@ export function inspectMobileChrome(lawson) {
         const gap = Math.abs(badgeRect.left - playRect.right);
         if (gap>=60) errors.push(`badge not compact: gap ${gap}px >=60`);
         if (playRect.width<30 || playRect.height<30) errors.push(`play too small: ${playRect.width}x${playRect.height}`);
-        if (badgeRect.width>50 || badgeRect.height>35) errors.push(`badge too large: ${badgeRect.width}x${badgeRect.height}`);
+        // Canonical Reader separates a 44px touch button from the compact
+        // painted pill (::before). Do not measure the pill using the hitbox.
+        if (badgeRect.width<44 || badgeRect.height<44 || badgeRect.width>50 || badgeRect.height>50)
+          errors.push(`badge touch target outside 44–50px: ${badgeRect.width}x${badgeRect.height}`);
+        const pill = getComputedStyle(badge, '::before');
+        const insets = [pill.left,pill.right,pill.top,pill.bottom].map(parseFloat);
+        const pillWidth = badgeRect.width-insets[0]-insets[1];
+        const pillHeight = badgeRect.height-insets[2]-insets[3];
+        if (pill.content==='none' || pill.content==='normal' || pill.display==='none' ||
+          pill.visibility!=='visible' || Number(pill.opacity)<=0 ||
+          pill.backgroundColor==='transparent' || pill.backgroundColor==='rgba(0, 0, 0, 0)' ||
+          !insets.every(Number.isFinite) || insets.some(v=>v<0) ||
+          !(pillWidth>0 && pillWidth<=50 && pillHeight>0 && pillHeight<=35))
+          errors.push(`badge visual pill invalid: ${pillWidth}x${pillHeight}`);
       } else if (!lawson) {
         // These routes should have play+ badge — check if play element exists at all
         const hasPlay = !!document.querySelector('.hm-ember, .gb-ember');
