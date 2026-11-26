@@ -15,7 +15,7 @@ if(entries.length!==row.citations.length||new Set(entries.map(e=>e.source?.id)).
 <p class="jhc-kicker">PRIVATE_REVIEW · не для публикации</p>
 <section class="jhc" aria-labelledby="jhc-title"><header><p class="jhc-kicker">2022 · Документальное сопоставление</p><h2 id="jhc-title">Два материала о Писании</h2><p class="jhc-summary jhe-summary" data-history-expansion-claim={specimen.claimId}>{row.summary}</p></header>
 <p class="jhc-kicker">{row.citations.length} публикации · одна семья свидетельств</p>
-<div class="jhc-compare" aria-label="Темы публикаций, не противоположные позиции">{entries.map((entry,i)=><section class="jhc-record jhe-group"><p class="jhc-kicker">0{i+1} · <span data-record-date-role={entry.date.role}>{entry.date.value?<time datetime={entry.date.value}>{entry.date.display}</time>:entry.date.display} · {entry.date.label}</span></p><h3>{entry.label}</h3><div data-source-id={entry.source.id}><a {...documentCitationAttributes(entry.citation,entry.source.label)}>{entry.source.label}</a><p class="jhc-role">{entry.source.role}</p></div></section>)}</div>
+<div class="jhc-compare" aria-label="Темы публикаций, не противоположные позиции">{entries.map((entry,i)=><section class="jhc-record jhe-group"><p class="jhc-kicker">0{i+1} · <span data-record-date-role={entry.date.role}>{entry.date.value?<time datetime={entry.date.value}>{entry.date.display}</time>:entry.date.display} · {entry.date.label}</span></p><h3>{entry.label}</h3><div data-source-id={entry.source.id}><a {...documentCitationAttributes(entry.citation,'К источнику',entry.source.label)}>К источнику</a><p class="jhc-source">{entry.source.label}</p><p class="jhc-role">{entry.source.role}</p></div></section>)}</div>
 <aside class="jhc-boundary jhe-boundary"><h3>Предел доказательства</h3><p>{row.limitation}</p></aside></section>
 <section aria-label="Источники">{specimen.sources.map(source=><section id={'private-src-'+source.id} class="bibliography-item"><h3>{source.label}</h3><p lang="en">{source.locator}</p><div class="news-bib-actions"><a href={source.url} rel="noopener noreferrer">Открыть источник</a> <SourceReturn href={'#'+row.citations.find(c=>c.source.id===source.id).citationId}/></div></section>)}</section>
 </article></main></body></html>
@@ -29,7 +29,7 @@ if(entries.length!==row.citations.length||new Set(entries.map(e=>e.source?.id)).
 .jhc-record{min-width:0;overflow-wrap:anywhere;border-block-start:1px solid var(--je-rule);padding-block:1rem}
 .jhc h3{font:600 1.2rem/1.35 var(--je-serif);margin:0 0 .5rem;hyphens:none}
 .jhc-record a{display:inline-flex;align-items:center;min-height:44px;font:600 .9rem/1.4 var(--je-ui);color:var(--je-gold);text-decoration:underline}
-.jhc-role{font:400 calc(.9rem * var(--gb-reader-font-scale,1))/1.6 var(--je-body);margin:0}
+.jhc-source,.jhc-role{font:400 calc(.9rem * var(--gb-reader-font-scale,1))/1.6 var(--je-body);margin:0}
 .jhc-boundary{border-inline-start:2px solid var(--je-rule);padding-inline-start:1rem;margin-block:1rem}
 @container(min-width:44rem){.jhc-compare{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem}.jhc-record+ .jhc-record{border-inline-start:1px solid var(--je-rule);padding-inline-start:1.5rem}}
 @media print{.jhc{container-type:normal;color:#111;border-color:#555}.jhc-compare{display:block}.jhc-record,.jhc-boundary{break-inside:avoid}.jhc-record a{display:block;min-height:0}.jhc :is(p,a,h3){color:#111}}

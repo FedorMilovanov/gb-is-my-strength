@@ -110,11 +110,20 @@ if(historyMode){
     if(js)await page.waitForFunction(()=>document.querySelector('[data-journal-source-navigation]').dataset.journalSourceNavigationBound==='true');
     for(let i=0;i<history.sources.length;i++){
      const link=links.nth(i),id=await link.getAttribute('id'),href=await link.getAttribute('href');
-     assert.equal(await link.innerText(),history.sources[i].label);assert.ok((await link.getAttribute('aria-label')).startsWith(history.sources[i].label+' · '));
+     const source=history.sources[i];
+     const label=compareMode?'К источнику':source.label;
+     assert.equal(await link.innerText(),label);
+     const accessible=await link.getAttribute('aria-label');
+     assert.ok(accessible.startsWith(label+' · '));
+     if(compareMode){
+       const record=page.locator('.jhc-record').nth(i);
+       assert.equal(await record.locator('.jhc-source').innerText(),source.label);
+       assert.equal(accessible,label+' · '+source.locator+' · '+source.label);
+     }
      await activateCitation(page,link,href,{mode:compareMode?'compare':'history',name,width,dark,js,i});
      const back=page.locator(href+' [data-journal-source-return]');assert.equal(await back.getAttribute('href'),'#'+id);await activateCitation(page,back,'#'+id,{mode:compareMode?'compare':'history',name,width,dark,js,i});
     }
-    const sizes=()=>page.evaluate(()=>[...document.querySelectorAll(' .jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-role')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
+    const sizes=()=>page.evaluate(()=>[...document.querySelectorAll(' .jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-source,.jhc-role')].map(el=>parseFloat(getComputedStyle(el).fontSize)));
     const base=await sizes();
     await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
     try{
@@ -178,7 +187,7 @@ if(historyMode){
       console.log('HISTORY_PAPER_PASS '+JSON.stringify(paperAcceptance.at(-1)));
      }
     }
-    const interaction=interactionTarget(width,dark,js,1440)?await captureKeyboardScale(page,{url,dark,js,evidence,stem:['qa-'+(compareMode?'compare-2022':'history-2018'),name,width,dark?'dark':'light',js?'js':'nojs'].join('-'),scaleSelector:'.jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-role,.bibliography-item :is(h2,h3),.bibliography-item > p:not(.biblio-meta),.bibliography-item a[href],a[data-journal-citation],.jhe .jhe-kicker,.jhc .jhc-kicker,.jhe h3,.jhc h3,.jhe h2,.jhc h2',citations:history.sources.length,external:history.sources.length,returns:history.sources.length}):null;
+    const interaction=interactionTarget(width,dark,js,1440)?await captureKeyboardScale(page,{url,dark,js,evidence,stem:['qa-'+(compareMode?'compare-2022':'history-2018'),name,width,dark?'dark':'light',js?'js':'nojs'].join('-'),scaleSelector:'.jhe-summary,.jhe-boundary p,.jhe-group li p,.jhc-source,.jhc-role,.bibliography-item :is(h2,h3),.bibliography-item > p:not(.biblio-meta),.bibliography-item a[href],a[data-journal-citation],.jhe .jhe-kicker,.jhc .jhc-kicker,.jhe h3,.jhc h3,.jhe h2,.jhc h2',citations:history.sources.length,external:history.sources.length,returns:history.sources.length}):null;
     results.push({name,width,dark,js,citations:history.sources.length,interaction});await writeFile(join(evidence,'history-results.json'),JSON.stringify(results,null,2));console.log('HISTORY_PASS '+JSON.stringify(results.at(-1)));
    }finally{await page.close();}
   }
@@ -203,7 +212,8 @@ try{
      assert.equal(witness.links.length,variant==='before'?1:2);
      if(variant==='compact')await verifyCompactLinkNames(page);
      assert.ok(witness.links.every(l=>l.href==='#src-G3-S008'));
-     assert.equal(await page.locator('#src-G3-S008 a[href^="https://"]').count(),2);
+     const sourceActions=await page.locator('#src-G3-S008 a[href^="https://"]').evaluateAll(links=>links.map(a=>({href:a.getAttribute('href'),label:a.textContent.trim(),description:document.getElementById(a.getAttribute('aria-describedby'))?.textContent.trim()})));
+     assert.deepEqual(sourceActions,specimen.locators.map(l=>({href:l.url,label:l.key===specimen.sourceIdentity?'Открыть архив заявления':'Открыть воспроизведение заявления',description:l.label})), 'short native source actions preserve complete locators and exact destinations');
      for(const link of witness.links){
       const target=page.locator('[id='+JSON.stringify(link.id)+']');
       await activateCitation(page,target,'#src-G3-S008',{mode:'compact-compare',name,width,dark,variant});
@@ -213,7 +223,7 @@ try{
      await page.goto(url+'/'+variant+'/');if(dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));await waitForCanonicalFonts(page);
      const stem=[name,width,dark?'dark':'light',variant].join('-');
      await page.screenshot({path:join(evidence,stem+'-full.png'),fullPage:true});await page.screenshot({path:join(evidence,stem+'-viewport.png')});
-     const interaction=variant==='compact'&&interactionTarget(width,dark,true,1440)?await captureKeyboardScale(page,{url:url+'/compact/',dark,js:true,evidence,stem:['qa-compact',name,width,dark?'dark':'light','js'].join('-'),scaleSelector:'.jdc-summary,.jdc-note dd,.bibliography-item :is(h2,h3),.bibliography-item > p:not(.biblio-meta),.bibliography-item a[href],a[data-journal-citation],.jdc .jdc-kicker,.jdc-dates dt,.jdc-dates dd,.jdc-note dt,.jdc h3',citations:2,external:2,returns:1}):null;
+     const interaction=variant==='compact'&&interactionTarget(width,dark,true,1440)?await captureKeyboardScale(page,{url:url+'/compact/',dark,js:true,evidence,stem:['qa-compact',name,width,dark?'dark':'light','js'].join('-'),scaleSelector:'.jdc-summary,.jdc-note dd,.bibliography-item :is(h2,h3),.bibliography-item > p:not(.biblio-meta),.bibliography-item li > p,.bibliography-item a[href],a[data-journal-citation],.jdc .jdc-kicker,.jdc-dates dt,.jdc-dates dd,.jdc-note dt,.jdc h3',citations:2,external:2,returns:1}):null;
      results.push({name,width,dark,variant,opening:witness.opening,textStart:witness.textStart,links:witness.links.length,interaction});await writeFile(join(evidence,'results.json'),JSON.stringify(results,null,2));console.log('CASE_PASS '+stem);
     }finally{await page.close();}
    }
@@ -286,7 +296,7 @@ try{
        paperAcceptance.push({format,dark,pages:pages.length,words:count,file});console.log('PAPER_PASS '+format+' '+dark+' '+pages.length+' words='+count);
       }
      }
-     const interaction=interactionTarget(width,dark,false,1440)?await captureKeyboardScale(page,{url:url+'/compact/',dark,js:false,evidence,stem:['qa-compact',name,width,dark?'dark':'light','nojs'].join('-'),scaleSelector:'.jdc-summary,.jdc-note dd,.bibliography-item :is(h2,h3),.bibliography-item > p:not(.biblio-meta),.bibliography-item a[href],a[data-journal-citation],.jdc .jdc-kicker,.jdc-dates dt,.jdc-dates dd,.jdc-note dt,.jdc h3',citations:2,external:2,returns:1}):null;
+     const interaction=interactionTarget(width,dark,false,1440)?await captureKeyboardScale(page,{url:url+'/compact/',dark,js:false,evidence,stem:['qa-compact',name,width,dark?'dark':'light','nojs'].join('-'),scaleSelector:'.jdc-summary,.jdc-note dd,.bibliography-item :is(h2,h3),.bibliography-item > p:not(.biblio-meta),.bibliography-item li > p,.bibliography-item a[href],a[data-journal-citation],.jdc .jdc-kicker,.jdc-dates dt,.jdc-dates dd,.jdc-note dt,.jdc h3',citations:2,external:2,returns:1}):null;
      compactAcceptance.push({name,width,dark,js:false,citations:2,textScale:2,interaction});
      await writeFile(join(evidence,'compact-acceptance.json'),JSON.stringify({compactAcceptance,paperAcceptance},null,2));
      console.log('COMPACT_PASS '+stem);

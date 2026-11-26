@@ -73,6 +73,10 @@
     display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 8px;
     margin-block-start: 6px;
   }
+  .news-private-review .bibliography-item li > p {
+    margin: 0 6px .25rem; overflow-wrap: anywhere;
+    font: 400 calc(.875rem * var(--gb-reader-font-scale, 1))/1.6 var(--je-ui);
+  }
   .news-private-review .bibliography-item li + li { margin-block-start: 8px; }
   .news-private-review .jdc-links { row-gap: 8px; }
   .news-private-review .jhe-group li { padding-block: 8px; }
