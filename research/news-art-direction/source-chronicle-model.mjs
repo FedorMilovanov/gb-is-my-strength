@@ -25,6 +25,8 @@ export function groupSourceChronicle(sources, selection) {
       // URL() normalizes special-scheme input that the browser may resolve relative to the current page.
       // Keep the authored evidence link unambiguous, just as in the AV exhibit.
       if (!/^https:\/\/[^/\\?#]/i.test(source.url) || /[\\\s\u0000-\u001f\u007f]/u.test(source.url)) throw new Error('Absolute HTTPS source URL required');
+      // URL() erases empty userinfo; reject its authored delimiter in the authority only.
+      if (/^https:\/\/[^/?#]*@/i.test(source.url)) throw new Error('HTTPS source URL required');
       let url;
       try { url = new URL(source.url); } catch { throw new Error('Invalid source URL'); }
       if (url.protocol !== 'https:' || url.username || url.password) throw new Error('HTTPS source URL required');

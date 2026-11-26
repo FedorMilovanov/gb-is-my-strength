@@ -46,3 +46,11 @@ for (const url of ['https:example.org/a','https:/example.org/a','https:\\example
 for (const url of ['https://example.org/a','https://example.org/a%20b?x=1#note','https://example.org:8443/path']) {
   test('preserve exact absolute source URL '+url,()=>assert.equal(group([a,b,{...c,url}],sel)[1].rows[0].source.url,url));
 }
+
+// W102: URL normalization drops empty userinfo; authored authority still must not contain it.
+for (const url of ['https://@example.org/a','https://:@example.org/a','HTTPS://@example.org/a','https://user@example.org/a','https://:pass@example.org/a']) {
+  test('reject authored userinfo '+url,()=>assert.throws(()=>group([a,b,{...c,url}],sel)));
+}
+for (const url of ['https://example.org/a','https://example.org/@speaker','https://example.org/a?email=a@b.org#@note','https://example.org/a%40b','https://[::1]:8443/a']) {
+  test('preserve authority-free at sign or valid host '+url,()=>assert.equal(group([a,b,{...c,url}],sel)[1].rows[0].source.url,url));
+}
