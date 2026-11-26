@@ -107,7 +107,12 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(640px, 100vw);
+  /* The standalone Library does not assume a page-wide border-box reset.
+     Fit the actual containing viewport, including classic scrollbars. */
+  box-sizing: border-box;
+  width: min(640px, 100%);
+  min-width: 0;
+  max-width: 100%;
   max-height: min(86dvh, 840px);
   color: var(--library-ink);
   background: var(--library-paper);

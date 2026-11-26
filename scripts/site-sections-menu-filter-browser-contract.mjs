@@ -49,11 +49,13 @@ try {
     const browser = await browserType.launch({ headless:true });
     try {
       for (const route of routes) {
+        console.log('CHECK',browserType.name(),route);
         const context = await browser.newContext({ viewport:{width:1440,height:900}, serviceWorkers:'block' });
         const page = await context.newPage();
+        await page.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());
         const errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
-        await page.goto(origin + route, { waitUntil:'domcontentloaded' });
+        await page.goto(origin + route+'?reader-pilot=0', { waitUntil:'domcontentloaded' });
         await page.waitForFunction(() => document.querySelector('#hMobileMenuBtn')?.dataset.gbSiteMenuOwner === 'canonical-runtime', null, {timeout:10000});
         pass(await page.locator('#hMobileMenuBtn').isVisible(), true, 'desktop trigger visible');
         await page.locator('#hMobileMenuBtn').click();
@@ -90,10 +92,12 @@ try {
         pass(await page.locator('#hMobileMenuBtn').getAttribute('aria-expanded'), 'false', 'Escape closes');
         pass(await page.locator('#hMobileMenuBtn').evaluate((el) => document.activeElement === el), true, 'Escape focus restore');
         await page.locator('#hMobileMenuBtn').click();
+        await page.waitForFunction(()=>window.OverlayRuntime?.isOpen('site-sections-menu')&&document.activeElement?.hasAttribute('data-gb-menu-filter'));
         pass(await input.inputValue(), '', 'reopen resets filter');
 
         await page.setViewportSize({width:390,height:844});
         pass(await input.isVisible(), false, 'mobile has NO filter');
+        await page.waitForFunction(()=>document.querySelectorAll('#hMobileNav a[data-gb-menu-section]:not([hidden])').length===6);
         pass(await visibleLinks.count(), 6, 'mobile preserves six original links');
         await page.waitForFunction(
           () => document.activeElement?.matches('#hMobileNav a[data-gb-menu-section]'),
@@ -114,6 +118,50 @@ try {
         pass(geometry.inside && geometry.filterVisible && geometry.usable, true, 'short desktop popover stays usable');
         pass(errors, [], 'no JS runtime error');
         await context.close();
+        // Product default legitimately reloads when crossing its layout
+        // boundary. Do not demand focus on the previous document's nodes.
+        const adaptive = await browser.newContext({ viewport:{width:1440,height:900}, serviceWorkers:'block' });
+        try {
+          const live=await adaptive.newPage();
+          await live.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());
+          await live.goto(origin+route,{waitUntil:'load'});
+          const ownsReader=await live.evaluate(()=>Boolean(window.__gbReaderDesktopDelivery));
+          if(ownsReader){
+            live.on('framenavigated',f=>{if(f===live.mainFrame())console.log('LAYOUT',live.url());});
+            await live.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')&&window.__NP_UNIVERSAL_PREVIEW__?.ready&&window.__NP_W57_ANNOTATIONS__?.ready);
+            await live.locator('#hMobileMenuBtn').click();
+            await live.waitForFunction(()=>window.OverlayRuntime?.isOpen('site-sections-menu'));
+            const desktopEpoch=await live.evaluate(()=>performance.timeOrigin);
+            await live.setViewportSize({width:390,height:844});
+            await live.waitForFunction(epoch=>performance.timeOrigin!==epoch&&document.body&&innerWidth===390,desktopEpoch,{timeout:15000});
+            await live.waitForFunction(()=>document.querySelector('#hMobileMenuBtn')?.dataset.gbSiteMenuOwner==='canonical-runtime');
+            pass(new URL(live.url()).searchParams.has('reader-pilot'),false,'default route has no fallback');
+            pass(await live.evaluate(()=>({ready:document.body.classList.contains('np-w57-ready'),lock:document.documentElement.hasAttribute('data-scroll-locked'),open:window.OverlayRuntime.isOpen('site-sections-menu')})),{ready:false,lock:false,open:false},'fresh mobile owner with no stale desktop lock');
+            pass(await live.locator('#hMobileNav a[data-gb-menu-section]:not([hidden])').count(),6,'fresh mobile retains six canonical destinations');
+            pass(await live.locator('[data-gb-menu-filter]').isVisible(),false,'default mobile filter hidden');
+            const mobileSite=live.locator('#hMobileMenuBtn');
+            if(await mobileSite.isVisible()){
+              await mobileSite.click();
+              await live.waitForFunction(()=>window.OverlayRuntime?.isOpen('site-sections-menu')&&document.activeElement?.matches('#hMobileNav a[data-gb-menu-section]'));
+            }else{
+              // Reader mobile chrome intentionally exposes TOC/research,
+              // not the hidden desktop rail site menu.
+              const mobileReader=live.locator('.reader-mobile-menu-trigger:visible, #mobPartTocBtn:visible, #hmSectionBtn:visible').first();
+              await mobileReader.click({timeout:5000});
+              await live.waitForFunction(()=>window.OverlayRuntime?.snapshot().length===1&&document.documentElement.hasAttribute('data-scroll-locked'));
+            }
+            await live.keyboard.press('Escape');
+            await live.waitForFunction(()=>window.OverlayRuntime.snapshot().length===0&&!document.documentElement.hasAttribute('data-scroll-locked'));
+            const mobileEpoch=await live.evaluate(()=>performance.timeOrigin);
+            await live.setViewportSize({width:1440,height:900});
+            await live.waitForFunction(epoch=>performance.timeOrigin!==epoch&&document.body&&innerWidth===1440,mobileEpoch,{timeout:15000});
+            await live.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')&&window.__NP_UNIVERSAL_PREVIEW__?.ready&&window.__NP_W57_ANNOTATIONS__?.ready);
+            await live.locator('#hMobileMenuBtn:visible').click({timeout:5000});
+            await live.waitForFunction(()=>window.OverlayRuntime?.isOpen('site-sections-menu')&&document.activeElement?.hasAttribute('data-gb-menu-filter'));
+            pass(await live.locator('#hMobileNav a[data-gb-menu-section]:not([hidden])').count(),6,'desktop return reopens six links');
+            pass(await live.locator('[data-gb-menu-filter]').inputValue(),'','desktop return restores empty filter');
+          }
+        }finally{await adaptive.close()}
       }
     } finally {
       await browser.close();

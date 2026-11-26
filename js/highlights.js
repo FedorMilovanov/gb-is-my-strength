@@ -205,7 +205,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=7d6f17ca';
+  stylesheet.href = '/css/highlights-runtime.css?v=634b5ba8';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function element(tag, cls, value) {

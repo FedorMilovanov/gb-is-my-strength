@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v253-reader-w320-candidate-20261126';
+const CACHE_VERSION = 'gb-v254-reader-w325-candidate-20261126';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -26,7 +26,7 @@ const PRECACHE_ASSETS = [
   '/css/series-samizdat.css?v=6d9658bd',
   '/css/reader-preferences.css?v=9f01260b',
   '/css/enhancements-runtime.css?v=d195a91d',
-  '/css/highlights-runtime.css?v=7d6f17ca',
+  '/css/highlights-runtime.css?v=634b5ba8',
   '/css/sw-toast.css?v=2e540077',
   '/fonts/fonts.css?v=14332eea',
   '/nagornaya/tw.min.css?v=bee34e73',
@@ -36,7 +36,7 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=07ee6d29',
-  '/js/highlights.js?v=4834c431',
+  '/js/highlights.js?v=49f2d846',
   '/js/reader-library-ranges.js?v=9d01527f',
   '/js/reader-library-storage.js?v=c6707892',
   '/js/reader-library-record-transactions.js?v=ecb28bb6',
