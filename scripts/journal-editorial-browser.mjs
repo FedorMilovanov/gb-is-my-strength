@@ -952,10 +952,23 @@ try {
         new Promise(resolve=>{timer=setTimeout(()=>resolve({state:'timeout'}),2500);})
       ]);
       // A resolved play promise is not proof that the sink keeps running.
-      await new Promise(resolve=>setTimeout(resolve,650));
-      const end=snapshot();
-      window.__g3SinkProbe={kind,muted,play,end,events:[...events],
-        progressed:play.state==='resolved'&&!end.errorCode&&!end.paused&&end.currentTime>=.15};
+      // Audio output may start later than a single 650ms sample; observe a
+      // bounded real clock without accepting a stationary or errored stream.
+      const samples=[];
+      const observationStart=performance.now();
+      let end=snapshot();
+      if (play.state==='resolved') {
+        do {
+          await new Promise(resolve=>setTimeout(resolve,100));
+          end=snapshot();
+          samples.push({elapsedMs:Math.round(performance.now()-observationStart),...end});
+          if (end.errorCode||end.paused) break;
+        } while (performance.now()-observationStart<5000 &&
+          (performance.now()-observationStart<650||end.currentTime<.15));
+      }
+      window.__g3SinkProbe={kind,muted,play,end,events:[...events],samples,
+        progressed:play.state==='resolved'&&!end.errorCode&&!end.paused&&end.currentTime>=.15&&
+          !events.some(event=>event.errorCode)};
     } finally {
       clearTimeout(timer); audio.pause();
       if(referenceUrl){audio.removeAttribute('src');audio.load();URL.revokeObjectURL(referenceUrl);audio.remove();}
@@ -970,7 +983,7 @@ try {
         await page.addScriptTag({content:anchorSource});
         await page.evaluate(setupProbe,{kind,muted});
         await page.locator('button').click();
-        await page.waitForFunction(()=>window.__g3SinkProbe!==undefined,{},{timeout:7000});
+        await page.waitForFunction(()=>window.__g3SinkProbe!==undefined,{},{timeout:10000});
         report.audioSinkProbe.cases.push(await page.evaluate(()=>window.__g3SinkProbe));
       } catch(error) {
         report.audioSinkProbe.cases.push({kind,muted,harnessFailure:String(error)});
