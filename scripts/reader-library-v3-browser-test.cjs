@@ -59,6 +59,14 @@ async function test(engine,driver,width,height,base){
  try{
  await page.goto(base+route,{waitUntil:'domcontentloaded'});
  await page.locator('#gb-hl-fab').waitFor();
+ if(width<1200)await page.locator('.hmbar #gb-hl-fab.gb-hl-fab--docked').waitFor({state:'attached',timeout:10000});
+ const captureGeometry=()=>page.evaluate(()=>{
+   const root=document.documentElement,body=document.body;
+   const measure=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {tag:e.tagName,id:e.id,cl:typeof e.className==='string'?e.className.slice(0,130):'',x:r.x,right:r.right,width:r.width,scroll:e.scrollWidth,client:e.clientWidth,box:s.boxSizing,pos:s.position,overflow:s.overflowX,min:s.minWidth,padding:s.paddingInline,display:s.display}};
+   return {viewport:innerWidth,visual:window.visualViewport?.width,doc:root.scrollWidth,root:measure(root),body:measure(body),font:document.fonts.status,
+     offenders:[...body.querySelectorAll('*')].filter(e=>e.getClientRects().length).map(measure).filter(e=>e.right>innerWidth+1||e.x< -1||e.scroll>e.client+1).slice(0,60)};
+ });
+ const beforeOpen=await captureGeometry();
  await page.locator('#gb-hl-fab').click();
  await page.locator('.gb-hl-item').first().waitFor({timeout:15000});
  await page.waitForFunction(()=>{const p=document.getElementById('gb-hl-panel');return p&&getComputedStyle(p).opacity==='1'&&!p.getAnimations().some(a=>a.playState==='running')},{timeout:8000});
@@ -72,6 +80,12 @@ async function test(engine,driver,width,height,base){
    return {doc:document.documentElement.scrollWidth,viewport:innerWidth,x:panel.x,right:panel.right,y:panel.y,bottom:panel.bottom,viewportHeight:innerHeight,
      tabs:[...document.querySelectorAll('#gb-hl-tabs button')].map(x=>x.getBoundingClientRect().height)};
  });
+ if(!(geometry.doc<=width+1 && geometry.x>=-1 && geometry.right<=width+1)){
+   const evidence={engine,width,height,beforeOpen,afterOpen:await captureGeometry(),geometry};
+   console.error('LIBRARY_GEOMETRY_FAILURE '+JSON.stringify(evidence));
+   fs.writeFileSync(path.join(reports,engine+'-'+width+'-geometry-failure.json'),JSON.stringify(evidence,null,2));
+   await page.screenshot({path:path.join(reports,engine+'-'+width+'-geometry-failure.png'),animations:'disabled'});
+ }
  assert(geometry.doc<=width+1 && geometry.x>=-1 && geometry.right<=width+1,JSON.stringify(geometry));
  assert(geometry.tabs.every(x=>x>=43.5),'all tabs accessible');
  if(width>=768)assert(geometry.y>10 && geometry.bottom<height-10,'desktop not centered');

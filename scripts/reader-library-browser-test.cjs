@@ -77,9 +77,27 @@ async function check(browserName, driver, url, width) {
   try {
   const errors = [];
   page.on('pageerror', (err) => errors.push(err.message));
-  await page.goto(url, { waitUntil: 'load' });
-  await page.locator('#gb-hl-fab').waitFor();
-  assert.equal(await page.locator('#gb-hl-fab.gb-hl-fab--docked').count(), 1, 'bottom bar hosts shared library');
+  // The FAB is usable before the lazy docking module arrives. Hold the
+  // real module on the previously failing Chromium/390 case to prove both
+  // states independently rather than racing the module request.
+  let releaseDock;
+  const heldDock = browserName==='chromium' && width===390;
+  const dockGate = heldDock ? new Promise(resolve=>{releaseDock=resolve}) : Promise.resolve();
+  if(heldDock) await page.route(/\/js\/reader-library-dock\.js(?:\?|$)/,async route=>{
+    await dockGate;
+    await route.continue();
+  });
+  try {
+    await page.goto(url, { waitUntil: 'load' });
+    await page.locator('#gb-hl-fab').waitFor();
+    if(heldDock){
+      assert.equal(await page.locator('#gb-hl-fab.gb-hl-fab--docked').count(),0,'cold FAB exists before dock import');
+      assert.equal(await page.locator('#gb-hl-fab').isVisible(),true,'cold FAB stays usable');
+      releaseDock();
+    }
+    await page.locator('#gb-hl-fab.gb-hl-fab--docked').waitFor({state:'attached',timeout:10000});
+    assert.equal(await page.locator('.hmbar #gb-hl-fab.gb-hl-fab--docked').count(), 1, 'bottom bar hosts shared library');
+  } finally {releaseDock?.();}
   assert.equal(await page.locator('.gb-save').count(), 1, 'original SaveButton must remain intact');
   assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'library remains visible with existing data');
 
