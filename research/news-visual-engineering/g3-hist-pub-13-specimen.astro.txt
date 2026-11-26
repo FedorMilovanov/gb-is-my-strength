@@ -6,10 +6,11 @@ import {groupEvidenceFamilies} from '../group-evidence-families.mjs';
 import '../components/journal/journalEditorial.css';
 import '../news-private-focus.css';
 import '../../fonts/fonts.css';
-const sourceMap=specimen.sources.map(s=>({id:s.id,href:'#private-src-'+s.id,label:s.label}));
+// A single admitted source object supplies the label, destination and family.
+const sourceMap=specimen.sources.map(s=>({...s,href:'#private-src-'+s.id}));
 const authority={claims:[{id:specimen.claimId,references:specimen.sources.map(s=>({sourceId:s.id,locator:s.locator}))}],sources:sourceMap};
 const row=documentExhibitView({id:'history-evidence-2018',mode:'editorial-paraphrase',title:'Два взгляда на конференцию',issuer:'Редакция',deck:'Группировка свидетельств',documentDate:null,publicationDate:null,captureDate:null,sections:[{id:'witnesses',heading:'Свидетельства участников',locator:specimen.sources[0].locator,summary:specimen.readerSafeText,significance:'Различные предметы свидетельства',limitation:specimen.boundary,claimId:specimen.claimId,sourceId:specimen.sources[0].id}]},authority).sections[0];
-const entries=groupEvidenceFamilies(specimen.sources,row.citations,specimen.groups);
+const entries=groupEvidenceFamilies(sourceMap,row.citations,specimen.groups);
 ---
 <html lang="ru"><head><meta charset="utf-8"/><meta name="robots" content="noindex,nofollow"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>PRIVATE_REVIEW · G3-HIST-PUB-13</title></head><body style="margin:0"><main class="journal-edition"><article class="news-private-review" data-journal-source-navigation style="max-width:1100px;margin:auto;padding:16px">
 <p class="jhe-private">PRIVATE_REVIEW · не для публикации</p>

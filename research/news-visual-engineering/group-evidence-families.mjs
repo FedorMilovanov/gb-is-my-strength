@@ -10,7 +10,7 @@ export function groupEvidenceFamilies(sources,citations,groups){
  }
  for(const citation of citations){
   const id=citation?.source?.id,source=byId.get(id);
-  if(!source||byCitation.has(id)||citation.locator!==source.locator)fail('citation does not match unique admitted source and locator');
+  if(!source||citation.source!==source||byCitation.has(id)||citation.locator!==source.locator)fail('citation does not match unique admitted source and locator');
   byCitation.set(id,citation);
  }
  if(byCitation.size!==byId.size)fail('incomplete citation set');

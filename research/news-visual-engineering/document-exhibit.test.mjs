@@ -208,3 +208,18 @@ for(const [label,change] of [
  ['numeric label',f=>f.groups[0].label=42],
  ['array label',f=>f.groups[0].label=['First']]
 ])test('evidence partition rejects '+label,()=>{const f=evidenceFixture();change(f);assert.throws(()=>partition(f),/Evidence family partition/);});
+
+// A repeated source ID is not proof that the cited object is the admitted one.
+for(const [label,change] of [
+ ['substituted destination',s=>({...s,href:'#other'})],
+ ['substituted label',s=>({...s,label:'Other'})],
+ ['substituted family',s=>({...s,family:'F2'})],
+ ['detached source object',s=>({...s})]
+])test('evidence partition rejects '+label,()=>{const f=evidenceFixture();f.citations[0]={...f.citations[0],source:change(f.sources[0])};assert.throws(()=>partition(f),/Evidence family partition/);});
+test('document citation and evidence partition share the exact admitted source object',()=>{
+ const f=fixture();const sources=f.authority.sources.map(s=>({...s,family:'F1',locator:'§ 1'}));
+ f.authority.sources=sources;
+ const row=view(f).sections[0], result=groupEvidenceFamilies(sources,row.citations,[{label:'First',sourceIds:[sources[0].id]}]);
+ assert.equal(result[0].rows[0].source,sources[0]);
+ assert.equal(result[0].rows[0].citation.source,sources[0]);
+});
