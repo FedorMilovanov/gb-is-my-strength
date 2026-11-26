@@ -12,7 +12,7 @@ const html=[
 '<meta name="viewport" content="width=device-width,initial-scale=1">',
 '<title>Размышления о благодати · Господь Бог — Сила Моя</title>',
 '<style>body{margin:0;background:#f9f4ed;color:#332726;font:18px/1.6 Georgia,serif}',
-'article{max-width:650px;margin:44px auto;padding:25px;} article p{line-height:1.9}',
+'article{max-width:650px;margin:44px auto;padding:25px;} article h1{overflow-wrap:anywhere} article p{line-height:1.9}',
 '.hmbar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:end;align-items:center;gap:4px;height:54px;background:#291b20;color:#f8d5c6}',
 '.hmbar button{min-width:44px;height:44px;border:0;background:none;color:inherit}',
 '@media(min-width:1200px){.hmbar{display:none}}</style>',
@@ -86,6 +86,7 @@ async function test(engine,driver,width,height,base){
    fs.writeFileSync(path.join(reports,engine+'-'+width+'-geometry-failure.json'),JSON.stringify(evidence,null,2));
    await page.screenshot({path:path.join(reports,engine+'-'+width+'-geometry-failure.png'),animations:'disabled'});
  }
+ assert(beforeOpen.doc<=width+1,'Fixture page must not overflow before opening Library: '+JSON.stringify(beforeOpen));
  assert(geometry.doc<=width+1 && geometry.x>=-1 && geometry.right<=width+1,JSON.stringify(geometry));
  assert(geometry.tabs.every(x=>x>=43.5),'all tabs accessible');
  if(width>=768)assert(geometry.y>10 && geometry.bottom<height-10,'desktop not centered');
