@@ -888,6 +888,33 @@ const reviewClippedContrast = async (page, reviews) => {
   }
   return witnesses;
 };
+function assertNarrationMediaEvidence(item) {
+  assert.ok(!item.mediaAnchorDiagnosticFailure, 'Narration media evidence collection failed: ' + item.mediaAnchorDiagnosticFailure);
+  const evidence = item.mediaAnchor;
+  assert.ok(Array.isArray(evidence?.events) && evidence.events.length > 0, 'Narration media event evidence missing');
+  assert.ok(Array.isArray(evidence.anchors) && evidence.anchors.length === 1 && evidence.anchors[0]?.blob === true, 'Expected exactly one real blob audio anchor');
+  assert.ok(!evidence.anchors.some(audio => audio.error) && !evidence.events.some(event => event.error), 'Media error before narration context teardown');
+  assert.deepEqual(item.runtime, [], 'Runtime error before narration context teardown');
+}
+// Synthetic negative controls validate the gate, not browser playback.
+{
+  const valid = () => ({runtime:[],mediaAnchor:{events:[{type:'playing',error:null}],anchors:[{blob:true,error:null}]}});
+  assert.doesNotThrow(() => assertNarrationMediaEvidence(valid()));
+  for (const mutate of [
+    v=>v.mediaAnchorDiagnosticFailure='execution context lost',
+    v=>delete v.mediaAnchor,
+    v=>v.mediaAnchor.events=[],
+    v=>v.mediaAnchor.anchors=[],
+    v=>v.mediaAnchor.anchors.push({blob:true,error:null}),
+    v=>v.mediaAnchor.anchors[0].blob=false,
+    v=>v.mediaAnchor.anchors[0].error={code:3},
+    v=>v.mediaAnchor.events[0].error={code:3},
+    v=>v.runtime.push('warning')
+  ]) {
+    const v=valid(); mutate(v);
+    assert.throws(() => assertNarrationMediaEvidence(v), assert.AssertionError);
+  }
+}
 try {
   // Isolated diagnostic only: distinguish sink failure from the actual WAV format.
   // Never replace or waive the unmuted, routed narration gate below.
@@ -1063,11 +1090,13 @@ try {
               }))
             }));
           } catch (error) { item.mediaAnchorDiagnosticFailure=String(error); }
-          // Keep the original console gate and also report errors observed
-          // directly on the media element before browser-context teardown.
-          if (!item.failure && (item.runtime.length || item.mediaAnchor?.anchors.some(audio=>audio.error) ||
-              item.mediaAnchor?.events.some(event=>event.error))) {
-            item.failure='Media/runtime error before narration context teardown';
+        }
+        // A missing or failed evidence capture is not successful acceptance.
+        // Preserve any earlier failure and retain its diagnostic independently.
+        if (route.kind!=='journal' && !item.failure) {
+          try { assertNarrationMediaEvidence(item); }
+          catch (error) {
+            item.failure=error.message;
             report.problems.push(route.kind+' narration: '+item.failure);
           }
         }
