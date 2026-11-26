@@ -38,3 +38,11 @@ test('reject entirely sparse selection',()=>assert.throws(()=>group([a,b,c],Arra
 test('reject missing group after valid group',()=>assert.throws(()=>group([a,b,c],[sel[0],,])));
 test('reject missing row after valid row',()=>assert.throws(()=>group([a,b,c],[{...sel[0],rows:[...sel[0].rows,,]}])));
 test('reject missing selected year',()=>assert.throws(()=>group([a,b,c],[{...sel[0],years:[...sel[0].years,,]}])));
+
+// The authored href must be absolute in an HTTPS document, not just parseable in isolation.
+for (const url of ['https:example.org/a','https:/example.org/a','https:\\example.org/a','https:///example.org/a','https://example.org/a b','https://exa\tmple.org/a',' https://example.org/a','https://example.org/a\n']) {
+  test('reject ambiguous source URL '+JSON.stringify(url),()=>assert.throws(()=>group([a,b,{...c,url}],sel)));
+}
+for (const url of ['https://example.org/a','https://example.org/a%20b?x=1#note','https://example.org:8443/path']) {
+  test('preserve exact absolute source URL '+url,()=>assert.equal(group([a,b,{...c,url}],sel)[1].rows[0].source.url,url));
+}

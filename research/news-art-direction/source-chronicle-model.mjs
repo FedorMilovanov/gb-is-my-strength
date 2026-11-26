@@ -22,6 +22,9 @@ export function groupSourceChronicle(sources, selection) {
       if (!row || !Number.isInteger(row.year) || row.year < 1 || row.year > 9999 || row.year < previousYear || used.has(row.id)) throw new Error('Invalid, duplicate or out-of-order source selection');
       const source = lookup.get(row.id);
       if (!source || !['title','role','boundary','url'].every(key => nonempty(source[key]))) throw new Error('Source not available with full boundary');
+      // URL() normalizes special-scheme input that the browser may resolve relative to the current page.
+      // Keep the authored evidence link unambiguous, just as in the AV exhibit.
+      if (!/^https:\/\/[^/\\?#]/i.test(source.url) || /[\\\s\u0000-\u001f\u007f]/u.test(source.url)) throw new Error('Absolute HTTPS source URL required');
       let url;
       try { url = new URL(source.url); } catch { throw new Error('Invalid source URL'); }
       if (url.protocol !== 'https:' || url.username || url.password) throw new Error('HTTPS source URL required');
