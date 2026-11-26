@@ -48,6 +48,27 @@
   .journal-edition article.news-private-review .bibliography-item > ul {
     margin-block: .4rem 0; padding-inline-start: 1rem;
   }
+  /* Evidence metadata is part of reading, including the distinction between dates. */
+  .journal-edition article.news-private-review :is(.jdc .jdc-kicker, .jhe .jhe-kicker, .jhc .jhc-kicker, .jdc-dates dt, .jdc-note dt) {
+    font-size: calc(.875rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review .jdc-dates dd {
+    font-size: calc(1rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review :is(.jdc h3, .jhe h3, .jhc h3) {
+    font-size: calc(1rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review :is(.jhe h2, .jhc h2) {
+    font-size: calc(1.5rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review .jdc-dates {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, max(calc(8rem * var(--gb-reader-font-scale, 1)), calc((100% - .6rem) / 2))), 1fr));
+  }
+  .journal-edition article.news-private-review .jdc-dates > div { min-width: 0; }
   .news-private-review .news-bib-actions {
     display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 8px;
     margin-block-start: 6px;
