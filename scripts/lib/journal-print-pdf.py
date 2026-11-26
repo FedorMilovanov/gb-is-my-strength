@@ -86,6 +86,11 @@ def inspect(case):
             geometry.append(positioned)
     dom = case["dom"]
     all_text = "".join(folded)
+    # Chromium inserts hard Cyrillic line-wrap hyphens in extracted PDF text.
+    # Rejoin only those wraps for the boundary witness; retain the existing
+    # strict normalized text, typography and geometry hashes for other gates.
+    boundary_text = "".join(normalize(re.sub(r"(?<=[А-Яа-яЁё])-[ \t]*\n[ \t]*(?=[А-Яа-яЁё])", "", text), fold=True)
+                            for text in texts)
     companion = dom.get("companion")
     locations = {part: [i + 1 for i, text in enumerate(folded) if normalize(companion[part], fold=True) in text]
                  for part in ("label", "title")} if companion else None
@@ -101,7 +106,7 @@ def inspect(case):
         "sourceTitles": len(dom["sourceTitles"]),
         "missingSourceTitles": [title for title in dom["sourceTitles"] if normalize(title, fold=True) not in all_text],
         "sourceBoundaries": len(dom.get("sourceBoundaries", [])),
-        "missingSourceBoundaries": missing_source_boundaries(dom, all_text),
+        "missingSourceBoundaries": missing_source_boundaries(dom, boundary_text),
         "printedScreenControls": [label for label in dom.get("screenOnlyLabels", []) if normalize(label, fold=True) in all_text],
         "reviewWarningFirstPage": bool(folded) and normalize(dom["reviewWarning"], fold=True) in folded[0] if dom.get("reviewWarning") else None,
         "holdPrinted": "publication_hold" in all_text,
