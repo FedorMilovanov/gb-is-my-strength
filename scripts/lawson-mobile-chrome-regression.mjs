@@ -280,9 +280,15 @@ async function main() {
       for (const vp of VIEWPORTS) {
         const context = await browser.newContext({ viewport:{width:vp.w,height:vp.h}, isMobile:true, hasTouch:true });
         try {
+          // This is a local rendered-chrome witness, not a third-party
+          // transport test. Analytics must not hold readiness indefinitely.
+          await context.route('**/*', requestRoute => requestRoute.request().url().startsWith(origin + '/')
+            ? requestRoute.continue() : requestRoute.abort());
           const page = await context.newPage();
-          const response = await page.goto(origin+route, {waitUntil:'networkidle'});
+          const response = await page.goto(origin+route, {waitUntil:'load'});
           if (!response?.ok()) throw new Error(`Route failed: ${route} (${response?.status()})`);
+          await page.waitForFunction(() => document.fonts.status === 'loaded' &&
+            document.querySelector('[data-reader-mobile-speed][data-reader-speed-bound="1"]'));
           await page.waitForTimeout(600);
           const result = await page.evaluate(inspectMobileChrome, route === ROUTES[0]);
           if (route === ROUTES[0] && result.errors.length === 0) {
