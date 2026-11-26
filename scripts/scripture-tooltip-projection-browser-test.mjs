@@ -40,7 +40,11 @@ async function serveDist(){
   return server;
 }
 async function isolateLocalTelemetry(page){
-  if(localDist)await page.route('https://mdd.yandex.net/',r=>r.fulfill({status:204,body:''}));
+  if(localDist){
+    // Local dist proof must not depend on third-party telemetry availability.
+    // Keep every first-party network request and error visible.
+    await page.route(/^https:\/\/(?:mc\.yandex\.(?:ru|com)|mdd\.yandex\.net)\//i,r=>r.fulfill({status:204,body:''}));
+  }
 }
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HELD_REFERENCE = '2 Тимофею 2:14–15';
@@ -257,7 +261,7 @@ try {
     };
   }, { heldReference: HELD_REFERENCE, heldText: HELD_TEXT, staleReference: STALE_REFERENCE });
 
-  await page.goto(`${BASE}${ROUTE}?reader-pilot=0`, { waitUntil: 'load', timeout: 60000 });
+  assert.ok((await page.goto(`${BASE}${ROUTE}?reader-pilot=0`, { waitUntil: 'domcontentloaded', timeout: 60000 }))?.ok(),'Classic route navigation must succeed');
   await page.waitForFunction(({ owner, version }) => {
     const data = document.documentElement.dataset;
     return window.GBArticleTooltips?.version === version &&
@@ -393,7 +397,7 @@ try {
     await study.addInitScript(({ heldReference, heldText, staleReference }) => {
       window.SCRIPTURE_DATA = { [heldReference]: heldText, [staleReference]: 'stale ungoverned payload' };
     }, { heldReference: HELD_REFERENCE, heldText: HELD_TEXT, staleReference: STALE_REFERENCE });
-    await study.goto(BASE+ROUTE,{waitUntil:'load',timeout:60000});
+    assert.ok((await study.goto(BASE+ROUTE,{waitUntil:'domcontentloaded',timeout:60000}))?.ok(),'ARGON route navigation must succeed');
     const trigger=study.locator('.bref[data-ref="'+HELD_REFERENCE+'"]').first();
     const result=await assertArgonScriptureActivation(study,trigger);
     assert.equal(result.reference,HELD_REFERENCE);

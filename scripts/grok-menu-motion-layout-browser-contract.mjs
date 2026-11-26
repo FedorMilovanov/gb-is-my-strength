@@ -126,7 +126,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    const motionStart=row.states.settingsOpacityMotion.find(e=>e.type==='transitionrun');
    const motionEnd=row.states.settingsOpacityMotion.find(e=>e.type==='transitionend');
    const observedTween=!!(motionStart&&motionEnd&&motionEnd.time-motionStart.time>=120);
-   const sampledTween=s0.sheet.opacity<.85&&s1.sheet.opacity>s0.sheet.opacity;
+   const sampledTween=s0.sheet.opacity<.995&&s2.sheet.opacity>s0.sheet.opacity+.001;
    test('animated settings entry',s0.sheet.open&&s2.sheet.opacity>.99&&(sampledTween||observedTween),
      {start:s0.sheet,mid:s1.sheet,end:s2.sheet,motion:row.states.settingsOpacityMotion,sampledTween,observedTween});
    await p.evaluate(()=>{window.__gbSettingsExitMotionOffset=(window.__gbSettingsOpacityMotion||[]).length;});
@@ -168,15 +168,28 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
      const motion=[];
      const observe=event=>{if(event.target===panel&&event.propertyName==='opacity')motion.push({type:event.type,time:performance.now(),opacity:Number(getComputedStyle(panel).opacity)});};
      for(const type of ['transitionrun','transitionstart','transitioncancel','transitionend'])panel.addEventListener(type,observe);
-     const deadline=performance.now()+1200;
-     while(performance.now()<deadline){
-       const opacity=Number(getComputedStyle(panel).opacity);
-       if(opacity>.10&&opacity<.90)break;
-       await new Promise(requestAnimationFrame);
-     }
+     // Control the actual browser-created transition clock, not a mock or
+     // replacement animation. A slow CI frame can skip the entire 260ms
+     // interval; seeking native CSS transitions proves the exact interrupted
+     // pose independently of renderer scheduling. Normal live entry/exit is
+     // still tested above without any clock control.
+     const opacityTransition=()=>panel.getAnimations().find(a=>a.transitionProperty==='opacity');
+     const entry=opacityTransition();
+     const entryDuration=Number(entry?.effect?.getComputedTiming().duration);
+     if(!entry||!(entryDuration>0))throw Error('Missing native entry opacity transition');
+     entry.pause();entry.currentTime=entryDuration*.4;
      const before=sample();
      document.getElementById('hmSettingsClose').click();
      const start=sample(),frames=[];
+     const exit=opacityTransition();
+     const exitDuration=Number(exit?.effect?.getComputedTiming().duration);
+     let controlled=null;
+     if(exit&&exit!==entry&&exitDuration>0){
+       exit.pause();exit.currentTime=0;const first=sample();
+       exit.currentTime=exitDuration*.5;const middle=sample();
+       controlled={first,middle,entryDuration,exitDuration};
+       exit.play();
+     }
      const exitDeadline=performance.now()+1500;
      while(performance.now()<exitDeadline){
        await new Promise(requestAnimationFrame);
@@ -185,15 +198,18 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
        if(frame.display==='none')break;
      }
      for(const type of ['transitionrun','transitionstart','transitioncancel','transitionend'])panel.removeEventListener(type,observe);
-     return {before,start,frames,motion};
+     return {before,start,frames,motion,controlled};
    });
    await p.waitForFunction(()=>getComputedStyle(document.getElementById('hmSettings')).display==='none',null,{timeout:1500});
    const interrupted=row.states.interruptedEntry;
    test('interrupted entry reverses into real inert exit',
      interrupted.before.opacity>.10&&interrupted.before.opacity<.90&&
      !interrupted.start.open&&interrupted.start.closing&&interrupted.start.inert&&interrupted.start.aria==='true'&&
-     interrupted.frames.some(frame=>frame.display!=='none'&&frame.opacity<interrupted.start.opacity-.001&&
-       frame.opacity>.001&&frame.closing&&frame.inert&&!frame.open&&frame.aria==='true')&&
+     !!interrupted.controlled&&Math.abs(interrupted.controlled.first.opacity-interrupted.before.opacity)<.03&&
+     interrupted.controlled.middle.opacity<interrupted.controlled.first.opacity-.001&&
+     interrupted.controlled.middle.opacity>.001&&interrupted.controlled.middle.closing&&
+     interrupted.controlled.middle.inert&&!interrupted.controlled.middle.open&&
+     interrupted.controlled.middle.aria==='true'&&
      interrupted.frames.every(frame=>!frame.open&&frame.inert&&frame.aria==='true'),interrupted);
    const afterInterrupted=await p.evaluate(measure);
    test('interrupted exit releases scroll and restores article',afterInterrupted.sheet.display==='none'&&

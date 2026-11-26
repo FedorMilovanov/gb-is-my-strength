@@ -244,8 +244,55 @@ async function portalAssertions(browser, origin, modern, mobile) {
     const expand = page.locator('body > .gtip [data-gtip-expand]');
     await expand.click();
     assert.equal(await expand.getAttribute('aria-expanded'), 'true', label + ': expand works after late hydration');
-    await expand.click();
+    // Observe every actual frame of the expanded surface, including a
+    // possible repeating placement/scrollbar cycle. Never force the click.
+    await page.evaluate(()=>{
+      const tip=document.querySelector('body > .gtip'),button=tip.querySelector('[data-gtip-expand]'),wrap=tip.querySelector('.gtip-detail-wrap');
+      const rect=el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height];};
+      const samples=[],start=performance.now();
+      let mutations=0;
+      const observer=new MutationObserver(records=>mutations+=records.length);
+      observer.observe(tip,{attributes:true,attributeFilter:['style','data-placement']});
+      let frame=0;
+      function capture(){
+        const style=getComputedStyle(tip);
+        const sample={time:Math.round(performance.now()-start),button:rect(button),tip:rect(tip),detail:rect(wrap),placement:tip.dataset.placement,scrollHeight:tip.scrollHeight,clientHeight:tip.clientHeight,overflow:style.overflowY,maxHeight:style.maxHeight,top:style.top,bottom:style.bottom,scrollY,mutations};
+        // Preserve the initial motion and the latest 60 frames on timeout.
+        if(samples.length>=90)samples.splice(30,1);
+        samples.push(sample);
+        frame=requestAnimationFrame(capture);
+      }
+      window.portalGeometryEvidence={samples,stop:()=>{cancelAnimationFrame(frame);observer.disconnect();}};
+      frame=requestAnimationFrame(capture);
+    });
+    try{await expand.click();}catch(error){
+      console.error('GLOSSARY_GEOMETRY_EVIDENCE '+JSON.stringify({label,geometry:await page.evaluate(()=>window.portalGeometryEvidence.samples),final:await page.evaluate(()=>{const t=document.querySelector('body > .gtip');return {style:t?.getAttribute('style'),placement:t?.dataset.placement,scrollY,viewport:{width:innerWidth,height:innerHeight},button:t?.querySelector('[data-gtip-expand]')?.getBoundingClientRect().toJSON()};})}));
+      throw error;
+    }finally{await page.evaluate(()=>{window.portalGeometryEvidence?.stop();delete window.portalGeometryEvidence;});}
     assert.equal(await expand.getAttribute('aria-expanded'), 'false', label + ': collapse works after late hydration');
+    if(modern){
+      // A second real expansion must stay inside the viewport after the
+      // native grid transition ends, without an old reflow rewriting it.
+      await expand.click();
+      assert.equal(await expand.getAttribute('aria-expanded'),'true',label+': second expansion');
+      const settled=await page.evaluate(async()=>{
+        const tip=document.querySelector('body > .gtip'),button=tip.querySelector('[data-gtip-expand]');
+        const wrap=tip.querySelector('.gtip-detail-wrap');
+        await new Promise(requestAnimationFrame);
+        await Promise.allSettled(wrap.getAnimations().map(a=>a.finished));
+        const frames=[];
+        for(let i=0;i<16;i++){
+          await new Promise(requestAnimationFrame);
+          const r=tip.getBoundingClientRect(),b=button.getBoundingClientRect();
+          frames.push({x:r.x,y:r.y,w:r.width,h:r.height,bx:b.x,by:b.y,inside:r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,hit:button.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)),priority:tip.style.getPropertyPriority('left')});
+        }
+        return frames;
+      });
+      const first=settled[0];
+      assert.ok(settled.every(r=>r.inside&&r.hit&&r.priority==='important'&&Math.abs(r.x-first.x)<=1&&Math.abs(r.y-first.y)<=1&&Math.abs(r.w-first.w)<=1&&Math.abs(r.h-first.h)<=1&&Math.abs(r.bx-first.bx)<=1&&Math.abs(r.by-first.by)<=2),label+': modern owner stays stable '+JSON.stringify(settled));
+      await expand.click();
+      assert.equal(await expand.getAttribute('aria-expanded'),'false',label+': second collapse');
+    }
     await page.locator('body > .gtip [data-tooltip-close]').click();
     await page.waitForFunction(() => document.querySelector('#portal-term')?.getAttribute('aria-expanded') === 'false');
     assert.equal(await page.evaluate(() => document.querySelector('#portal-term .gtip') === window.portalWitness.tip), true, label + ': close restores the same node');
@@ -269,6 +316,7 @@ async function portalAssertions(browser, origin, modern, mobile) {
       await note.click();
       await page.waitForFunction(()=>document.querySelector('#registry-footnote').getAttribute('aria-expanded')==='true');
       assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': canonical note is not announced twice');
+      assert.deepEqual(await page.locator('#qa-tip').evaluate(t=>[getComputedStyle(t).pointerEvents,getComputedStyle(t,'::after').pointerEvents]),['none','none'],label+': text-only canonical note and legacy hover bridge must not intercept its opener');
       await page.keyboard.press('Escape');
       await page.waitForFunction(()=>document.querySelector('#registry-footnote').getAttribute('aria-expanded')==='false');
       assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': authored endnote survives close');

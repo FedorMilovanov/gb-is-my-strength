@@ -147,6 +147,9 @@ showTimer=setTimeout(hidePopup,7e3);
   function clamp(v,min,max){return Math.min(Math.max(v,min),max)}
   function placeTip(anchor,tip){
     if(!anchor||!tip)return;
+    // The modern article runtime owns its portaled geometry. Legacy reflow
+    // must not overwrite its inline priorities or restart ResizeObserver.
+    if(window.GBArticleTooltips?.ownsTarget?.(tip))return;
     var pad=16,gap=12,vw=innerWidth,vh=innerHeight;
     tip.style.display='block';
     tip.style.visibility='hidden';
