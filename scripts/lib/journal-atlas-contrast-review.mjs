@@ -32,6 +32,8 @@ const atlasListSpecs=[
 ];
 const shortSpecs=[
  ...atlasListSpecs,
+ ['.g3g-history > header > .g3g-kicker','Исторический атлас · 2011–2024','html'],
+ ['.g3g-history > header > h3','От поместной церкви к региональным встречам','html'],
  ['.g3g-history > header .g3g-deck','Избранные даты и места по документам, каталогам и свидетельствам участников.','html'],
  [root+' .g3g-map-key > span:nth-child(1)','Место конференции или анонса','html'],
  [root+' .g3g-map-key > span:nth-child(2)','Встреча по заявлению 2018 года','html'],
@@ -52,7 +54,7 @@ export async function reviewAtlasContrast(page,reviews,{short=false}={}){
  const activeSpecs=short?[...specs,...shortSpecs]:specs;
  const pending=[],remaining=[];
  for(const rule of reviews){const rest=[];for(const node of rule.nodes){
-  const match=await page.evaluate(({target,specs,short})=>{if(target.length!==1)return null;const hits=document.querySelectorAll(target[0]);if(hits.length!==1)return null;const el=hits[0];if(!el.closest('.g3g-atlas')&&!(short&&(el.closest('.g3g-finance')||el.matches('.g3g-history > header .g3g-deck'))))return null;const hit=specs.findIndex(([sel])=>document.querySelectorAll(sel).length===1&&document.querySelector(sel)===el);return {hit,text:el.textContent.trim(),decorative:el.tagName==='B'&&el.getAttribute('aria-hidden')==='true'}},{target:node.target,specs:activeSpecs,short});
+  const match=await page.evaluate(({target,specs,short})=>{if(target.length!==1)return null;const hits=document.querySelectorAll(target[0]);if(hits.length!==1)return null;const el=hits[0];if(!el.closest('.g3g-atlas')&&!(short&&(el.closest('.g3g-finance')||el.matches('.g3g-history > header > :is(.g3g-kicker,h3,.g3g-deck)'))))return null;const hit=specs.findIndex(([sel])=>document.querySelectorAll(sel).length===1&&document.querySelector(sel)===el);return {hit,text:el.textContent.trim(),decorative:el.tagName==='B'&&el.getAttribute('aria-hidden')==='true'}},{target:node.target,specs:activeSpecs,short});
   if(match===null){rest.push(node);continue}
   assert.equal(rule.id,'color-contrast');assert(match.hit>=0,'unknown atlas axe node: '+JSON.stringify(node));const [sel,expected,kind]=activeSpecs[match.hit];assert.equal(match.text,expected);if(kind==='marker')assert.equal(match.decorative,true,'atlas marker must be redundant to ordered list');assert(allowedSummaries[kind==='finance'?'svg':kind].some(s=>node.summary?.includes(s)),'unknown atlas axe reason: '+JSON.stringify(node));assert(!pending.some(x=>x.sel===sel),'duplicate atlas review');pending.push({sel,expected,kind,target:node.target,summary:node.summary});
  }if(rest.length)remaining.push({...rule,nodes:rest});}
