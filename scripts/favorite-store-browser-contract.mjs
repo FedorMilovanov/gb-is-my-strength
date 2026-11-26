@@ -241,11 +241,43 @@ async function storageIntegrityCase(browser, origin) {
     a.evaluate(()=>window.GBFavoriteStore.add({path:'/b/',title:'B'})),
     b.evaluate(()=>window.GBFavoriteStore.add({path:'/c/',title:'C'}))
   ]);
-  let rows=await a.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
-  check('FAV-DATA-02','integrity','queued adds preserve both rows and exact legacy tail',results.every(x=>x.saved&&!x.error)&&rows.items.length===6&&JSON.stringify(rows.items.slice(2))===JSON.stringify(envelope.items)&&rows.extra==='keep',rows);
-  const before=JSON.stringify(rows);
+  const rawFrom=page=>page.evaluate(key=>localStorage.getItem(key),key);
+  const initialViews=await Promise.all([rawFrom(a),rawFrom(b)]);
+  const complete=(raw)=>{
+    try {
+      const value=JSON.parse(raw);
+      return value.version===envelope.version&&value.extra===envelope.extra&&value.items.length===6&&
+        JSON.stringify(value.items.slice(2))===JSON.stringify(envelope.items)&&
+        value.items.slice(0,2).map(row=>row?.path).sort().join(',')==='/b,/c';
+    } catch { return false; }
+  };
+  // A successful Web Locks mutation can be acknowledged before the other
+  // tab's localStorage cache receives the storage event. No writer is retried.
+  // Require both writes AND exact convergence, then confirm from a fresh tab.
+  const convergence=await Promise.allSettled([a,b].map(page=>page.waitForFunction(
+    ({key,envelope})=>{
+      try {
+        const value=JSON.parse(localStorage.getItem(key));
+        return value.version===envelope.version&&value.extra===envelope.extra&&value.items.length===6&&
+          JSON.stringify(value.items.slice(2))===JSON.stringify(envelope.items)&&
+          value.items.slice(0,2).map(row=>row?.path).sort().join(',')==='/b,/c';
+      } catch {return false;}
+    },{key,envelope},{timeout:3000})));
+  const c=await context.newPage();
+  c.on('pageerror',e=>errors.push(e.message));
+  await c.goto(origin+'/izbrannoe/',{waitUntil:'domcontentloaded'});
+  const beforeViews=await Promise.all([rawFrom(a),rawFrom(b),rawFrom(c)]);
+  let rows=JSON.parse(beforeViews[2]);
+  check('FAV-DATA-02','integrity','queued adds preserve both rows and exact legacy tail',
+    results.every(x=>x.saved&&!x.error)&&convergence.every(x=>x.status==='fulfilled')&&
+    beforeViews.every(raw=>complete(raw)&&raw===beforeViews[2]),
+    {results,initialViews,beforeViews,convergence:convergence.map(x=>x.status)});
   const conflict=await b.evaluate(()=>window.GBFavoriteStore.remove('/a/'));
-  check('FAV-DATA-03','integrity','ambiguous alias remove refuses unchanged',!!conflict.error&&await a.evaluate(key=>localStorage.getItem(key),key)===before,conflict);
+  const afterViews=await Promise.all([rawFrom(a),rawFrom(b),rawFrom(c)]);
+  check('FAV-DATA-03','integrity','ambiguous alias remove refuses unchanged',
+    conflict.error==='conflict'&&afterViews.every((raw,index)=>raw===beforeViews[index]),
+    {conflict,beforeViews,afterViews});
+  await c.close();
   const removed=await a.evaluate(()=>window.GBFavoriteStore.remove('/b/'));
   const restored=await b.evaluate(receipt=>window.GBFavoriteStore.restore(receipt),removed.receipt);
   rows=await a.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
@@ -285,6 +317,9 @@ fs.writeFileSync(path.join(REPORTS, 'favorite-store-browser-contract.md'), [
   `- Failed: **${summary.failed}**`, '',
   ...checks.map((entry) => `- ${entry.pass ? 'PASS' : 'FAIL'} \`${entry.id}\` — ${entry.description}`), '',
 ].join('\n'));
-for (const entry of checks) console.log(`${entry.pass ? 'PASS' : 'FAIL'} ${entry.id} ${entry.description}`);
+for (const entry of checks) {
+  console.log(`${entry.pass ? 'PASS' : 'FAIL'} ${entry.id} ${entry.description}`);
+  if (!entry.pass && entry.area==='integrity') console.error('FAVORITE_INTEGRITY_EVIDENCE '+JSON.stringify(entry.evidence));
+}
 console.log(JSON.stringify({ sha, cases: summary.cases, checks: summary.checks, passed: summary.passed, failed: summary.failed }));
 if (failed.length) process.exitCode = 1;
