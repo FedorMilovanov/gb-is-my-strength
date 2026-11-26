@@ -889,6 +889,68 @@ const reviewClippedContrast = async (page, reviews) => {
   return witnesses;
 };
 try {
+  // Isolated diagnostic only: distinguish sink failure from the actual WAV format.
+  // Never replace or waive the unmuted, routed narration gate below.
+  if (engine==='firefox' && ['full','mobile'].includes(suite)) {
+    report.audioSinkProbe={diagnosticOnly:true,cases:[]};
+    const anchorSource=fs.readFileSync(path.join(root,'src/runtime/reader-tts-media-session.js'),'utf8');
+    const setupProbe=async ({kind,muted}) => {
+  const events=[];
+  const audio=kind==='anchor' ? window.GBReaderTTSMediaSession.getAnchor() : document.createElement('audio');
+  let referenceUrl;
+  if (kind==='pcm16') {
+    // Independent 48 kHz mono 16-bit PCM silence; no production helper reuse.
+    const frames=96000, bytes=new ArrayBuffer(44+frames*2), view=new DataView(bytes);
+    for (const [offset,word] of [[0,'RIFF'],[8,'WAVE'],[12,'fmt '],[36,'data']])
+      for (let i=0;i<word.length;i++) view.setUint8(offset+i,word.charCodeAt(i));
+    view.setUint32(4,bytes.byteLength-8,true); view.setUint32(16,16,true);
+    view.setUint16(20,1,true); view.setUint16(22,1,true); view.setUint32(24,48000,true);
+    view.setUint32(28,96000,true); view.setUint16(32,2,true); view.setUint16(34,16,true);
+    view.setUint32(40,frames*2,true);
+    referenceUrl=URL.createObjectURL(new Blob([bytes],{type:'audio/wav'}));
+  }
+  const snapshot=()=>({readyState:audio.readyState,networkState:audio.networkState,
+    currentTime:audio.currentTime,duration:Number.isFinite(audio.duration)?audio.duration:null,
+    paused:audio.paused,muted:audio.muted,errorCode:audio.error?.code??null});
+  for (const type of ['loadstart','loadedmetadata','canplay','playing','pause','error','stalled','ended'])
+    audio.addEventListener(type,()=>{if(events.length<32) events.push({type,...snapshot()});});
+  audio.muted=muted; audio.volume=.01; audio.loop=true;
+  if(referenceUrl){audio.src=referenceUrl;document.body.appendChild(audio);}
+  const button=document.querySelector('button');
+  button.addEventListener('click',async()=>{
+    let timer,play;
+    try {
+      play=await Promise.race([
+        Promise.resolve().then(()=>audio.play()).then(()=>({state:'resolved'}),e=>({state:'rejected',name:e.name,message:e.message})),
+        new Promise(resolve=>{timer=setTimeout(()=>resolve({state:'timeout'}),2500);})
+      ]);
+      // A resolved play promise is not proof that the sink keeps running.
+      await new Promise(resolve=>setTimeout(resolve,650));
+      const end=snapshot();
+      window.__g3SinkProbe={kind,muted,play,end,events:[...events],
+        progressed:play.state==='resolved'&&!end.errorCode&&!end.paused&&end.currentTime>=.15};
+    } finally {
+      clearTimeout(timer); audio.pause();
+      if(referenceUrl){audio.removeAttribute('src');audio.load();URL.revokeObjectURL(referenceUrl);audio.remove();}
+    }
+  },{once:true});
+};
+    for (const kind of ['anchor','pcm16']) for (const muted of [false,true]) {
+      const context=await contextFor(320,'light');
+      try {
+        const page=await context.newPage();
+        await page.setContent('<button type="button">Audio diagnostic</button>');
+        await page.addScriptTag({content:anchorSource});
+        await page.evaluate(setupProbe,{kind,muted});
+        await page.locator('button').click();
+        await page.waitForFunction(()=>window.__g3SinkProbe!==undefined,{},{timeout:7000});
+        report.audioSinkProbe.cases.push(await page.evaluate(()=>window.__g3SinkProbe));
+      } catch(error) {
+        report.audioSinkProbe.cases.push({kind,muted,harnessFailure:String(error)});
+        report.problems.push('Isolated Firefox audio diagnostic harness: '+String(error));
+      } finally { await context.close(); }
+    }
+  }
   // The hosted workflow invokes --suite=mobile, not --suite=full.
   // One bounded capability witness per route/browser, outside the large
   // viewport matrix; the speech transport alone is mocked, never the reader.
