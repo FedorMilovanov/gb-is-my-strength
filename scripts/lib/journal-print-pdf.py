@@ -74,6 +74,9 @@ def inspect(case):
         "headingFirstPage": bool(folded) and normalize(dom["heading"], fold=True) in folded[0],
         "sourceTitles": len(dom["sourceTitles"]),
         "missingSourceTitles": [title for title in dom["sourceTitles"] if normalize(title, fold=True) not in all_text],
+        "sourceBoundaries": len(dom.get("sourceBoundaries", [])),
+        "missingSourceBoundaries": [boundary for boundary in dom.get("sourceBoundaries", [])
+                                    if normalize(boundary, fold=True) not in all_text],
         "printedScreenControls": [label for label in dom.get("screenOnlyLabels", []) if normalize(label, fold=True) in all_text],
         "reviewWarningFirstPage": bool(folded) and normalize(dom["reviewWarning"], fold=True) in folded[0] if dom.get("reviewWarning") else None,
         "holdPrinted": "publication_hold" in all_text,
@@ -112,12 +115,14 @@ def analyze(capture, baseline=None):
             for field in ("paperSizeCorrect", "allPagesHaveText", "headingFirstPage", "companionTogether"):
                 if not result[field]:
                     failures.append(field)
-            for field in ("missingSourceTitles", "printedScreenControls"):
+            for field in ("missingSourceTitles", "missingSourceBoundaries", "printedScreenControls"):
                 if result[field]:
                     failures.append(field)
             if case["kind"] != "journal" and not result["sourceTitles"]:
                 failures.append("missing bibliography")
             if case["kind"] == "history":
+                if result["sourceBoundaries"] != result["sourceTitles"] or not result["sourceBoundaries"]:
+                    failures.append("missing historical source-boundary witness")
                 if result["reviewWarningFirstPage"] is not None:
                     failures.append("unpublished manuscript warning leaked into printed article")
                 if result["holdPrinted"]:

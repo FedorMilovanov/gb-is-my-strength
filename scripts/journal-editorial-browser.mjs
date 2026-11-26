@@ -2166,6 +2166,10 @@ try {
             const normalize = (element) => element.textContent.replace(/\s+/gu, ' ').trim();
             return { heading: normalize(document.querySelector('h1')),
               sourceTitles: [...document.querySelectorAll('.bibliography-item h3')].map(normalize),
+              // Every historical evidence boundary is reader-facing text, not
+              // disclosure chrome. Require it in the real PDF, even when the
+              // redundant summary label is absent.
+              sourceBoundaries: [...document.querySelectorAll('.je-history-article .bibliography-item .biblio-details > p')].map(normalize),
               companion: next ? { label: normalize(next.querySelector('p')), title: normalize(title), breakInside: getComputedStyle(next).breakInside } : null,
               reviewWarning: document.querySelector('.je-review-note') ? normalize(document.querySelector('.je-review-note')) : null,
               // The shared skip link is off-canvas, not display:none; prove its
@@ -2175,6 +2179,10 @@ try {
               paper: getComputedStyle(document.querySelector('.journal-edition')).getPropertyValue('--je-paper').trim() };
           });
           assert.equal(item.dom.screenControlsHidden, true, 'print must omit only screen navigation, not bibliography');
+          if (route.kind === 'history') {
+            assert.equal(item.dom.sourceBoundaries.length, item.dom.sourceTitles.length, 'each historical source must retain its printed evidence boundary');
+            assert.ok(item.dom.sourceBoundaries.every(Boolean), 'historical evidence boundaries cannot be empty');
+          }
           assert.equal(item.dom.paper, '#fff', 'print must use white paper in either browser preference');
           await page.pdf({ path: item.pdf, format: paper, printBackground: true,
             margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
