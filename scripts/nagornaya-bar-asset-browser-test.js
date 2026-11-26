@@ -138,8 +138,8 @@ function visible(el) {
             await p.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:'+port+'/')?r.continue():r.abort());
             p.on('pageerror',error=>pageErrors.push(String(error)));
             await p.goto('http://127.0.0.1:'+port+'/nagornaya/chast-'+part+'/',{waitUntil:'load'});
-            const read=()=>p.evaluate(()=>{
-              const visible=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'};
+            const readState=()=>{
+              const visible=e=>{if(!e)return false;const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'};
               const bar=document.getElementById('bottomBar');
               const cluster=bar.querySelector('.nag-bar-controls');
               return {epoch:performance.timeOrigin,bar:visible(bar),
@@ -148,16 +148,36 @@ function visible(el) {
                 play:[...document.querySelectorAll('.gb-ember')].filter(visible).length,
                 save:[...document.querySelectorAll('.gb-save')].filter(visible).length,
                 inBar:!!cluster&&visible(cluster.querySelector('.gb-ember'))&&visible(cluster.querySelector('.gb-save'))};
-            });
+            };
+            const read=()=>p.evaluate(readState);
             await p.waitForSelector('#bottomBar .nag-bar-controls',{state:'attached'});
             const initial=await read();
             assert.deepStrictEqual(initial,{epoch:initial.epoch,bar:false,clusters:1,fallback:0,play:1,save:1,inBar:false},name+' part '+part+' desktop initial');
             for(const width of [390,1024,360,1024]){
               await p.setViewportSize({width,height:844});
               const mobile=width<900;
-              await p.waitForFunction(mobile=>{const bar=document.getElementById('bottomBar');return !!bar.getClientRects().length===mobile},mobile);
-              const state=await read();
-              assert.deepStrictEqual(state,{epoch:initial.epoch,bar:mobile,clusters:1,fallback:0,play:1,save:1,inBar:mobile},name+' part '+part+' @'+width);
+              const expected={epoch:initial.epoch,bar:mobile,clusters:1,fallback:0,play:1,save:1,inBar:mobile};
+              // WebKit may expose a layout rect before style visibility and
+              // the responsive control owner have converged. Poll the actual
+              // contract, not an unrelated presence-of-rect proxy.
+              const deadline=Date.now()+3000;
+              const samples=[];
+              let state;
+              do {
+                state=await read();
+                samples.push(state);
+                if(Object.keys(expected).every(key=>state[key]===expected[key]))break;
+                await p.evaluate(()=>new Promise(requestAnimationFrame));
+              } while(Date.now()<deadline);
+              try {
+                assert.deepStrictEqual(state,expected,name+' part '+part+' @'+width);
+                // Verify the exact state again on the next painted frame.
+                await p.evaluate(()=>new Promise(requestAnimationFrame));
+                assert.deepStrictEqual(await read(),expected,name+' part '+part+' @'+width+' settled');
+              } catch(error) {
+                console.error('NAGORNAYA_RESIZE_EVIDENCE '+JSON.stringify({name,part,width,expected,samples:samples.slice(-12),viewport:await p.evaluate(()=>({innerWidth,innerHeight,matches:matchMedia('(max-width:899px)').matches,barDisplay:getComputedStyle(document.getElementById('bottomBar')).display,barVisibility:getComputedStyle(document.getElementById('bottomBar')).visibility,body:document.body.className}))}));
+                throw error;
+              }
               if(mobile){
                 const save=p.locator('#bottomBar .nag-bar-controls .gb-save');
                 const before=await save.getAttribute('aria-pressed');
