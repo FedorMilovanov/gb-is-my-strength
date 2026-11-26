@@ -503,7 +503,7 @@ html.dark .gbs2-resume-go{color:#1c1208}
 @media(min-width:769px) and (hover:hover) and (pointer:fine){.gb-floating-tip::after{pointer-events:auto}}
 /* Modern runtime has its own pointer transit corridor; the old 22px
    bridge overlaps its 10px anchor gap and must not intercept a click. */
-.gb-floating-tip[data-gb-tooltip-geometry-owner="article-inline-tooltip"]::after{pointer-events:none!important}
+.gb-floating-tip[data-gb-tooltip-geometry-owner="article-inline-tooltip"]::after{pointer-events:none}
 
 .gtip.gb-floating-tip{position:fixed;display:block;width:min(380px,calc(100vw - 40px));padding:16px 18px;border-radius:24px;background:rgba(255,253,250,.985);color:#1a150f;border:1px solid rgba(0,0,0,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.62);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.58;font-weight:400;text-align:left;opacity:1;pointer-events:auto;transform:translateY(0) scale(1);transform-origin:50% 100%;z-index:var(--z-panel);top:-9999px;left:-9999px;visibility:visible}
 

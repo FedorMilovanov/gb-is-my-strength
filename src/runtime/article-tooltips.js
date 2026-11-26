@@ -259,14 +259,6 @@ function tipFocusables(tip) {
     .filter((el) => !el.disabled && !el.hasAttribute('inert') && !el.closest('[inert]'));
 }
 
-function applyTipPointerPolicy(tip) {
-  // Text-only footnotes have no action surface. Keep their opener clickable
-  // during focus/hover-induced scroll, consistent with the legacy CSS policy.
-  // Rich notes, glossary expansion and Scripture retain pointer interaction.
-  const passiveNote = tip.classList.contains('tooltip') && !tipFocusables(tip).length;
-  setImportant(tip.style, 'pointer-events', passiveNote ? 'none' : 'auto');
-}
-
 function setTipInert(tip, inert) {
   if (!tip) return;
   if (inert) tip.setAttribute('inert', '');
@@ -540,7 +532,7 @@ function openTooltip(anchor, reason = 'open') {
       settleHover(active);
     }
     setTipInert(tip, false);
-    applyTipPointerPolicy(tip);
+    setImportant(tip.style, 'pointer-events', 'auto');
     position(tip, anchor, true);
     return;
   }
@@ -555,7 +547,7 @@ function openTooltip(anchor, reason = 'open') {
   tip.classList.add('gb-floating-tip', 'is-open');
   tip.dataset.gbTooltipGeometryOwner = OWNER;
   setTipInert(tip, false);
-  applyTipPointerPolicy(tip);
+  setImportant(tip.style, 'pointer-events', 'auto');
   anchor.classList.add('is-open');
   anchor.setAttribute('aria-expanded', 'true');
   // GBS-INLINE-TOOLTIP-DEFINITION-ASSOCIATION: the opened definition must be

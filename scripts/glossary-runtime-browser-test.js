@@ -316,7 +316,7 @@ async function portalAssertions(browser, origin, modern, mobile) {
       await note.click();
       await page.waitForFunction(()=>document.querySelector('#registry-footnote').getAttribute('aria-expanded')==='true');
       assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': canonical note is not announced twice');
-      assert.deepEqual(await page.locator('#qa-tip').evaluate(t=>[getComputedStyle(t).pointerEvents,getComputedStyle(t,'::after').pointerEvents]),['none','none'],label+': text-only canonical note and legacy hover bridge must not intercept its opener');
+      assert.deepEqual(await page.locator('#qa-tip').evaluate(t=>[getComputedStyle(t).pointerEvents,getComputedStyle(t,'::after').pointerEvents]),['auto','none'],label+': canonical note surface stays interactive but legacy hover bridge cannot intercept opener');
       await page.keyboard.press('Escape');
       await page.waitForFunction(()=>document.querySelector('#registry-footnote').getAttribute('aria-expanded')==='false');
       assert.equal(await note.getAttribute('aria-describedby'),'qa-endnote',label+': authored endnote survives close');
