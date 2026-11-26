@@ -39,6 +39,32 @@ def key(case):
     return (case["kind"], case["paper"], case["theme"], case["javaScriptEnabled"])
 
 
+def missing_source_boundaries(dom, all_text):
+    """Match every boundary in its own bibliography entry, not anywhere in prose."""
+    titles = dom["sourceTitles"]
+    boundaries = dom.get("sourceBoundaries", [])
+    if not boundaries:
+        return []
+    start = all_text.find(normalize("Источники истории", fold=True))
+    if start < 0 or len(titles) != len(boundaries):
+        return list(boundaries)
+    cursor = start
+    missing = []
+    for index, (title, boundary) in enumerate(zip(titles, boundaries)):
+        needle = normalize(title, fold=True)
+        position = all_text.find(needle, cursor)
+        if position < 0:
+            missing.append(boundary)
+            continue
+        cursor = position + len(needle)
+        next_position = (all_text.find(normalize(titles[index + 1], fold=True), cursor)
+                         if index + 1 < len(titles) else
+                         all_text.find(normalize("Кризисы руководства — отдельная история", fold=True), cursor))
+        if next_position < 0 or not boundary.strip() or normalize(boundary, fold=True) not in all_text[cursor:next_position]:
+            missing.append(boundary)
+    return missing
+
+
 def inspect(case):
     with fitz.open(resolve(case["pdf"])) as document:
         texts = [page.get_text(sort=True) for page in document]
@@ -75,8 +101,7 @@ def inspect(case):
         "sourceTitles": len(dom["sourceTitles"]),
         "missingSourceTitles": [title for title in dom["sourceTitles"] if normalize(title, fold=True) not in all_text],
         "sourceBoundaries": len(dom.get("sourceBoundaries", [])),
-        "missingSourceBoundaries": [boundary for boundary in dom.get("sourceBoundaries", [])
-                                    if normalize(boundary, fold=True) not in all_text],
+        "missingSourceBoundaries": missing_source_boundaries(dom, all_text),
         "printedScreenControls": [label for label in dom.get("screenOnlyLabels", []) if normalize(label, fold=True) in all_text],
         "reviewWarningFirstPage": bool(folded) and normalize(dom["reviewWarning"], fold=True) in folded[0] if dom.get("reviewWarning") else None,
         "holdPrinted": "publication_hold" in all_text,
