@@ -29,4 +29,9 @@ for(const field of ['recordingUrl','playbackHref']){
  for(const [name,url] of Object.entries({'same-scheme relative':'https:example.invalid/test-recording','extra slash':'https:///example.invalid/test-recording','embedded tab':'https://example.invalid/te\tst','backslash':'https:\\example.invalid\\test-recording','raw space':'https://example.invalid/raw space'}))test(field+' rejects '+name,()=>assert.equal(exhibitView(withUrl(field,url)),null));
  for(const [name,url] of Object.entries({'encoded space':'https://example.invalid/test%20recording','query and fragment':'https://example.invalid/watch?v=abc&start=12#time','IPv6 with port':'https://[2001:db8::1]:8443/test','uppercase scheme':'HTTPS://example.invalid/recording'}))test(field+' accepts '+name,()=>assert.ok(exhibitView(withUrl(field,url))));
 }
+// Authored authority userinfo must be rejected even when URL() normalizes it away.
+for(const field of ['recordingUrl','playbackHref']){
+ for(const url of ['https://@example.invalid/a','https://:@example.invalid/a','HTTPS://@example.invalid/a','https://user@example.invalid/a','https://:pass@example.invalid/a'])test(field+' rejects authored userinfo '+url,()=>assert.equal(exhibitView(withUrl(field,url)),null));
+ for(const url of ['https://example.invalid/@speaker','https://example.invalid/a?email=a@b.org#@note','https://example.invalid/a%40b','https://[2001:db8::1]:8443/test','https://example.invalid/test-recording'])test(field+' preserves valid URL '+url,()=>assert.ok(exhibitView(withUrl(field,url))));
+}
 console.log('AV_MODEL_PASS='+passes);
