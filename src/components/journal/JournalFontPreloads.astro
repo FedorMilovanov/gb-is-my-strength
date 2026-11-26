@@ -18,6 +18,7 @@ const dossierLoraEmphasis = /^\/journal\/dossiers\/g3\/?$/.test(Astro.url.pathna
 <!-- Metadata mixes Cyrillic words with Latin-range dates/digits; preload both. -->
 <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-400.woff2" crossorigin />
 <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-latin-400.woff2" crossorigin />
-{(catalogOpening || journalEmphasis) && <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2" crossorigin />}
+{catalogOpening && <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2" crossorigin />}
+{!catalogOpening && journalEmphasis && <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2" crossorigin />}
 {dossierLoraEmphasis && <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-600.woff2" crossorigin />}
 {catalogOpening && <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-latin-400.woff2" crossorigin />}
