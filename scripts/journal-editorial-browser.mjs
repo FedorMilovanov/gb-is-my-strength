@@ -897,10 +897,23 @@ try {
     for (const route of routes) {
       const item = { kind: route.kind, transport: 'controlled Web Speech; not audible playback', runtime: [] };
       const context = await contextFor(320,'light',{reducedMotion:'reduce'});
+      let page;
       try {
-        const page = await context.newPage();
+        page = await context.newPage();
         monitorRuntime(page,item.runtime,{isIgnoredConsole:isExpectedJournalConsole});
         await page.addInitScript(() => {
+          // Observe the real shared audio anchor, not the mocked speech transport.
+          const trace=[];
+          window.__journalAnchorEvidence=trace;
+          for (const type of ['loadstart','loadedmetadata','canplay','playing','pause','error','abort','emptied','stalled','suspend']) {
+            document.addEventListener(type, event => {
+              const audio=event.target;
+              if (!(audio instanceof HTMLAudioElement) || !audio.hasAttribute('data-gb-reader-tts-anchor') || trace.length>=64) return;
+              trace.push({type,time:Math.round(performance.now()),readyState:audio.readyState,
+                networkState:audio.networkState,currentTime:audio.currentTime,
+                error:audio.error ? {code:audio.error.code,message:audio.error.message} : null});
+            }, true);
+          }
           const fixture={speak:0,pause:0,resume:0,cancel:0,last:null};
           window.__journalSpeechFixture=fixture;
           Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class { constructor(text){this.text=text;} }});
@@ -974,7 +987,30 @@ try {
       } catch(error) {
         item.failure=error.message; item.stack=error.stack;
         report.problems.push(route.kind+' narration: '+error.message);
-      } finally { await context.close(); }
+      } finally {
+        // Collect diagnostics even on failure; never exempt a media warning.
+        if (page && !page.isClosed() && route.kind!=='journal') {
+          try {
+            item.mediaAnchor=await page.evaluate(() => ({
+              events:window.__journalAnchorEvidence || [],
+              anchors:[...document.querySelectorAll('audio[data-gb-reader-tts-anchor]')].map(audio=>({
+                blob:(audio.currentSrc || audio.src).startsWith('blob:'),
+                readyState:audio.readyState,networkState:audio.networkState,paused:audio.paused,
+                currentTime:audio.currentTime,duration:Number.isFinite(audio.duration)?audio.duration:null,
+                error:audio.error?{code:audio.error.code,message:audio.error.message}:null
+              }))
+            }));
+          } catch (error) { item.mediaAnchorDiagnosticFailure=String(error); }
+          // Keep the original console gate and also report errors observed
+          // directly on the media element before browser-context teardown.
+          if (!item.failure && (item.runtime.length || item.mediaAnchor?.anchors.some(audio=>audio.error) ||
+              item.mediaAnchor?.events.some(event=>event.error))) {
+            item.failure='Media/runtime error before narration context teardown';
+            report.problems.push(route.kind+' narration: '+item.failure);
+          }
+        }
+        await context.close();
+      }
       if (route.kind!=='journal') {
         const noJs=await contextFor(320,'light',{javaScriptEnabled:false});
         try {
