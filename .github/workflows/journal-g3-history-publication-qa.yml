@@ -150,7 +150,11 @@ jobs:
             --log-target="file:$audio_root/pulse.log" -n --file="$audio_root/daemon.pa"
           ready=0
           for attempt in {1..30}; do
-            if pactl info > "$audio_root/info.txt" 2>&1; then ready=1; break; fi
+            if pactl info > "$audio_root/info.txt" 2>&1; then
+              printf 'Firefox audio server ready on attempt %s\n' "$attempt"
+              ready=1
+              break
+            fi
             sleep .2
           done
           if (( ! ready )); then cat "$audio_root/info.txt" "$audio_root/pulse.log" >&2; exit 1; fi
