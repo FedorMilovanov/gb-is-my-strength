@@ -24,9 +24,33 @@
   .journal-edition article.news-private-review .bibliography-item a.je-source-return span {
     min-width: 0; overflow-wrap: anywhere;
   }
+  /* One consistent, scalable source-navigation hierarchy for private specimens. */
+  .journal-edition article.news-private-review .bibliography-item {
+    padding-block: 14px; padding-inline-start: 28px;
+  }
+  .journal-edition article.news-private-review .bibliography-item :is(h2, h3) {
+    margin: 0 0 .4rem; letter-spacing: normal; hyphens: none; overflow-wrap: anywhere;
+    font: 600 calc(1rem * var(--gb-reader-font-scale, 1))/1.4 var(--je-ui);
+  }
+  .journal-edition article.news-private-review .bibliography-item > p:not(.biblio-meta) {
+    margin-block-start: .4rem; overflow-wrap: anywhere;
+    font: 400 calc(.875rem * var(--gb-reader-font-scale, 1))/1.6 var(--je-ui);
+  }
+  .journal-edition article.news-private-review .bibliography-item a[href] {
+    box-sizing: border-box; text-align: start;
+    font: 500 calc(.875rem * var(--gb-reader-font-scale, 1))/1.5 var(--je-ui);
+    color: var(--je-gold); text-decoration: underline; text-underline-offset: .15em;
+  }
+  .journal-edition article.news-private-review :is(.jdc-links, .jhe-group, .jhc-record) a[data-journal-citation] {
+    box-sizing: border-box;
+    font-size: calc(.875rem * var(--gb-reader-font-scale, 1));
+  }
+  .journal-edition article.news-private-review .bibliography-item > ul {
+    margin-block: .4rem 0; padding-inline-start: 1rem;
+  }
   .news-private-review .news-bib-actions {
-    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px;
-    margin-block-start: 12px;
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 8px;
+    margin-block-start: 6px;
   }
   .news-private-review .bibliography-item li + li { margin-block-start: 8px; }
   .news-private-review .jdc-links { row-gap: 8px; }
