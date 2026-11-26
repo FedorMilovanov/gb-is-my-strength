@@ -5,7 +5,7 @@ const assert = require('assert');
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -46,7 +46,8 @@ function visible(el) {
   const port = server.address().port;
   const browser = await chromium.launch({ headless: true });
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({serviceWorkers:'block'});
+    await page.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:'+port+'/')?r.continue():r.abort());
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(String(error)));
 
@@ -126,6 +127,52 @@ function visible(el) {
     });
     assert.strictEqual(desktop.displayed, false, 'desktop: bottom bar must remain hidden');
     assert.strictEqual(desktop.inlineDisplay, '', 'desktop: mobile inline display override must be removed');
+    // Initial desktop load must bind the *same* mobile controls before
+    // the floating controller scans. The page does not reload on resize.
+    for (const [name, engine] of [['chromium',chromium],['webkit',webkit]]) {
+      const adaptive=await engine.launch({headless:true});
+      try {
+        for(let part=1;part<=5;part++){
+          const p=await adaptive.newPage({viewport:{width:1024,height:768},serviceWorkers:'block'});
+          try {
+            await p.route('**/*',r=>r.request().url().startsWith('http://127.0.0.1:'+port+'/')?r.continue():r.abort());
+            p.on('pageerror',error=>pageErrors.push(String(error)));
+            await p.goto('http://127.0.0.1:'+port+'/nagornaya/chast-'+part+'/',{waitUntil:'load'});
+            const read=()=>p.evaluate(()=>{
+              const visible=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'};
+              const bar=document.getElementById('bottomBar');
+              const cluster=bar.querySelector('.nag-bar-controls');
+              return {epoch:performance.timeOrigin,bar:visible(bar),
+                clusters:bar.querySelectorAll('.nag-bar-controls').length,
+                fallback:document.querySelectorAll('.gb-mobile-fallback-controls').length,
+                play:[...document.querySelectorAll('.gb-ember')].filter(visible).length,
+                save:[...document.querySelectorAll('.gb-save')].filter(visible).length,
+                inBar:!!cluster&&visible(cluster.querySelector('.gb-ember'))&&visible(cluster.querySelector('.gb-save'))};
+            });
+            await p.waitForSelector('#bottomBar .nag-bar-controls',{state:'attached'});
+            const initial=await read();
+            assert.deepStrictEqual(initial,{epoch:initial.epoch,bar:false,clusters:1,fallback:0,play:1,save:1,inBar:false},name+' part '+part+' desktop initial');
+            for(const width of [390,1024,360,1024]){
+              await p.setViewportSize({width,height:844});
+              const mobile=width<900;
+              await p.waitForFunction(mobile=>{const bar=document.getElementById('bottomBar');return !!bar.getClientRects().length===mobile},mobile);
+              const state=await read();
+              assert.deepStrictEqual(state,{epoch:initial.epoch,bar:mobile,clusters:1,fallback:0,play:1,save:1,inBar:mobile},name+' part '+part+' @'+width);
+              if(mobile){
+                const save=p.locator('#bottomBar .nag-bar-controls .gb-save');
+                const before=await save.getAttribute('aria-pressed');
+                assert(['true','false'].includes(before),name+' canonical Save state');
+                await save.click();
+                await p.waitForFunction(before=>[...document.querySelectorAll('.gb-save')].every(e=>e.getAttribute('aria-pressed')!==before),before);
+                await save.click();
+                await p.waitForFunction(before=>[...document.querySelectorAll('.gb-save')].every(e=>e.getAttribute('aria-pressed')===before),before);
+              }
+            }
+            console.log('PASS resize '+name+' part '+part+' desktop/mobile x2, exact Save round trip');
+          } finally {await p.close()}
+        }
+      } finally {await adaptive.close()}
+    }
     assert.deepStrictEqual(pageErrors, [], `browser page errors:\n${pageErrors.join('\n')}`);
     console.log('✅ Nagornaya bar browser matrix: parts 1–5 @ 360/390 and desktop 1024');
   } finally {

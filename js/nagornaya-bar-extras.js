@@ -20,7 +20,8 @@
   function run() {
     // Visibility belongs to floating-cluster.css in the components layer.
     // Inline important display overrides also win during PDF printing.
-    if (window.innerWidth >= 900) return;
+    // Initialize before controller binding on either viewport; CSS hides
+    // the mobile cluster on desktop, including after a screen resize.
 
     var barInner = document.querySelector('#bottomBar .bottom-bar-inner');
     var sidebarControls = document.querySelector('.nag-sidebar-controls[data-fc-root]');

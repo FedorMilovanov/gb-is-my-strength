@@ -22,7 +22,7 @@ export const ASSET_VERSIONS = {
   'js/floating-cluster-controller.js': 'bd9587e5',
   'js/glossary.js': '8c2537f0',
   'js/highlights.js': '49f2d846',
-  'js/nagornaya-bar-extras.js': 'b8b430cb',
+  'js/nagornaya-bar-extras.js': '0d09c638',
   'js/nagornaya-mobile-toc.js': 'a61ca209',
   'js/reader-library-dock.js': 'f730766c',
   'js/reader-library-presenter.js': 'df7edaea',

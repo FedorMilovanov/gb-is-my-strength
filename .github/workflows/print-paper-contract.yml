@@ -33,6 +33,7 @@ on:
       - 'scripts/print-pagination-raster-audit.py'
       - 'scripts/print-reversible-card-contract.mjs'
       - 'scripts/reader-mobile-print-lock-browser-contract.cjs'
+      - 'scripts/nagornaya-bar-asset-browser-test.js'
       - '.github/workflows/print-paper-contract.yml'
   workflow_dispatch:
 
@@ -76,6 +77,12 @@ jobs:
       - name: Build exact production-like dist
         id: print_build
         run: npm run strangler:build:production-like
+      - name: Prove Nagornaya adaptive screen controls and print visibility
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/nagornaya-bar-asset-browser-test.js 2>&1 | tee reports/print-paper/nagornaya-adaptive.log
       - name: Prove lossless mobile overlay print and restoration
         id: mobile_overlay_print
         if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
