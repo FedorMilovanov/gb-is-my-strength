@@ -175,24 +175,66 @@ function recordLayout(route, width, state) {
 
 sourceContracts();
 const browser = await chromium.launch({ headless: true });
-const context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
-const page = await context.newPage();
+const context = await browser.newContext({ viewport: { width: 1366, height: 900 }, serviceWorkers: 'block' });
+let page;
 const pageErrors = [];
-page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+const localFailures = [];
+function observePage(page) {
+  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+  page.on('requestfailed', (request) => {
+    if (request.url().startsWith(BASE + '/')) localFailures.push({ url: request.url(), error: request.failure()?.errorText });
+  });
+}
+async function openRoute(route, width, height) {
+  // Each cell certifies a cold navigation at a specific viewport, not a
+  // resize of the preceding route. Preserve preferences in the context only.
+  if (page) await page.close();
+  page = await context.newPage();
+  observePage(page);
+  const failuresStart = localFailures.length;
+  const errorsStart = pageErrors.length;
+  await page.setViewportSize({ width, height });
+  let status = null;
+  try {
+    // This guard certifies the Classic ReaderRail geometry. Default ARGON
+    // is independently exercised by reader-w57-browser-visual-qa.mjs.
+    const response = await page.goto(BASE + route.path + '?reader-pilot=0', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    status = response?.status() ?? null;
+    assert.ok(status >= 200 && status < 300, route.path + ' HTTP ' + status);
+    assert.equal(new URL(page.url()).searchParams.get('reader-pilot'), '0', 'Classic mode must remain explicit');
+    await page.waitForFunction((selectors) => Boolean(window.GBReaderPreferences && document.querySelector(selectors.main) && document.querySelector(selectors.summary) && document.querySelector(selectors.prose)), route, { timeout: 15000 });
+    assert.equal(await page.locator('#npUniversalDemo').count(), 0, 'ARGON must not own the Classic geometry cell');
+  } catch (error) {
+    const evidence = {
+      route: route.path, width, height, status, error: String(error),
+      state: await page.evaluate((selectors) => ({
+        url: location.href, readyState: document.readyState, width: innerWidth,
+        preferences: typeof window.GBReaderPreferences?.set === 'function',
+        main: Boolean(document.querySelector(selectors.main)),
+        summary: Boolean(document.querySelector(selectors.summary)),
+        prose: Boolean(document.querySelector(selectors.prose)),
+      }), route).catch(() => null),
+      pageErrors: pageErrors.slice(errorsStart),
+      localFailures: localFailures.slice(failuresStart),
+    };
+    const name = route.key.toLowerCase() + '-' + width + '-readiness-failure';
+    fs.writeFileSync(path.join(REPORT_DIR, name + '.json'), JSON.stringify(evidence, null, 2));
+    console.error('[STANDALONE-READER-READINESS] ' + JSON.stringify(evidence));
+    await page.screenshot({ path: path.join(REPORT_DIR, name + '.png') }).catch(() => {});
+    throw error;
+  }
+}
+
 try {
   for (const route of ROUTES) {
     for (const width of VIEWPORTS) {
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto(`${BASE}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForFunction((selectors) => Boolean(window.GBReaderPreferences && document.querySelector(selectors.main) && document.querySelector(selectors.summary) && document.querySelector(selectors.prose)), route, { timeout: 15000 });
+      await openRoute(route, width, 900);
       await setMeasure(page, 'normal');
       recordLayout(route, width, await layoutState(page, route));
       if (width === 1366) await page.screenshot({ path: path.join(REPORT_DIR, `${route.key.toLowerCase()}-1366.png`), fullPage: false });
     }
 
-    await page.setViewportSize({ width: 1920, height: 1000 });
-    await page.goto(`${BASE}${route.path}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForFunction((selectors) => Boolean(window.GBReaderPreferences && document.querySelector(selectors.main) && document.querySelector(selectors.summary) && document.querySelector(selectors.prose)), route, { timeout: 15000 });
+    await openRoute(route, 1920, 1000);
     const measured = {};
     for (const [measure, rem] of Object.entries(MEASURES)) {
       await setMeasure(page, measure);
