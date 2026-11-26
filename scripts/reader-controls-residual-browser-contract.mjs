@@ -100,6 +100,13 @@ function check(engine, viewport, route, id, pass, evidence = null) {
   assert.ok(pass, `${engine}/${viewport} ${route}: ${id}${evidence ? ` :: ${JSON.stringify(evidence)}` : ''}`);
 }
 
+// Loopback Reader contracts exercise first-party assets, not live analytics.
+// Fulfill only the telemetry origins to prevent delayed cross-document CORS
+// errors; all first-party delivery and pageerror assertions remain intact.
+async function isolateTelemetry(context) {
+  await context.route(/^https:\/\/(?:mc\.yandex\.(?:ru|com)|mdd\.yandex\.net)\//i, route => route.fulfill({ status: 200, contentType: 'application/javascript', body: '', headers: { 'access-control-allow-origin': '*' } }));
+}
+
 async function waitForReader(page) {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForFunction(() => !document.readyState || document.readyState !== 'loading');
@@ -154,26 +161,39 @@ async function waitForSiteMenuOwner(page) {
     return trigger?.getAttribute('data-gb-site-menu-owner')==='canonical-runtime'&&trigger.getAttribute('aria-controls')==='hMobileNav';
   });
   const expected=await page.evaluate(()=>!!document.querySelector('[data-gb-reader-desktop-bootstrap]')&&matchMedia('(min-width:1121px)').matches);
-  if(expected)await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
+  if(expected)await page.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')&&!!window.__NP_UNIVERSAL_PREVIEW__?.ready&&!!window.__NP_W57_ANNOTATIONS__?.ready);
 }
-async function auditSiteMenuRoute(page, engine, origin, entry) {
+async function auditSiteMenuRoute(browser, engine, origin, entry) {
   const route = entry.route;
-  // A mounted Reader reloads at 1121px. Reset to a neutral document
-  // before selecting the next viewport, so that reload cannot abort goto.
-  await page.goto('about:blank');
-  await page.setViewportSize(MOBILE);
-  await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
-  await waitForReader(page);
-  await waitForSiteMenuOwner(page);
-
-  const trigger = page.locator('#hMobileMenuBtn');
-  let viewport = 'mobile';
-  if (!(await trigger.isVisible().catch(() => false))) {
-    await page.goto('about:blank');
-    await page.setViewportSize(DESKTOP);
-    await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+  // Independent documents: a previous Reader must not reload or deliver
+  // scripts into the next route/viewport witness. Keep context preferences.
+  let page, context;
+  const errors = [], failed = [], navigations = [];
+  const open = async size => {
+    if (context) await context.close();
+    // Set viewport before creating the first document: WebKit can deliver
+    // deferred resize events when a mobile context page is resized to desktop.
+    context = await browser.newContext({ viewport:size, serviceWorkers:'block' });
+    await isolateTelemetry(context);
+    page = await context.newPage();
+    page.on('pageerror', e => errors.push(String(e)));
+    page.on('console', m => { if (m.type() === 'error' && m.text().startsWith('Reader desktop:')) errors.push(m.text()); });
+    page.on('requestfailed', r => { if (r.url().startsWith(origin + '/')) failed.push({url:r.url(),error:r.failure()?.errorText}); });
+    page.on('framenavigated', f => { if(f===page.mainFrame()) navigations.push(f.url()); });
+    const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+    assert.ok(response?.ok(), 'site-menu route HTTP response');
     await waitForReader(page);
     await waitForSiteMenuOwner(page);
+    assert.equal(new URL(page.url()).pathname, route, 'site-menu route identity');
+  };
+  try {
+  await open(MOBILE);
+
+  let trigger = page.locator('#hMobileMenuBtn');
+  let viewport = 'mobile';
+  if (!(await trigger.isVisible().catch(() => false))) {
+    await open(DESKTOP);
+    trigger = page.locator('#hMobileMenuBtn');
     viewport = 'desktop';
   }
   check(engine, viewport, route, 'site-menu trigger visible in a supported viewport', await trigger.isVisible().catch(() => false));
@@ -210,6 +230,10 @@ async function auditSiteMenuRoute(page, engine, origin, entry) {
   await page.waitForTimeout(150);
   const closed = await menuSnapshot(page);
   check(engine, viewport, route, 'Escape closes menu, unlocks and restores opener focus', closed.expanded === 'false' && closed.panelHidden === 'true' && !closed.panelOpen && closed.panelInert && !closed.scrollLocked && closed.focusReturned, closed);
+  } catch (error) {
+    const state = await page?.evaluate(() => ({url:location.href,width:innerWidth,ready:document.readyState,body:document.body?.className,bootstrap:!!document.querySelector('[data-gb-reader-desktop-bootstrap]'),preview:!!window.__NP_UNIVERSAL_PREVIEW__?.ready,annotations:!!window.__NP_W57_ANNOTATIONS__?.ready})).catch(()=>null);
+    throw new Error('Site menu navigation/readiness failed: '+JSON.stringify({engine,route,state,errors,failed,navigations}), {cause:error});
+  } finally { if(context) await context.close(); }
 }
 
 async function auditNoJsFallback(browser, engine, origin, routes) {
@@ -243,7 +267,7 @@ async function gotoClassic(page, engine, origin, route){
   await waitForReader(page);
   const owner=await page.evaluate(()=>({
     explicit:new URLSearchParams(location.search).get('reader-pilot')==='0',
-    ready:document.body.classList.contains('np-w57-ready'),
+    ready:document.body?.classList.contains('np-w57-ready'),
     runtime:!!window.__NP_UNIVERSAL_PREVIEW__||!!window.__NP_W57_ANNOTATIONS__
   }));
   check(engine,'desktop-classic',route,'explicit Classic comparison, no W57 owner',response?.status()===200&&owner.explicit&&!owner.ready&&!owner.runtime,owner);
@@ -284,14 +308,13 @@ async function auditStandaloneClassic(page, engine, origin, route) {
 }
 
 async function auditStandaloneDesktop(page,engine,origin,route){
-  // Retain all Classic assertions as a separate explicitly selected comparison.
-  await auditStandaloneClassic(page,engine,origin,route);
+  // Classic is exercised independently before the default-owner witness.
   const response=await page.goto(origin+route,{waitUntil:'domcontentloaded'});
   await waitForReader(page);
   if(!desktopReaderRoutes.has(route)){
     const owner=await page.evaluate(()=>({
       explicit:new URLSearchParams(location.search).has('reader-pilot'),
-      ready:document.body.classList.contains('np-w57-ready'),
+      ready:document.body?.classList.contains('np-w57-ready'),
       visible:!!document.querySelector('.hrail')?.getClientRects().length
     }));
     check(engine,'desktop',route,'ineligible default route retains native rail',
@@ -299,9 +322,14 @@ async function auditStandaloneDesktop(page,engine,origin,route){
     await auditDesktopMenu(page,engine,route,'desktop');
     return;
   }
-  await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&
-    window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true,
-    null,{timeout:15000});
+  try {
+    await page.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')&&
+      window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true,
+      null,{timeout:15000});
+  } catch(error) {
+    const state=await page.evaluate(()=>({url:location.href,viewport:innerWidth,body:document.body?.className,styles:[...document.querySelectorAll('link[data-gb-reader-desktop-css]')].map(l=>({href:l.href,media:l.media,sheet:!!l.sheet})),scripts:[...document.scripts].filter(s=>s.src.includes('/reader-desktop/')).map(s=>s.src),state:!!window.ReaderState,preview:!!window.__NP_UNIVERSAL_PREVIEW__?.ready,annotations:!!window.__NP_W57_ANNOTATIONS__?.ready})).catch(()=>null);
+    throw new Error('Standalone default Reader did not mount: '+JSON.stringify({engine,route,state}),{cause:error});
+  }
   const snap=await page.evaluate(()=>{
     const visible=node=>{
       if(!node||node.closest('[inert],[hidden],[aria-hidden="true"]'))return false;
@@ -493,12 +521,12 @@ async function auditSeries(page, engine, origin, entry, viewport) {
       // Do not leave a newly admitted route with required delivery scripts
       // still loading. An aborted outgoing script can otherwise race the
       // next goto through the real Classic rollback path.
-      await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+      await page.waitForFunction(() => document.body?.classList.contains('np-w57-ready') &&
         window.__NP_UNIVERSAL_PREVIEW__?.ready === true &&
         window.__NP_W57_ANNOTATIONS__?.ready === true, null, { timeout: 15000 });
       const owner = await page.evaluate(() => ({
         explicit: new URLSearchParams(location.search).has('reader-pilot'),
-        ready: document.body.classList.contains('np-w57-ready'),
+        ready: document.body?.classList.contains('np-w57-ready'),
         state: Boolean(window.ReaderState?.getSnapshot?.()),
         path: location.pathname
       }));
@@ -704,10 +732,7 @@ try {
     const launcher = browserLaunchers[engine];
     const browser = await launcher.launch({ headless: true });
     try {
-      const menuContext = await browser.newContext({ viewport: MOBILE, serviceWorkers: 'block' });
-      const menuPage = await menuContext.newPage();
-      for (const entry of menuEntries) await auditSiteMenuRoute(menuPage, engine, origin, entry);
-      await menuContext.close();
+      for (const entry of menuEntries) await auditSiteMenuRoute(browser, engine, origin, entry);
 
       await auditNoJsFallback(browser, engine, origin, [
         '/', '/articles/', '/biografii/', '/hard-texts/', '/pastor-series/',
@@ -715,8 +740,23 @@ try {
       ].filter((route, index, all) => route && menuRoutes.includes(route) && all.indexOf(route) === index));
 
       const desktop = await browser.newContext({ viewport: DESKTOP, serviceWorkers: 'block' });
+      await isolateTelemetry(desktop);
+      for (const route of articleRoutes) {
+        // Independent cold documents, fixed viewport, no retry or fallback.
+        const classicPage = await desktop.newPage();
+        try { await auditStandaloneClassic(classicPage, engine, origin, route); }
+        finally { await classicPage.close(); }
+        const defaultPage = await desktop.newPage();
+        const errors = [], failed = [], navigations = [];
+        defaultPage.on('pageerror', e => errors.push(String(e)));
+        defaultPage.on('console', m => { if(m.type()==='error' && m.text().startsWith('Reader desktop:')) errors.push(m.text()); });
+        defaultPage.on('requestfailed', r => { if(r.url().startsWith(origin+'/')) failed.push({url:r.url(),error:r.failure()?.errorText}); });
+        defaultPage.on('framenavigated', f => { if(f===defaultPage.mainFrame()) navigations.push(f.url()); });
+        try { await auditStandaloneDesktop(defaultPage, engine, origin, route); }
+        catch(error) { throw new Error('Standalone Reader witness failed: '+JSON.stringify({engine,route,errors,failed,navigations}),{cause:error}); }
+        finally { await defaultPage.close(); }
+      }
       const desktopPage = await desktop.newPage();
-      for (const route of articleRoutes) await auditStandaloneDesktop(desktopPage, engine, origin, route);
       await auditSeries(desktopPage, engine, origin, flatSeries, 'desktop');
       await auditSeries(desktopPage, engine, origin, bookSeries, 'desktop');
       for (const route of [
@@ -730,6 +770,7 @@ try {
       await desktop.close();
 
       const mobile = await browser.newContext({ viewport: MOBILE, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+      await isolateTelemetry(mobile);
       const mobilePage = await mobile.newPage();
       for (const route of articleRoutes) await auditStandaloneMobile(mobilePage, engine, origin, route);
       await auditSeries(mobilePage, engine, origin, flatSeries, 'mobile');

@@ -116,7 +116,9 @@ function createDesktopDelivery(contract) {
     if (index === scripts.length) { ready(); return; }
     var script = document.createElement('script');
     script.src = scripts[index];
-    script.async = false;
+    // The onload chain is the sole ordering authority. Avoid the browser
+    // ordered dynamic-script queue, which can stall in WebKit.
+    script.async = true;
     script.onload = function(){ load(index+1); };
     script.onerror = function(){ fallback('required script failed: '+scripts[index]); };
     document.body.appendChild(script);

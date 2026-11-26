@@ -35,7 +35,7 @@ try {
   assert.throws(()=>delivery.materializeAssets(rejected,source),/asset drift/);
   assert.equal(existsSync(rejected),false,'all bytes must be checked before any copy');
   const expected = contract.scripts.map(a=>`${PREFIX}${a.name}?v=${a.sha256}`);
-  function run({width=1121,search='',hasState=true,ready='loading',missingCss=-1,missingJs=-1,stallJs=-1,notReady=false}={}) {
+  function run({width=1121,search='',hasState=true,ready='loading',missingCss=-1,missingJs=-1,stallJs=-1,notReady=false,manualLoad=false}={}) {
     const links=plan.links.map((l,i)=>({...l,sheet:i===missingCss?null:{},events:{},addEventListener(type,fn){this.events[type]=fn;}}));
     const scripts=[],listeners={},errors=[],timers=new Map(),redirects=[];
     const makeMedia=(matches)=>({matches,change:null,addEventListener(type,fn){assert.equal(type,'change');this.change=fn;},
@@ -51,7 +51,7 @@ try {
       body:{classList:{contains(){return !notReady&&scripts.length===6;}},appendChild(script){
         const index=scripts.length;scripts.push(script);
         if(index===missingJs)script.onerror();
-        else if(index!==stallJs){if(index===5&&!notReady){window.__NP_UNIVERSAL_PREVIEW__={ready:true};window.__NP_W57_ANNOTATIONS__={ready:true};}script.onload();}
+        else if(index!==stallJs&&!manualLoad){if(index===5&&!notReady){window.__NP_UNIVERSAL_PREVIEW__={ready:true};window.__NP_W57_ANNOTATIONS__={ready:true};}script.onload();}
       }}};
     const ctx=vm.createContext({window,document,URL,URLSearchParams,console:{error(s){errors.push(s);}},
       setTimeout(fn,ms){const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout(id){timers.delete(id);},
@@ -63,12 +63,16 @@ try {
     state(); listeners.DOMContentLoaded?.();
     vm.runInContext(plan.bootstrap.code,ctx);
     return {links,scripts,before,listeners,media,printMedia,screenMedia,errors,redirects,timers,reloads:()=>reloads,
+      completeScript(index){assert.equal(scripts.length,index+1);if(index===5&&!notReady){window.__NP_UNIVERSAL_PREVIEW__={ready:true};window.__NP_W57_ANNOTATIONS__={ready:true};}scripts[index].onload();},
       prepared(value){prepared=value;},
       resize(value,height=900){window.innerWidth=value;window.innerHeight=height;listeners.resize?.();},
       flush(){for(const [id,fn] of [...frames]){frames.delete(id);fn();}},
       timeout(){const timer=[...timers.values()].find(t=>t.ms===12000);assert.ok(timer);timer.fn();}};
   }
-  let d=run(); assert.ok(d.links.every(l=>l.media===MEDIA)); assert.equal(d.before,0);assert.deepEqual(d.scripts.map(s=>s.src),expected);assert.ok(d.scripts.every(s=>s.async===false));assert.equal(d.timers.size,0);
+  let d=run(); assert.ok(d.links.every(l=>l.media===MEDIA)); assert.equal(d.before,0);assert.deepEqual(d.scripts.map(s=>s.src),expected);assert.ok(d.scripts.every(s=>s.async===true));assert.equal(d.timers.size,0);
+  const serial=run({manualLoad:true});
+  for(let i=0;i<6;i++){assert.deepEqual(serial.scripts.map(s=>s.src),expected.slice(0,i+1));serial.completeScript(i);}
+  assert.equal(serial.timers.size,0);assert.equal(serial.redirects.length,0);
   d.media.set(false);d.resize(1120);d.flush();assert.equal(d.reloads(),1);
   let m=run({width:1120});assert.equal(m.scripts.length,0);assert.ok(m.links.every(l=>l.media==='not all'));m.resize(1121);m.flush();assert.equal(m.reloads(),0);m.media.set(true);m.flush();assert.equal(m.reloads(),1);
   let n=run({search:'?reader-pilot=0'});assert.equal(n.scripts.length,0);assert.ok(n.links.every(l=>l.media==='not all'));assert.equal(n.media.change,null);assert.equal(n.listeners.resize,undefined);
