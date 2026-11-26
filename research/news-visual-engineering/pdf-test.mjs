@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { writeFileSync } from 'node:fs';
-import { physicalWordCount } from './pdf-word-bounds.mjs';
+import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { physicalWordCount, verifyRetainedPaper } from './pdf-word-bounds.mjs';
 
 // Run against the evidence directory printed by browser-test.mjs.
 // Requires existing Poppler pdftotext; no installation or fallback to a simulated PDF.
@@ -48,3 +49,18 @@ for(const fixture of ['short','long'])for(const format of ['A4','Letter'])for(co
   console.log(name+' PASS pages='+pages.length+' words='+count);
 }
 assert.equal(results.length,8);
+
+// Negative controls use real retained paper and a header-only impostor.
+const first=results[0], firstFile=join(root,'A4-light.pdf');
+assert.equal(verifyRetainedPaper(firstFile,first),first.words);
+assert.throws(()=>verifyRetainedPaper(firstFile,{...first,format:'Letter'}));
+assert.throws(()=>verifyRetainedPaper(firstFile,{...first,pages:first.pages+1}));
+assert.throws(()=>verifyRetainedPaper(firstFile,{...first,words:first.words+1}));
+assert.throws(()=>verifyRetainedPaper(firstFile,{...first,words:first.words+.5}));
+const scratch=mkdtempSync(join(tmpdir(),'news-paper-negative-'));
+try {
+  const fake=join(scratch,'header.pdf');
+  writeFileSync(fake,'%PDF-');
+  assert.throws(()=>verifyRetainedPaper(fake,first));
+} finally { rmSync(scratch,{recursive:true,force:true}); }
+console.log('Retained physical PDF controls: 6/6 PASS');

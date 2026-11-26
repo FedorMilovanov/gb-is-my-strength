@@ -32,3 +32,11 @@ export function physicalWordCount(file, expectedPages, format){
   assert.equal(bbox.status,0,bbox.error?.message??bbox.stderr);
   return validateWordBounds(bbox.stdout,expectedPages,format,file);
 }
+
+// Recheck the retained physical artifact rather than trusting the producer's JSON.
+export function verifyRetainedPaper(file, record){
+  assert.ok(record && Number.isInteger(record.words) && record.words>0,file+' expected positive integer word count');
+  const count=physicalWordCount(file,record.pages,record.format);
+  assert.equal(count,record.words,file+' retained PDF word count differs from evidence');
+  return count;
+}
