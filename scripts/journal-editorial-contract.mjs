@@ -473,6 +473,12 @@ if (!process.argv.includes('--source-only')) {
     if (type === 'Article') {
       oneMeta('property', 'article:published_time', data.publishedAt);
       oneMeta('property', 'article:modified_time', data.modifiedAt);
+      const dateGroups = nodes.filter(node => hasClass(node, 'je-article-dates'));
+      assert.equal(dateGroups.length, 1, 'one visible article dateline at '+route);
+      const visibleDates = all(dateGroups[0], node => node.tagName === 'time');
+      const expectedDates = data.modifiedAt === data.publishedAt ? [data.publishedAt] : [data.publishedAt, data.modifiedAt];
+      assert.deepEqual(visibleDates.map(node => attr(node, 'datetime')), expectedDates, 'visible article dates match route metadata at '+route);
+      assert.ok(visibleDates.every(node => text(node).trim()), 'visible article dates must have text at '+route);
     } else {
       for (const field of ['article:published_time', 'article:modified_time']) assert.equal(metas('property', field).length, 0, `CollectionPage must not leak ${field}`);
     }
