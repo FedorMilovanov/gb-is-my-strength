@@ -116,7 +116,30 @@ async function assertState(page,owner,locked,context) {
      await page.keyboard.press('Escape');
      await page.waitForFunction(owner=>!window.OverlayRuntime.isOpen(owner)&&!document.documentElement.hasAttribute('data-scroll-locked'),item.owner);
      await assertState(page,item.owner,false,item.label+' after Escape');
-     results.push({browser:engineName,route:item.label,pass:true,cleanPages,lockedPages});
+     let repeatFocus=0;
+     if(item.owner==='nagornaya-btoc'||item.owner==='nagornaya-menu'){
+      const panel=item.owner==='nagornaya-btoc'?'#btocPanel':'#mobileMenu';
+      const opener=page.locator(item.open);
+      await page.evaluate(()=>scrollTo({top:640,behavior:'instant'}));
+      await page.waitForFunction(()=>scrollY>=639);
+      const position=await page.evaluate(()=>scrollY);
+      for(let round=0;round<3;round++){
+       // Use actual pointer activation; WebKit does not implicitly focus a
+       // clicked button. Blur the old opener so stale registration cannot pass.
+       await page.evaluate(()=>document.activeElement?.blur());
+       await opener.click();
+       await page.waitForFunction(({owner,panel})=>window.OverlayRuntime.isOpen(owner)&&document.querySelector(panel)?.contains(document.activeElement),{owner:item.owner,panel});
+       await assertState(page,item.owner,true,item.label+' repeat open '+round);
+       await page.keyboard.press('Escape');
+       await page.waitForFunction(({owner,open,position})=>!window.OverlayRuntime.isOpen(owner)&&!document.documentElement.hasAttribute('data-scroll-locked')&&document.activeElement===document.querySelector(open)&&Math.abs(scrollY-position)<=1,{owner:item.owner,open:item.open,position});
+       const state=await assertState(page,item.owner,false,item.label+' repeat close '+round);
+       assert.deepEqual(state.sources,[],item.label+' no stale lock');
+       assert.deepEqual(state.overlay,[],item.label+' no stale overlay');
+       assert.equal(await opener.getAttribute('aria-expanded'),'false',item.label+' closed ARIA');
+       repeatFocus++;
+      }
+     }
+     results.push({browser:engineName,route:item.label,pass:true,cleanPages,lockedPages,repeatFocus});
      console.log('PASS '+engineName+'/'+item.label+' PDF '+(lockedPages?lockedPages+'/'+cleanPages:'WebKit owner lifecycle'));
     }catch(e){
      results.push({browser:engineName,route:item.label,pass:false,reason:String(e.message).slice(0,600)});
