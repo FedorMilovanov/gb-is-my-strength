@@ -29,6 +29,37 @@ const byId = (doc, id) => all(doc, (node) => attr(node, 'id') === id)[0];
 const text = (node) => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(text).join('');
 const normalize = (value) => value.replace(/\s+/gu, '');
 
+// Journal narration imports shared runtime directly. The workflow's deliberately
+// explicit quoted path lists must cover those inputs on both PR and main push.
+function assertNarrationWorkflowPaths(workflow, runtimeSource) {
+  const imports = [...runtimeSource.matchAll(/^import ['"]\.\.\/\.\.\/(runtime\/[^'"]+)['"];?$/gm)]
+    .map(match => 'src/' + match[1]);
+  assert.ok(imports.length > 0, 'Journal narration runtime import inventory missing');
+  const required = [...imports, 'src/components/reader-platform/ReaderSpeedContract.ts', 'scripts/lib/browser-runtime-noise.js'];
+  for (const event of ['pull_request', 'push']) {
+    // This is a source-format contract for the checked-in literal list, not a YAML parser.
+    const body = workflow.split('\n  ' + event + ':\n')[1]?.split(/\n  [a-z_]+:/)[0];
+    assert.ok(body, event + ' workflow trigger missing');
+    const list = body.match(/\n    paths:\n((?:      - '[^'\n]+'\n)+)/)?.[1];
+    assert.ok(list, event + ' explicit paths list missing');
+    const entries = new Set([...list.matchAll(/^      - '([^']+)'$/gm)].map(match => match[1]));
+    for (const file of required) assert.ok(entries.has(file), event + ' missing Journal narration dependency: ' + file);
+  }
+}
+{
+  const workflow = read('.github/workflows/journal-g3-history-publication-qa.yml');
+  const runtimeSource = read('src/components/journal/journalNarrationRuntime.ts');
+  assertNarrationWorkflowPaths(workflow, runtimeSource);
+  // Real mutation controls: removing one path from either event must fail.
+  const line = "      - 'src/runtime/reader-tts-media-session.js'\n";
+  const first = workflow.indexOf(line), last = workflow.lastIndexOf(line);
+  assert.ok(first >= 0 && last > first);
+  for (const offset of [first, last]) {
+    const broken = workflow.slice(0, offset) + workflow.slice(offset + line.length);
+    assert.throws(() => assertNarrationWorkflowPaths(broken, runtimeSource), /missing Journal narration dependency/);
+  }
+}
+
 /** Assert the actual ordered chronology, not a regex-filtered subset of
  * descendant IDs: an extra/missing/misnested row must fail as well. */
 function assertLaterConferenceChronology(doc) {
