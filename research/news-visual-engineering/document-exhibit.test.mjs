@@ -194,3 +194,17 @@ for(const [label,change] of [
 });
 
 test('focus witness accepts a full 2px inset ring only with verified label and neighbor clearance',()=>{const s={...validFocus,outline:0,outlineOffset:-2};assert.equal(assertFocusWitness(s),s);});
+
+// Sparse arrays must not silently drop document rows or evidence groups.
+for(const [label,change] of [
+ ['all holes',f=>f.input.sections=Array(1)],
+ ['trailing hole',f=>f.input.sections.length++],
+ ['leading hole',f=>f.input.sections=[,f.input.sections[0]]]
+])test('document rejects '+label,()=>{const f=fixture();change(f);assert.throws(()=>view(f),/Journal document exhibit/);});
+for(const [label,change] of [
+ ['hole in groups',f=>f.groups.length++],
+ ['hole in members',f=>f.groups[0].sourceIds.length++],
+ ['hole-only group',f=>f.groups.push({label:'Empty',sourceIds:Array(1)})],
+ ['numeric label',f=>f.groups[0].label=42],
+ ['array label',f=>f.groups[0].label=['First']]
+])test('evidence partition rejects '+label,()=>{const f=evidenceFixture();change(f);assert.throws(()=>partition(f),/Evidence family partition/);});

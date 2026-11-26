@@ -15,12 +15,12 @@ export function groupEvidenceFamilies(sources,citations,groups){
  }
  if(byCitation.size!==byId.size)fail('incomplete citation set');
  const used=new Set(),labels=new Set(),families=new Set();
- const entries=groups.map(group=>{
-  const label=group?.label?.trim();
+ const entries=Array.from(groups,group=>{
+  const label=typeof group?.label==='string'?group.label.trim():'';
   if(!nonempty(label)||labels.has(label)||!Array.isArray(group.sourceIds)||!group.sourceIds.length)fail('invalid, empty or duplicate group');
   labels.add(label);
   let family;
-  const rows=group.sourceIds.map(id=>{
+  const rows=Array.from(group.sourceIds,id=>{
    const source=byId.get(id),citation=byCitation.get(id);
    if(!source||!citation||used.has(id))fail('unknown or duplicate membership');
    if(family!==undefined&&family!==source.family)fail('mixed families');

@@ -47,7 +47,7 @@ export function documentExhibitView(input, authority) {
   }
   if (!Array.isArray(input.sections) || !input.sections.length) fail('empty document');
   const ids = new Set();
-  const sections = input.sections.map((row, index) => {
+  const sections = Array.from(input.sections, (row, index) => {
     if (!token(row?.id) || ids.has(row.id)) fail('duplicate or invalid section');
     ids.add(row.id);
     if (!claims.has(row.claimId)) fail('claim outside admitted projection');
