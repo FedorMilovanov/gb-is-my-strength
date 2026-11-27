@@ -1,4 +1,4 @@
-/* Unified Library; favorites remain GBFavoriteStore-owned. */
+/* Library; GBFavoriteStore owns favorites. */
 (function () {
   'use strict';
   if (window.GBHighlights && window.GBHighlights.libraryVersion === 2) return;
@@ -396,7 +396,10 @@
     } catch {}
     earlyReading=null;
   }
+  let watchingEarly=false;
   const watchEarly=on=>{
+    if(watchingEarly===on)return;
+    watchingEarly=on;
     const action=on?'addEventListener':'removeEventListener';
     window[action]('scroll',captureEarly,{passive:true});
     window[action]('pagehide',leaveEarly);

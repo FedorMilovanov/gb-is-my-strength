@@ -531,7 +531,48 @@ async function testQueuedNavigation(engine,driver,base){
   }
  }finally{await browser.close();}
 }
+// Count registration attempts, not just the browser's deduplicated active set.
+async function testEarlyListenerLifecycle(engine,driver,base){
+ const browser=await driver.launch();
+ try{
+  for(const warm of [false,true]){
+   const ctx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
+   try{
+    await ctx.addInitScript(({warm,route})=>{
+     if(warm)localStorage.setItem('gb-library-reading-v1',JSON.stringify({[route.replace(/\/$/,'')]:{state:'reading',anchor:'second',ratio:.2,updatedAt:1}}));
+     const add=EventTarget.prototype.addEventListener,remove=EventTarget.prototype.removeEventListener;
+     const names=new Set(['captureEarly','leaveEarly','onScroll','onPageHide']);
+     window.__earlyListenerCalls=[];
+     for(const [method,native] of [['addEventListener',add],['removeEventListener',remove]]){
+      EventTarget.prototype[method]=function(type,listener,options){
+       if(this===window&&names.has(listener?.name)&&['scroll','pagehide'].includes(type))
+        window.__earlyListenerCalls.push([method,type,listener.name]);
+       return native.call(this,type,listener,options);
+      };
+     }
+    },{warm,route});
+    const page=await ctx.newPage(),errors=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    await page.goto(base+route);
+    await page.waitForFunction(warm=>{
+     const calls=window.__earlyListenerCalls;
+     return calls.some(x=>x[0]==='removeEventListener'&&x[2]==='leaveEarly')&&
+       (!warm||calls.some(x=>x[0]==='addEventListener'&&x[2]==='onPageHide'));
+    },warm);
+    const calls=await page.evaluate(()=>window.__earlyListenerCalls);
+    const count=(method,name)=>calls.filter(x=>x[0]===method&&x[2]===name).length;
+    for(const name of ['captureEarly','leaveEarly']){
+     assert.equal(count('addEventListener',name),1,engine+' '+(warm?'warm':'cold')+' duplicate '+name+' registration: '+JSON.stringify(calls));
+     assert.equal(count('removeEventListener',name),1,'early listener removed exactly once');
+    }
+    for(const name of ['onScroll','onPageHide'])assert.equal(count('addEventListener',name),Number(warm),'canonical warm listener count');
+    assert.deepEqual(errors,[]);
+    console.log('PASS '+engine+' '+(warm?'warm':'cold')+' early listener lifecycle');
+   }finally{await ctx.close();}
+  }
+ }finally{await browser.close();}
+}
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));
 try{const base='http://127.0.0.1:'+server.address().port;
-for(const [name,driver] of [['chromium',chromium],['firefox',firefox],['webkit',webkit]]){await test(name,driver,base);await testQueuedNavigation(name,driver,base);}
-console.log('PROGRESS AND REVISIT 3/3 PASS');}finally{server.close()}})().catch(e=>{console.error(e);process.exitCode=1;server.close()});
+for(const [name,driver] of [['chromium',chromium],['firefox',firefox],['webkit',webkit]]){await testEarlyListenerLifecycle(name,driver,base);if(!process.argv.includes('--listener-only')){await test(name,driver,base);await testQueuedNavigation(name,driver,base);}}
+console.log(process.argv.includes('--listener-only')?'EARLY LISTENER LIFECYCLE 6/6 PASS':'PROGRESS AND REVISIT 3/3 PASS');}finally{server.close()}})().catch(e=>{console.error(e);process.exitCode=1;server.close()});
