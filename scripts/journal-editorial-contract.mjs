@@ -648,6 +648,14 @@ if (!process.argv.includes('--source-only')) {
           assert.match(text(entry), /2026-08-27/);
           assert.doesNotMatch(text(entry), /2026-09-04/);
         }
+        if (source.id === 'G3-S054') {
+          assert.match(text(entry), /2026-08-13/);
+          assert.match(text(entry), /Архивная книжная карточка/);
+          assert.match(text(entry), /архивная карточка книги Дэйва Дженкинса/);
+          assert.match(text(entry), /20260813111558/);
+          assert.match(text(entry), /не подтверждает последующее переиздание книги или переход издательских прав/);
+          assert.doesNotMatch(text(entry), /2026-09-07|текущие авторские и магазинные поверхности/);
+        }
         if (['G3-S033','G3-S050','G3-S053'].includes(source.id)) {
           assert.match(text(entry), /Адрес наблюдавшейся площадки; её нынешнее состояние может отличаться от среза сентября 2026 года\./);
           const liveLinks = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));

@@ -76,7 +76,7 @@ const sourceRoles: Record<string, string> = {
   'G3-S033': 'Листинг магазина приложений', 'G3-S035': 'Вторичный разбор',
   'G3-S042': 'Перепечатки одного письма', 'G3-S046': 'Страница мероприятия',
   'G3-S047': 'Страницы участников', 'G3-S050': 'Метаданные приложения',
-  'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Издательские страницы',
+  'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Архивная книжная карточка',
   'G3-S096': 'Архивная страница организации',
 };
 // Honest native fallback for a fresh source visit. The shared adapter can
@@ -159,6 +159,12 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     case 'G3-S050':
     case 'G3-S053':
       locator += ' Адрес наблюдавшейся площадки; её нынешнее состояние может отличаться от среза сентября 2026 года.';
+      break;
+    case 'G3-S054':
+      // Adopted Q020 withdrawal: display the dated earlier card, not a current storefront.
+      title = 'Servants of Grace / Theology for Life Publishing — архивная карточка книги Дэйва Дженкинса «The Word Matters»';
+      period = '2026-08-13';
+      locator = 'Архивный снимок от 13 августа 2026 года (20260813111558). Карточка не подтверждает последующее переиздание книги или переход издательских прав.';
       break;
     case 'G3-S096':
       locator = locator
