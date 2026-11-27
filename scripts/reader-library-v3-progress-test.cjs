@@ -4,7 +4,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
 const {chromium,firefox,webkit}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const route='/articles/library-progress-demo/';
-const html='<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Тест продолжения · Господь Бог — Сила Моя</title><style>body{margin:0;background:#f9f4ed;font:18px Georgia}main{max-width:700px;margin:auto}article{padding:25px}section{height:820px}h2{scroll-margin-top:80px}</style></head><body><main><article><h1>Тест продолжения</h1><section><p>Начало исследования</p></section><h2 id="second">Вторая глава</h2><section>Полный текст исследования</section><h2 id="third">Третья глава</h2><section>Заключение</section></article></main><script type="module" src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script></body></html>';
+const html='<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Тест продолжения · Господь Бог — Сила Моя</title><style>body{margin:0;background:#f9f4ed;font:18px Georgia}main{max-width:700px;margin:auto}article{padding:25px}article > section{height:820px}h2{scroll-margin-top:80px}</style></head><body><main><article><h1>Тест продолжения</h1><section><p>Начало исследования</p></section><h2 id="second">Вторая глава</h2><section>Полный текст исследования</section><h2 id="third">Третья глава</h2><section>Заключение</section></article></main><script type="module" src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script></body></html>';
 const server=http.createServer((req,res)=>{
  const u=new URL(req.url,'http://localhost'),file=path.resolve(root,u.pathname.replace(/^\/+/,''));
  if(u.pathname.startsWith('/js/')||u.pathname.startsWith('/css/')||u.pathname==='/src/runtime/favorite-store.js'){
@@ -202,6 +202,13 @@ async function test(engine,driver,base){
  assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-v3.js')).length,1,'opening panel loads research UI once');
  page.off('request',trackResume);
  assert.equal(await page.locator('.gb-hl-daily').count(),1);
+ // The tall article fixture must not impose its height on the real Library cards.
+ const geometry=await page.evaluate(()=>{
+   const article=document.querySelector('article > section'), card=document.querySelector('.gb-hl-daily');
+   return {articleHeight:article.getBoundingClientRect().height,cardHeight:card.getBoundingClientRect().height};
+ });
+ assert.equal(geometry.articleHeight,820,'article scroll fixture must retain its height');
+ assert(geometry.cardHeight<geometry.articleHeight,'Library card must not inherit artificial article height');
  const first=await page.locator('[data-research-action=never-quote]').getAttribute('data-value');
  await page.locator('[data-research-action=never-quote]').click();
  await page.waitForFunction(()=>Object.keys(JSON.parse(localStorage.getItem('gb-library-revisit-v1')||'{}').suppressed||{}).length===1);
