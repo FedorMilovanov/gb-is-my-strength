@@ -54,6 +54,7 @@ export function shouldWarmReading() {
   try {
     const key = location.pathname.replace(/\/+$/, '') || '/';
     const reading = JSON.parse(localStorage.getItem('gb-library-reading-v1') || '{}');
-    return reading[key]?.state === 'reading' || sessionStorage.getItem('gb-library-resume-once') === key;
+    return reading[key]?.state === 'reading' || sessionStorage.getItem('gb-library-resume-once') === key ||
+      !!sessionStorage.getItem('gb-library-progress-navigation-v1');
   } catch { return false; }
 }

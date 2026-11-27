@@ -80,6 +80,95 @@ async function test(engine,driver,base){
  await page.evaluate(()=>window.scrollTo({top:1080,behavior:'instant'}));
  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='second',null,{timeout:5000});
  console.log('PASS '+engine+' queued reading viewport survives opening and drains with exact pre-overlay ratio');
+ // A real document navigation can terminate an async pagehide write.
+ // The next untracked route consumes the tab-local handoff under the same CAS.
+ const navKey='gb-library-progress-navigation-v1';
+ const navRequests=[];
+ const trackNavigation=req=>navRequests.push(new URL(req.url()).pathname);
+ page.on('request',trackNavigation);
+ const navigation=page.waitForURL(/navigation-destination/);
+ const savedRatio=await page.evaluate(()=>new Promise(resolve=>{
+   window.addEventListener('scroll',()=>{
+     const ratio=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight);
+     location.assign('/articles/navigation-destination/');
+     resolve(ratio);
+   },{once:true});
+   window.scrollTo({top:1900,behavior:'instant'});
+ }));
+ await navigation;
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='third',null,{timeout:5000});
+ await page.waitForFunction(key=>sessionStorage.getItem(key)===null,navKey);
+ const savedAfterNavigation=await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']);
+ assert(Math.abs(savedAfterNavigation.ratio-savedRatio)<.000001,'navigation preserves exact reading viewport');
+ assert.equal(await page.locator('#gb-hl-backdrop').count(),0);
+ assert.equal(navRequests.filter(p=>/reader-library-(presenter|v3|ranges).js$/.test(p)).length,0);
+ page.off('request',trackNavigation);
+ await page.goBack({waitUntil:'domcontentloaded'});
+ await page.waitForURL(/library-progress-demo/);
+ await page.evaluate(()=>window.scrollTo({top:1080,behavior:'instant'}));
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='second',null,{timeout:5000});
+ console.log('PASS '+engine+' rapid real navigation transfers exact pending viewport without optional UI');
+
+ // Keep a real writer blocked across document teardown, then release it
+ // from another tab. The last viewport must survive, not the older one.
+ const peer=await ctx.newPage();
+ await peer.goto(base+'/articles/navigation-peer/');
+ await peer.waitForFunction(()=>typeof window.GBHighlights?.mutateLibrary==='function');
+ const acquirePeer=()=>peer.evaluate(name=>new Promise(resolve=>{
+   navigator.locks.request(name,()=>new Promise(release=>{window.__releaseNavLock=release;resolve();}));
+ }),openLock);
+ const releasePeer=()=>peer.evaluate(()=>window.__releaseNavLock());
+ const waitPeerQueue=()=>peer.waitForFunction(name=>navigator.locks.query().then(x=>x.pending.some(l=>l.name===name)),openLock);
+ const leaveWithScroll=async()=>{
+   const navigation=page.waitForURL(/navigation-destination/);
+   const ratio=await page.evaluate(()=>new Promise(resolve=>{
+     window.addEventListener('scroll',()=>{
+       const ratio=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight);
+       location.assign('/articles/navigation-destination/');
+       resolve(ratio);
+     },{once:true});
+     window.scrollTo({top:1900,behavior:'instant'});
+   }));
+   await navigation;
+   await page.waitForFunction(key=>!!sessionStorage.getItem(key),navKey);
+   return ratio;
+ };
+ await acquirePeer();
+ let queuedRatio;
+ try{
+   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+   await waitPeerQueue();
+   queuedRatio=await leaveWithScroll();
+ }finally{await releasePeer();}
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='third',null,{timeout:5000});
+ await page.waitForFunction(key=>sessionStorage.getItem(key)===null,navKey);
+ assert(Math.abs(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo'].ratio)-queuedRatio)<.000001);
+ console.log('PASS '+engine+' blocked earlier write does not lose latest navigation viewport');
+ await page.goBack({waitUntil:'domcontentloaded'});
+ await page.waitForURL(/library-progress-demo/);
+ await page.evaluate(()=>window.scrollTo({top:1080,behavior:'instant'}));
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='second',null,{timeout:5000});
+ // A foreign same-state change is queued ahead of the navigation replay.
+ // Its exact bytes must win; a pending handoff is not a storage override.
+ const navigationForeign={...record,anchor:'second',ratio:.25,updatedAt:Date.now(),title:'Other tab navigation'};
+ await acquirePeer();
+ try{
+   await peer.evaluate(value=>{
+     const key='gb-library-reading-v1';
+     window.__navForeignWrite=window.GBHighlights.mutateLibrary([key],stores=>({
+       changes:{[key]:{...stores[key],'/articles/library-progress-demo':value}}
+     }));
+   },navigationForeign);
+   await waitPeerQueue();
+   await leaveWithScroll();
+ }finally{await releasePeer();}
+ assert.equal((await peer.evaluate(()=>window.__navForeignWrite)).ok,true);
+ await page.waitForFunction(key=>sessionStorage.getItem(key)===null,navKey);
+ assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']),navigationForeign);
+ await peer.close();
+ console.log('PASS '+engine+' navigation handoff refuses foreign same-state replacement');
+
+
 
 
  await page.goto(base+'/articles/elsewhere/');
@@ -221,6 +310,36 @@ async function test(engine,driver,base){
 
  await cold.close();
  console.log('PASS '+engine+' cross-tab cold reading activation without presenter');
+
+ // Deliberately fail each lazy dependency on a tracked article. A temporary
+ // bootstrap scroll observer must not remain active after either failure.
+ for(const module of ['reader-library-dock.js','reader-library-research-core.js']){
+   const failureCtx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
+   try{
+     await failureCtx.addInitScript(()=>{
+       localStorage.setItem('gb-library-reading-v1',JSON.stringify({'/articles/library-progress-demo':{state:'reading',title:'Failure fixture',updatedAt:10,anchor:'second',ratio:.5}}));
+       window.__earlyObserver={adds:0,active:false};
+       const add=window.addEventListener,remove=window.removeEventListener;
+       window.addEventListener=function(type,listener,options){
+         if(type==='scroll'&&listener?.name==='captureEarly'){window.__earlyObserver.adds++;window.__earlyObserver.active=true;}
+         return add.call(this,type,listener,options);
+       };
+       window.removeEventListener=function(type,listener,options){
+         if(type==='scroll'&&listener?.name==='captureEarly')window.__earlyObserver.active=false;
+         return remove.call(this,type,listener,options);
+       };
+     });
+     const failure=await failureCtx.newPage();let blocked=0;
+     await failure.route('**/js/'+module+'*',r=>{blocked++;return r.abort();});
+     await failure.goto(base+route);
+     await failure.waitForFunction(()=>window.__earlyObserver?.adds>0&&!window.__earlyObserver.active,null,{timeout:5000});
+     assert(blocked>0,'must actually fail the lazy module '+module);
+     assert.equal(await failure.evaluate(()=>window.__earlyObserver.active),false);
+     assert.equal(await failure.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo'].ratio),.5);
+     console.log('PASS '+engine+' releases temporary scroll observer when '+module+' fails');
+   }finally{await failureCtx.close();}
+ }
+
  }finally{await ctx.close();await browser.close();}
 }
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));

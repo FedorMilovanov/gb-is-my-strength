@@ -56,11 +56,13 @@ function updateProgress(map,key,expected,progress) {
 // Reading progress has one document-lifetime owner, independent of the
 // optional library DOM. The first mount (warm route or user open) wins.
 let readingProgress;
-export function warmReadingProgress({isOpen,exitForResume}) {
+export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
   if (readingProgress) return readingProgress;
   const currentPath = () => cleanPath(location.pathname);
   const readReading = () => objectMap(parse(KEYS.reading, {}));
   let reading = readReading(), pending = null, progressTimer = null, writing = null;
+  const navigationKey = 'gb-library-progress-navigation-v1';
+  let replaying = false;
   function cancelPendingProgress() {
     clearTimeout(progressTimer);
     progressTimer = null;
@@ -93,7 +95,7 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     const progress = intent?.progress || snapshotProgress();
     // Snapshot the record at scroll time; never attribute an old scroll
     // to a newer reading status or route after a concurrent mutation.
-    const operation = {key, expected, next:null};
+    const operation = {key, expected, progress, next:null};
     writing = operation;
     try {
       await mutateResearch('reading',map=>{
@@ -122,10 +124,52 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     clearTimeout(progressTimer);
     flushPendingProgress();
   }
+  // A pagehide Web Lock request may never execute before document teardown.
+  // Transfer only the latest observed viewport within this browser tab; the
+  // next document must still perform the exact record CAS under the owner lock.
   function onPageHide() {
     clearTimeout(progressTimer);
-    // A visit without scrolling must not reset a saved reading position.
-    flushPendingProgress();
+    progressTimer = null;
+    const intent = pending || writing;
+    if (!intent) return; // a visit without scroll cannot reset progress
+    const snapshot = {key:intent.key,expected:intent.expected,progress:intent.progress || snapshotProgress()};
+    // An earlier same-document write may finish as the page is leaving.
+    // Accept only its exact proposed successor, never an arbitrary live record.
+    if (pending && writing?.key===intent.key && exact(intent.expected,writing.expected))
+      snapshot.ownProgress = writing.progress;
+    try {
+      sessionStorage.setItem(navigationKey,JSON.stringify(snapshot));
+      pending = null;
+    } catch { flushPendingProgress(); }
+  }
+  async function replayNavigationProgress() {
+    if (replaying) return;
+    let raw;
+    try { raw = sessionStorage.getItem(navigationKey); } catch { return; }
+    if (!raw) return;
+    replaying = true;
+    try {
+      const intent = JSON.parse(raw), p = intent?.progress;
+      if (typeof intent?.key !== 'string' || !intent.key || cleanPath(intent.key)!==intent.key ||
+          intent.expected?.state!=='reading' || typeof p?.anchor!=='string' ||
+          !Number.isFinite(p.ratio) || p.ratio<0 || p.ratio>1 || !Number.isFinite(p.updatedAt)) return;
+      await mutateResearch('reading',map=>{
+        const live=map[intent.key], prior=intent.ownProgress;
+        const successor=typeof prior?.anchor==='string' && Number.isFinite(prior.ratio) &&
+          prior.ratio>=0 && prior.ratio<=1 && Number.isFinite(prior.updatedAt) && prior.updatedAt<=p.updatedAt
+          ? {...intent.expected,anchor:prior.anchor,ratio:prior.ratio,updatedAt:prior.updatedAt} : null;
+        const expected=successor && exact(live,successor) ? successor : intent.expected;
+        return updateProgress(map,intent.key,expected,{anchor:p.anchor,ratio:p.ratio,updatedAt:p.updatedAt});
+      });
+    } catch { /* malformed or unavailable handoff must not block reading */ }
+    finally {
+      replaying = false;
+      try { if (sessionStorage.getItem(navigationKey)===raw) sessionStorage.removeItem(navigationKey); } catch {}
+      refreshReading();
+    }
+  }
+  function onPageShow(event) {
+    if (event.persisted) { refreshReading(); void replayNavigationProgress(); }
   }
   function refreshReading(ownCommit = false) {
     reading = readReading();
@@ -195,6 +239,7 @@ export function warmReadingProgress({isOpen,exitForResume}) {
   try {
     window.addEventListener('scroll',onScroll,{passive:true,signal});
     window.addEventListener('pagehide',onPageHide,{signal});
+    window.addEventListener('pageshow',onPageShow,{signal});
     window.addEventListener('load',autoResumeOnce,{once:true,signal});
     window.addEventListener('storage',onStorage,{signal});
     window.addEventListener('gb:library-committed',onCommitted,{signal});
@@ -203,6 +248,16 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     throw error;
   }
   readingProgress = Object.freeze({rememberProgress,resume,flushBeforeOpen});
+  // The bootstrap may observe real scrolling before this lazy owner mounts.
+  // Adopt only the captured record and the still-current viewport; no extra writer.
+  try {
+    const key=currentPath(), expected=JSON.parse(earlyReading?.[0] || '{}')?.[key];
+    if (!isOpen() && earlyReading?.[1]===scrollY && expected?.state==='reading' && exact(reading[key],expected)) {
+      pending={key,expected,progress:snapshotProgress()};
+      progressTimer=setTimeout(flushPendingProgress,800);
+    }
+  } catch {}
+  void replayNavigationProgress();
   if (document.readyState === 'complete') autoResumeOnce();
   return readingProgress;
 }

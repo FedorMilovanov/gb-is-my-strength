@@ -892,7 +892,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   const coreFrom=coreSource.indexOf('let readingProgress;'),coreTo=coreSource.indexOf('export { KEYS',coreFrom);
   assert.ok(from>=0&&to>from&&coreFrom>=0&&coreTo>coreFrom);
   const body=(coreSource.slice(coreFrom,coreTo)+researchSource.slice(from,to)).replace(/export function/g,'function');
-  for(const fault of ['dom:click','dom:change','dom:keydown','global:scroll','global:pagehide','global:load','global:storage','global:gb:library-committed',null]){
+  for(const fault of ['dom:click','dom:change','dom:keydown','global:scroll','global:pagehide','global:pageshow','global:load','global:storage','global:gb:library-committed',null]){
    const listeners=[];let sessionReads=0,fail=fault;
    const window={addEventListener(type,fn,opts={}){
     if(fail==='global:'+type)throw Error('injected');
@@ -914,13 +914,13 @@ console.log('W40: 6/6 Undo integrity cases PASS');
     fail=null;
    }
    assert.ok(mount());
-   assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed'],'one progress owner and one UI storage listener after success/retry');
-   assert.equal(sessionReads,1);
+   assert.deepEqual(live(),['storage','scroll','pagehide','pageshow','load','storage','gb:library-committed'],'one progress owner and one UI storage listener after success/retry');
+   assert.equal(sessionReads,2);
    // Calling the warm entry point again must return the one live owner.
    const first=factory.warmReadingProgress({isOpen:()=>false});
    assert.equal(factory.warmReadingProgress({isOpen:()=>false}),first);
-   assert.deepEqual(live(),['storage','scroll','pagehide','load','storage','gb:library-committed']);
-   assert.equal(sessionReads,1);
+   assert.deepEqual(live(),['storage','scroll','pagehide','pageshow','load','storage','gb:library-committed']);
+   assert.equal(sessionReads,2);
   }
  }
 
@@ -1032,7 +1032,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 // reject expired Undo receipts, including those produced by the ARGON adapter.
 {
  const source=readFileSync(resolve(root,'js/highlights.js'),'utf8');
- const start=source.indexOf('  function libraryFailure('),end=source.indexOf('  // Invalid historical rows',start);
+ const start=source.indexOf('  function libraryFailure('),end=source.indexOf('  function visibleRecord(',start);
  assert.ok(start>=0&&end>start);
  function scene(){
   let listener,loads=[],calls=0,held=null;
@@ -1250,7 +1250,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 // W72: main library consumes only its own successfully restored receipt.
 {
  const src=readFileSync(resolve(root,'js/highlights.js'),'utf8');
- const a=src.indexOf('  function libraryFailure('),b=src.indexOf('  // Invalid historical rows',a);
+ const a=src.indexOf('  function libraryFailure('),b=src.indexOf('  function visibleRecord(',a);
  assert.ok(a>=0&&b>a);
  let result={ok:true},writes=0,release,held=null;
  const receipt={key:'q',entry:{id:'a'}};

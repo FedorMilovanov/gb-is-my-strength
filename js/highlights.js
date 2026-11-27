@@ -77,8 +77,7 @@
   function libraryFailure(reason, current = []) {
     return {ok:false,conflict:reason==='conflict',reason,current};
   }
-  // Capture intent before either lazy module starts loading. The storage
-  // owner independently protects the period spent waiting for its lock.
+  // Guard lazy loading; the storage owner separately guards lock wait.
   let clearIntent = 0;
   const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
 
@@ -99,8 +98,7 @@
   function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
   function snapshotRaw() {return storageCall('snapshotRaw');}
   function restoreRaw(raw,shouldContinue) {return storageCall('restoreRaw',raw,shouldContinue);}
-  // Restore only the deleted version and relationships that are still valid.
-  // A conflict never rewinds a newer quote or note; detached copy is explicit.
+  // Undo must not overwrite newer records; detached copy is explicit.
   let recordTransactions, recordTransactionsLoad;
   async function transactionCall(method,...args) {
     const intent = clearIntent;
@@ -127,8 +125,7 @@
   function restoreDeleted(receipt, copyId = null) {
     return transactionCall('restoreDeleted',receipt,copyId);
   }
-  // Invalid historical rows remain recoverable in the exact backup, but
-  // cannot be rendered or offered for identity-based edits in the library.
+  // Preserve invalid rows in backups, never render or identity-edit them.
   function visibleRecord(row) {
     return row && typeof row==='object' && !Array.isArray(row) &&
       typeof row.text==='string' &&
@@ -187,7 +184,7 @@
     if (!presenterPromise) {
       presenterPromise = Promise.all([
         import('/js/reader-library-presenter.js?v=3df72e8a'),
-        import('/js/reader-library-v3.js?v=f0314dc9'),
+        import('/js/reader-library-v3.js?v=515636eb'),
         ensureRanges(),
       ]).then(([module,researchModule,{currentTitle,uid}]) => {
           if (!view) {
@@ -374,19 +371,26 @@
     focusReturn = null;
   }
   function sync() { if (fab) { const count=quotes().length+notes().length+favorites().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
-  let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise;
+  let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise, earlyReading;
+  function captureEarly() {
+    try { if (!isOpen()) earlyReading=[localStorage.getItem('gb-library-reading-v1'),scrollY]; } catch {}
+  }
+  const watchEarly=on=>{window[on?'addEventListener':'removeEventListener']('scroll',captureEarly,{passive:true});if(!on)earlyReading=null;};
+  watchEarly(true);
   function warmReading() {
     if (warmReadingPromise || !shouldWarmReading?.()) return;
-    warmReadingPromise = import('/js/reader-library-research-core.js?v=fdcde7dc')
-      .then(research=>research.warmReadingProgress({isOpen,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}}))
-      .catch(()=>{warmReadingPromise=null;});
+    watchEarly(true);
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=e5b3fdf2')
+      .then(research=>{const early=earlyReading;watchEarly(false);return research.warmReadingProgress({isOpen,earlyReading:early,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}});})
+      .catch(()=>{warmReadingPromise=null;watchEarly(false);});
   }
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
-    dockLoad ||= import('/js/reader-library-dock.js?v=f730766c')
-      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); shouldWarmReading=m.shouldWarmReading; warmReading(); })
-      .catch(() => { dockLoad = null; });
+    watchEarly(true);
+    dockLoad ||= import('/js/reader-library-dock.js?v=215fecef')
+      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); shouldWarmReading=m.shouldWarmReading; warmReading(); if(!warmReadingPromise)watchEarly(false); })
+      .catch(()=>{dockLoad=null;watchEarly(false);});
   }
   function render() { view?.render(); }
   function showEditor(...args) { return editorController?.showEditor(...args); }
