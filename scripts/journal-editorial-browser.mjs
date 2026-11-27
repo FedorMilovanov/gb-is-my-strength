@@ -1730,6 +1730,46 @@ try {
           paper: getComputedStyle(el).getPropertyValue('--je-paper').trim() }));
         try {
           await ready(page, route.url);
+          // Reuse one existing short-desktop case per engine. Measure the
+          // 540px finance table at normal and doubled root text before keyboard QA.
+          if (route.kind === 'dossier' && javaScriptEnabled && theme === 'light' &&
+              width === Math.min(...widths.filter(w=>w>=1024)) && height === Math.max(...shortHeights)) {
+            item.financeTableReflow = await page.locator('.g3-annual-finance').evaluate(annual => {
+              const root=document.documentElement;
+              const saved=[[root,'font-size'],[annual,'inline-size']].map(([el,key])=>
+                [el,key,el.style.getPropertyValue(key),el.style.getPropertyPriority(key)]);
+              const measure=()=>{
+                const box=annual.getBoundingClientRect(),table=annual.querySelector('table');
+                const cells=[...table.querySelectorAll('tbody th,tbody td')];
+                const bounds=[table.getBoundingClientRect(),...cells.flatMap(cell=>{
+                  const range=document.createRange();range.selectNodeContents(cell);
+                  return [...range.getClientRects()];
+                })];
+                return {width:box.width,rootFont:parseFloat(getComputedStyle(root).fontSize),
+                  layout:getComputedStyle(table.querySelector('tbody tr')).display,
+                  rows:table.querySelectorAll('tbody tr').length,cells:cells.length,
+                  overflow:Math.max(0,...bounds.map(r=>Math.max(box.left-r.left,r.right-box.right)))};
+              };
+              try {
+                annual.style.setProperty('inline-size','540px','important');
+                root.style.setProperty('font-size','16px','important');
+                const normal=measure();
+                root.style.setProperty('font-size','32px','important');
+                return {normal,scaled:measure()};
+              } finally {
+                for(const [el,key,value,priority] of saved) {
+                  if(value)el.style.setProperty(key,value,priority);else el.style.removeProperty(key);
+                }
+              }
+            });
+            const {normal,scaled}=item.financeTableReflow;
+            assert.equal(normal.rootFont,16);assert.equal(scaled.rootFont,32);
+            assert.equal(normal.layout,'table-row');assert.equal(scaled.layout,'grid');
+            for(const state of [normal,scaled]) {
+              assert.ok(Math.abs(state.width-540)<=1 && state.overflow<=1,'numeric table overflows: '+JSON.stringify(state));
+              assert.equal(state.rows,7);assert.equal(state.cells,35);
+            }
+          }
           await middle.scrollIntoViewIfNeeded(); await settleWithoutScripts(page);
           item.before = await railState();
           item.sticky = await stickyRail.evaluate((el) => ({ position: getComputedStyle(el).position,
