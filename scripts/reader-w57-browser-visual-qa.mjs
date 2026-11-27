@@ -33,30 +33,63 @@ async function saltersParagraph(page){
  assert.match(text,/обсуждали/);
  return block;
 }
+// The failing document may already have navigated back to Classic. Retain
+// its real delivery failure, not just the final document's empty globals.
+function observeDesktopDelivery(page){
+ const started=Date.now(),trace={fallbackReasons:[],events:[]};
+ const record=(event,data)=>{
+  if(trace.events.length===120)trace.events.shift();
+  trace.events.push({ms:Date.now()-started,event,...data});
+ };
+ const desktopAsset=url=>url.startsWith(BASE+'/reader-desktop/');
+ page.on('console',message=>{
+  if(message.type()==='error'&&message.text().startsWith('Reader desktop:')){
+   trace.fallbackReasons.push(message.text().slice(0,700));
+   record('fallback',{message:message.text().slice(0,700)});
+  }
+ });
+ page.on('request',request=>{if(desktopAsset(request.url()))record('request',{url:request.url()});});
+ page.on('response',response=>{
+  if(desktopAsset(response.url())||(response.url().startsWith(BASE+'/')&&response.status()>=400))
+   record('response',{url:response.url(),status:response.status()});
+ });
+ page.on('requestfinished',request=>{if(desktopAsset(request.url()))record('finished',{url:request.url()});});
+ page.on('requestfailed',request=>{
+  if(request.url().startsWith(BASE+'/'))record('failed',{url:request.url(),error:request.failure()?.errorText});
+ });
+ page.on('framenavigated',frame=>{if(frame===page.mainFrame())record('navigation',{url:frame.url()});});
+ return trace;
+}
 async function scene(browser,name,path,width,height){
  const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,
   hasTouch:width<600,isMobile:width<600,locale:'ru-RU',reducedMotion:'reduce'});
- const page=await context.newPage(),errors=[];
+ const page=await context.newPage(),errors=[],delivery=observeDesktopDelivery(page);
  page.on('pageerror',e=>errors.push(String(e).slice(0,350)));
- const response=await page.goto(BASE+path,{waitUntil:'domcontentloaded',timeout:45000});
+ let response;
+ try{response=await page.goto(BASE+path,{waitUntil:'domcontentloaded',timeout:45000});}
+ catch(error){await context.close().catch(()=>{});error.readerDelivery=delivery;throw error;}
  const pilotExpected=width>=1121;
  let readinessError=null;
  try{
   await page.waitForFunction(({desktop})=>{
    const visible=selector=>!!document.querySelector(selector)?.getClientRects().length;
-   if(desktop)return (document.body.classList.contains('np-w57-ready')&&
+   // A fallback navigation can expose its new URL before the new DOM exists.
+   // It remains a failed desktop admission; wait for its actual document.
+   if(desktop)return !!document.body&&document.readyState!=='loading'&&
+    ((document.body.classList.contains('np-w57-ready')&&
     window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true)||
-    new URL(location.href).searchParams.get('reader-pilot')==='0';
+    new URL(location.href).searchParams.get('reader-pilot')==='0');
    return document.readyState==='complete'&&visible('#mobPartTocBtn')&&visible('#mobSettingsBtn')&&
     visible('.reader-mobile-play')&&visible('#mobSpdBadge');
   },{desktop:pilotExpected},{timeout:15000});
  }catch(error){readinessError=String(error).slice(0,500);}
- const state=await page.evaluate(()=>({
-  ready:document.body.classList.contains('np-w57-ready'),
+ let state;
+ try{state=await page.evaluate(()=>({
+  ready:!!document.body?.classList.contains('np-w57-ready'),
   annotated:!!window.__NP_W57_ANNOTATIONS__?.ready,
   modelReady:window.__NP_UNIVERSAL_PREVIEW__?.ready===true,
   width:document.documentElement.scrollWidth,viewport:innerWidth,
-  folded:document.body.classList.contains('np-u-hide-right'),
+  folded:!!document.body?.classList.contains('np-u-hide-right'),
   noteCards:document.querySelectorAll('#npW57NotesDetails').length,
   researchCards:document.querySelectorAll('#npUResearch details').length,
   title:document.querySelector('main h1')?.textContent?.trim().slice(0,100)||'',
@@ -65,14 +98,16 @@ async function scene(browser,name,path,width,height){
   nativeSettings:!!document.querySelector('#mobSettingsBtn')?.getClientRects().length,
   nativePlay:!!document.querySelector('.reader-mobile-play')?.getClientRects().length,
   nativeSpeed:!!document.querySelector('#mobSpdBadge')?.getClientRects().length
- }));
+ }));}catch(error){await context.close().catch(()=>{});error.readerDelivery=delivery;throw error;}
  const item={name,path,width,height,response:response?.status(),actualUrl:page.url(),readinessError,state,errors};REPORT.scenes.push(item);
  if(readinessError||response?.status()!==200||
     (pilotExpected&&(!state.ready||!state.annotated||!state.modelReady||state.noteCards!==1||state.w57RuntimeScripts<2))||
     (!pilotExpected&&(state.ready||state.annotated||state.noteCards!==0||
        state.w57RuntimeScripts!==0||!state.nativeToc||!state.nativeSettings||
-       !state.nativePlay||!state.nativeSpeed)))
+       !state.nativePlay||!state.nativeSpeed))){
+   item.delivery=delivery;
    REPORT.failures.push({name,reason:pilotExpected?'desktop W57 missing or incomplete':'native Reader boundary violated',item});
+ }
  return{context,page,item};
 }
 // Canonical ReaderState drives the W57 visual section in both real engines.
@@ -150,7 +185,7 @@ async function sectionFollowChecks(browser,name){
  });
  }
 }
-async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000)})}}
+async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000),...(e.readerDelivery?{delivery:e.readerDelivery}:{})})}}
 // Mobile and the 1120px boundary use the actual native Reader, never W57 DOM.
 async function nativeChecks(sample) {
  const {page,item}=sample;
