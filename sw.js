@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v261-reader-w400-candidate-20261127';
+const CACHE_VERSION = 'gb-v262-reader-w403-candidate-20261127';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -36,15 +36,15 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=07ee6d29',
-  '/js/highlights.js?v=7fafb10a',
+  '/js/highlights.js?v=b44eb1fc',
   '/js/reader-library-ranges.js?v=9d01527f',
   '/js/reader-library-storage.js?v=c6707892',
   '/js/reader-library-record-transactions.js?v=ecb28bb6',
   '/js/reader-library-presenter.js?v=3df72e8a',
   '/js/reader-library-selection.js?v=b301d44f',
-  '/js/reader-library-v3.js?v=1709c6a7',
-  '/js/reader-library-research-core.js?v=3cc725bd',
-  '/js/reader-library-navigation.js?v=e5fcd372',
+  '/js/reader-library-v3.js?v=ec2d1d76',
+  '/js/reader-library-research-core.js?v=cf9c70ad',
+  '/js/reader-library-navigation.js?v=a60b5452',
   '/js/reader-library-dock.js?v=215fecef',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=b4714592',

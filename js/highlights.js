@@ -1,4 +1,4 @@
-/* Unified reader library: GBFavoriteStore remains the owner of favorites. */
+/* Unified Library; favorites remain GBFavoriteStore-owned. */
 (function () {
   'use strict';
   if (window.GBHighlights && window.GBHighlights.libraryVersion === 2) return;
@@ -13,7 +13,7 @@
   const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
   let rangeRuntime, rangeLoad, GBReaderAnchors;
-  // Lazy range owner: operations synchronous after publication.
+  // Lazy range owner, synchronous once loaded.
   function ensureRanges() {
     if (rangeRuntime) return Promise.resolve(rangeRuntime);
     return rangeLoad ||= import('/js/reader-library-ranges.js?v=9d01527f')
@@ -43,7 +43,7 @@
     if (a && Number.isInteger(a.start) && Number.isInteger(a.end) && typeof a.exact === 'string') {
       return gbHighlightPath(x)+'\nrange-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]);
     }
-    /* Marks include their position; quotes, notes and favorites retain page/text identity. */
+    /* Marks include position; other items keep page/text identity. */
     const positional = (x && (x.kind === 'marker' || x.color)) ? gbContextKey(x) : '';
     return gbHighlightPath(x)+'\n'+t+(positional?'\nctx:'+positional:'');
   }
@@ -73,7 +73,7 @@
   function libraryFailure(reason, current = []) {
     return {ok:false,conflict:reason==='conflict',reason,current};
   }
-  // Guard lazy load and lock wait separately.
+  // Guard load and lock separately.
   let clearIntent = 0;
   const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
 
@@ -94,7 +94,7 @@
   function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
   function snapshotRaw() {return storageCall('snapshotRaw');}
   function restoreRaw(raw,shouldContinue) {return storageCall('restoreRaw',raw,shouldContinue);}
-  // Undo must not overwrite newer records; detached copy is explicit.
+  // Undo rejects newer records; copy is explicit.
   let recordTransactions, recordTransactionsLoad;
   async function transactionCall(method,...args) {
     const intent = clearIntent;
@@ -121,7 +121,7 @@
   function restoreDeleted(receipt, copyId = null) {
     return transactionCall('restoreDeleted',receipt,copyId);
   }
-  // Preserve invalid rows in backups, never render or identity-edit them.
+  // Preserve invalid backup rows; never render or edit.
   function visibleRecord(row) {
     return row && typeof row==='object' && !Array.isArray(row) &&
       typeof row.text==='string' &&
@@ -148,7 +148,7 @@
     const q = quotes().map((x) => ({
       id: String(x.id),
       type: 'quote', recordSnapshot: JSON.stringify(x),
-      /* Preserve marker type/color in the Library projection. */
+      /* Preserve marker color/type. */
       kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
       color: MARK_COLORS.includes(String(x.color || x.annotation?.color || '')) ? String(x.color || x.annotation?.color) : '',
       text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
@@ -179,7 +179,7 @@
     if (!presenterPromise) {
       presenterPromise = Promise.all([
         import('/js/reader-library-presenter.js?v=3df72e8a'),
-        import('/js/reader-library-v3.js?v=1709c6a7'),
+        import('/js/reader-library-v3.js?v=ec2d1d76'),
         ensureRanges(),
       ]).then(([module,researchModule,{currentTitle,uid}]) => {
           if (!view) {
@@ -207,7 +207,7 @@
     return node;
   }
   function isOpen() { return Boolean(overlay && overlay.classList.contains('is-open')); }
-  /* Toast confirms text actions and offers Undo when the Library is closed. */
+  /* Closed-Library toast and Undo. */
   function hideToast() {
     const el = document.getElementById('gb-hl-toast');
     if (el) el.dataset.open = 'false';
@@ -293,7 +293,7 @@
     if (opening && !isOpen() && !ownsPendingFocus()) cancelPending(false);
   }
   function pendingPointerChanged(event) {
-    // WebKit may dispatch a real click without moving focus to its button.
+    // WebKit clicks need not move focus.
     if (!opening || isOpen()) return;
     if (pendingTrigger !== document.body && pendingTrigger !== document.documentElement &&
         pendingTrigger?.contains?.(event.target)) return;
@@ -380,12 +380,19 @@
   function captureEarly() {
     try { if (!isOpen()) earlyReading=[localStorage.getItem('gb-library-reading-v1'),scrollY,location.pathname]; } catch {}
   }
+  function stageNavigation(intent) {
+    const key='gb-library-progress-navigation-v1';
+    let prior;
+    try { prior=JSON.parse(sessionStorage.getItem(key)); } catch {}
+    const queue=Array.isArray(prior)?prior:prior?[prior]:[];
+    sessionStorage.setItem(key,JSON.stringify(queue.length?[...queue,intent]:intent));
+  }
   function leaveEarly() {
     try {
       const key=gbHighlightPath({url:location.pathname});
       const expected=JSON.parse(earlyReading?.[0]||'{}')?.[key];
       if (!isOpen() && earlyReading?.[1]===scrollY && earlyReading[2]===location.pathname && expected?.state==='reading')
-        sessionStorage.setItem('gb-library-progress-navigation-v1',JSON.stringify({key,expected,progress:readingViewport()}));
+        stageNavigation({key,expected,progress:readingViewport()});
     } catch {}
     earlyReading=null;
   }
@@ -399,7 +406,7 @@
   function warmReading() {
     if (warmReadingPromise || !shouldWarmReading?.()) return;
     watchEarly(true);
-    warmReadingPromise = import('/js/reader-library-research-core.js?v=3cc725bd')
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=cf9c70ad')
       .then(research=>{const early=earlyReading;watchEarly(false);return research.warmReadingProgress({isOpen,earlyReading:early,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}});})
       .catch(()=>{warmReadingPromise=null;leaveEarly();watchEarly(false);});
   }
@@ -432,7 +439,7 @@
     return {supported,painted:0,placed:new Set()};
   }
 
-  // One deferred repaint per frame; an immediate API repaint consumes it.
+  // Coalesce repaint; immediate paint consumes it.
   let paintFrame = null;
   function cancelScheduledPaint() {
     if (paintFrame !== null) cancelAnimationFrame(paintFrame);
@@ -453,7 +460,7 @@
     const cleared = e.key === null;
     if (cleared) {
       clearIntent++;
-      // Revoke obsolete Undo UI, retaining the open draft.
+      // Revoke Undo, retain draft.
       editorController?.clearUndo();
       clearTimeout(toast.timer);
       hideToast();
@@ -469,7 +476,7 @@
     if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();
   }, true);
 
-  // Live selection only; lazy controller arbitrates native/ARGON surfaces.
+  // Live selection; lazy native/ARGON arbiter.
   let selectionController, selectionLoad;
   function hide() { selectionController?.hide(); }
   function hasSelection() {
@@ -492,7 +499,7 @@
     return selectionLoad ||= import('/js/reader-library-selection.js?v=b301d44f')
       .catch(() => { selectionLoad = null; return null; });
   }
-  // Prewarm touch/pen only; selectionchange handles keyboard/drag.
+  // Prewarm touch/pen, not keyboard/drag.
   document.addEventListener('pointerdown', e => {
     if (['touch','pen'].includes(e.pointerType) && e.target.closest?.('article, main [data-pagefind-body], .article-body')) loadSelectionController();
   }, {passive:true});
@@ -506,7 +513,7 @@
 
   const api = Object.freeze({
     libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted, snapshotRaw, restoreRaw,
-    getNotes: notes, getLibrary: all, readingViewport,
+    getNotes: notes, getLibrary: all, readingViewport, stageNavigation,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
     /* Range painter diagnostics. */

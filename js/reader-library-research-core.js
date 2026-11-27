@@ -112,7 +112,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
     if (pending && writing?.key===intent.key && exact(intent.expected,writing.expected))
       snapshot.ownProgress = writing.progress;
     try {
-      sessionStorage.setItem(navigationKey,JSON.stringify(snapshot));
+      window.GBHighlights.stageNavigation(snapshot);
       pending = null;
     } catch { flushPendingProgress(); }
   }
@@ -123,8 +123,8 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
     if (!raw) return;
     replaying = true;
     try {
-      const {replayNavigation} = await import('../js/reader-library-navigation.js?v=e5fcd372');
-      await replayNavigation(raw,{navigationKey,cleanPath,exact,mutateResearch,updateProgress});
+      const {replayNavigation} = await import('../js/reader-library-navigation.js?v=a60b5452');
+      await replayNavigation({navigationKey,cleanPath,exact,mutateResearch,updateProgress});
     } catch { /* retain handoff if lazy loading fails */ }
     finally { replaying = false; refreshReading(); }
   }

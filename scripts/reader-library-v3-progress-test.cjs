@@ -431,7 +431,107 @@ async function test(engine,driver,base){
 
  }finally{await ctx.close();await browser.close();}
 }
+// Separate routes can both leave before an earlier replay dependency recovers.
+// Use actual navigations, module failures and the shared canonical writer.
+async function testQueuedNavigation(engine,driver,base){
+ const browser=await driver.launch();
+ const key='gb-library-reading-v1',nav='gb-library-progress-navigation-v1';
+ const a='/articles/library-progress-demo',b='/articles/next-tracked',c='/articles/navigation-destination';
+ const record={state:'reading',title:'Queue fixture',updatedAt:10,anchor:'second',ratio:.5};
+ try{
+  for(const mode of ['distinct','repeat','foreign','lock-timeout']){
+   const ctx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
+   try{
+    await ctx.addInitScript(({key,a,b,record})=>{
+      if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({[a]:record,[b]:record}));
+      window.__queueLockDeadline=0;window.__queueLockAborts=0;
+      const proto=Object.getPrototypeOf(navigator.locks),request=proto.request;
+      proto.request=function(...args){
+        const signal=args[1]?.signal;
+        signal?.addEventListener('abort',()=>window.__queueLockDeadline++,{once:true});
+        const result=request.apply(this,args);
+        result.then(()=>{},()=>{if(signal?.aborted)window.__queueLockAborts++;});
+        return result;
+      };
+    },{key,a,b,record});
+    const page=await ctx.newPage();let failed=0,failReplay=mode!=='lock-timeout';
+    await page.route('**/js/reader-library-navigation.js*',r=>{
+      if(failReplay){failed++;return r.abort();}
+      return r.continue();
+    });
+    await page.goto(base+a+'/');
+    await page.evaluate(()=>scrollTo(0,1080));
+    await page.waitForFunction(({key,a})=>JSON.parse(localStorage.getItem(key))[a].updatedAt>10,{key,a},{timeout:5000});
+    const lock='gb-library:gb-reader-notes-v1';
+    let peer=null;
+    if(mode==='foreign'||mode==='lock-timeout'){
+      peer=await ctx.newPage();await peer.goto(base+'/articles/navigation-peer/');
+      await peer.waitForFunction(()=>typeof window.GBHighlights?.mutateLibrary==='function');
+    }
+    if(mode==='lock-timeout'){
+      await peer.evaluate(lock=>new Promise(resolve=>{
+        navigator.locks.request(lock,()=>new Promise(release=>{window.__releaseQueueLock=release;resolve()}));
+      }),lock);
+    }
+    const leave=async(dest,y)=>{
+      const wait=page.waitForURL(u=>u.pathname===dest+'/');
+      const ratio=await page.evaluate(({dest,y})=>new Promise(resolve=>{
+        window.addEventListener('scroll',()=>{
+          const ratio=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight);
+          location.assign(dest+'/');resolve(ratio);
+        },{once:true});
+        scrollTo(0,y);
+      }),{dest,y});
+      await wait;return ratio;
+    };
+    const pending=()=>page.evaluate(nav=>{const x=JSON.parse(sessionStorage.getItem(nav));return Array.isArray(x)?x:x?[x]:[]},nav);
+    const waitFailure=async count=>{
+      for(let i=0;i<150&&failed<count;i++)await page.waitForTimeout(20);
+      assert.equal(failed,count,'intermediate lazy replay failure must be real');
+    };
+    let aRatio=await leave(b,1900);
+    if(mode==='lock-timeout'){
+      // Observe the actual queued Web Lock, then its three-second abort.
+      await peer.waitForFunction(lock=>navigator.locks.query().then(x=>x.pending.some(l=>l.name===lock)),lock);
+      await page.waitForFunction(()=>window.__queueLockDeadline>0&&window.__queueLockAborts>0,null,{timeout:6000});
+      assert.equal((await pending()).length,1,'expired lock deadline must retain the handoff');
+      console.log('LOCK DEADLINE '+engine+' '+JSON.stringify(await page.evaluate(()=>({signals:window.__queueLockDeadline,rejections:window.__queueLockAborts}))));
+    }else await waitFailure(1);
+    assert.deepEqual((await pending()).map(x=>x.key),[a]);
+    let foreign;
+    if(mode==='foreign'){
+      foreign={...record,title:'Foreign canonical revision',anchor:'second',ratio:.31,updatedAt:Date.now()};
+      const result=await peer.evaluate(({key,a,foreign})=>window.GBHighlights.mutateLibrary([key],stores=>({changes:{[key]:{...stores[key],[a]:foreign}}})),{key,a,foreign});
+      assert.equal(result.ok,true);
+    }
+    let bRatio;
+    if(mode==='repeat'){
+      bRatio=await leave(a,1900);await waitFailure(2);
+      assert.deepEqual((await pending()).map(x=>x.key),[a,b]);
+      failReplay=false;aRatio=await leave(c,400);
+    }else{
+      failReplay=false;bRatio=await leave(c,1900);
+      if(mode==='lock-timeout'){
+        assert.deepEqual((await pending()).map(x=>x.key),[a,b],'both intents survive the timed-out lock');
+        await peer.evaluate(()=>window.__releaseQueueLock());
+      }
+    }
+    await page.waitForFunction(({key,b})=>JSON.parse(localStorage.getItem(key))[b]?.anchor==='third',{key,b},{timeout:8000});
+    await page.waitForFunction(nav=>sessionStorage.getItem(nav)===null,nav,{timeout:8000});
+    const result=await page.evaluate(({key,a,b})=>{const x=JSON.parse(localStorage.getItem(key));return {a:x[a],b:x[b]}},{key,a,b});
+    if(mode==='foreign')assert.deepEqual(result.a,foreign,'foreign revision wins independently of other routes');
+    else{
+      assert.equal(result.a.anchor,mode==='repeat'?'':'third');
+      assert(Math.abs(result.a.ratio-aRatio)<.000001,'first route must retain its latest exact viewport');
+    }
+    assert(Math.abs(result.b.ratio-bRatio)<.000001,'second route must retain its exact viewport');
+    assert.equal(await page.locator('#gb-hl-backdrop').count(),0);
+    console.log('PASS '+engine+' ordered handoff queue '+mode);
+   }finally{await ctx.close();}
+  }
+ }finally{await browser.close();}
+}
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));
 try{const base='http://127.0.0.1:'+server.address().port;
-for(const [name,driver] of [['chromium',chromium],['firefox',firefox],['webkit',webkit]])await test(name,driver,base);
+for(const [name,driver] of [['chromium',chromium],['firefox',firefox],['webkit',webkit]]){await test(name,driver,base);await testQueuedNavigation(name,driver,base);}
 console.log('PROGRESS AND REVISIT 3/3 PASS');}finally{server.close()}})().catch(e=>{console.error(e);process.exitCode=1;server.close()});

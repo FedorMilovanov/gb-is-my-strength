@@ -356,3 +356,50 @@ for(const changes of [JSON.parse('{"__proto__":[]}'),{[keys.quotes]:w38rows(1)}]
 }
 assert.equal(w38cases,14);
 console.log('W38: 14/14 capacity and ownership cases PASS');
+
+
+// W403: actual replay module + canonical mutation code, simulated lock/session
+// boundary. A newer handoff appended after commit preparation must survive.
+{
+ const {replayNavigation}=await import(pathToFileURL(path.join(root,'js/reader-library-navigation.js')).href);
+ const {cleanPath,exact}=await import(pathToFileURL(path.join(root,'js/reader-library-research-core.js')).href);
+ const navigationKey='gb-library-progress-navigation-v1';
+ const expected={state:'reading',title:'Queue',updatedAt:1,anchor:'start',ratio:.1};
+ const intent=(key,anchor,ratio,updatedAt)=>({key,expected,progress:{anchor,ratio,updatedAt}});
+ const a=intent('/a','second',.4,2),b=intent('/b','third',.8,3),tail=intent('/a','third',.9,4);
+ const deps={navigationKey,cleanPath,exact,mutateResearch,updateProgress};
+ let raw=JSON.stringify([a,b]);
+ globalThis.sessionStorage={getItem:k=>{assert.equal(k,navigationKey);return raw;},setItem:(k,v)=>{assert.equal(k,navigationKey);raw=v;},removeItem:k=>{assert.equal(k,navigationKey);raw=null;}};
+ const f=fixture({reading:{'/a':expected,'/b':expected}});f.install();
+ await replayNavigation({...deps,mutateResearch:async(name,prepare)=>{
+  const result=await mutateResearch(name,prepare);
+  assert.equal(result.ok,true);
+  raw=JSON.stringify([a,b,tail]); // append after the actual prepared write
+  return result;
+ }});
+ let saved=JSON.parse(f.raw.get(keys.reading));
+ assert.deepEqual(saved['/a'],{...expected,...a.progress});
+ assert.deepEqual(saved['/b'],{...expected,...b.progress});
+ assert.deepEqual(JSON.parse(raw),{...tail,expected:saved['/a']});
+ await replayNavigation(deps);
+ saved=JSON.parse(f.raw.get(keys.reading));
+ assert.deepEqual(saved['/a'],{...expected,...tail.progress});
+ assert.equal(raw,null);
+
+ // A refused lock does not consume any queue bytes.
+ raw=JSON.stringify([a,b]);const retained=raw;
+ const unavailable=fixture({reading:{'/a':expected,'/b':expected}},{noLock:true});unavailable.install();
+ await replayNavigation(deps);assert.equal(raw,retained);assert.deepEqual(unavailable.writes,[]);
+
+ // A stale same-route intent must not resurrect a foreign canonical record.
+ const foreign={...expected,title:'Foreign',updatedAt:5};
+ const mixed=fixture({reading:{'/a':foreign,'/b':expected}});mixed.install();
+ await replayNavigation(deps);saved=JSON.parse(mixed.raw.get(keys.reading));
+ assert.deepEqual(saved['/a'],foreign);assert.deepEqual(saved['/b'],{...expected,...b.progress});assert.equal(raw,null);
+
+ // A malformed handoff must not write or poison the next capable document.
+ raw='{bad';const invalid=fixture({reading:{'/a':expected}});invalid.install();
+ await replayNavigation(deps);assert.equal(raw,null);assert.deepEqual(invalid.writes,[]);
+ delete globalThis.sessionStorage;
+ console.log('W403 navigation queue: 4/4 acknowledgement, refusal, mixed conflict and malformed cases PASS');
+}
