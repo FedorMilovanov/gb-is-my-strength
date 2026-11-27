@@ -37,18 +37,24 @@ html.dark .g3-annual-finance{--gaf-revenue:#8fd4bd;--gaf-negative:#f1a38d}
 @media print{.g3-annual-finance,html.dark .g3-annual-finance{container-type:normal;--gaf-expense:#111;--gaf-revenue:#14675f;--gaf-negative:#a6402d;--je-ink:#111;--je-muted:#444;--je-rule:#ccc;--je-gold:#694913;color:#111;margin:0}.g3-annual-finance .gaf-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.g3-annual-finance figure{break-inside:avoid;print-color-adjust:exact}.g3-annual-finance table caption{break-after:avoid}.g3-annual-finance tr{break-inside:avoid}.g3-annual-finance .gaf-source a{color:#111}}
 
 /* Compact paper-specific rhythm: Letter is shorter than A4. Preserve readable
-   table values and let the browser paginate if the available space is smaller. */
+   table values and let the browser paginate if the available space is smaller.
+   Physical units preserve the existing 16px-root paper design even when
+   the reader has enlarged the root text size on screen. */
 @media print {
   .journal-edition .prose .g3-annual-finance h2, .g3-annual-finance h2 {font-size:18pt;margin:0 0 5pt;break-after:avoid}
   .journal-edition .prose .g3-annual-finance h3, .g3-annual-finance h3 {font-size:13pt;margin:0 0 4pt;break-after:avoid}
-  .g3-annual-finance .gaf-meta {margin:0 0 5pt}
+  .g3-annual-finance .gaf-meta {margin:0 0 5pt;font-size:9.6pt}
   .g3-annual-finance figure {padding:5pt 0}
   .g3-annual-finance .gaf-primary .gaf-plot {--gaf-height:112px}
-  .g3-annual-finance .gaf-plot {--gaf-height:96px;padding-block:3pt 0}
-  .g3-annual-finance .gaf-legend {margin:0 0 4pt}
-  .g3-annual-finance figcaption,.g3-annual-finance .gaf-source {margin-top:4pt}
+  .g3-annual-finance .gaf-plot {--gaf-height:96px;padding-block:3pt 0;grid-template-columns:25.8pt minmax(0,1fr);gap:3pt}
+  .g3-annual-finance .gaf-pair {gap:12pt}
+  .g3-annual-finance .gaf-ticks {font-size:7.92pt}
+  .g3-annual-finance .gaf-years {font-size:7.8pt;padding-top:4.2pt}
+  .g3-annual-finance .gaf-legend {margin:0 0 4pt;font-size:9.36pt;gap:3pt 12pt}
+  .g3-annual-finance figcaption,.g3-annual-finance .gaf-source {margin-top:4pt;font-size:9.36pt}
+  .g3-annual-finance table {font-size:9.24pt}
   .g3-annual-finance :is(th,td) {padding:3pt 2pt}
-  .g3-annual-finance table caption {padding:4pt 0}
+  .g3-annual-finance table caption {padding:4pt 0;font-size:11.4pt}
 }
 
 /* At large root text sizes, fit each chart's full year labels without

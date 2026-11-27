@@ -2544,6 +2544,59 @@ try {
               'paper matrix must fit at either root text size');
             assert.equal(normal.columns,scaled.columns,'paper track minima must not scale with root text');
           }
+          // Keep the actual paper axes and numeric table independent of screen
+          // root zoom, without silently shrinking the physical PDF.
+          if (route.kind === 'dossier' && theme === 'light' && javaScriptEnabled) {
+            item.financePaperGeometry = await page.locator('.g3-annual-finance').evaluate((annual,paper) => {
+              const root=document.documentElement;
+              const saved=[[root,'font-size'],[annual,'inline-size']].map(([el,key])=>
+                [el,key,el.style.getPropertyValue(key),el.style.getPropertyPriority(key)]);
+              const measure=()=>{
+                const box=annual.getBoundingClientRect(),table=annual.querySelector('table');
+                const axes=[...annual.querySelectorAll('.gaf-years')].map(axis=>{
+                  const figure=axis.closest('figure').getBoundingClientRect();
+                  const labels=[...axis.querySelectorAll('span')].map(el=>{
+                    const range=document.createRange();range.selectNodeContents(el);
+                    return {year:el.textContent.trim(),rects:[...range.getClientRects()].map(r=>r.toJSON())};
+                  });
+                  const rects=labels.flatMap(label=>label.rects);
+                  return {font:parseFloat(getComputedStyle(axis).fontSize),width:figure.width,labels,
+                    outside:rects.filter(r=>r.left<figure.left-.5||r.right>figure.right+.5).length,
+                    overlap:rects.flatMap((r,i)=>rects.slice(i+1).filter(s=>
+                      Math.min(r.right,s.right)-Math.max(r.left,s.left)>.5 &&
+                      Math.min(r.bottom,s.bottom)-Math.max(r.top,s.top)>.5)).length};
+                });
+                return {rootFont:parseFloat(getComputedStyle(root).fontSize),width:box.width,axes,
+                  tableFont:parseFloat(getComputedStyle(table).fontSize),
+                  rows:table.querySelectorAll('tbody tr').length,cells:table.querySelectorAll('tbody th,tbody td').length};
+              };
+              try {
+                annual.style.setProperty('inline-size',paper==='A4'?'182mm':'187.9mm','important');
+                root.style.setProperty('font-size','16px','important');
+                const normal=measure();
+                root.style.setProperty('font-size','32px','important');
+                return {normal,scaled:measure()};
+              } finally {
+                for(const [el,key,value,priority] of saved) {
+                  if(value)el.style.setProperty(key,value,priority);else el.style.removeProperty(key);
+                }
+              }
+            },paper);
+            const {normal,scaled}=item.financePaperGeometry;
+            assert.equal(normal.rootFont,16);assert.equal(scaled.rootFont,32);
+            assert.ok(normal.width>0&&Math.abs(normal.width-scaled.width)<=1);
+            for(const state of [normal,scaled]) {
+              assert.equal(state.rows,7);assert.equal(state.cells,35);assert.equal(state.axes.length,3);
+              assert.ok(Math.abs(state.tableFont-12.32)<.05,'paper table keeps its existing physical font size');
+              for(const axis of state.axes) {
+                assert.ok(Math.abs(axis.font-10.4)<.05,'paper axis keeps its existing physical font size');
+                assert.deepEqual(axis.labels.map(label=>label.year),['2019','2020','2021','2022','2023','2024','2025']);
+                assert.ok(axis.labels.every(label=>label.rects.length===1&&label.rects[0].width>0&&label.rects[0].height>0));
+                assert.equal(axis.outside,0);assert.equal(axis.overlap,0);
+              }
+            }
+            assert.ok(scaled.axes.every((axis,i)=>Math.abs(axis.width-normal.axes[i].width)<=1),'paper chart widths must remain stable');
+          }
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');
             const title = next?.querySelector('a').cloneNode(true);
