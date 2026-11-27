@@ -12,6 +12,10 @@ const http = require('node:http');
 const { execFileSync } = require('node:child_process');
 const DIST = path.resolve(__dirname, '../dist');
 const localDist = process.argv.includes('--dist');
+const coldOnly = process.argv.includes('--cold-only');
+const printExecutable = process.env.GB_PRINT_CHROMIUM_EXECUTABLE;
+assert(!coldOnly || localDist, 'cold-only requires built dist');
+assert(!printExecutable || localDist, 'alternate Chromium requires built dist');
 const OUT = process.env.GB_MOBILE_PRINT_ARTIFACT_DIR;
 const MIME = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
  '.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml',
@@ -44,6 +48,55 @@ const ROOTS = [
   {path:'/baptisty-rossii/noch-na-kure/',open:'#mobPartTocBtn',owner:'gill-part-toc',label:'baptists'},
 ];
 function pages(buffer){return (buffer.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length;}
+// Cold print must preserve the actual last paper sheet, not merely the DOM.
+async function verifyColdPrint(browser,base,mode) {
+ const label='cold-print-'+mode;
+ const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,
+   reducedMotion:'reduce',colorScheme:'light',serviceWorkers:'block'});
+ const requested=[];
+ const markers=['SOLI DEO GLORIA','Telegram','Email','\u041d\u0430\u0448\u043b\u0438 \u043d\u0435\u0442\u043e\u0447\u043d\u043e\u0441\u0442\u044c'];
+ const normalize=text=>text.normalize('NFKC').toLowerCase().replace(/[\s\u00ad\u200b-\u200d]/g,'');
+ try{
+  await page.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
+  page.on('request',r=>{if(/\/fonts\/.*\.woff2(?:\?|$)/.test(r.url()))requested.push(r.url())});
+  if(mode==='menu')await page.addInitScript(()=>{window.__coldPrintCalls=0;window.print=()=>window.__coldPrintCalls++});
+  const response=await page.goto(base+'/articles/anatomiya-padeniya-pyat-stadiy/?reader-pilot=0',{waitUntil:'load'});
+  assert.equal(response?.status(),200,label+' HTTP');
+  await page.waitForFunction(()=>window.GBPrintEngine?.version===2.1&&typeof window.GBPrintPagination?.prepare==='function');
+  const breadcrumb=page.locator('.breadcrumb__current');
+  assert.equal(await breadcrumb.evaluate(e=>getComputedStyle(e).fontWeight),'500',label+' screen emphasis');
+  const visibleSource=normalize(await page.locator('body').innerText());
+  assert(markers.every(m=>visibleSource.includes(normalize(m))),label+' source contains end blocks');
+  const texts=[],counts=[];
+  for(let i=0;i<2;i++){
+   if(mode==='menu'){
+    await page.locator('[data-reader-pdf]:visible').click();
+    await page.locator('[data-reader-export-command=print]:visible').click();
+    await page.waitForFunction(n=>window.__coldPrintCalls===n,i+1,{timeout:5000});
+    const report=await page.evaluate(()=>window.GBPrintEngine.getReport());
+    assert.equal(report?.source,'export-menu',label+' canonical menu owner');
+    assert.equal(report?.prepared,true,label+' prepared before native print');
+   }
+   const pdf=await page.pdf({format:'A4',preferCSSPageSize:true,printBackground:true});
+   const text=pdfText(pdf);
+   texts.push(text);counts.push(pages(pdf));
+   const sheets=text.toString('utf8').split('\f');
+   if(!sheets.at(-1).trim())sheets.pop();
+   assert.equal(sheets.length,counts[i],label+' extracted physical page count');
+   const last=normalize(sheets.slice(-2).join(''));
+   assert(markers.every(m=>last.includes(normalize(m))),label+' missing final content on copy '+(i+1));
+  }
+  assert.equal(counts[0],counts[1],label+' first/repeat page count');
+  assert(counts[0]>1&&texts[0].equals(texts[1]),label+' exact first/repeat text/layout parity');
+  assert(!requested.some(u=>u.includes('sourcesans3-cyrillic-500.woff2')),label+' no new print-only breadcrumb font');
+  await page.emulateMedia({media:'print'});
+  assert.equal(await breadcrumb.evaluate(e=>getComputedStyle(e).fontWeight),'400',label+' stable print face');
+  await page.emulateMedia({media:'screen'});
+  assert.equal(await breadcrumb.evaluate(e=>getComputedStyle(e).fontWeight),'500',label+' screen style restored');
+  console.log('PASS chromium/'+label+' '+counts.join('/')+' pages; all final markers');
+  return {browser:'chromium',version:browser.version(),route:label,pass:true,cleanPages:counts[0],lockedPages:counts[1]};
+ }finally{await page.close()}
+}
 async function assertState(page,owner,locked,context) {
  const actual=await page.evaluate(()=>({
   overlay:window.OverlayRuntime?.snapshot().map(s=>s.ownerId)||[],
@@ -68,10 +121,14 @@ async function assertState(page,owner,locked,context) {
   String(process.env.AUDIT_BASE || 'https://gospod-bog.ru').replace(/\/$/,'');
  if(OUT)fs.mkdirSync(OUT,{recursive:true});
  try {
- for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]) {
-  const browser=await engine.launch({headless:true});
+ for(const [engineName,engine] of (coldOnly?[['chromium',chromium]]:[['chromium',chromium],['webkit',webkit]])) {
+  const browser=await engine.launch({headless:true,...(engineName==='chromium'&&printExecutable?{executablePath:printExecutable,args:['--disable-gpu']}: {})});
   try{
-   for(const item of ROOTS){
+   if(localDist&&engineName==='chromium')for(const mode of ['direct','menu']){
+    try{results.push(await verifyColdPrint(browser,URL,mode))}
+    catch(e){results.push({browser:engineName,route:'cold-print-'+mode,pass:false,reason:String(e.message).slice(0,600)});console.error('FAIL chromium/cold-print-'+mode+': '+e.message)}
+   }
+   for(const item of (coldOnly?[]:ROOTS)){
     const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce',colorScheme:'light',serviceWorkers:'block'});
     if(localDist)await page.route('**/*',r=>r.request().url().startsWith(URL+'/')?r.continue():r.abort());
     if(process.env.GB_PRINT_LOCAL_SITE_UTILS === '1') {

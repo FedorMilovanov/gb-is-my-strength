@@ -23,6 +23,9 @@
 .reader-rail-more-sheet .reader-export-option small{color:inherit;opacity:.8}
 @media(forced-colors:active){.reader-export-menu{border:1px solid CanvasText}.reader-export-option:focus-visible{outline-color:Highlight}}
 @media print{
+ /* Use the already displayed breadcrumb face in print. A cold 500 face
+    triggered Chromium 158 repagination and dropped the final paper sheet. */
+ .breadcrumb__current{font-weight:400}
  .reader-export-menu,html body [data-print-policy="exclude"],html body.np-u-preview > #npUniversalDemo,
  html body.np-u-preview #npW57SelectionToolbar,html body.np-u-preview #npW57EdgeLayer,
  html body.np-u-preview .np-u-central-overview[data-np-u-central-overview=true],
