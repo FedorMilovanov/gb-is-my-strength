@@ -394,6 +394,7 @@ const readerLinks = new Map([
   ['G3-S033', 'https://apps.apple.com/us/app/g3/id1192776791'],
   ['G3-S050', 'https://play.google.com/store/apps/details?id=com.subsplashconsulting.s_V9572P'],
   ['G3-S053', 'https://shop.g3min.org/'],
+  ['G3-S054', 'https://web.archive.org/web/20260813111558/https://servantsofgrace.org/product/the-word-matters-defending-biblical-authority-against-the-spirit-of-the-age/'],
   ['G3-S096', 'https://web.archive.org/web/20260721102641/http://g3min.org/about/who-we-are/'],
 ]);
 for (const [id, href] of readerLinks) {
@@ -655,6 +656,10 @@ if (!process.argv.includes('--source-only')) {
           assert.match(text(entry), /20260813111558/);
           assert.match(text(entry), /не подтверждает последующее переиздание книги или переход издательских прав/);
           assert.doesNotMatch(text(entry), /2026-09-07|текущие авторские и магазинные поверхности/);
+          const archiveLinks = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));
+          assert.equal(archiveLinks.length, 1, 'Q020 must link the exact earlier archive, not the current storefront');
+          assert.match(text(archiveLinks[0]), /Архив книжной карточки от 13 августа 2026 года/);
+          assert.match(text(archiveLinks[0]), /доступ может быть ограничен/);
         }
         if (['G3-S033','G3-S050','G3-S053'].includes(source.id)) {
           assert.match(text(entry), /Адрес наблюдавшейся площадки; её нынешнее состояние может отличаться от среза сентября 2026 года\./);
