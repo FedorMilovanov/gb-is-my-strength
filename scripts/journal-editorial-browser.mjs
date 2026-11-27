@@ -2326,6 +2326,61 @@ try {
             item.g44 = await g44RouteWitness(page,javaScriptEnabled,name);
             assert.deepEqual(item.runtime, []);
           }
+          // One real catalogue interaction case per engine; no extra context.
+          if (route.kind === 'history' && javaScriptEnabled && theme === 'light' &&
+              width === Math.min(...mobileWidths) && height === Math.max(...mobileHeights)) {
+            item.phase = 'matrix filter and native source return';
+            const matrix=page.locator('.g3-matrix');
+            const query=matrix.locator('input[type="search"]'), year=matrix.locator('select'), reset=matrix.locator('button');
+            const visible=()=>matrix.locator('.gm-row:visible').count();
+            const citation=matrix.locator('#cite-g3-matrix-lawson-2019');
+            const source=page.locator('#history-source-gnl-2019');
+            const back=source.locator('[data-journal-source-return]');
+            const states=[];
+            const state=async(label,expected)=>{
+              const actual=await visible();
+              assert.equal(actual,expected,label);
+              states.push({label,visible:actual,hash:new URL(page.url()).hash});
+            };
+            const focus=el=>el.evaluate(node=>node===document.activeElement);
+            await state('initial',26);
+            assert.equal(await matrix.locator('[data-journal-citation]').count(),60);
+            await year.selectOption('2019'); await state('year only',5);
+            await query.fill(' ЛОУСОН '); await state('name and year',1);
+            assert.equal(await citation.isVisible(),true);
+            await year.selectOption('2020'); await state('different year',1);
+            assert.equal(await matrix.locator('#cite-g3-matrix-lawson-2020').isVisible(),true);
+            await query.fill('неизвестный участник'); await state('no matches',0);
+            assert.match(await matrix.locator('.gm-status').textContent(),/Нет совпадений/);
+            await reset.click(); await state('reset',26);
+            assert.equal(await query.inputValue(),'');assert.equal(await year.inputValue(),'');
+            assert.equal(await focus(query),true);
+            const hideTarget=async()=>{
+              await query.fill('МакАртур'); await year.selectOption('2020');
+              await state('hidden citation',1); assert.equal(await citation.isVisible(),false);
+            };
+            const restored=async(label)=>{
+              await settleMobile();
+              assert.equal(new URL(page.url()).hash,'#cite-g3-matrix-lawson-2019');
+              await state(label,26);
+              assert.equal(await query.inputValue(),'');assert.equal(await year.inputValue(),'');
+              assert.equal(await citation.isVisible(),true);assert.equal(await focus(citation),true);
+            };
+            await query.fill('Лоусон');await year.selectOption('2019');
+            await citation.focus();await page.keyboard.press('Enter');await settleMobile();
+            assert.equal(new URL(page.url()).hash,'#history-source-gnl-2019');
+            assert.equal(await focus(source),true);
+            assert.equal(await back.getAttribute('href'),'#cite-g3-matrix-lawson-2019');
+            await hideTarget();await back.click();await restored('return reveals target');
+            await hideTarget();await page.goBack();await settleMobile();
+            assert.equal(new URL(page.url()).hash,'#history-source-gnl-2019');
+            await state('history back retains filter',1);
+            assert.equal(await citation.isVisible(),false);
+            await page.goForward();await restored('history forward reveals target');
+            await hideTarget();await back.click();await restored('same fragment reveals target');
+            item.matrixNavigation=states;
+            assert.deepEqual(item.runtime,[]);
+          }
           if (route.kind==='history'&&engine==='webkit'&&!javaScriptEnabled&&width===390&&height===390){
             item.phase='G44 short-viewport screenshot A/B control';
             item.g44Control=await g44RouteWitness(page,false,name,true);
