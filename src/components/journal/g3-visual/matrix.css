@@ -25,7 +25,8 @@
 .g3-matrix .gm-year{display:none;font-size:.8rem;font-variant-numeric:tabular-nums}
 .g3-matrix .gm-sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .g3-matrix .gm-foot{font-size:.79rem;line-height:1.55;color:var(--je-muted);margin-top:1rem}
-@container (max-width:680px){
+/* Match the rem-based grid minima when the browser increases root text. */
+@container (max-width:42.5rem){
 .g3-matrix .gm-head{display:none}
 .g3-matrix .gm-list{border-top:2px solid var(--je-gold)}
 .g3-matrix .gm-row{display:flex;flex-wrap:wrap;gap:.25rem .5rem;padding:.65rem 0}

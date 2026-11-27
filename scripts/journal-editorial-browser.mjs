@@ -1187,6 +1187,39 @@ try {
         for (const problem of item.captureProblems)
           report.problems.push(name + ': capture ' + problem.label + ': ' + problem.message);
         item.normal = await wideHistoryGeometry(page);
+        // Root text scaling is independent of the Reader preference scale.
+        // Measure the actual matrix children, not just the clipped root.
+        if (theme === 'light' && [768,1024,1440].includes(width)) {
+          item.matrixRootText200 = await page.locator('.g3-matrix').evaluate(matrix => {
+            const root = document.documentElement;
+            const size = root.style.getPropertyValue('font-size');
+            const priority = root.style.getPropertyPriority('font-size');
+            try {
+              root.style.setProperty('font-size','200%');
+              const box = matrix.getBoundingClientRect();
+              const links = [...matrix.querySelectorAll('.gm-cell a')];
+              const cells = [...matrix.querySelectorAll('.gm-head span,.gm-name,.gm-cell,.gm-cell a')]
+                .filter(el => el.getClientRects().length);
+              return { font:parseFloat(getComputedStyle(root).fontSize), width:box.width,
+                overflow:Math.max(0,...cells.map(el => {
+                  const r=el.getBoundingClientRect();
+                  return Math.max(box.left-r.left,r.right-box.right);
+                })),
+                rows:matrix.querySelectorAll('.gm-row').length,
+                links:links.length, visible:links.filter(el=>el.getClientRects().length).length,
+                layout:getComputedStyle(matrix.querySelector('.gm-row')).display };
+            } finally {
+              if (size) root.style.setProperty('font-size',size,priority);
+              else root.style.removeProperty('font-size');
+            }
+          });
+          const m = item.matrixRootText200;
+          assert.ok(m.font >= 30 && m.width > 0,'root text increase must be effective');
+          assert.equal(m.rows,26);
+          assert.equal(m.links,60); assert.equal(m.visible,60);
+          assert.ok(m.overflow <= 1,'matrix labels or citation cells overflow at 200% root text: '+JSON.stringify(m));
+        }
+
         item.chronologyNormal = await historyChronologyGeometry(page);
         item.atlasSourceActions = await atlasSourceActions(page);
         if (width <= 430) item.sourceActions = await standaloneSourceActions(page,'history');
