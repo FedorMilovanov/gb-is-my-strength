@@ -49,3 +49,12 @@ html.dark .g3-annual-finance{--gaf-revenue:#8fd4bd;--gaf-negative:#f1a38d}
   .g3-annual-finance :is(th,td) {padding:3pt 2pt}
   .g3-annual-finance table caption {padding:4pt 0}
 }
+
+/* At large root text sizes, fit each chart's full year labels without
+   reducing their font or changing the quantitative scale. Paper stays horizontal. */
+@media screen {
+  .g3-annual-finance figure {container-type:inline-size;container-name:gaf-chart}
+  @container gaf-chart (max-width:14rem) {
+    .g3-annual-finance .gaf-years span {writing-mode:vertical-rl;justify-self:center}
+  }
+}

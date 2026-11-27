@@ -2099,6 +2099,52 @@ try {
           const response = await ready(page, route.url, (phase) => { item.phase = phase; });
           if (route.kind === 'history') await assertPublishedHistory(page, response);
           else if (route.kind === 'dossier') await assertAdoptedFinance(page);
+          // Reuse a single existing mobile case per engine for real 200% root text.
+          // Element boxes alone can fit while the actual year glyphs overlap.
+          if (route.kind === 'dossier' && javaScriptEnabled && theme === 'light' &&
+              width === Math.min(...mobileWidths) && height === Math.max(...mobileHeights)) {
+            item.annualFinanceAxes = await page.locator('.g3-annual-finance').evaluate((annual) => {
+              const root = document.documentElement;
+              const oldSize = root.style.getPropertyValue('font-size');
+              const priority = root.style.getPropertyPriority('font-size');
+              const measure = () => ({
+                rootFont: parseFloat(getComputedStyle(root).fontSize),
+                axes: [...annual.querySelectorAll('.gaf-years')].map(axis => {
+                  const figure = axis.closest('figure').getBoundingClientRect();
+                  const labels = [...axis.querySelectorAll('span')].map(label => {
+                    const range = document.createRange();
+                    range.selectNodeContents(label);
+                    return { year: label.textContent.trim(), rects: [...range.getClientRects()].map(r => r.toJSON()) };
+                  });
+                  const rects = labels.flatMap(label => label.rects);
+                  const outside = rects.filter(r => r.left < figure.left - .5 || r.right > figure.right + .5);
+                  const overlap = rects.flatMap((r,i) => rects.slice(i+1).filter(s =>
+                    Math.min(r.right,s.right)-Math.max(r.left,s.left) > .5 &&
+                    Math.min(r.bottom,s.bottom)-Math.max(r.top,s.top) > .5));
+                  return { labels, outside: outside.length, overlap: overlap.length };
+                })
+              });
+              try {
+                const normal = measure();
+                root.style.setProperty('font-size','200%');
+                return { normal, scaled: measure() };
+              } finally {
+                if (oldSize) root.style.setProperty('font-size',oldSize,priority);
+                else root.style.removeProperty('font-size');
+              }
+            });
+            assert.ok(item.annualFinanceAxes.scaled.rootFont >= 30, '200% root font must be effective');
+            for (const measurement of Object.values(item.annualFinanceAxes)) {
+              assert.equal(measurement.axes.length,3);
+              for (const axis of measurement.axes) {
+                assert.deepEqual(axis.labels.map(label => label.year), ['2019','2020','2021','2022','2023','2024','2025']);
+                assert.ok(axis.labels.every(label => label.rects.length === 1 &&
+                  label.rects[0].width > 0 && label.rects[0].height > 0), 'all years must be visible and unsplit');
+                assert.equal(axis.outside,0,'year label leaves chart bounds');
+                assert.equal(axis.overlap,0,'year labels overlap');
+              }
+            }
+          }
           // The shared dark-theme anchor color must not override Journal's
           // inverse skip-navigation foreground. Check the *focused* control
           // in every real mobile engine/theme and JS/no-JS mode.
