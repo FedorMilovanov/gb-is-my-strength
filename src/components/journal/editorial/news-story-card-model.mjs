@@ -52,6 +52,10 @@ export function assertNewsStoryCard(card) {
   if (card.publishedAt !== undefined || card.publishedLabel !== undefined) {
     if (!date(card.publishedAt) || !text(card.publishedLabel)) throw new Error('Explicit valid publication timestamp and label required');
   }
+  if (card.updatedAt !== undefined || card.updatedLabel !== undefined) {
+    if (!date(card.publishedAt) || !date(card.updatedAt) || !text(card.updatedLabel) ||
+        Date.parse(card.updatedAt) <= Date.parse(card.publishedAt)) throw new Error('Update requires a later valid timestamp and label');
+  }
   if (card.companion !== undefined && typeof card.companion !== 'boolean') throw new Error('Invalid companion flag');
   if (card.companion && variant !== 'analysis') throw new Error('Companion uses analysis variant');
   if (card.landingLead !== undefined && typeof card.landingLead !== 'boolean') throw new Error('Invalid landing image hook');

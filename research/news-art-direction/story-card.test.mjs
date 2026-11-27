@@ -60,3 +60,20 @@ test('W62 last valid clock second',()=>assert.doesNotThrow(()=>check({...valid,p
 // Gregorian boundary parity with Journal document metadata; no Date.UTC year remapping.
 for (const day of ['0000-02-29','0004-02-29','0099-02-28','2000-02-29','2024-02-29']) test('accept Gregorian '+day,()=>assert.doesNotThrow(()=>check({...valid,publishedAt:day+'T00:00:00Z',publishedLabel:'Test date'})));
 for (const day of ['0001-02-29','0100-02-29','1900-02-29','2026-02-30']) test('reject Gregorian '+day,()=>assert.throws(()=>check({...valid,publishedAt:day+'T00:00:00Z',publishedLabel:'Test date'})));
+
+// Preserve original publication and project only the real authored update.
+test('project both distinct Moscow editorial dates',()=>{
+  const {image,...card}=project({...article,updatedAt:new Date('2026-11-13T09:30:00Z')});
+  assert.equal(card.publishedLabel,'30 сентября 2026 г.');
+  assert.equal(card.updatedAt,'2026-11-13T09:30:00.000Z');
+  assert.equal(card.updatedLabel,'13 ноября 2026 г.');
+  check({...card,label:'Investigation'});
+});
+for (const updatedAt of [undefined,new Date('2026-09-29T21:00:00Z'),new Date('2026-09-30T12:00:00Z')])
+  test('omit absent or same Moscow calendar date '+String(updatedAt),()=>assert.equal(project({...article,updatedAt}).updatedAt,undefined));
+for (const updatedAt of [null,'2026-11-13',new Date(NaN),new Date('2026-09-29T20:59:59Z')])
+  test('reject malformed or earlier authored update '+String(updatedAt),()=>assert.throws(()=>project({...article,updatedAt})));
+const dated={publishedAt:'2026-09-29T21:00:00Z',publishedLabel:'30 сентября 2026 г.'};
+for (const bad of [{updatedAt:'2026-11-13T09:30:00Z'},{updatedLabel:'13 ноября'},{updatedAt:'2026-11-13T09:30:00Z',updatedLabel:''},{updatedAt:'2026-09-29T21:00:00Z',updatedLabel:'Same'},{updatedAt:'2026-09-29T20:59:59Z',updatedLabel:'Earlier'},{updatedAt:'2026-02-30T00:00:00Z',updatedLabel:'Invalid'}])
+  test('reject invalid card update '+JSON.stringify(bad),()=>assert.throws(()=>check({...valid,...dated,...bad})));
+test('reject update without publication',()=>assert.throws(()=>check({...valid,updatedAt:'2026-11-13T09:30:00Z',updatedLabel:'13 ноября'})));
