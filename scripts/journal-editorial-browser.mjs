@@ -2082,16 +2082,34 @@ try {
         const caseElapsed=()=>Math.round(performance.now()-caseStarted);
         const name = `${route.kind}-mobile-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
-        // Kill a truly stalled engine with a failing, artifact-backed result.
-        // This cannot turn missing checks into PASS or change route behavior.
-        const watchdog = setTimeout(() => {
-          item.caseElapsedMs=caseElapsed();
-          const diagnostic = { head: report.head, engine, name, item, timeoutMs: 75_000 };
-          fs.writeFileSync(path.join(output, 'after', `${name}-watchdog.json`), JSON.stringify(diagnostic, null, 2) + '\n');
-          console.error(`FAIL ${name}: 75s mobile-case watchdog in phase ${item.phase}; diagnostic JSON retained`);
-          writeMobileCheckpoint({name,item,reason:'watchdog',exitCode:124});
-          process.exit(124);
-        }, 75_000);
+        // Each independent witness gets the same bounded deadline. The catalogue
+        // is not a retry of the mobile/G44 witness, and may start only after it
+        // passes. Never reset a budget within a witness or drop native assertions.
+        const watchdogMs=75_000;
+        item.watchdogStages=[];
+        let watchdog, watchdogStage;
+        const armWatchdog=(label)=>{
+          assert.ok(!watchdogStage || watchdogStage.status==='complete','previous watchdog stage must pass before starting another');
+          watchdogStage={label,startedCaseMs:caseElapsed(),timeoutMs:watchdogMs,status:'running'};
+          item.watchdogStages.push(watchdogStage);
+          watchdog=setTimeout(()=>{
+            item.caseElapsedMs=caseElapsed();
+            watchdogStage.elapsedMs=item.caseElapsedMs-watchdogStage.startedCaseMs;
+            watchdogStage.status='timeout';
+            const diagnostic={head:report.head,engine,name,item,timeoutMs:watchdogMs};
+            fs.writeFileSync(path.join(output,'after',`${name}-watchdog.json`),JSON.stringify(diagnostic,null,2)+'\n');
+            console.error(`FAIL ${name}: 75s ${watchdogStage.label} watchdog in phase ${item.phase}; diagnostic JSON retained`);
+            writeMobileCheckpoint({name,item,reason:'watchdog',exitCode:124});
+            process.exit(124);
+          },watchdogMs);
+        };
+        const finishWatchdog=()=>{
+          watchdogStage.elapsedMs=caseElapsed()-watchdogStage.startedCaseMs;
+          assert.ok(watchdogStage.elapsedMs<=watchdogMs,'witness exceeded its deadline: '+watchdogStage.label);
+          watchdogStage.status='complete';
+          clearTimeout(watchdog);
+        };
+        armWatchdog('mobile/G44');
         const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
         const selected = [390, 844].includes(width);
         const settleMobile = async () => {
@@ -2348,6 +2366,8 @@ try {
           // One real catalogue interaction case per engine; no extra context.
           if (route.kind === 'history' && javaScriptEnabled && theme === 'light' &&
               width === Math.min(...mobileWidths) && height === Math.max(...mobileHeights)) {
+            finishWatchdog();
+            armWatchdog('catalogue navigation');
             item.phase = 'matrix filter and native source return';
             const matrix=page.locator('.g3-matrix');
             const query=matrix.locator('input[type="search"]'), year=matrix.locator('select'), reset=matrix.locator('button');
@@ -2423,11 +2443,16 @@ try {
             item.g44Control=await g44RouteWitness(page,false,name,true);
             assert.deepEqual(item.runtime,[]);
           }
+          finishWatchdog();
           item.phase = 'complete';
           item.caseElapsedMs=caseElapsed();
           console.log(`PASS ${name}`);
         } catch (error) {
           item.caseElapsedMs=caseElapsed();
+          if(watchdogStage.status==='running'){
+            watchdogStage.elapsedMs=item.caseElapsedMs-watchdogStage.startedCaseMs;
+            watchdogStage.status='failed';
+          }
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
           console.error(`FAIL ${name}: ${error.message.slice(0, 1600)}`);
           fs.writeFileSync(path.join(output, 'after', `${name}-diagnostic.json`),
