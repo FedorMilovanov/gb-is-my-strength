@@ -392,6 +392,18 @@ function g44MeasureFocus(root){
 // underline wall. Inspect real computed geometry and forced-color recovery.
 const historyActionIds = ["cite-g3-invitation-2011","cite-g3-history-challies","cite-g3-year-2013-gnl-2013","cite-g3-year-2013-challies","cite-g3-year-2014-sbts-2014","cite-g3-year-2014-gnl-2014","cite-g3-year-2015-gnl-2015","cite-g3-year-2016-gnl-2016","cite-g3-year-2017-gnl-2017","cite-r6-challies-2018-video","cite-r6-firstlove-2018","cite-r6-challies-2018-lessons","cite-g3-year-2018-ascol-2018","cite-g3-year-2018-statement-2018","cite-g3-year-2018-responses-2018","cite-g3-year-2018-challies","cite-g3-year-2019-announcement-2019","cite-g3-year-2019-gnl-2019","cite-g3-year-2019-piper-2019","cite-g3-year-2020-gnl-2020","cite-r6-crotts-2021","cite-r6-white-manuscripts-2022","cite-r6-white-bible-2022","cite-g3-year-2023-announcement-2023","cite-g3-year-2024-reformation-2024","cite-g3-year-2024-316-2024","cite-g3-year-2024-cessationist-2024","cite-g3-year-2024-peters-2024","cite-g3-year-2024-early-venue-2023","cite-r6-benson-2022","cite-g3-growth-challies","cite-g3-growth-aniol-2021","cite-g3-growth-context-overview"];
 const dossierActionKeys = ["#journal-g3-toc","#documents","#overview","cite-timeline-G3-S001","cite-timeline-G3-S008","cite-timeline-G3-S010","cite-timeline-G3-S096","cite-timeline-G3-S015","cite-timeline-G3-S017","cite-timeline-G3-S011","cite-finance-G3-S002","cite-governance-G3-S096","cite-buice-G3-S008","cite-buice-G3-S009","cite-buice-G3-S010","cite-buck-G3-S012","cite-buck-G3-S035","cite-buck-G3-S015","#bibliography","#documents"];
+async function assertDossierSourceSeparators(page, visible) {
+  const separators = await page.locator('.je-source-separator').evaluateAll(nodes=>nodes.map(el=>({
+    before:el.previousElementSibling?.id, after:el.nextElementSibling?.id,
+    hidden:el.getAttribute('aria-hidden'), text:el.textContent.trim(),
+    visible:el.getClientRects().length>0
+  })));
+  const expected = [["cite-timeline-G3-S017","cite-timeline-G3-S011"],["cite-buice-G3-S008","cite-buice-G3-S009"],["cite-buice-G3-S009","cite-buice-G3-S010"],["cite-buck-G3-S012","cite-buck-G3-S035"],["cite-buck-G3-S035","cite-buck-G3-S015"]];
+  assert.deepEqual(separators.map(s=>[s.before,s.after]),expected);
+  assert.ok(separators.every(s=>s.hidden==='true'&&s.text==='·'&&s.visible===visible),
+    'dossier source labels must remain separate on paper/desktop and clean on mobile');
+  return separators;
+}
 async function standaloneSourceActions(page, kind, forced = false) {
   const selector = kind === 'history'
     ? '.je-history-footnote > a, .jcdi-records a[data-journal-citation]'
@@ -416,6 +428,7 @@ async function standaloneSourceActions(page, kind, forced = false) {
   const expected = kind === 'history' ? historyActionIds : (kind === 'atlas' || kind === 'atlas-map')
     ? Array.from({length:kind === 'atlas' ? 18 : 5},(_,i)=>'cite-g3g-history-'+(i+1)) : dossierActionKeys;
   assert.deepEqual(rows.map(row => row.id || row.href), expected, kind + ' exact standalone action inventory');
+  if (kind === 'dossier') await assertDossierSourceSeparators(page,false);
   for (const row of rows) {
     const sourceId = row.id.match(/^cite-(?:timeline|finance|governance|buice|buck)-(G3-S\d{3})$/)?.[1];
     if (sourceId) assert.equal(row.href, '#src-' + sourceId, 'source action must reach its named bibliography entry');
@@ -1734,6 +1747,7 @@ try {
           // 540px finance table at normal and doubled root text before keyboard QA.
           if (route.kind === 'dossier' && javaScriptEnabled && theme === 'light' &&
               width === Math.min(...widths.filter(w=>w>=1024)) && height === Math.max(...shortHeights)) {
+            item.sourceSeparators = await assertDossierSourceSeparators(page,true);
             item.financeTableReflow = await page.locator('.g3-annual-finance').evaluate(annual => {
               const root=document.documentElement;
               const saved=[[root,'font-size'],[annual,'inline-size']].map(([el,key])=>
@@ -2547,6 +2561,7 @@ try {
           // Keep the actual paper axes and numeric table independent of screen
           // root zoom, without silently shrinking the physical PDF.
           if (route.kind === 'dossier' && theme === 'light' && javaScriptEnabled) {
+            item.sourceSeparators = await assertDossierSourceSeparators(page,true);
             item.financePaperGeometry = await page.locator('.g3-annual-finance').evaluate((annual,paper) => {
               const root=document.documentElement;
               const saved=[[root,'font-size'],[annual,'inline-size']].map(([el,key])=>

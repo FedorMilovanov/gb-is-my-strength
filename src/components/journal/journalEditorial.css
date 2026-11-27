@@ -86,6 +86,7 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .source-note, .journal-edition .claim-ref a, .journal-edition a.claim-ref { color: var(--je-gold); text-decoration: underline; text-decoration-style: dotted; }
 /* Standalone source notes are controls, not inline prose links. Keep a real touch target before figures. */
 @media screen and (max-width: 1023px) {
+  .journal-edition :is(.source-note-paragraph, .timeline div) > .je-source-separator { display: none; }
   .journal-edition :is(.source-note-paragraph > a.source-note, .timeline div > a.claim-ref) { display: grid; grid-template-columns: minmax(0, 1fr) .6rem; align-items: center; gap: .75rem; min-height: 44px; max-width: 100%; padding: 6px; font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
   .journal-edition :is(.source-note-paragraph > a.source-note, .timeline div > a.claim-ref)::after { content: ''; inline-size: .5rem; block-size: .5rem; border-block-start: 1.5px solid currentColor; border-inline-end: 1.5px solid currentColor; transform: rotate(45deg); justify-self: center; }
 }

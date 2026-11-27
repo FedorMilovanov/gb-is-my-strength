@@ -391,6 +391,7 @@ const readerLinks = new Map([
   ['G3-S017', 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/'],
   ['G3-S035', 'https://protestia.com/2026/08/17/g3-promised-cooperative-not-competitive-the-anonymous-targeting-continued/4/'],
   ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+  ['G3-S096', 'https://web.archive.org/web/20260721102641/http://g3min.org/about/who-we-are/'],
 ]);
 for (const [id, href] of readerLinks) {
   assert.ok(sources.some(source => source.id === id), `Unknown source: ${id}`);
