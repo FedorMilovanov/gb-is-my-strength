@@ -94,6 +94,77 @@ async function test(engine,driver,base){
  await cold.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/cold-progress']?.anchor==='second',null,{timeout:5000});
  assert.equal(await cold.locator('#gb-hl-backdrop').count(),0);
  assert.equal(coldRequests.filter(p=>/reader-library-(presenter|v3|ranges)\.js$/.test(p)).length,0);
+ // A genuine queued Web Lock, not an async waitForFunction predicate.
+ await cold.bringToFront();
+ const lockName='gb-library:gb-reader-notes-v1';
+ const waitForLocks=async predicate=>{
+   for(let i=0;i<60;i++){
+     const locks=await cold.evaluate(()=>navigator.locks.query());
+     if(predicate(locks))return;
+     await cold.waitForTimeout(35);
+   }
+   assert.fail('expected Web Lock state not observed');
+ };
+ await waitForLocks(x=>![...x.held,...x.pending].some(l=>l.name===lockName));
+ await cold.evaluate(()=>{
+   window.__progressTrace=[];
+   const key='gb-library-reading-v1';
+   const capture=type=>window.__progressTrace.push({type,y:scrollY,record:JSON.parse(localStorage.getItem(key)||'{}')['/articles/cold-progress']});
+   window.addEventListener('scroll',()=>capture('scroll'));
+   window.addEventListener('gb:library-committed',e=>{if(e.detail.key===key)capture('commit')});
+ });
+ for(const {first,last,firstAnchor,lastAnchor,hold} of [
+   {first:0,last:1900,firstAnchor:'',lastAnchor:'third',hold:0},
+   {first:1080,last:0,firstAnchor:'second',lastAnchor:'',hold:900},
+ ]){
+   await waitForLocks(x=>![...x.held,...x.pending].some(l=>l.name===lockName));
+   await cold.evaluate(()=>{window.__progressTrace=[];});
+   await cold.evaluate(name=>new Promise(resolve=>{
+     navigator.locks.request(name,()=>new Promise(release=>{window.__releaseProgressLock=release;resolve();}));
+   }),lockName);
+   try{
+     await cold.evaluate(y=>window.scrollTo(0,y),first);
+     await cold.waitForFunction(y=>window.__progressTrace.some(x=>x.type==='scroll'&&x.y===y),first);
+     await waitForLocks(x=>x.pending.some(l=>l.name===lockName));
+     await cold.evaluate(y=>window.scrollTo(0,y),last);
+     await cold.waitForFunction(y=>window.__progressTrace.some(x=>x.type==='scroll'&&x.y===y),last);
+     if(hold)await cold.waitForTimeout(hold);
+   }finally{await cold.evaluate(()=>window.__releaseProgressLock());}
+   await cold.waitForFunction(anchor=>window.__progressTrace.some(x=>x.type==='commit'&&x.record.anchor===anchor),lastAnchor,{timeout:5000});
+   const trace=await cold.evaluate(()=>window.__progressTrace);
+   assert.deepEqual(trace.filter(x=>x.type==='commit').map(x=>x.record.anchor),[firstAnchor,lastAnchor],JSON.stringify(trace));
+ }
+ console.log('PASS '+engine+' queued newer scrolls survive prior own commits, including expired debounce');
+ // Queue an actual competing canonical write before our scroll write.
+ // A same-state replacement must not be mistaken for our own successor.
+ await waitForLocks(x=>![...x.held,...x.pending].some(l=>l.name===lockName));
+ await cold.evaluate(()=>{window.__progressTrace=[];});
+ const foreign={state:'reading',title:'Other tab',updatedAt:Date.now(),anchor:'second',ratio:0.25};
+ await cold.evaluate(name=>new Promise(resolve=>{
+   navigator.locks.request(name,()=>new Promise(release=>{window.__releaseProgressLock=release;resolve();}));
+ }),lockName);
+ try{
+   await page.evaluate(record=>{
+     const key='gb-library-reading-v1';
+     window.__foreignProgressWrite=window.GBHighlights.mutateLibrary([key],stores=>({
+       changes:{[key]:{...stores[key],'/articles/cold-progress':record}}
+     }));
+   },foreign);
+   await waitForLocks(x=>x.pending.filter(l=>l.name===lockName).length===1);
+   await cold.evaluate(()=>window.scrollTo(0,1080));
+   await cold.waitForFunction(()=>window.__progressTrace.some(x=>x.type==='scroll'&&x.y===1080));
+   await waitForLocks(x=>x.pending.filter(l=>l.name===lockName).length===2);
+   await cold.evaluate(()=>window.scrollTo(0,1900));
+   await cold.waitForFunction(()=>window.__progressTrace.some(x=>x.type==='scroll'&&x.y===1900));
+ }finally{await cold.evaluate(()=>window.__releaseProgressLock());}
+ assert.equal((await page.evaluate(()=>window.__foreignProgressWrite)).ok,true);
+ await waitForLocks(x=>![...x.held,...x.pending].some(l=>l.name===lockName));
+ // Deliberately allow the newer scroll debounce to expire; no retry/write.
+ await cold.waitForTimeout(1000);
+ assert.deepEqual(await cold.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/cold-progress']),foreign);
+ assert.deepEqual((await cold.evaluate(()=>window.__progressTrace)).filter(x=>x.type==='commit'),[]);
+ console.log('PASS '+engine+' foreign canonical same-state replacement is not overwritten by queued scrolls');
+
  await cold.close();
  console.log('PASS '+engine+' cross-tab cold reading activation without presenter');
  }finally{await ctx.close();await browser.close();}

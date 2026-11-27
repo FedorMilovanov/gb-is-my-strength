@@ -60,7 +60,7 @@ export function warmReadingProgress({isOpen,exitForResume}) {
   if (readingProgress) return readingProgress;
   const currentPath = () => cleanPath(location.pathname);
   const readReading = () => objectMap(parse(KEYS.reading, {}));
-  let reading = readReading(), pending = null, progressTimer = null;
+  let reading = readReading(), pending = null, progressTimer = null, writing = null;
   function cancelPendingProgress() {
     clearTimeout(progressTimer);
     progressTimer = null;
@@ -74,8 +74,15 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     }
     return '';
   }
+  function flushPendingProgress() {
+    progressTimer = null;
+    if (writing) return; // the current write will drain the newer intent
+    const intent = pending;
+    pending = null;
+    if (intent) void rememberProgress(intent);
+  }
   async function rememberProgress(intent = null) {
-    if (isOpen()) return;
+    if (isOpen() || writing) return;
     const key = intent?.key || currentPath();
     const expected = intent?.expected || readReading()[key];
     if (key !== currentPath() || expected?.state !== 'reading') return;
@@ -84,30 +91,42 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     const progress = {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
     // Snapshot the record at scroll time; never attribute an old scroll
     // to a newer reading status or route after a concurrent mutation.
-    await mutateResearch('reading',map=>updateProgress(map,key,expected,progress));
-    reading = readReading();
+    const operation = {key, expected, next:null};
+    writing = operation;
+    try {
+      await mutateResearch('reading',map=>{
+        const outcome=updateProgress(map,key,expected,progress);
+        if(outcome.value) operation.next=outcome.value[key];
+        return outcome;
+      });
+    } finally {
+      writing = null;
+      refreshReading();
+      if (pending && progressTimer === null) progressTimer = setTimeout(flushPendingProgress,0);
+    }
   }
   function onScroll() {
     const key = currentPath(), expected = reading[key];
     if (isOpen() || expected?.state !== 'reading') return;
     cancelPendingProgress();
     pending = {key,expected};
-    progressTimer = setTimeout(() => {
-      const intent = pending;
-      pending = null;
-      progressTimer = null;
-      if (intent) rememberProgress(intent);
-    },800);
+    progressTimer = setTimeout(flushPendingProgress,800);
   }
   function onPageHide() {
-    const intent = pending;
-    cancelPendingProgress();
+    clearTimeout(progressTimer);
     // A visit without scrolling must not reset a saved reading position.
-    if (intent) rememberProgress(intent);
+    flushPendingProgress();
   }
-  function refreshReading() {
+  function refreshReading(ownCommit = false) {
     reading = readReading();
-    if (pending && !exact(reading[pending.key],pending.expected)) cancelPendingProgress();
+    if (pending && !exact(reading[pending.key],pending.expected)) {
+      // Only our exact acknowledged successor can advance a queued scroll.
+      // An external status change, clear or replacement still cancels it.
+      if (ownCommit && writing?.key === pending.key && writing.next &&
+          exact(pending.expected,writing.expected) && exact(reading[pending.key],writing.next)) {
+        pending.expected = reading[pending.key];
+      } else cancelPendingProgress();
+    }
   }
   function onStorage(event) {
     if (event.storageArea !== localStorage) return;
@@ -115,7 +134,7 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     if (event.key === null || event.key === KEYS.reading) refreshReading();
   }
   function onCommitted(event) {
-    if (!event.detail || event.detail.key === KEYS.reading) refreshReading();
+    if (!event.detail || event.detail.key === KEYS.reading) refreshReading(true);
   }
   function resume(path, notify = () => {}) {
     const key = cleanPath(path), data = readReading()[key];
