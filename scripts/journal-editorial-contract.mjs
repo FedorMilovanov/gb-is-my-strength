@@ -411,6 +411,7 @@ assert.ok(!current.includes('G3-HIST-PUB-'), 'historical candidates must not ent
 assert.deepEqual([...history.approvedClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
 assert.ok(history.researchHandoffUrl.includes('389de7b1fca6bf2317aa4e0bf187f13600792384'), 'adopted Research #628 is pinned');
 assert.equal(new Set(historySources.map(s => s.id)).size, historySources.length);
+assert.equal(historySources.find(s => s.id === 'crotts-2021')?.returnHref, '#g3-year-2021', 'no-JS return must target Crotts’s 2021 testimony, not institutional growth');
 assert.ok(historySources.length >= 22);
 for (const name of ['G3HistoryArticle', 'G3HistoryFeature']) {
   const source = read(`src/components/journal/${name}.astro`);

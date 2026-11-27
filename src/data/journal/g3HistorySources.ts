@@ -227,7 +227,7 @@ export const G3_HISTORY_SOURCES = [
     "role": "Свидетельство участника",
     "url": "https://anchoragegrace.org/gospel-grace-and-glory/",
     "boundary": "Два отдельных выступления МакАртура по воспоминаниям автора; не стенограмма или подтверждение формата выступления.",
-    "returnHref": "#g3-growth",
+    "returnHref": "#g3-year-2021",
     "researchLocator": "G3-HIST-PUB-14"
   },
   {
