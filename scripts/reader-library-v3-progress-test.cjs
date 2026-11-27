@@ -28,6 +28,60 @@ async function test(engine,driver,base){
  await page.waitForFunction(()=>{const x=JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}');return x['/articles/library-progress-demo']?.ratio>.1&&x['/articles/library-progress-demo']?.anchor==='second'},null,{timeout:5000});
  const record=await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']);
  assert.equal(record.state,'reading');
+ // Opening a mounted library immediately after scrolling must save the
+ // reading viewport before scroll lock, not silently discard the debounce.
+ await page.evaluate(()=>new Promise(resolve=>{
+   window.addEventListener('scroll',()=>{document.querySelector('#gb-hl-fab').click();resolve();},{once:true});
+   window.scrollTo({top:1900,behavior:'instant'});
+ }));
+ await page.locator('#gb-hl-backdrop.is-open').waitFor();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='third',null,{timeout:5000});
+ await page.locator('#gb-hl-close').click();
+ await page.evaluate(()=>window.scrollTo(0,1080));
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='second',null,{timeout:5000});
+ console.log('PASS '+engine+' rapid library open preserves pending reading viewport');
+ // Combine an outstanding write with opening the real mounted presenter.
+ // The queued viewport must be captured before the overlay changes layout.
+ const openLock='gb-library:gb-reader-notes-v1';
+ await page.evaluate(name=>new Promise(resolve=>{
+   window.__openProgressCommits=[];
+   window.addEventListener('gb:library-committed',e=>{
+     if(e.detail.key==='gb-library-reading-v1')window.__openProgressCommits.push(JSON.parse(localStorage.getItem(e.detail.key))['/articles/library-progress-demo']);
+   });
+   navigator.locks.request(name,()=>new Promise(release=>{window.__releaseOpenProgressLock=release;resolve();}));
+ }),openLock);
+ let beforeOpen;
+ try{
+   await page.evaluate(()=>new Promise(resolve=>{
+     window.addEventListener('scroll',resolve,{once:true});
+     window.scrollTo({top:0,behavior:'instant'});
+   }));
+   let queued=false;
+   for(let i=0;i<60;i++){
+     if((await page.evaluate(()=>navigator.locks.query())).pending.some(x=>x.name===openLock)){queued=true;break;}
+     await page.waitForTimeout(35);
+   }
+   assert.equal(queued,true,'previous progress write must actually be queued');
+   beforeOpen=await page.evaluate(()=>new Promise(resolve=>{
+     window.addEventListener('scroll',()=>{
+       const ratio=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight);
+       document.querySelector('#gb-hl-fab').click();
+       resolve(ratio);
+     },{once:true});
+     window.scrollTo({top:1900,behavior:'instant'});
+   }));
+   await page.locator('#gb-hl-backdrop.is-open').waitFor();
+ }finally{await page.evaluate(()=>window.__releaseOpenProgressLock());}
+ await page.waitForFunction(()=>window.__openProgressCommits.some(x=>x.anchor==='third'),null,{timeout:5000});
+ const openCommits=await page.evaluate(()=>window.__openProgressCommits);
+ assert.deepEqual(openCommits.map(x=>x.anchor),['','third']);
+ assert(Math.abs(openCommits[1].ratio-beforeOpen)<.000001,'queued progress preserves pre-overlay ratio');
+ await page.locator('#gb-hl-close').click();
+ await page.evaluate(()=>window.scrollTo({top:1080,behavior:'instant'}));
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo']?.anchor==='second',null,{timeout:5000});
+ console.log('PASS '+engine+' queued reading viewport survives opening and drains with exact pre-overlay ratio');
+
+
  await page.goto(base+'/articles/elsewhere/');
  await page.locator('#gb-hl-fab').click();
  // Finish opening the source document before measuring destination requests.

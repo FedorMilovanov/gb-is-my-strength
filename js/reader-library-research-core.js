@@ -74,6 +74,10 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     }
     return '';
   }
+  function snapshotProgress() {
+    const maxScroll = Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    return {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
+  }
   function flushPendingProgress() {
     progressTimer = null;
     if (writing) return; // the current write will drain the newer intent
@@ -82,13 +86,11 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     if (intent) void rememberProgress(intent);
   }
   async function rememberProgress(intent = null) {
-    if (isOpen() || writing) return;
+    if ((isOpen() && !intent?.progress) || writing) return;
     const key = intent?.key || currentPath();
     const expected = intent?.expected || readReading()[key];
     if (key !== currentPath() || expected?.state !== 'reading') return;
-    const doc = document.documentElement;
-    const maxScroll = Math.max(1,doc.scrollHeight-window.innerHeight);
-    const progress = {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
+    const progress = intent?.progress || snapshotProgress();
     // Snapshot the record at scroll time; never attribute an old scroll
     // to a newer reading status or route after a concurrent mutation.
     const operation = {key, expected, next:null};
@@ -111,6 +113,14 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     cancelPendingProgress();
     pending = {key,expected};
     progressTimer = setTimeout(flushPendingProgress,800);
+  }
+  function flushBeforeOpen() {
+    if (!pending || isOpen()) return;
+    // Capture the reading viewport before the presenter locks scrolling.
+    // If a write is already queued, retain this snapshot until it drains.
+    pending.progress ||= snapshotProgress();
+    clearTimeout(progressTimer);
+    flushPendingProgress();
   }
   function onPageHide() {
     clearTimeout(progressTimer);
@@ -192,7 +202,7 @@ export function warmReadingProgress({isOpen,exitForResume}) {
     lifetime.abort();
     throw error;
   }
-  readingProgress = Object.freeze({rememberProgress,resume});
+  readingProgress = Object.freeze({rememberProgress,resume,flushBeforeOpen});
   if (document.readyState === 'complete') autoResumeOnce();
   return readingProgress;
 }

@@ -539,6 +539,7 @@ function button(action, label, text) {
       if(layerRuntime&&event.detail?.ownerId===ownerId)close();
     });
     function activate(fab,opener) {
+      research.flushProgressBeforeOpen();
       reset();
       overlay.removeAttribute('inert');
       overlay.classList.add('is-open');

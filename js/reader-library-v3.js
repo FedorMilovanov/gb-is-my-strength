@@ -2,7 +2,7 @@
 'use strict';
 
 // Canonical js/ asset path keeps source revision auditing and Node contracts aligned.
-import { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, changeReading, updateProgress, warmReadingProgress } from '../js/reader-library-research-core.js?v=302c7307';
+import { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, changeReading, updateProgress, warmReadingProgress } from '../js/reader-library-research-core.js?v=fdcde7dc';
 
 const FORMAT = 'gospod-bog-reader-library';
 const RECOVERY_FORMAT = 'gospod-bog-reader-library-recovery';
@@ -763,6 +763,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       if (!menu.hidden) { menu.hidden = true; manage.setAttribute('aria-expanded', 'false'); manage.focus({ preventScroll: true }); return true; }
       return false;
     },
+    flushProgressBeforeOpen() { progress.flushBeforeOpen(); },
     resetFilters() { topic = ''; },
     refreshState() { tags = objectMap(parse(KEYS.tags, {})); reading = objectMap(parse(KEYS.reading, {})); revisit = objectMap(parse(KEYS.revisit, {})); },
   });

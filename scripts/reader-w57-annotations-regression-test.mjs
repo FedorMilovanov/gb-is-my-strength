@@ -548,7 +548,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  assert.ok(mountStart>=0&&mountEnd>mountStart);
  const mounted=presenterSource.slice(mountStart,mountEnd);
  function fixture(){
-  let requests=[],opened=false,locked=0,focus=0,paint=0,errors=0,broken=false;
+  let requests=[],opened=false,locked=0,focus=0,paint=0,errors=0,broken=false,flushes=0;
   const attributes=new Map(), triggerAttributes=new Map([['aria-haspopup','dialog']]), returnAttributes=new Map();
   let active, hidden=false;
   function target(attrs,kind,tabIndex=0){return {isConnected:true,tabIndex,getClientRects:()=>[{}],closest:()=>kind==='trigger'&&hidden?{}:null,hasAttribute:k=>attrs.has(k),focus:opts=>{assert.equal(opts.preventScroll,true);active=kind;document.activeElement=kind==='trigger'?trigger:kind==='return'?returnTarget:fab;focus++},setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),getAttribute:k=>attrs.get(k),addEventListener(){}};}
@@ -558,12 +558,13 @@ console.log('W40: 6/6 Undo integrity cases PASS');
   // overlay-close recovery is covered by the real three-engine browser test.
   const document={activeElement:trigger,getElementById:()=>null,querySelector:()=>null,addEventListener(){}};
   const window={SiteUtils:{lockScroll:()=>{locked++},unlockScroll:()=>{locked--}}};
+  const research={flushProgressBeforeOpen(){assert.equal(opened,false);assert.equal(locked,0);flushes++;},resetMenu(){},handleEscape(){return false;}};
   const loadPresenter=()=>new Promise((resolve,reject)=>requests.push({resolve,reject}));
   const render=()=>{paint++;if(broken)throw Error('render failure')};
-  const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo','getComputedStyle',
-   mounted+"let opener=null; const view=createMountedLifecycle({overlay,editor:{hidden:true},research:null,editorController:{hideEditor,clearUndo},reset(){},render,close:()=>close()});"+lifecycle+'return {open,close,keydown,pendingFocusChanged};');
-  const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{},()=>({visibility:'visible'}));
-  return {api,requests,trigger,fab,returnTarget,returnAttributes,attributes,triggerAttributes,hideTrigger:()=>{hidden=true},unrelated:(notify=true)=>{active='unrelated';document.activeElement={isConnected:true,getClientRects:()=>[{}],closest:()=>null};if(notify)api.pendingFocusChanged();},active:()=>active,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
+  const instantiate=new Function('fab','overlay','document','window','loadPresenter','render','isOpen','toast','hideEditor','clearUndo','getComputedStyle','research',
+   mounted+"let opener=null; const view=createMountedLifecycle({overlay,editor:{hidden:true},research,editorController:{hideEditor,clearUndo},reset(){},render,close:()=>close()});"+lifecycle+'return {open,close,keydown,pendingFocusChanged};');
+  const api=instantiate(fab,overlay,document,window,loadPresenter,render,()=>opened,()=>{errors++},()=>{},()=>{},()=>({visibility:'visible'}),research);
+  return {api,requests,trigger,fab,returnTarget,returnAttributes,attributes,triggerAttributes,flushes:()=>flushes,hideTrigger:()=>{hidden=true},unrelated:(notify=true)=>{active='unrelated';document.activeElement={isConnected:true,getClientRects:()=>[{}],closest:()=>null};if(notify)api.pendingFocusChanged();},active:()=>active,breakRender:()=>{broken=true},state:()=>({opened,locked,focus,paint,errors})};
  }
  const f=fixture();
  const superseded=f.api.open(f.trigger);
@@ -574,7 +575,9 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  assert.equal(f.attributes.get('aria-busy'),'true');
  assert.equal(f.triggerAttributes.get('aria-busy'),'true');
  assert.equal(f.state().locked,0,'pending load must not lock underlying reading');
+ assert.equal(f.flushes(),0,'superseded and pending opens cannot flush progress');
  f.requests[1].resolve();assert.equal(await pending,true);
+ assert.equal(f.flushes(),1,'only the accepted open flushes the pre-lock viewport');
  assert.deepEqual(f.state(),{opened:true,locked:1,focus:0,paint:1,errors:0});
  assert.equal(f.attributes.has('aria-busy'),false);
  assert.equal(f.triggerAttributes.has('aria-busy'),false);

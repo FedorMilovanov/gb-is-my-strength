@@ -186,8 +186,8 @@
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
       presenterPromise = Promise.all([
-        import('/js/reader-library-presenter.js?v=df7edaea'),
-        import('/js/reader-library-v3.js?v=65ead15c'),
+        import('/js/reader-library-presenter.js?v=3df72e8a'),
+        import('/js/reader-library-v3.js?v=f0314dc9'),
         ensureRanges(),
       ]).then(([module,researchModule,{currentTitle,uid}]) => {
           if (!view) {
@@ -377,7 +377,7 @@
   let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise;
   function warmReading() {
     if (warmReadingPromise || !shouldWarmReading?.()) return;
-    warmReadingPromise = import('/js/reader-library-research-core.js?v=302c7307')
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=fdcde7dc')
       .then(research=>research.warmReadingProgress({isOpen,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}}))
       .catch(()=>{warmReadingPromise=null;});
   }
