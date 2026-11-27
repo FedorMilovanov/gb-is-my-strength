@@ -74,6 +74,12 @@ const coreVersion=crypto.createHash('md5').update(fs.readFileSync(corePath)).dig
 assert(fs.readFileSync(highlightsPath,'utf8').includes('reader-library-research-core.js?v='+coreVersion),'warm bootstrap imports exact research core revision');
 assert(fs.readFileSync(researchPath,'utf8').includes('reader-library-research-core.js?v='+coreVersion),'research UI uses the same exact core revision');
 assert(fs.readFileSync(swPath,'utf8').includes('reader-library-research-core.js?v='+coreVersion),'SW precaches exact shared core revision for offline reading');
+const navigationPath=path.join(root,'js/reader-library-navigation.js');
+assert(fs.existsSync(navigationPath),'navigation replay module must be published');
+assert(fs.statSync(navigationPath).size<=3000,'navigation-only module stays within 3 KB');
+const navigationVersion=crypto.createHash('md5').update(fs.readFileSync(navigationPath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(corePath,'utf8').includes('reader-library-navigation.js?v='+navigationVersion),'core lazily imports exact navigation revision');
+assert(fs.readFileSync(swPath,'utf8').includes('reader-library-navigation.js?v='+navigationVersion),'SW precaches exact navigation replay revision');
 assert(fs.statSync(corePath).size<=10000,'warm research core stays within 10 KB raw budget');
 console.log('lazy presenter + research + core + dock exact versions and offline precache PASS');
 console.log('allPages',pages.length,'reader article coverage PASS');

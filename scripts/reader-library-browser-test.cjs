@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/js/site-utils.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
-      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' ||
+      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' || url.pathname === '/js/reader-library-navigation.js' ||
       url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js' ||
       url.pathname === '/js/reader-library-ranges.js' || url.pathname === '/research/reader-w57-pilot/assets/reader_w57_annotations.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));

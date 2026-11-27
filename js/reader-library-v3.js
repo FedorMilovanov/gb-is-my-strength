@@ -2,7 +2,17 @@
 'use strict';
 
 // Canonical js/ asset path keeps source revision auditing and Node contracts aligned.
-import { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, changeReading, updateProgress, warmReadingProgress } from '../js/reader-library-research-core.js?v=e5b3fdf2';
+import { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, updateProgress, warmReadingProgress } from '../js/reader-library-research-core.js?v=58d66b97';
+
+function changeReading(map,key,state,title,at) {
+  const old=Object.hasOwn(map,key)?map[key]:{};
+  if(!old||typeof old!=='object'||Array.isArray(old)) return {reason:'invalid-record'};
+  if(old.updatedAt!=null && (!Number.isFinite(Number(old.updatedAt))||Number(old.updatedAt)>at))
+    return {reason:'conflict'};
+  const record={...old,state,title:cap(title||old.title,240),
+    updatedAt:at,anchor:old.anchor||'',ratio:Number(old.ratio)||0};
+  return {value:{...map,[key]:record}};
+}
 
 const FORMAT = 'gospod-bog-reader-library';
 const RECOVERY_FORMAT = 'gospod-bog-reader-library-recovery';

@@ -145,7 +145,7 @@ corrupt.install();await assert.rejects(serializeCurrent(),/Экспорт отм
 refused.install();await assert.rejects(serializeCurrent(),/Экспорт отменён/);assert.deepEqual(refused.snapshot(),refusedBefore);
 assert.equal((await mutateResearch('tags',map=>appendTag(map,'note:42','refused'))).ok,false);
 assert.deepEqual(refused.snapshot(),refusedBefore);
-assert.doesNotMatch(source+'\n'+fs.readFileSync(path.join(root,'js/reader-library-research-core.js'),'utf8'),/localStorage\.(?:setItem|removeItem)\s*\(/,'research UI and core have no raw storage writer');
+assert.doesNotMatch(source+'\n'+fs.readFileSync(path.join(root,'js/reader-library-research-core.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'js/reader-library-navigation.js'),'utf8'),/localStorage\.(?:setItem|removeItem)\s*\(/,'research UI and core have no raw storage writer');
 
 // Exact recovery is separate from merge import. Preserve even invalid legacy
 // rows and envelope metadata; refuse different existing sections or bad JSON.

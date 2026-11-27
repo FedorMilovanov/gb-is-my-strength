@@ -102,6 +102,7 @@ async function test(engine,driver,base){
  assert(Math.abs(savedAfterNavigation.ratio-savedRatio)<.000001,'navigation preserves exact reading viewport');
  assert.equal(await page.locator('#gb-hl-backdrop').count(),0);
  assert.equal(navRequests.filter(p=>/reader-library-(presenter|v3|ranges).js$/.test(p)).length,0);
+ assert.equal(navRequests.filter(p=>p.endsWith('/reader-library-navigation.js')).length,1,'navigation replay requests exactly one lazy module');
  page.off('request',trackNavigation);
  await page.goBack({waitUntil:'domcontentloaded'});
  await page.waitForURL(/library-progress-demo/);
@@ -193,6 +194,7 @@ async function test(engine,driver,base){
  assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-v3.js')).length,0,'warm progress must not request the research UI');
  assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-ranges.js')).length,0,'warm reading without saved marks must not request the range runtime');
  assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-research-core.js')).length,1,'warm progress requests one shared core');
+ assert.equal(resumeRequests.filter(p=>p.endsWith('/reader-library-navigation.js')).length,0,'ordinary warm reading must not request navigation replay');
  console.log('PASS '+engine+' warm progress without presenter/research UI request or DOM');
  // Revisit a quote, suppress it permanently, then verify it will not reappear.
  await page.locator('#gb-hl-fab').click();
@@ -346,6 +348,34 @@ async function test(engine,driver,base){
      console.log('PASS '+engine+' releases temporary scroll observer when '+module+' fails');
    }finally{await failureCtx.close();}
  }
+
+ // A failed replay import must keep the original intent intact for the next document.
+ const replayCtx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
+ try{
+   const replay=await replayCtx.newPage();
+   await replay.goto(base+'/articles/navigation-destination/');
+   const expected={state:'reading',title:'Replay fixture',updatedAt:10,anchor:'second',ratio:.5};
+   const progress={anchor:'third',ratio:.9,updatedAt:20};
+   const key='/articles/library-progress-demo';
+   const raw=JSON.stringify({key,expected,progress});
+   await replay.evaluate(({key,expected,raw,navKey})=>{
+     localStorage.setItem('gb-library-reading-v1',JSON.stringify({[key]:expected}));
+     sessionStorage.setItem(navKey,raw);
+   },{key,expected,raw,navKey});
+   const pattern='**/js/reader-library-navigation.js*';
+   await replay.route(pattern,r=>r.abort());
+   const failed=replay.waitForEvent('requestfailed',{predicate:r=>new URL(r.url()).pathname.endsWith('/reader-library-navigation.js')});
+   await replay.reload();
+   await failed;
+   assert.equal(await replay.evaluate(k=>sessionStorage.getItem(k),navKey),raw);
+   assert.deepEqual(await replay.evaluate(k=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))[k],key),expected);
+   await replay.unroute(pattern);
+   await replay.reload();
+   await replay.waitForFunction(k=>sessionStorage.getItem(k)===null,navKey);
+   assert.deepEqual(await replay.evaluate(k=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))[k],key),{...expected,...progress});
+   assert.equal(await replay.locator('#gb-hl-backdrop').count(),0);
+   console.log('PASS '+engine+' failed lazy navigation replay retains intent and retries on next document');
+ }finally{await replayCtx.close();}
 
  }finally{await ctx.close();await browser.close();}
 }

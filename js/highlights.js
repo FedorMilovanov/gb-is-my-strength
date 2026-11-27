@@ -184,7 +184,7 @@
     if (!presenterPromise) {
       presenterPromise = Promise.all([
         import('/js/reader-library-presenter.js?v=3df72e8a'),
-        import('/js/reader-library-v3.js?v=515636eb'),
+        import('/js/reader-library-v3.js?v=d7624754'),
         ensureRanges(),
       ]).then(([module,researchModule,{currentTitle,uid}]) => {
           if (!view) {
@@ -380,7 +380,7 @@
   function warmReading() {
     if (warmReadingPromise || !shouldWarmReading?.()) return;
     watchEarly(true);
-    warmReadingPromise = import('/js/reader-library-research-core.js?v=e5b3fdf2')
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=58d66b97')
       .then(research=>{const early=earlyReading;watchEarly(false);return research.warmReadingProgress({isOpen,earlyReading:early,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}});})
       .catch(()=>{warmReadingPromise=null;watchEarly(false);});
   }

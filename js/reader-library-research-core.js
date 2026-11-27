@@ -27,7 +27,7 @@ function objectMap(value) {
 }
 const exact = (a,b) => JSON.stringify(a) === JSON.stringify(b);
 
-// Metadata edits must use the fresh map inside the same lock as backup import.
+// Metadata edits share the backup-import lock.
 function mutateResearch(name, prepare) {
   const owner=window.GBHighlights;
   if(!['tags','reading','revisit'].includes(name) || typeof owner?.mutateLibrary!=='function')
@@ -39,22 +39,12 @@ function mutateResearch(name, prepare) {
     return {changes:exact(old,outcome.value)?{}:{[key]:outcome.value},result:{value:outcome.value}};
   });
 }
-function changeReading(map,key,state,title,at) {
-  const old=Object.hasOwn(map,key)?map[key]:{};
-  if(!old||typeof old!=='object'||Array.isArray(old)) return {reason:'invalid-record'};
-  if(old.updatedAt!=null && (!Number.isFinite(Number(old.updatedAt))||Number(old.updatedAt)>at))
-    return {reason:'conflict'};
-  const record={...old,state,title:cap(title||old.title,240),
-    updatedAt:at,anchor:old.anchor||'',ratio:Number(old.ratio)||0};
-  return {value:{...map,[key]:record}};
-}
 function updateProgress(map,key,expected,progress) {
   const live=map[key];
   if(!live||live.state!=='reading'||!exact(live,expected)) return {reason:'conflict'};
   return {value:{...map,[key]:{...live,...progress}}};
 }
-// Reading progress has one document-lifetime owner, independent of the
-// optional library DOM. The first mount (warm route or user open) wins.
+// One document-lifetime progress owner, independent of the optional UI.
 let readingProgress;
 export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
   if (readingProgress) return readingProgress;
@@ -93,8 +83,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
     const expected = intent?.expected || readReading()[key];
     if (key !== currentPath() || expected?.state !== 'reading') return;
     const progress = intent?.progress || snapshotProgress();
-    // Snapshot the record at scroll time; never attribute an old scroll
-    // to a newer reading status or route after a concurrent mutation.
+    // Bind scroll intent to its exact original record.
     const operation = {key, expected, progress, next:null};
     writing = operation;
     try {
@@ -118,23 +107,19 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
   }
   function flushBeforeOpen() {
     if (!pending || isOpen()) return;
-    // Capture the reading viewport before the presenter locks scrolling.
-    // If a write is already queued, retain this snapshot until it drains.
+    // Snapshot before the presenter locks scrolling.
     pending.progress ||= snapshotProgress();
     clearTimeout(progressTimer);
     flushPendingProgress();
   }
-  // A pagehide Web Lock request may never execute before document teardown.
-  // Transfer only the latest observed viewport within this browser tab; the
-  // next document must still perform the exact record CAS under the owner lock.
+  // Async Web Locks may not run before teardown; transfer intent for CAS.
   function onPageHide() {
     clearTimeout(progressTimer);
     progressTimer = null;
     const intent = pending || writing;
-    if (!intent) return; // a visit without scroll cannot reset progress
+    if (!intent) return; // no scroll, no progress reset
     const snapshot = {key:intent.key,expected:intent.expected,progress:intent.progress || snapshotProgress()};
-    // An earlier same-document write may finish as the page is leaving.
-    // Accept only its exact proposed successor, never an arbitrary live record.
+    // Admit only the exact proposed successor of an earlier own write.
     if (pending && writing?.key===intent.key && exact(intent.expected,writing.expected))
       snapshot.ownProgress = writing.progress;
     try {
@@ -149,24 +134,10 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
     if (!raw) return;
     replaying = true;
     try {
-      const intent = JSON.parse(raw), p = intent?.progress;
-      if (typeof intent?.key !== 'string' || !intent.key || cleanPath(intent.key)!==intent.key ||
-          intent.expected?.state!=='reading' || typeof p?.anchor!=='string' ||
-          !Number.isFinite(p.ratio) || p.ratio<0 || p.ratio>1 || !Number.isFinite(p.updatedAt)) return;
-      await mutateResearch('reading',map=>{
-        const live=map[intent.key], prior=intent.ownProgress;
-        const successor=typeof prior?.anchor==='string' && Number.isFinite(prior.ratio) &&
-          prior.ratio>=0 && prior.ratio<=1 && Number.isFinite(prior.updatedAt) && prior.updatedAt<=p.updatedAt
-          ? {...intent.expected,anchor:prior.anchor,ratio:prior.ratio,updatedAt:prior.updatedAt} : null;
-        const expected=successor && exact(live,successor) ? successor : intent.expected;
-        return updateProgress(map,intent.key,expected,{anchor:p.anchor,ratio:p.ratio,updatedAt:p.updatedAt});
-      });
-    } catch { /* malformed or unavailable handoff must not block reading */ }
-    finally {
-      replaying = false;
-      try { if (sessionStorage.getItem(navigationKey)===raw) sessionStorage.removeItem(navigationKey); } catch {}
-      refreshReading();
-    }
+      const {replayNavigation} = await import('../js/reader-library-navigation.js?v=e5fcd372');
+      await replayNavigation(raw,{navigationKey,cleanPath,exact,mutateResearch,updateProgress});
+    } catch { /* retain handoff if lazy loading fails */ }
+    finally { replaying = false; refreshReading(); }
   }
   function onPageShow(event) {
     if (event.persisted) { refreshReading(); void replayNavigationProgress(); }
@@ -174,8 +145,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
   function refreshReading(ownCommit = false) {
     reading = readReading();
     if (pending && !exact(reading[pending.key],pending.expected)) {
-      // Only our exact acknowledged successor can advance a queued scroll.
-      // An external status change, clear or replacement still cancels it.
+      // Advance only through our exact acknowledged successor.
       if (ownCommit && writing?.key === pending.key && writing.next &&
           exact(pending.expected,writing.expected) && exact(reading[pending.key],writing.next)) {
         pending.expected = reading[pending.key];
@@ -199,14 +169,13 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
       return;
     }
     const scrollToSavedPosition = () => {
-      // Deferred resume must not replay a record cleared or replaced in another tab.
-      const live = objectMap(parse(KEYS.reading, {}))[key];
+      // Reject a concurrently replaced record.
+      const live = readReading()[key];
       if (!exact(live,data)) return;
       const target = data.anchor ? document.getElementById(data.anchor) : null;
       if (target) {
         target.scrollIntoView({ block: 'start', behavior: 'instant' });
-        // Heading focus tells keyboard and screen-reader users where reading
-        // resumed; never focus a detached or hidden overlay element.
+        // Focus the resumed heading for keyboard and assistive users.
         if (target.isConnected && target.focus) {
           if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
           target.focus({ preventScroll: true });
@@ -217,8 +186,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
       }
     };
     if (isOpen()) {
-      // The Product Library owns the only overlay and scroll lock. Scrolling
-      // before it closes is silently undone by SiteUtils.unlockScroll.
+      // Close the overlay before scrolling; unlock otherwise undoes it.
       if (typeof exitForResume === 'function') exitForResume(scrollToSavedPosition);
       else notify('Закройте библиотеку, затем повторите переход к месту чтения.', true);
       return;
@@ -248,8 +216,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
     throw error;
   }
   readingProgress = Object.freeze({rememberProgress,resume,flushBeforeOpen});
-  // The bootstrap may observe real scrolling before this lazy owner mounts.
-  // Adopt only the captured record and the still-current viewport; no extra writer.
+  // Adopt a pre-mount scroll only if its record and viewport still match.
   try {
     const key=currentPath(), expected=JSON.parse(earlyReading?.[0] || '{}')?.[key];
     if (!isOpen() && earlyReading?.[1]===scrollY && expected?.state==='reading' && exact(reading[key],expected)) {
@@ -261,5 +228,4 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
   if (document.readyState === 'complete') autoResumeOnce();
   return readingProgress;
 }
-
-export { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, changeReading, updateProgress };
+export { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, updateProgress };

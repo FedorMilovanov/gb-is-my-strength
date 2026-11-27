@@ -71,6 +71,7 @@ const ALLOWED_JS = new Set([
   'js/reader-library-presenter.js',
   'js/reader-library-v3.js',
   'js/reader-library-research-core.js',
+  'js/reader-library-navigation.js',
   'js/reader-library-dock.js',
   'js/glossary.js',
   'js/bookmark-engine.js',
@@ -2239,6 +2240,7 @@ const JS_SIZE_FLOORS = {
   'js/enhancements.js':    { soft: 34_000,  hard: 48_000 }, // 2026-06-11: intentional growth — GBS phase 2 behavior module (honest progress, resume, keyboard, fallbacks) per GBS Phase-2 roadmap (§0, decisions archived in AGENTS r101-r102)
   'js/highlights.js':      { soft: 17_000,  hard: 26_000 },
   'js/reader-library-research-core.js': { soft: 8_000, hard: 10_000 },
+  'js/reader-library-navigation.js': { soft: 2_000, hard: 3_000 },
   'js/reader-library-ranges.js': { soft: 16_000, hard: 18_000 },
   'js/bookmark-engine.js': { soft: 12_000,  hard: 20_000 },
   'js/glossary.js':        { soft:  6_000,  hard: 12_000 },
