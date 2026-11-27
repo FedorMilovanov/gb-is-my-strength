@@ -2,7 +2,7 @@
 'use strict';
 
 // Canonical js/ asset path keeps source revision auditing and Node contracts aligned.
-import { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, updateProgress, warmReadingProgress } from '../js/reader-library-research-core.js?v=58d66b97';
+import { KEYS, cap, cleanPath, parse, objectMap, exact, mutateResearch, updateProgress, warmReadingProgress } from '../js/reader-library-research-core.js?v=3cc725bd';
 
 function changeReading(map,key,state,title,at) {
   const old=Object.hasOwn(map,key)?map[key]:{};

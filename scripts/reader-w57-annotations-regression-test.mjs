@@ -776,7 +776,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  // W61: coalesce scheduled painting without changing synchronous public API.
 {
  const from=highlights.indexOf('  let paintFrame = null;');
- const to=highlights.indexOf('  // Mount native selection actions',from);
+ const to=highlights.indexOf('  let selectionController, selectionLoad;',from);
  assert.ok(from>=0&&to>from);
  let frames=new Map(),next=0,paints=0,cancelled=0,handlers={};
  const target={addEventListener:(event,fn)=>{handlers[event]=fn},getElementById:()=>null};
@@ -797,7 +797,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 
  // W61: ordinary mouse clicks are not selection intent; touch prewarm stays.
 {
- const start=highlights.indexOf('  // Prewarm long-press on touch/pen');
+ const start=highlights.indexOf("  document.addEventListener('pointerdown', e => {",highlights.indexOf("  function loadSelectionController()"));
  const end=highlights.indexOf('  const api =',start);
  assert.ok(start>=0&&end>start);
  let handlers={},loads=0,captures=0,attaches=0;
@@ -1002,6 +1002,11 @@ console.log('W40: 6/6 Undo integrity cases PASS');
  const location={pathname:'/a'},localStorage={};
  const window={scrollY:500,innerHeight:800,addEventListener:(type,fn)=>handlers.set(type,fn)};
  const document={readyState:'loading',documentElement:{scrollHeight:1800},querySelectorAll:()=>[]};
+ const bootstrap=readFileSync(resolve(root,'js/highlights.js'),'utf8');
+ const geometryStart=bootstrap.indexOf('  function anchorAtScroll()'),geometryEnd=bootstrap.indexOf('  function captureEarly()',geometryStart);
+ assert.ok(geometryStart>=0&&geometryEnd>geometryStart);
+ window.GBHighlights={readingViewport:new Function('window','document',bootstrap.slice(geometryStart,geometryEnd)+'return readingViewport;')(window,document)};
+
  const factory=new Function('window','document','location','localStorage','sessionStorage','AbortController','KEYS','objectMap','parse','cleanPath','exact','setTimeout','clearTimeout','mutateResearch','updateProgress',
   source.slice(a,b).replace('export function','function')+'return warmReadingProgress;');
  const exact=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -1180,7 +1185,7 @@ console.log('W40: 6/6 Undo integrity cases PASS');
 // is checked again after import; failed attach can retry without another fetch.
 {
  const src=readFileSync(resolve(root,'js/highlights.js'),'utf8');
- const a=src.indexOf('  let selectionController, selectionLoad;'),b=src.indexOf('  // Prewarm long-press',a);
+ const a=src.indexOf('  let selectionController, selectionLoad;'),b=src.indexOf("  document.addEventListener('pointerdown', e => {",a);
  assert.ok(a>=0&&b>a);
  function scene(){
    let pending=[],live=false,loads=0,creates=0,attaches=0,places=0,failAttach=false;

@@ -58,18 +58,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
     progressTimer = null;
     pending = null;
   }
-  function anchorAtScroll() {
-    const headings = [...document.querySelectorAll('article h2[id],article h3[id],main [data-pagefind-body] h2[id],main [data-pagefind-body] h3[id]')];
-    const cutoff = Math.max(90, Math.min(window.innerHeight * .35, 250));
-    for (let i = headings.length - 1; i >= 0; i--) {
-      if (headings[i].getBoundingClientRect().top <= cutoff) return headings[i].id;
-    }
-    return '';
-  }
-  function snapshotProgress() {
-    const maxScroll = Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
-    return {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
-  }
+  const snapshotProgress=()=>window.GBHighlights.readingViewport();
   function flushPendingProgress() {
     progressTimer = null;
     if (writing) return; // the current write will drain the newer intent
@@ -219,7 +208,7 @@ export function warmReadingProgress({isOpen,exitForResume,earlyReading}) {
   // Adopt a pre-mount scroll only if its record and viewport still match.
   try {
     const key=currentPath(), expected=JSON.parse(earlyReading?.[0] || '{}')?.[key];
-    if (!isOpen() && earlyReading?.[1]===scrollY && expected?.state==='reading' && exact(reading[key],expected)) {
+    if (!isOpen() && earlyReading?.[1]===scrollY && earlyReading[2]===location.pathname && expected?.state==='reading' && exact(reading[key],expected)) {
       pending={key,expected,progress:snapshotProgress()};
       progressTimer=setTimeout(flushPendingProgress,800);
     }

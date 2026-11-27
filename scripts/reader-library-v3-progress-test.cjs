@@ -327,23 +327,25 @@ async function test(engine,driver,base){
    try{
      await failureCtx.addInitScript(()=>{
        localStorage.setItem('gb-library-reading-v1',JSON.stringify({'/articles/library-progress-demo':{state:'reading',title:'Failure fixture',updatedAt:10,anchor:'second',ratio:.5}}));
-       window.__earlyObserver={adds:0,active:false};
+       window.__earlyObserver={adds:0,active:false,pagehideActive:false};
        const add=window.addEventListener,remove=window.removeEventListener;
        window.addEventListener=function(type,listener,options){
          if(type==='scroll'&&listener?.name==='captureEarly'){window.__earlyObserver.adds++;window.__earlyObserver.active=true;}
+         if(type==='pagehide'&&listener?.name==='leaveEarly')window.__earlyObserver.pagehideActive=true;
          return add.call(this,type,listener,options);
        };
        window.removeEventListener=function(type,listener,options){
          if(type==='scroll'&&listener?.name==='captureEarly')window.__earlyObserver.active=false;
+         if(type==='pagehide'&&listener?.name==='leaveEarly')window.__earlyObserver.pagehideActive=false;
          return remove.call(this,type,listener,options);
        };
      });
      const failure=await failureCtx.newPage();let blocked=0;
      await failure.route('**/js/'+module+'*',r=>{blocked++;return r.abort();});
      await failure.goto(base+route);
-     await failure.waitForFunction(()=>window.__earlyObserver?.adds>0&&!window.__earlyObserver.active,null,{timeout:5000});
+     await failure.waitForFunction(()=>window.__earlyObserver?.adds>0&&!window.__earlyObserver.active&&!window.__earlyObserver.pagehideActive,null,{timeout:5000});
      assert(blocked>0,'must actually fail the lazy module '+module);
-     assert.equal(await failure.evaluate(()=>window.__earlyObserver.active),false);
+     assert.equal(await failure.evaluate(()=>window.__earlyObserver.active||window.__earlyObserver.pagehideActive),false);
      assert.equal(await failure.evaluate(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))['/articles/library-progress-demo'].ratio),.5);
      console.log('PASS '+engine+' releases temporary scroll observer when '+module+' fails');
    }finally{await failureCtx.close();}
@@ -376,6 +378,56 @@ async function test(engine,driver,base){
    assert.equal(await replay.locator('#gb-hl-backdrop').count(),0);
    console.log('PASS '+engine+' failed lazy navigation replay retains intent and retries on next document');
  }finally{await replayCtx.close();}
+
+ // Hold the real warm core on the first tracked route, then leave while it is
+ // unavailable. Verify the handoff itself before allowing the replay module.
+ for(const foreign of [false,true]){
+   const earlyCtx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),key='/articles/library-progress-demo';
+   const expected={state:'reading',title:'Cold transition',updatedAt:10,anchor:'second',ratio:.5};
+   const replacement={...expected,title:'Other tab',ratio:.25,updatedAt:20};
+   await earlyCtx.addInitScript(({key,expected})=>{
+     if(!localStorage.getItem('gb-library-reading-v1'))localStorage.setItem('gb-library-reading-v1',JSON.stringify({[key]:expected}));
+   },{key,expected});
+   const early=await earlyCtx.newPage();let blocked=0,releaseCore,releaseReplay;
+   const coreGate=new Promise(r=>releaseCore=r),replayGate=new Promise(r=>releaseReplay=r);
+   await early.route('**/js/reader-library-research-core.js*',async r=>{
+     if(r.request().frame().url().includes('library-progress-demo')){blocked++;await coreGate;try{await r.abort()}catch{}}
+     else await r.continue();
+   });
+   await early.route('**/js/reader-library-navigation.js*',async r=>{await replayGate;try{await r.continue()}catch{}});
+   let peer,releasePeer;
+   try{
+     if(foreign){
+       peer=await earlyCtx.newPage();await peer.goto(base+'/articles/navigation-peer/');
+       await peer.waitForFunction(()=>typeof GBHighlights?.mutateLibrary==='function');
+       await peer.evaluate(name=>new Promise(resolve=>navigator.locks.request(name,()=>new Promise(release=>{window.__releaseEarlyPeer=release;resolve()}))),openLock);
+       releasePeer=()=>peer.evaluate(()=>window.__releaseEarlyPeer());
+       await peer.evaluate(({key,replacement})=>{window.__earlyForeign=GBHighlights.mutateLibrary(['gb-library-reading-v1'],stores=>({changes:{'gb-library-reading-v1':{...stores['gb-library-reading-v1'],[key]:replacement}}}));},{key,replacement});
+       await peer.waitForFunction(name=>navigator.locks.query().then(x=>x.pending.some(l=>l.name===name)),openLock,{timeout:5000});
+     }
+     const requested=early.waitForEvent('request',{predicate:r=>new URL(r.url()).pathname.endsWith('/reader-library-research-core.js')});
+     await early.goto(base+route,{waitUntil:'domcontentloaded'});await requested;
+     const nav=early.waitForURL(/navigation-destination/),replay=early.waitForEvent('request',{predicate:r=>new URL(r.url()).pathname.endsWith('/reader-library-navigation.js'),timeout:6000});
+     const ratio=await early.evaluate(()=>new Promise(resolve=>{
+       window.addEventListener('scroll',()=>{
+         const ratio=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight);
+         location.assign('/articles/navigation-destination/');resolve(ratio);
+       },{once:true});
+       window.scrollTo({top:1900,behavior:'instant'});
+     }));
+     await nav;releaseCore();await replay;
+     const handoff=await early.evaluate(k=>JSON.parse(sessionStorage.getItem(k)),navKey);
+     assert(blocked>0);assert.equal(handoff.key,key);assert.deepEqual(handoff.expected,expected);
+     assert.equal(handoff.progress.anchor,'third');assert(Math.abs(handoff.progress.ratio-ratio)<.000001);
+     releaseReplay();
+     if(foreign){await releasePeer();releasePeer=null;assert.equal((await peer.evaluate(()=>window.__earlyForeign)).ok,true);}
+     await early.waitForFunction(k=>sessionStorage.getItem(k)===null,navKey);
+     const final=await early.evaluate(k=>JSON.parse(localStorage.getItem('gb-library-reading-v1'))[k],key);
+     if(foreign)assert.deepEqual(final,replacement);else assert.deepEqual(final,{...expected,...handoff.progress});
+     assert.equal(await early.locator('#gb-hl-backdrop').count(),0);
+     console.log('PASS '+engine+' cold pre-owner navigation '+(foreign?'real peer wins':'exact viewport'));
+   }finally{releaseCore();releaseReplay();if(releasePeer)await releasePeer().catch(()=>{});await earlyCtx.close()}
+ }
 
  }finally{await ctx.close();await browser.close();}
 }

@@ -13,8 +13,7 @@
   const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
   let rangeRuntime, rangeLoad, GBReaderAnchors;
-  // Explicit asynchronous readiness; all range operations remain synchronous
-  // once this single owner is published. No range payload on a clean reading page.
+  // Lazy range owner: operations synchronous after publication.
   function ensureRanges() {
     if (rangeRuntime) return Promise.resolve(rangeRuntime);
     return rangeLoad ||= import('/js/reader-library-ranges.js?v=9d01527f')
@@ -44,10 +43,7 @@
     if (a && Number.isInteger(a.start) && Number.isInteger(a.end) && typeof a.exact === 'string') {
       return gbHighlightPath(x)+'\nrange-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]);
     }
-    /* Цветные пометы различаются ещё и местом: одна и та же фраза может быть
-       выделена в двух разных абзацах, и раньше вторая запись терялась как
-       «дубль» — в тексте оставалась только одна подсветка. Для цитат,
-       заметок и закладок семантика прежняя: страница + текст. */
+    /* Marks include their position; quotes, notes and favorites retain page/text identity. */
     const positional = (x && (x.kind === 'marker' || x.color)) ? gbContextKey(x) : '';
     return gbHighlightPath(x)+'\n'+t+(positional?'\nctx:'+positional:'');
   }
@@ -77,7 +73,7 @@
   function libraryFailure(reason, current = []) {
     return {ok:false,conflict:reason==='conflict',reason,current};
   }
-  // Guard lazy loading; the storage owner separately guards lock wait.
+  // Guard lazy load and lock wait separately.
   let clearIntent = 0;
   const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
 
@@ -152,8 +148,7 @@
     const q = quotes().map((x) => ({
       id: String(x.id),
       type: 'quote', recordSnapshot: JSON.stringify(x),
-      /* kind/color доносим до списка: иначе помета выглядит как цитата
-         и цвет в библиотеке не виден (P2). */
+      /* Preserve marker type/color in the Library projection. */
       kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
       color: MARK_COLORS.includes(String(x.color || x.annotation?.color || '')) ? String(x.color || x.annotation?.color) : '',
       text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
@@ -184,7 +179,7 @@
     if (!presenterPromise) {
       presenterPromise = Promise.all([
         import('/js/reader-library-presenter.js?v=3df72e8a'),
-        import('/js/reader-library-v3.js?v=d7624754'),
+        import('/js/reader-library-v3.js?v=1709c6a7'),
         ensureRanges(),
       ]).then(([module,researchModule,{currentTitle,uid}]) => {
           if (!view) {
@@ -212,9 +207,7 @@
     return node;
   }
   function isOpen() { return Boolean(overlay && overlay.classList.contains('is-open')); }
-  /* P5/P3: подтверждение и отмена там, где панель библиотеки закрыта.
-     Статус в панели остаётся, тост — для жестов из текста (помета, цитата,
-     заметка), где иначе пользователь не видит ни результата, ни отката. */
+  /* Toast confirms text actions and offers Undo when the Library is closed. */
   function hideToast() {
     const el = document.getElementById('gb-hl-toast');
     if (el) el.dataset.open = 'false';
@@ -372,17 +365,43 @@
   }
   function sync() { if (fab) { const count=quotes().length+notes().length+favorites().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
   let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise, earlyReading;
-  function captureEarly() {
-    try { if (!isOpen()) earlyReading=[localStorage.getItem('gb-library-reading-v1'),scrollY]; } catch {}
+  function anchorAtScroll() {
+    const headings = [...document.querySelectorAll('article h2[id],article h3[id],main [data-pagefind-body] h2[id],main [data-pagefind-body] h3[id]')];
+    const cutoff = Math.max(90, Math.min(window.innerHeight * .35, 250));
+    for (let i = headings.length - 1; i >= 0; i--) {
+      if (headings[i].getBoundingClientRect().top <= cutoff) return headings[i].id;
+    }
+    return '';
   }
-  const watchEarly=on=>{window[on?'addEventListener':'removeEventListener']('scroll',captureEarly,{passive:true});if(!on)earlyReading=null;};
+  function readingViewport() {
+    const maxScroll = Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    return {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
+  }
+  function captureEarly() {
+    try { if (!isOpen()) earlyReading=[localStorage.getItem('gb-library-reading-v1'),scrollY,location.pathname]; } catch {}
+  }
+  function leaveEarly() {
+    try {
+      const key=gbHighlightPath({url:location.pathname});
+      const expected=JSON.parse(earlyReading?.[0]||'{}')?.[key];
+      if (!isOpen() && earlyReading?.[1]===scrollY && earlyReading[2]===location.pathname && expected?.state==='reading')
+        sessionStorage.setItem('gb-library-progress-navigation-v1',JSON.stringify({key,expected,progress:readingViewport()}));
+    } catch {}
+    earlyReading=null;
+  }
+  const watchEarly=on=>{
+    const action=on?'addEventListener':'removeEventListener';
+    window[action]('scroll',captureEarly,{passive:true});
+    window[action]('pagehide',leaveEarly);
+    if(!on)earlyReading=null;
+  };
   watchEarly(true);
   function warmReading() {
     if (warmReadingPromise || !shouldWarmReading?.()) return;
     watchEarly(true);
-    warmReadingPromise = import('/js/reader-library-research-core.js?v=58d66b97')
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=3cc725bd')
       .then(research=>{const early=earlyReading;watchEarly(false);return research.warmReadingProgress({isOpen,earlyReading:early,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}});})
-      .catch(()=>{warmReadingPromise=null;watchEarly(false);});
+      .catch(()=>{warmReadingPromise=null;leaveEarly();watchEarly(false);});
   }
   function dock() {
     if (!fab) return;
@@ -390,7 +409,7 @@
     watchEarly(true);
     dockLoad ||= import('/js/reader-library-dock.js?v=215fecef')
       .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); shouldWarmReading=m.shouldWarmReading; warmReading(); if(!warmReadingPromise)watchEarly(false); })
-      .catch(()=>{dockLoad=null;watchEarly(false);});
+      .catch(()=>{dockLoad=null;leaveEarly();watchEarly(false);});
   }
   function render() { view?.render(); }
   function showEditor(...args) { return editorController?.showEditor(...args); }
@@ -450,8 +469,7 @@
     if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();
   }, true);
 
-  // Mount native selection actions only on a live selection. ARGON owns its
-  // own toolbar; the lazy controller arbitrates native/fallback surfaces.
+  // Live selection only; lazy controller arbitrates native/ARGON surfaces.
   let selectionController, selectionLoad;
   function hide() { selectionController?.hide(); }
   function hasSelection() {
@@ -474,8 +492,7 @@
     return selectionLoad ||= import('/js/reader-library-selection.js?v=b301d44f')
       .catch(() => { selectionLoad = null; return null; });
   }
-  // Prewarm long-press on touch/pen; a normal mouse click needs no module.
-  // Keyboard and drag selection load on selectionchange; end events retry.
+  // Prewarm touch/pen only; selectionchange handles keyboard/drag.
   document.addEventListener('pointerdown', e => {
     if (['touch','pen'].includes(e.pointerType) && e.target.closest?.('article, main [data-pagefind-body], .article-body')) loadSelectionController();
   }, {passive:true});
@@ -489,11 +506,10 @@
 
   const api = Object.freeze({
     libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted, snapshotRaw, restoreRaw,
-    getNotes: notes, getLibrary: all,
+    getNotes: notes, getLibrary: all, readingViewport,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
-    /* Диагностика и тесты: перерисовать пометы и получить, что реально легло
-       в текст. Публично ничего не меняет. */
+    /* Range painter diagnostics. */
     ensureRanges, paintMarks,
     resolveRange: (item, scope) => {
       if (!rangeRuntime) return null;
