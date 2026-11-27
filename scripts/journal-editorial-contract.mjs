@@ -391,6 +391,9 @@ const readerLinks = new Map([
   ['G3-S017', 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/'],
   ['G3-S035', 'https://protestia.com/2026/08/17/g3-promised-cooperative-not-competitive-the-anonymous-targeting-continued/4/'],
   ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+  ['G3-S033', 'https://apps.apple.com/us/app/g3/id1192776791'],
+  ['G3-S050', 'https://play.google.com/store/apps/details?id=com.subsplashconsulting.s_V9572P'],
+  ['G3-S053', 'https://shop.g3min.org/'],
   ['G3-S096', 'https://web.archive.org/web/20260721102641/http://g3min.org/about/who-we-are/'],
 ]);
 for (const [id, href] of readerLinks) {
@@ -644,6 +647,12 @@ if (!process.argv.includes('--source-only')) {
         if (source.id === 'G3-S017') {
           assert.match(text(entry), /2026-08-27/);
           assert.doesNotMatch(text(entry), /2026-09-04/);
+        }
+        if (['G3-S033','G3-S050','G3-S053'].includes(source.id)) {
+          assert.match(text(entry), /Адрес наблюдавшейся площадки; её нынешнее состояние может отличаться от среза сентября 2026 года\./);
+          const liveLinks = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));
+          assert.equal(liveLinks.length,1);
+          assert.match(text(liveLinks[0]), /не архивный снимок/);
         }
         const summaries = all(entry, node => node.tagName === 'summary');
         assert.equal(summaries.length, 1);
