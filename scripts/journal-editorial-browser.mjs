@@ -2405,6 +2405,48 @@ try {
           if (route.kind === 'history') await assertPublishedHistory(page, response);
           else if (route.kind === 'dossier') await assertAdoptedFinance(page);
           await page.emulateMedia({ media: 'print' });
+          // Isolate paper-track geometry at actual A4/Letter content width.
+          // A PDF engine may silently shrink the sheet if rem minima overflow.
+          if (route.kind === 'history' && theme === 'light' && javaScriptEnabled) {
+            item.matrixPaperTracks = await page.locator('.g3-matrix').evaluate((matrix, paper) => {
+              const root = document.documentElement;
+              const oldSize = root.style.getPropertyValue('font-size');
+              const oldPriority = root.style.getPropertyPriority('font-size');
+              const oldWidth = matrix.style.getPropertyValue('inline-size');
+              const widthPriority = matrix.style.getPropertyPriority('inline-size');
+              const measure = () => {
+                const b = matrix.getBoundingClientRect();
+                const row = matrix.querySelector('.gm-row');
+                const cells = [...matrix.querySelectorAll('.gm-head span,.gm-name,.gm-cell,.gm-cell a')]
+                  .filter(el => el.getClientRects().length);
+                return { width:b.width, font:parseFloat(getComputedStyle(root).fontSize),
+                  columns:getComputedStyle(row).gridTemplateColumns,
+                  overflow:Math.max(0,...cells.map(el => {
+                    const r=el.getBoundingClientRect();
+                    return Math.max(b.left-r.left,r.right-b.right);
+                  })),
+                  rows:[...matrix.querySelectorAll('.gm-row')].filter(el=>el.getClientRects().length).length };
+              };
+              try {
+                matrix.style.setProperty('inline-size',paper==='A4'?'182mm':'187.9mm','important');
+                root.style.setProperty('font-size','16px','important');
+                const normal=measure();
+                root.style.setProperty('font-size','32px','important');
+                return {normal,scaled:measure()};
+              } finally {
+                if(oldSize) root.style.setProperty('font-size',oldSize,oldPriority);
+                else root.style.removeProperty('font-size');
+                if(oldWidth) matrix.style.setProperty('inline-size',oldWidth,widthPriority);
+                else matrix.style.removeProperty('inline-size');
+              }
+            }, paper);
+            const {normal,scaled}=item.matrixPaperTracks;
+            assert.equal(normal.font,16); assert.equal(scaled.font,32);
+            assert.equal(normal.rows,26); assert.equal(scaled.rows,26);
+            assert.ok(Math.abs(normal.width-scaled.width)<=1 && scaled.overflow<=1 && normal.overflow<=1,
+              'paper matrix must fit at either root text size');
+            assert.equal(normal.columns,scaled.columns,'paper track minima must not scale with root text');
+          }
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');
             const title = next?.querySelector('a').cloneNode(true);
