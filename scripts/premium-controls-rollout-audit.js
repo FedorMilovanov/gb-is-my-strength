@@ -103,6 +103,14 @@ function within(node, parent) {
   for (let n = node.parentNode; n; n = n.parentNode) if (n === parent) return true;
   return false;
 }
+// Native disabled fieldsets and inert subtrees can block otherwise enabled
+// controls. The canonical adapter does not use either as an interaction scope.
+function blockedNarrationControl(node) {
+  for (let n = node; n; n = n.parentNode) {
+    if (hasAttr(n, 'inert') || (n.tagName === 'fieldset' && hasAttr(n, 'disabled'))) return true;
+  }
+  return false;
+}
 function journalNarrationShape(route, markup) {
   // Avoid parsing unrelated pages; markupOnly has removed script/style/template
   // content. A marker in a comment does not count as an actual element.
@@ -132,6 +140,7 @@ function journalNarrationShape(route, markup) {
   const group = groups[0], rate = rates[0], stop = stops[0], status = statuses[0];
   const interactive = local.filter(n => ['button', 'select', 'input', 'textarea', 'a'].includes(n.tagName));
   if (interactive.length !== 3 || ![play, rate, stop, status].every(n => within(n, group)) ||
+      [play, rate, stop].some(blockedNarrationControl) ||
       play.tagName !== 'button' || attr(play, 'type') !== 'button' ||
       attr(play, 'data-fc-action') !== 'play' || !named(play) ||
       attr(play, 'aria-pressed') !== 'false' || hasAttr(play, 'disabled') ||
@@ -166,6 +175,8 @@ function assertJournalNarrationClassifier() {
     ['wrong initial pressed', valid.replace('aria-pressed="false"', 'aria-pressed="true"')],
     ['fake popup state', valid.replace('aria-pressed="false"', 'aria-pressed="false" aria-expanded="false"')],
     ['stop exposed as enabled', valid.replace(' disabled', '')],
+    ['disabled ancestor fieldset', valid.replace('<div role="group"', '<fieldset disabled role="group"').replace('</span></div>', '</span></fieldset>')],
+    ['inert ancestor group', valid.replace('<div role="group"', '<div inert role="group"')],
     ['missing rate', valid.replace(/<select[\s\S]*?<\/select>/, '')],
     ['non-native rate', valid.replace('<select', '<div').replace('</select>', '</div>')],
     ['extra interactive control', valid.replace('</select>', '</select><button>extra</button>')],
