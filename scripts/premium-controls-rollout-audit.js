@@ -103,11 +103,14 @@ function within(node, parent) {
   for (let n = node.parentNode; n; n = n.parentNode) if (n === parent) return true;
   return false;
 }
-// Native disabled fieldsets and inert subtrees can block otherwise enabled
-// controls. The canonical adapter does not use either as an interaction scope.
-function blockedNarrationControl(node) {
+// Only the slot's own SSR hidden attribute is lifted by mountNarration.
+// Hidden/inert ancestors still prevent interaction; aria-hidden ancestors
+// remove named controls and the status from assistive technology even if visible.
+function blockedNarrationNode(node, slot, control = true) {
   for (let n = node; n; n = n.parentNode) {
-    if (hasAttr(n, 'inert') || (n.tagName === 'fieldset' && hasAttr(n, 'disabled'))) return true;
+    if (hasAttr(n, 'inert') || (n !== slot && hasAttr(n, 'hidden')) ||
+        (attr(n, 'aria-hidden') || '').trim().toLowerCase() === 'true' ||
+        (control && n.tagName === 'fieldset' && hasAttr(n, 'disabled'))) return true;
   }
   return false;
 }
@@ -140,7 +143,8 @@ function journalNarrationShape(route, markup) {
   const group = groups[0], rate = rates[0], stop = stops[0], status = statuses[0];
   const interactive = local.filter(n => ['button', 'select', 'input', 'textarea', 'a'].includes(n.tagName));
   if (interactive.length !== 3 || ![play, rate, stop, status].every(n => within(n, group)) ||
-      [play, rate, stop].some(blockedNarrationControl) ||
+      [play, rate, stop].some(n => blockedNarrationNode(n, slot)) ||
+      blockedNarrationNode(status, slot, false) ||
       play.tagName !== 'button' || attr(play, 'type') !== 'button' ||
       attr(play, 'data-fc-action') !== 'play' || !named(play) ||
       attr(play, 'aria-pressed') !== 'false' || hasAttr(play, 'disabled') ||
@@ -177,6 +181,14 @@ function assertJournalNarrationClassifier() {
     ['stop exposed as enabled', valid.replace(' disabled', '')],
     ['disabled ancestor fieldset', valid.replace('<div role="group"', '<fieldset disabled role="group"').replace('</span></div>', '</span></fieldset>')],
     ['inert ancestor group', valid.replace('<div role="group"', '<div inert role="group"')],
+    ['hidden play', valid.replace('<button type="button" data-fc-action', '<button hidden type="button" data-fc-action')],
+    ['hidden rate', valid.replace('<select data-jn-rate', '<select hidden data-jn-rate')],
+    ['hidden group', valid.replace('<div role="group"', '<div hidden role="group"')],
+    ['hidden main', valid.replace('<main id=', '<main hidden id=')],
+    ['hidden status', valid.replace('<span data-jn-status', '<span hidden data-jn-status')],
+    ['aria-hidden group', valid.replace('<div role="group"', '<div aria-hidden="true" role="group"')],
+    ['aria-hidden slot', valid.replace('<div data-journal-narration', '<div aria-hidden="true" data-journal-narration')],
+    ['aria-hidden status', valid.replace('<span data-jn-status', '<span aria-hidden="true" data-jn-status')],
     ['missing rate', valid.replace(/<select[\s\S]*?<\/select>/, '')],
     ['non-native rate', valid.replace('<select', '<div').replace('</select>', '</div>')],
     ['extra interactive control', valid.replace('</select>', '</select><button>extra</button>')],
