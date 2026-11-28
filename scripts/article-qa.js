@@ -33,6 +33,8 @@ const {
   runAcceptedSemanticManifestAudit,
 } = require('./lib/accepted-semantic-manifest');
 const { scanBlockStructure } = require('./lib/block-structure-guard');
+const { mixedScriptTokens, assertMixedScriptContract } = require('./lib/mixed-script-tokens');
+assertMixedScriptContract();
 const ROOT = path.resolve(__dirname, '..');
 const STRICT = process.argv.includes('--strict');
 
@@ -83,9 +85,8 @@ for (const rel of files) {
   if (gterm && tipForTerm < gterm) warn(rel, `gterm без перевода/пояснения (${gterm} терминов, ${tipForTerm} с тултипом/глоссарием)`);
 
   // ── 3. Mixed-script contamination (ERROR: real corruption, never legitimate) ──
-  for (const tok of text.match(/[A-Za-zА-Яа-яЁё]+/g) || []) {
-    if (/[А-Яа-яЁё]/.test(tok) && /[A-Za-z]/.test(tok))
-      err(rel, `смешанный алфавит в слове (кириллица+латиница): «${tok}»`);
+  for (const tok of mixedScriptTokens(text)) {
+    err(rel, `смешанный алфавит в слове (кириллица+латиница): «${tok}»`);
   }
   const cjk = text.match(/[㐀-鿿豈-﫿]/g);
   if (cjk) err(rel, `иероглиф(ы) в русском тексте: ${[...new Set(cjk)].join(' ')}`);
