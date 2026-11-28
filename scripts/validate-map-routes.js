@@ -447,6 +447,8 @@ function checkAstroHub(files) {
 // other pinned provenance) are intentionally out of this scan scope.
 const PROTECTED_MAP_NAME_FIXTURES = [
   { wrong: 'Аварон', right: 'Аарон', why: 'canonical Synodal Russian for Aaron' },
+  { wrong: 'Чекy', right: 'Чеку', why: 'Russian toponym must not end in Latin y' },
+  { wrong: '<em>hе</em>', right: '<em>he</em>', why: 'Hebrew-letter transliteration must not mix Latin h and Cyrillic e' },
 ];
 function collectMapCopyFiles(dir, exts, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
