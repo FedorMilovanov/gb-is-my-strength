@@ -1,0 +1,125 @@
+{
+  "wave": "V38",
+  "checkedOn": "2026-11-24",
+  "status": "RESEARCH_ONLY_INTAKE_PENDING",
+  "priorHead": "168cc2de3548d71c633b889fd75737be6745de88",
+  "canonicalMain": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "authority": "MAX0 W21 7135884805 and W22 7136031694; approved baseline 17 paths only; new 6 paths require approval",
+  "intake": {
+    "approvedBaseline": [
+      "research/g3-visual-max/media-candidates.json",
+      "research/g3-visual-max/V23-PUBLISHER-MEDIA-CANDIDATES.json",
+      "research/g3-visual-max/V24-ARCHIVAL-PROVENANCE-AV-REVIEW.json",
+      "research/g3-visual-max/V25-EARLY-ARCHIVE-AND-EYEWITNESS-LEADS.json",
+      "research/g3-visual-max/V26-PUBLISHER-ARCHIVE-AND-SOURCE-DRIFT.json",
+      "research/g3-visual-max/V27-EARLY-CONFERENCE-ARCHIVE-RECOVERY.json",
+      "research/g3-visual-max/V28-AV-EDITION-CROSSWALK.json",
+      "research/g3-visual-max/V29-PUBLISHING-HISTORY-AND-COVER-WITNESSES.json",
+      "research/g3-visual-max/V30-VISUAL-IDENTITY-AND-CONFERENCE-ART.json",
+      "research/g3-visual-max/media-permissions.md",
+      "research/g3-visual-max/V24-MEDIA-RIGHTS-REQUESTS.md",
+      "research/g3-visual-max/V31-EDITORIAL-SELECTION-AND-REVALIDATION.json",
+      "research/g3-visual-max/V32-EDITORIAL-STORYBOARD-PLACEMENT.json",
+      "research/g3-visual-max/V33-EARLY-EVIDENCE-AND-INTEGRATION-MANIFEST.json",
+      "research/g3-visual-max/V33-TARGETED-RIGHTS-REQUESTS.md",
+      "research/g3-visual-max/V34-reformation-evidence.svg",
+      "research/g3-visual-max/V34-SELECTIVE-INTAKE.json"
+    ],
+    "proposedAdditional": [
+      "research/g3-visual-max/V35-EARLY-PROGRAMME-RECOVERY.json",
+      "research/g3-visual-max/V36-WORSHIP-PHOTO-AND-2017-PROGRAMME.json",
+      "research/g3-visual-max/V37-READABILITY-AND-PAPER-HANDOFF.json",
+      "research/g3-visual-max/V37-evidence-review.html.txt",
+      "research/g3-visual-max/v38_verify.py",
+      "research/g3-visual-max/V38-FROZEN-INTAKE.json"
+    ],
+    "baselineAndV35to37MainCheck": {
+      "count": 20,
+      "result": "All 20 exact paths return 404 at confirmed main b3f4e004; not imported yet"
+    },
+    "newReviewArtifacts": "V37 exact HTML stored with .html.txt extension (non-routed), v38_verify.py and this manifest created only in donor research directory; main exact-path checks for these new paths not performed.",
+    "excludeProduction": [
+      "src/components/journal/g3-visual/G3AnnualFinance.astro",
+      "src/components/journal/g3-visual/G3SpeakerMatrix.astro",
+      "src/components/journal/g3-visual/adopted-visual-data.json",
+      "src/components/journal/g3-visual/adopted-visual-inputs.ts",
+      "src/components/journal/g3-visual/finance.css",
+      "src/components/journal/g3-visual/matrix-data.json",
+      "src/components/journal/g3-visual/matrix.css",
+      "src/components/journal/g3-visual/matrix.js"
+    ],
+    "rule": "No wholesale merge; no Product imports or overwrite. On coordinator's next accepted head, verify each path absent/equal, transfer only approved Git blobs, retain main if any conflict, no route changes. Baseline 17 plus proposed 6 = 23 review files, not permission to transfer proposed files."
+  },
+  "frozen": {
+    "html": {
+      "path": "research/g3-visual-max/V37-evidence-review.html.txt",
+      "sha256": "d9aac51adcf206072a41848bbf9db97748724df77a9f2816ac08a2bf9beec2ac",
+      "blob": "c5d2351a6d4273b60c9d70d1c0c54ae580cc3a71",
+      "verified": "local Git blob equals remote read-back; exact prior V37 input"
+    },
+    "runner": {
+      "path": "research/g3-visual-max/v38_verify.py",
+      "sha256": "0d242785ed4e7d43bd6ef0c2c89c68beed4c5858a3b838655c9aa8f7abac21ff",
+      "blob": "4d39e756a8fad2944dee31c85754c3766dfa60ad",
+      "verified": "local Git blob equals remote read-back",
+      "command": "timeout 35s python research/g3-visual-max/v38_verify.py research/g3-visual-max/V37-evidence-review.html.txt /tmp/g3-v38-witness",
+      "dependencies": "Python, Playwright, Chromium, PyMuPDF; isolated hosted Linux; no installations on owner's PC"
+    }
+  },
+  "qa": {
+    "engine": "isolated Chromium noJS",
+    "cases": 8,
+    "widths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "bodyPx": 17,
+    "forwardTab": 72,
+    "reverseTab": 64,
+    "keyboardRoundTrips": 24,
+    "overflow": 0,
+    "autoExternalRequests": 0,
+    "uniqueIds": true,
+    "validInternalLinks": true,
+    "print": [
+      {
+        "format": "A4",
+        "pages": 1,
+        "words": 125,
+        "links": 6,
+        "outside": 0,
+        "sha256": "bcf9416d4e78676e0719142e8ce1dc64ef3058db5e646fd9899a232c519f170a"
+      },
+      {
+        "format": "Letter",
+        "pages": 1,
+        "words": 125,
+        "links": 6,
+        "outside": 0,
+        "sha256": "2c51cd8374c372c1fd995d4058c2462043d76613acd621b3b1af24c9ee200c56"
+      }
+    ],
+    "visual": "Both physical PDF sheets rendered and inspected: readable, no clipping, no glyph loss; lower-page whitespace expected for standalone insert. Exact input unchanged except in-memory @page size for Letter. New PDF metadata/hash differs from V37 run, no byte identity claim for generated PDFs.",
+    "recovery": "First full runner timed out; bounded diagnostic confirmed Tab order and hang on add_style_tag under noJS. Next diagnostic failed on unsupported Page.pdf timeout parameter. Corrected runner replaces @page size in source in memory and uses external timeout; exit 0. Post-run process listing no matching V38 runner or chromium remote-debugging-pipe. Earlier failures not counted as pass.",
+    "limits": "No full routed Astro, axe, Firefox/WebKit or full-article print. Keyboard checks verify actual focus sequence and Enter anchor navigation; they programmatically focus return links, not a full end-to-end screen reader audit."
+  },
+  "remaining": {
+    "archive": "78 candidates / 52 ever viewed / 0 rights cleared",
+    "hostSource": "Research adoption pending",
+    "rights": "All archival assets HOLD; early photos and choir absent; no requests sent",
+    "integration": "MAX0 controls approved selective transfer; exact site and accessibility QA still required. No duplicate graphic G38, no new bibliography."
+  },
+  "resource": {
+    "RDC": 0,
+    "ownerHeavyJobs": 0,
+    "CUDA": false,
+    "windowsWebkit": false
+  },
+  "newEvidence": 0
+}

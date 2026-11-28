@@ -15,39 +15,59 @@
  */
 
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
-import { existsSync } from 'node:fs';
-import { chromium } from 'playwright-core';
+import { readFile, stat, realpath, mkdir } from 'node:fs/promises';
+import { join, resolve, sep, extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { chromium } from 'playwright';
 
-const DIST = join(process.cwd(), 'dist');
-function routeFile(p){ const clean = decodeURIComponent(p.split('?')[0]).replace(/^\/+/,''); return join(DIST, clean, 'index.html'); }
-async function serve(){
-  const server = createServer(async (req,res)=>{
-    try{
-      const url = new URL(req.url||'/', 'http://127.0.0.1');
-      let pathname = url.pathname;
-      let file;
-      if (pathname.startsWith('/_astro/') || pathname.startsWith('/css/') || pathname.startsWith('/fonts/') || pathname.startsWith('/js/') || pathname.startsWith('/images/') || pathname.startsWith('/icons/')) {
-        file = join(DIST, pathname.replace(/^\/+/, ''));
-        if (!existsSync(file)) { const alt = join(process.cwd(), pathname.replace(/^\/+/, '')); if(existsSync(alt)) file=alt; else { res.writeHead(404); res.end('not found '+pathname); return; } }
-      } else {
-        file = routeFile(pathname);
-        try{ if((await stat(file)).isDirectory()) file=join(file,'index.html'); }catch{}
-        if(!existsSync(file)){ const alt=join(DIST, pathname.replace(/^\/+/, '')); if(existsSync(alt)) file=alt; else { res.writeHead(404); res.end('not found '+pathname); return; } }
-      }
+const DIST = resolve(process.cwd(), 'dist');
+const EVIDENCE_DIR = process.env.LAWSON_EVIDENCE_DIR ? resolve(process.env.LAWSON_EVIDENCE_DIR) : null;
+const CONTENT_TYPES = {
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8', '.mjs': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8', '.wasm': 'application/wasm',
+  '.svg': 'image/svg+xml', '.webp': 'image/webp', '.avif': 'image/avif',
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.woff': 'font/woff',
+};
+async function resolveRequest(requestUrl, physicalRoot) {
+  const pathname = decodeURIComponent(new URL(requestUrl || '/', 'http://127.0.0.1').pathname);
+  if (pathname.includes('\\') || pathname.includes('\0')) return null;
+  const candidate = resolve(physicalRoot, '.' + pathname);
+  if (candidate !== physicalRoot && !candidate.startsWith(physicalRoot + sep)) return null;
+  for (const file of [candidate, join(candidate, 'index.html')]) {
+    try {
+      const physicalFile = await realpath(file);
+      if (physicalFile !== physicalRoot && !physicalFile.startsWith(physicalRoot + sep)) return null;
+      if ((await stat(physicalFile)).isFile()) return physicalFile;
+    } catch (error) { if (!['ENOENT','ENOTDIR','ELOOP'].includes(error?.code)) throw error; }
+  }
+  return null;
+}
+async function serve() {
+  const physicalRoot = await realpath(DIST);
+  if (!(await stat(physicalRoot)).isDirectory()) throw new Error('dist is not a directory');
+  const server = createServer(async (req, res) => {
+    try {
+      const file = await resolveRequest(req.url, physicalRoot);
+      if (!file) { res.writeHead(404); res.end('Not found'); return; }
       const data = await readFile(file);
-      const ext = pathname.split('.').pop();
-      let ct='text/html';
-      if(ext==='css') ct='text/css';
-      else if(ext==='js') ct='application/javascript';
-      else if(ext==='woff2') ct='font/woff2';
-      res.writeHead(200, {'content-type': ct, 'cache-control':'no-store'});
+      res.writeHead(200, { 'content-type': CONTENT_TYPES[extname(file).toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-store' });
       res.end(data);
-    }catch(e){ res.writeHead(500); res.end(String(e)); }
+    } catch (error) {
+      res.writeHead(error instanceof URIError ? 400 : 500);
+      res.end('Static fixture request failed');
+    }
   });
-  await new Promise(r=>server.listen(0,'127.0.0.1',r));
-  return { server, origin:`http://127.0.0.1:${server.address().port}` };
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => { server.off('error', reject); resolve(); });
+  });
+  return { server, origin: `http://127.0.0.1:${server.address().port}` };
+}
+
+async function closeServer(server) {
+  await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 }
 
 const VIEWPORTS = [
@@ -62,18 +82,7 @@ const ROUTES = [
   '/articles/lot-i-sodom/',
 ];
 
-let failures = [];
-
-const { server, origin } = await serve();
-const browser = await chromium.launch({ executablePath:'/tmp/chrome.sh', args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
-
-for (const route of ROUTES) {
-  for (const vp of VIEWPORTS) {
-    const context = await browser.newContext({ viewport:{width:vp.w,height:vp.h}, isMobile:true, hasTouch:true });
-    const page = await context.newPage();
-    await page.goto(origin+route, {waitUntil:'networkidle'});
-    await page.waitForTimeout(600);
-    const result = await page.evaluate(()=>{
+export function inspectMobileChrome(lawson) {
       const hmtop = document.querySelector('.hmtop');
       const hmbar = document.querySelector('.hmbar');
       const play = document.querySelector('.hm-ember');
@@ -93,7 +102,47 @@ for (const route of ROUTES) {
       const floaterRect = floater?getRect(floater):null;
       const fallbackRect = fallback?getRect(fallback):null;
 
-      const errors = [];
+      function inspectLawsonMobilePresence() {
+        const errors = [];
+        const one = (selector, name) => {
+          const nodes = document.querySelectorAll(selector);
+          if (nodes.length !== 1) { errors.push(name + ': expected exactly one, got ' + nodes.length); return null; }
+          return nodes[0];
+        };
+        const shell = one('[data-mobile-chrome]', 'mobile shell');
+        const top = one('.hmtop', 'top bar'), bottom = one('.hmbar', 'bottom bar');
+        const play = one('.hm-ember', 'Play'), badge = one('.hm-spdbadge', 'speed badge'), hero = one('h1', 'H1');
+        if (shell && shell.dataset.mobileChromeEngine !== 'article') errors.push('wrong mobile shell engine');
+        for (const [el, attr] of [[top,'data-mobile-topbar'], [bottom,'data-mobile-bottombar']]) {
+          if (el && (el.parentElement !== shell || !el.hasAttribute(attr))) errors.push(attr + ': wrong owner');
+        }
+        for (const [el,name] of [[play,'Play'],[badge,'speed badge']]) if (el && (!top || !top.contains(el))) errors.push(name + ': wrong owner');
+        if (play && badge && (!play.closest('.reader-mobile-play-group') || play.closest('.reader-mobile-play-group') !== badge.closest('.reader-mobile-play-group'))) errors.push('Play and badge must share canonical group');
+        const w = document.documentElement.clientWidth, h = window.innerHeight;
+        function visible(el, name, full) {
+          if (!el) return;
+          const r = el.getBoundingClientRect(), css = getComputedStyle(el);
+          let opacity = 1;
+          for (let a=el; a; a=a.parentElement) opacity *= Number(getComputedStyle(a).opacity);
+          if (!r.width || !r.height || css.visibility !== 'visible' || opacity <= 0 || el.closest('[hidden],[inert],[aria-hidden="true"]')) errors.push(name + ': not visible/available');
+          if (!(r.left < w && r.right > 0 && r.top < h && r.bottom > 0)) errors.push(name + ': outside viewport');
+          if (full && (r.left < -1 || r.right > w+1 || r.top < -1 || r.bottom > h+1)) errors.push(name + ': clipped by viewport');
+        }
+        for (const [el,name] of [[top,'top bar'],[bottom,'bottom bar'],[play,'Play'],[badge,'speed badge']]) visible(el,name,true);
+        visible(hero,'H1',false);
+        if (hero && !hero.textContent.trim()) errors.push('H1: empty');
+        for (const [el,name] of [[play,'Play'],[badge,'speed badge']]) {
+          if (!el) continue;
+          if (el.matches(':disabled') || el.getAttribute('aria-disabled') === 'true') errors.push(name + ': disabled');
+          const r=el.getBoundingClientRect();
+          if (r.width>0 && r.height>0) {
+            const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+            if (!hit || !el.contains(hit)) errors.push(name + ': pointer target blocked');
+          }
+        }
+        return errors;
+      }
+      const errors = lawson ? inspectLawsonMobilePresence() : [];
 
       // 1. Leaked nav list under header when closed
       if (leakedNav) {
@@ -136,8 +185,21 @@ for (const route of ROUTES) {
         const gap = Math.abs(badgeRect.left - playRect.right);
         if (gap>=60) errors.push(`badge not compact: gap ${gap}px >=60`);
         if (playRect.width<30 || playRect.height<30) errors.push(`play too small: ${playRect.width}x${playRect.height}`);
-        if (badgeRect.width>50 || badgeRect.height>35) errors.push(`badge too large: ${badgeRect.width}x${badgeRect.height}`);
-      } else {
+        // Canonical Reader separates a 44px touch button from the compact
+        // painted pill (::before). Do not measure the pill using the hitbox.
+        if (badgeRect.width<44 || badgeRect.height<44 || badgeRect.width>50 || badgeRect.height>50)
+          errors.push(`badge touch target outside 44–50px: ${badgeRect.width}x${badgeRect.height}`);
+        const pill = getComputedStyle(badge, '::before');
+        const insets = [pill.left,pill.right,pill.top,pill.bottom].map(parseFloat);
+        const pillWidth = badgeRect.width-insets[0]-insets[1];
+        const pillHeight = badgeRect.height-insets[2]-insets[3];
+        if (pill.content==='none' || pill.content==='normal' || pill.display==='none' ||
+          pill.visibility!=='visible' || Number(pill.opacity)<=0 ||
+          pill.backgroundColor==='transparent' || pill.backgroundColor==='rgba(0, 0, 0, 0)' ||
+          !insets.every(Number.isFinite) || insets.some(v=>v<0) ||
+          !(pillWidth>0 && pillWidth<=50 && pillHeight>0 && pillHeight<=35))
+          errors.push(`badge visual pill invalid: ${pillWidth}x${pillHeight}`);
+      } else if (!lawson) {
         // These routes should have play+ badge — check if play element exists at all
         const hasPlay = !!document.querySelector('.hm-ember, .gb-ember');
         if (!hasPlay) errors.push('play missing');
@@ -159,25 +221,109 @@ for (const route of ROUTES) {
       }
 
       return { errors, topH: topRect?.height, bottomH: bottomRect?.height, playW: playRect?.width, badgeGap: playRect&&badgeRect?Math.abs(badgeRect.left-playRect.right):null };
-    });
+}
 
-    if (result.errors.length>0) {
-      failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
-      console.error(`❌ FAIL ${route} ${vp.w}x${vp.h}: ${result.errors.join('; ')} | topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
-    } else {
-      console.log(`✅ PASS ${route} ${vp.w}x${vp.h} topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
+// Reuse the existing dist server and regression runner for actual Lawson
+// interaction evidence. No alternate production route or fixture renderer.
+async function inspectLawsonCards(page, capture) {
+  const result = [];
+  for (const [kind, triggerSelector, cardSelector, destinationSelector] of [
+    ['source', '.lawson-source-ref > button', '.lawson-source-popover', '.lawson-source-bibliography'],
+    ['term', '.lawson-term[data-enhanced] > .lawson-term-label', '.lawson-term-popover', '.lawson-term-return'],
+  ]) {
+    const trigger = page.locator(triggerSelector).first();
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.focus();
+    await trigger.press('Enter');
+    const card = page.locator(cardSelector + ':not([hidden])');
+    if (await card.count() !== 1 || !await card.isVisible()) throw new Error(kind + ': expected one open card');
+    const metrics = await card.evaluate((el, selector) => {
+      const r=el.getBoundingClientRect(), shell=document.querySelector('[data-mobile-chrome][data-mobile-chrome-engine="article"]');
+      const top=shell?.querySelector('[data-mobile-topbar]'), bottom=shell?.querySelector('[data-mobile-bottombar]');
+      const mobile=matchMedia('(max-width: 1199px)').matches;
+      const link=el.querySelector(selector), dest=link&&document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      const heading=el.querySelector('strong')?.textContent?.trim();
+      return {rect:r.toJSON(),viewport:{width:document.documentElement.clientWidth,height:document.documentElement.clientHeight},
+        topClearance:mobile?(top?.offsetHeight??0):0,bottomClearance:mobile?(bottom?.offsetHeight??0):0,
+        heading,href:link?.getAttribute('href'),destination:dest?.id,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight};
+    },destinationSelector);
+    const {rect:r,viewport:v}=metrics;
+    if(!metrics.heading||!metrics.destination||r.width<=0||r.height<=0||
+      r.left< -1||r.right>v.width+1||r.top<metrics.topClearance-1||r.bottom>v.height-metrics.bottomClearance+1)
+      throw new Error(kind + ': card geometry or native destination: ' + JSON.stringify(metrics));
+    const action = card.locator(destinationSelector);
+    await action.scrollIntoViewIfNeeded();
+    const hit=await action.evaluate(el=>{const r=el.getBoundingClientRect(),h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.height>=44&&!!h&&el.contains(h)});
+    if(!hit)throw new Error(kind + ': destination action blocked or smaller than 44px');
+    if(capture)await capture(kind);
+    await action.focus();
+    await page.keyboard.press('Escape');
+    if(await card.count()!==0||!await trigger.evaluate(el=>el===document.activeElement))
+      throw new Error(kind + ': Escape did not close and restore focus');
+    await trigger.press('Enter');
+    await page.locator(cardSelector + ':not([hidden])').locator(destinationSelector).click();
+    await page.waitForFunction(id=>location.hash==='#'+id&&document.activeElement?.id===id,metrics.destination);
+    if(await card.count()!==0)throw new Error(kind + ': destination left card open');
+    result.push({kind,...metrics,hit,escape:true,destinationFocus:true});
+  }
+  return result;
+}
+
+async function main() {
+  const failures = [];
+  if (EVIDENCE_DIR) await mkdir(EVIDENCE_DIR, { recursive: true });
+  const { server, origin } = await serve();
+  let browser;
+  try {
+    browser = await chromium.launch({ args:['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
+    for (const route of ROUTES) {
+      for (const vp of VIEWPORTS) {
+        const context = await browser.newContext({ viewport:{width:vp.w,height:vp.h}, isMobile:true, hasTouch:true });
+        try {
+          // This is a local rendered-chrome witness, not a third-party
+          // transport test. Analytics must not hold readiness indefinitely.
+          await context.route('**/*', requestRoute => requestRoute.request().url().startsWith(origin + '/')
+            ? requestRoute.continue() : requestRoute.abort());
+          const page = await context.newPage();
+          const response = await page.goto(origin+route, {waitUntil:'load'});
+          if (!response?.ok()) throw new Error(`Route failed: ${route} (${response?.status()})`);
+          await page.waitForFunction(() => document.fonts.status === 'loaded' &&
+            document.querySelector('[data-reader-mobile-speed][data-reader-speed-bound="1"]'));
+          await page.waitForTimeout(600);
+          const result = await page.evaluate(inspectMobileChrome, route === ROUTES[0]);
+          if (route === ROUTES[0] && result.errors.length === 0) {
+            if (EVIDENCE_DIR) await page.screenshot({ path: join(EVIDENCE_DIR, `lawson-${vp.w}x${vp.h}-initial.png`) });
+            result.cards = await inspectLawsonCards(page, EVIDENCE_DIR
+              ? kind => page.screenshot({ path: join(EVIDENCE_DIR, `lawson-${vp.w}x${vp.h}-${kind}.png`) })
+              : null);
+            console.log('Lawson native card evidence ' + JSON.stringify({viewport:vp,cards:result.cards}));
+          }
+          if (result.errors.length>0) {
+            failures.push({route, viewport:`${vp.w}x${vp.h}`, errors: result.errors, metrics: result});
+            console.error(`❌ FAIL ${route} ${vp.w}x${vp.h}: ${result.errors.join('; ')} | topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
+          } else {
+            console.log(`✅ PASS ${route} ${vp.w}x${vp.h} topH=${result.topH} bottomH=${result.bottomH} playW=${result.playW} gap=${result.badgeGap}`);
+          }
+        } finally {
+          await context.close();
+        }
+      }
     }
-    await context.close();
+  } finally {
+    try {
+      await browser?.close();
+    } finally {
+      await closeServer(server);
+    }
+  }
+  if (failures.length>0) {
+    console.error(`\n${failures.length} invariant failures`);
+    process.exitCode = 1;
+  } else {
+    console.log('\nAll invariants PASS — no leaked menu, no ghost text, no oversized chrome, no second row, compact playback, no H1 clip, no overflow');
   }
 }
 
-await browser.close();
-server.close();
-
-if (failures.length>0) {
-  console.error(`\n${failures.length} invariant failures`);
-  process.exit(1);
-} else {
-  console.log('\nAll invariants PASS — no leaked menu, no ghost text, no oversized chrome, no second row, compact playback, no H1 clip, no overflow');
-  process.exit(0);
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main().catch((error) => { console.error(error); process.exitCode = 1; });
 }

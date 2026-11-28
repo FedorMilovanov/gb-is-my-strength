@@ -1,0 +1,203 @@
+{
+  "wave": "V30",
+  "checkedOn": "2026-11-24",
+  "authority": "Research G3_HISTORY/MEDIA_LEDGER.md, G3-M008/G3-M014; MAX0 #2383 comment 7131270265; donor only",
+  "priorHead": "7e6683e47880a25e0770189f8d5c6ddfa00a8437",
+  "summary": {
+    "priorDiscoveryRecords": 68,
+    "newAssetAddressRecords": 9,
+    "combinedDiscoveryRecords": 77,
+    "newDirectImagesViewed": 6,
+    "newSearchDerivativesViewed": 2,
+    "newLocatorOnly": 1,
+    "newOriginalBinariesAcquired": 0,
+    "newActualVideoFrames": 0,
+    "publicationEligible": 0
+  },
+  "rows": [
+    {
+      "id": "V-G3-069",
+      "kind": "old-monogram",
+      "source": "https://www.watchagtv.com/the-g3-conference-1",
+      "assetUrl": "https://vhx.imgix.net/guardingthegospelstreamin/assets/54457c9b-3b2f-4704-8eb3-d0b0101ec0f9-15ea837f.jpg?auto=format%2Ccompress&fit=crop&h=720&q=75&w=1280",
+      "year": null,
+      "publicationDate": null,
+      "observation": "SEARCH_DERIVATIVE_VIEWED_DIRECT_FAILED",
+      "visual": "Black field, white circle, black G and superscript 3. Exact first-use date unknown. V-G3-042 supplies contemporary 2016 corroboration, not an extra count.",
+      "family": "G3-M008",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-070",
+      "kind": "renewed-identity",
+      "source": "https://churchandfamilylife.com/",
+      "assetUrl": "https://cfl-mango.s3.amazonaws.com/uploads/downloads/G3-Logo-transparent-bg.png",
+      "year": 2025,
+      "publicationDate": null,
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "visual": "Gold church with cross within open-book outline; wordmark and three-word motto. June 16 2025 announcement dates the design, not this file's creation. Partner-hosted copy, original owner unknown.",
+      "family": "G3-M008",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-071",
+      "kind": "brand-merchandise",
+      "source": "https://shop.g3min.org/collections/stickers",
+      "assetUrl": "https://shop.g3min.org/cdn/shop/files/GospelGraceGlory.png?v=1752604059&width=1080",
+      "year": null,
+      "publicationDate": null,
+      "observation": "SEARCH_DERIVATIVE_VIEWED",
+      "visual": "Three colored bands and church-book emblem. Product design not official launch announcement; query token not a reliable publication date.",
+      "family": "G3-M008",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-072",
+      "kind": "lumena-website-hero",
+      "source": "https://lumenaministries.com/",
+      "assetUrl": "https://lumenaministries.com/wp-content/themes/lumena/assets/images/rose-window-wide-1536.jpg",
+      "year": 2026,
+      "publicationDate": null,
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "visual": "Rose window, warm shafts of light, dark architectural interior. Website illustration, not verified architectural photograph or documentary location. Creator and production method unknown.",
+      "family": "G3-M008",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-073",
+      "kind": "lumena-wordmark",
+      "source": "https://lumenaministries.com/",
+      "assetUrl": "https://lumenaministries.com/wp-content/themes/lumena/assets/images/lumena-ministries.svg",
+      "year": 2026,
+      "publicationDate": null,
+      "observation": "LOCATOR_READ_SVG_UNSUPPORTED",
+      "visual": "Home heading links this SVG. No visual inspection; official about page separately describes rose window symbol.",
+      "family": "G3-M008",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-074",
+      "kind": "conference-announcement",
+      "source": "https://gbtseminary.org/g3/",
+      "assetUrl": "https://gbtseminary.org/wp-content/uploads/2023/03/g3-v5.jpg",
+      "year": 2023,
+      "publicationDate": null,
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "visual": "Gold serif typography on dark background, Capitol imagery and GBTS mark. Text explicitly gives Sep 20 2023 and theme The Gospel & the State. Programme evidence, not actual attendance.",
+      "family": "G3-2023-PRECONFERENCE",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-075",
+      "kind": "conference-announcement",
+      "source": "https://www.challies.com/sponsored/knowing-god-discipleship/",
+      "assetUrl": "https://www.challies.com/media/2017/08/Challies-G3-Variation-Header.jpg",
+      "year": 2018,
+      "publicationDate": "2017-08-14",
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "visual": "Blue cityscape, gold/olive tree emblem, Knowing God 2018 and G3 monogram. Same event family as V-G3-043, different address and banner layout; pixel dedup with V43 unavailable.",
+      "family": "G3-2018-DISCIPLESHIP",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-076",
+      "kind": "conference-announcement",
+      "source": "https://www.challies.com/sponsored/the-mission-of-god/",
+      "assetUrl": "https://www.challies.com/media/2018/09/910X320.jpg",
+      "year": 2019,
+      "publicationDate": "2018-09-10",
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "visual": "Dark rectangular banner, red title band, white border, 2019 and G3 monogram. Contemporary sponsor announcement.",
+      "family": "G3-2019-MISSIONS",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    },
+    {
+      "id": "V-G3-077",
+      "kind": "conference-announcement",
+      "source": "https://www.challies.com/sponsored/worship-our-privilege-and-responsibility/",
+      "assetUrl": "https://www.challies.com/media/2019/09/910X320.jpg",
+      "year": 2020,
+      "publicationDate": "2019-09-16",
+      "observation": "DIRECT_IMAGE_VIEWED",
+      "visual": "Dark green-black field, white linear frame, thin WORSHIP typography, white G3 monogram. Date of event established by contemporary article, not explicitly printed in image.",
+      "family": "G3-2020-WORSHIP",
+      "creator": null,
+      "originalDimensions": null,
+      "localBinary": null,
+      "rights": "PERMISSION_REQUIRED",
+      "publicationEligible": false
+    }
+  ],
+  "chronology": [
+    {
+      "period": "old monogram",
+      "evidence": "https://www.challies.com/sponsored/the-reformation-at-500/",
+      "date": "2016-08-15",
+      "disposition": "V42 already counted. Old logo present by this date, no claim about first use."
+    },
+    {
+      "period": "renewed identity",
+      "evidence": "https://g3min.org/renewed-vision-and-new-logo-for-g3-ministries/",
+      "date": "2025-06-16",
+      "disposition": "Indexed publisher announcement by Scott Aniol; direct page redirected to Lumena and failed. Gold emblem independently viewed through partner asset V70."
+    },
+    {
+      "period": "Lumena identity",
+      "evidence": "https://lumenaministries.com/about/",
+      "observed": "2026-11-24",
+      "disposition": "Actual page read: rose window symbolism, name from Latin lumen, two current work streams Press/Media. Brand change not proof of corporate identity, legal succession or rights assignment. Research review required."
+    }
+  ],
+  "documentaryLeads": [
+    {
+      "source": "https://www4.wng.org/WORLD_Dec2025.pdf",
+      "date": "2025-12",
+      "subject": "Print advertisement for That They May All Be One, February 12–14, Atlanta",
+      "observation": "Indexed PDF text read; ad follows printed p40; screenshot requests for zero-based pages 40 and 41 both rejected for 22,129,850-byte source size. Actual ad image and exact printed page not verified. New G3 mark described in extracted text, not independently seen in PDF.",
+      "family": "G3-M014",
+      "disposition": "Independent print provenance lead; no new asset count, no proof conference occurred."
+    }
+  ],
+  "digitalState": {
+    "observed": "2026-11-24",
+    "root": "https://lumenaministries.com/ readable; footer 2026 all rights reserved",
+    "press": "https://lumenapress.com/ readable current catalog; 141 products shown in one collection, not historical unique G3 book count",
+    "media": "https://lumenamedia.com/ HTML JavaScript-required shell only; no authenticated catalogue/video inspected",
+    "rightsContact": "https://lumenaministries.com/contact/ — ask who controls historical G3 assets and licensing, not assume rights were assigned. No outreach."
+  },
+  "dedup": "Read 68 prior rows; 9 exact new URLs, existing canonical family overlap retained explicitly. Repeated R500 image V42 excluded. No image-hash dedup or local binary.",
+  "editorialPlacement": "Three dated theme banners can support a coherent horizontal documentary strip after clearance. GBTS banner in 2023 public-theology section. Old/new mark comparison only if licensed; current website hero is illustration, not archival photo. Prefer original date-and-title typography if licenses unavailable.",
+  "limitations": "Six direct image renders and two search previews inspected; one SVG locator not visually inspected. No raw files, hashes, contact sheet, or publication permission. No product changes, legal conclusion or fabricated capture date."
+}

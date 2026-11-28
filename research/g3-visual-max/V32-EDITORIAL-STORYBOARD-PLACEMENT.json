@@ -1,0 +1,153 @@
+{
+  "wave": "V32",
+  "checkedOn": "2026-11-24",
+  "priorHead": "1fffbe83bacaf3c01b7d8b01a701c49104f2e008",
+  "productReviewed": "b2c1c0ab4e32bd6b2e1087b12df5ba806ef4a79a",
+  "authority": "Existing #2383 non-routed research scope; Product #2380 remains MAX0-owned, no route edits.",
+  "summary": {
+    "proposedSlots": 10,
+    "anchorChecksPassed": 10,
+    "newArchiveRecords": 0,
+    "totalDiscoveryRecords": 77,
+    "everViewed": 50,
+    "publicationEligible": 0
+  },
+  "slots": [
+    {
+      "id": "origin",
+      "anchor": "g3-history",
+      "placement": "before existing G3HistoricalPanorama",
+      "assets": "Existing adopted invitation-2011; no additional photo",
+      "composition": "Document typography using accepted 2011/2013 facts; not a facsimile",
+      "fallback": "Omit if it duplicates existing dateline or panorama",
+      "gate": "NO_NEW_ASSET"
+    },
+    {
+      "id": "reformation",
+      "anchor": "g3-year-2017",
+      "placement": "after existing source footnote, before closing year item",
+      "assets": "V-G3-042",
+      "composition": "Single full-width figure, uncropped announcement",
+      "fallback": "Retain current GNL link and text; optional approved link to announcement",
+      "gate": "RIGHTS_HOLD"
+    },
+    {
+      "id": "firstlove",
+      "anchor": "g3-year-2018",
+      "placement": "immediately after G3-HIST-PUB-13 and its citation group",
+      "assets": "V-G3-006; reserve V-G3-012",
+      "composition": "One documentary photograph, contextual caption on FirstLove only",
+      "fallback": "Existing firstlove-2018 source citation; no extra UI if withheld",
+      "gate": "RIGHTS_HOLD"
+    },
+    {
+      "id": "mission",
+      "anchor": "g3-year-2019",
+      "placement": "after year text and citations",
+      "assets": "V-G3-076",
+      "composition": "Full banner with intrinsic ratio; do not crop event title",
+      "fallback": "Existing announcement-2019 citation",
+      "gate": "RIGHTS_HOLD"
+    },
+    {
+      "id": "worship",
+      "anchor": "g3-year-2020",
+      "placement": "after year text and citations",
+      "assets": "V-G3-077; prefer V-G3-026 if original/rights obtained",
+      "composition": "One banner OR verified choir/hall image, not both; V053 excluded",
+      "fallback": "Existing gnl-2020 citation",
+      "gate": "RIGHTS_HOLD"
+    },
+    {
+      "id": "scripture",
+      "anchor": "g3-year-2022",
+      "placement": "after G3-HIST-PUB-16 citation group",
+      "assets": "G3-M013; reserve V-G3-061",
+      "composition": "Documentary panel image only with exact date, creator, rights",
+      "fallback": "Existing White citations; no unverified video frame",
+      "gate": "RIGHTS_HOLD"
+    },
+    {
+      "id": "national",
+      "anchor": "g3-year-2023",
+      "placement": "after existing event announcement citation",
+      "assets": "V-G3-050; reserve V-G3-048",
+      "composition": "Wide audience photograph; caption describes visible hall, not total attendance or full event crowd",
+      "fallback": "Current announcement-2023 citation; new eyewitness source must be adopted first",
+      "gate": "RIGHTS_HOLD_RESEARCH_GATE"
+    },
+    {
+      "id": "regional",
+      "anchor": "g3-year-2024",
+      "placement": "after both paragraphs and citations",
+      "assets": "V-G3-018; V-G3-019",
+      "composition": "Paired registration documents on wide column, stacked mobile; do not imply event occurrence or solve venue discrepancy",
+      "fallback": "Existing reformation-2024 and cessationist-2024 citations",
+      "gate": "RIGHTS_HOLD"
+    },
+    {
+      "id": "publishing",
+      "anchor": "g3-growth",
+      "placement": "after existing project dl",
+      "assets": "V-G3-062; V-G3-064; V-G3-068; alternate V-G3-046 instead of books",
+      "composition": "Three book genres or one bookstore photograph; no simultaneous gallery and chart",
+      "fallback": "Existing project dl; omit additional module unless Research accepts publishing evidence",
+      "gate": "RIGHTS_HOLD_RESEARCH_GATE"
+    },
+    {
+      "id": "epilogue",
+      "anchor": "g3-epilogue",
+      "placement": "existing next-story link",
+      "assets": "none",
+      "composition": "Preserve existing transition; keep 2025–26 assets out of history",
+      "fallback": "Existing dossier link",
+      "gate": "NO_NEW_ASSET"
+    }
+  ],
+  "designContract": {
+    "principle": "A documentary figure adds information, not another decorative card. Maintain story chronology and existing TOC/anchors/source-return; no duplicate timeline/matrix, no second component engine.",
+    "desktop": "Story-column intrinsic widths; preserve original image ratio. Use paired exhibits only where both have purpose and enough legible width; not across unrelated sections.",
+    "mobile": "Stack all pairs when story width insufficient; no carousel or hover dependency, no horizontal overflow at 320. Never crop text on posters; use intrinsic dimensions and caption below.",
+    "print": "If approved, keep figure and caption together when physically feasible; do not force entire chapter into one page. Check actual A4/Letter PDFs in light/dark and JS/noJS; maintain source links, no empty placeholders.",
+    "accessibility": "Native figure/figcaption, meaningful visible content alt and text captions, keyboard source return, unique citation ID after Research adoption. No external image requests in public route until rights and hosting confirmed.",
+    "release": "No new publicly visible source, claim, image, CSS, routing or data changes. Existing approved content remains unchanged. If rights unresolved, omit figure entirely, not a visible HOLD placeholder. New links require editorial/source gate."
+  },
+  "prototype": {
+    "filename": "G3_V32_editorial_storyboard.html",
+    "sha256": "a27b45f936e09d534cc961f50a710c8ef6b7bd35923e1910594852147fdff74b",
+    "delivery": "Owner chat only; standalone text-only review composition with six chapters, no imported source media or external auto-requests. No fake document artwork.",
+    "qa": {
+      "engine": "local Chromium via Playwright",
+      "method": "page.set_content exact HTML after file:// navigation ERR_BLOCKED_BY_ADMINISTRATOR",
+      "screenCases": 8,
+      "screenWidths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "noJS320": "PASS",
+      "horizontalOverflow": 0,
+      "navAnchorFailures": 0,
+      "pageErrors": 0,
+      "automaticExternalRequests": 0,
+      "printMedia": "navigation hidden verified, actual PDF not generated",
+      "screenshots": [
+        "v32_1440_light.png",
+        "v32_1440_dark.png",
+        "v32_390_light.png",
+        "v32_390_dark.png"
+      ],
+      "visuallyInspected": [
+        "v32_1440_light.png",
+        "v32_390_dark.png"
+      ],
+      "critique": "Typography hierarchy and stacked mobile layout coherent for internal planning. Repeated document rules and large sequence of text-only modules would be monotonous if literally copied into article; use 3–5 high-value actual figures and omit the rest. Fallback font Georgia, not canonical Astro typography."
+    }
+  },
+  "limitations": "Review-only artifact. No full actual route build or actual A4/Letter PDF, no integration, no images downloaded, no license, no external outreach. The paired 2019/2020 sample is comparison only: production placements stay in individual year blocks. 10 slots are possibilities, not ten additions. Do not count as released visual material."
+}

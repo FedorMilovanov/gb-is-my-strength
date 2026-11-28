@@ -4,11 +4,11 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
 <section class="lawson-bibliography" id="sources" aria-labelledby="lawson-sources-heading">
   <h2 id="lawson-sources-heading">Источники и пределы выводов</h2>
   <p class="lawson-bibliography__intro">
-    Номера в тексте ведут к публично доступным источникам. Метка показывает, кто создал документ:
+    Номера в тексте ведут к записям об источниках, включая ссылки на материалы и сведения о недоступных оригиналах. Метка показывает характер свидетельства:
   </p>
   <ul class="lawson-bibliography__taxonomy">
     <li><strong>первичный</strong> — документ или запись, созданные самим участником или официальным органом;</li>
-    <li><strong>близкий к первичному</strong> — журналистский или экспертный текст, который дословно воспроизводит первичный текст и даёт ссылку на оригинал;</li>
+    <li><strong>близкий к первичному</strong> — журналистский или экспертный текст, воспроизводящий первичный материал; доступность и подлинность оригинала проверяются отдельно;</li>
     <li><strong>вторичный</strong> — комментарий, пересказ, рецензия или мнение.</li>
   </ul>
   <p class="lawson-bibliography__intro">
@@ -16,12 +16,19 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
   </p>
   <ol>
     {LAWSON_SOURCES.map((source) => (
-      <li id={`source-${source.id}`}>
+      <li id={`source-${source.id}`} tabindex="-1">
         <div class="lawson-bibliography__head">
           <span class="lawson-bibliography__num">{source.n}</span>
           <div>
-            <a href={source.href} rel="noopener noreferrer">{source.label}</a>
-            {source.videoHref && <span> · <a href={source.videoHref} rel="noopener noreferrer">{source.videoLabel ?? 'Исходная запись'}</a></span>}
+            {source.destinationLabel ? (
+              <>
+                <strong>{source.label}</strong>
+                <div><a href={source.href} rel="noopener noreferrer">{source.destinationLabel}</a></div>
+              </>
+            ) : (
+              <a href={source.href} rel="noopener noreferrer">{source.label}</a>
+            )}
+            {source.videoHref && <span class="lawson-bibliography__video"><span class="lawson-bibliography__separator" aria-hidden="true"> · </span><a href={source.videoHref} rel="noopener noreferrer">{source.videoLabel ?? 'Исходная запись'}</a></span>}
             <span class="lawson-bibliography__class">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
           </div>
         </div>
