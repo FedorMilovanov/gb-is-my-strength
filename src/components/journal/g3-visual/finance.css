@@ -30,22 +30,38 @@ html.dark .g3-annual-finance{--gaf-revenue:#8fd4bd;--gaf-negative:#f1a38d}
 .g3-annual-finance th:first-child{text-align:left}
 .g3-annual-finance .gaf-source a{color:var(--je-ink);text-decoration:underline;text-underline-offset:.2em;overflow-wrap:anywhere}
 @container(min-width:680px){.g3-annual-finance .gaf-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem}}
-@container(max-width:520px){.g3-annual-finance table,.g3-annual-finance tbody,.g3-annual-finance table caption{display:block}.g3-annual-finance thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.g3-annual-finance tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.12rem .5rem;border-bottom:1px solid var(--je-rule);padding:.4rem 0}.g3-annual-finance tbody th{grid-column:1/-1;border:0;padding:.12rem 0}.g3-annual-finance td{display:grid;text-align:left;white-space:normal;border:0;padding:.12rem 0}.g3-annual-finance td::before{content:attr(data-label);font-size:.69rem;color:var(--je-muted)}}
+/* Reflow the numeric table with the same root-relative scale as its values. */
+@container(max-width:32.5rem){.g3-annual-finance table,.g3-annual-finance tbody,.g3-annual-finance table caption{display:block}.g3-annual-finance thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.g3-annual-finance tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.12rem .5rem;border-bottom:1px solid var(--je-rule);padding:.4rem 0}.g3-annual-finance tbody th{grid-column:1/-1;border:0;padding:.12rem 0}.g3-annual-finance td{display:grid;text-align:left;white-space:normal;border:0;padding:.12rem 0}.g3-annual-finance td::before{content:attr(data-label);font-size:.69rem;color:var(--je-muted)}}
 @container(max-width:320px){.g3-annual-finance .gaf-years{font-size:.59rem}.g3-annual-finance .gaf-plot{grid-template-columns:1.85rem minmax(0,1fr)}}
 @media(forced-colors:active){.g3-annual-finance svg{forced-color-adjust:none;--gaf-revenue:CanvasText;--gaf-expense:CanvasText;--gaf-negative:CanvasText;--je-rule:GrayText;--je-ink:CanvasText}.g3-annual-finance .gaf-key::before{forced-color-adjust:none;background:CanvasText;border-color:CanvasText}.g3-annual-finance .gaf-key.gaf-expense::before{background:Canvas}}
 @media print{.g3-annual-finance,html.dark .g3-annual-finance{container-type:normal;--gaf-expense:#111;--gaf-revenue:#14675f;--gaf-negative:#a6402d;--je-ink:#111;--je-muted:#444;--je-rule:#ccc;--je-gold:#694913;color:#111;margin:0}.g3-annual-finance .gaf-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.g3-annual-finance figure{break-inside:avoid;print-color-adjust:exact}.g3-annual-finance table caption{break-after:avoid}.g3-annual-finance tr{break-inside:avoid}.g3-annual-finance .gaf-source a{color:#111}}
 
 /* Compact paper-specific rhythm: Letter is shorter than A4. Preserve readable
-   table values and let the browser paginate if the available space is smaller. */
+   table values and let the browser paginate if the available space is smaller.
+   Physical units preserve the existing 16px-root paper design even when
+   the reader has enlarged the root text size on screen. */
 @media print {
   .journal-edition .prose .g3-annual-finance h2, .g3-annual-finance h2 {font-size:18pt;margin:0 0 5pt;break-after:avoid}
   .journal-edition .prose .g3-annual-finance h3, .g3-annual-finance h3 {font-size:13pt;margin:0 0 4pt;break-after:avoid}
-  .g3-annual-finance .gaf-meta {margin:0 0 5pt}
+  .g3-annual-finance .gaf-meta {margin:0 0 5pt;font-size:9.6pt}
   .g3-annual-finance figure {padding:5pt 0}
   .g3-annual-finance .gaf-primary .gaf-plot {--gaf-height:112px}
-  .g3-annual-finance .gaf-plot {--gaf-height:96px;padding-block:3pt 0}
-  .g3-annual-finance .gaf-legend {margin:0 0 4pt}
-  .g3-annual-finance figcaption,.g3-annual-finance .gaf-source {margin-top:4pt}
+  .g3-annual-finance .gaf-plot {--gaf-height:96px;padding-block:3pt 0;grid-template-columns:25.8pt minmax(0,1fr);gap:3pt}
+  .g3-annual-finance .gaf-pair {gap:12pt}
+  .g3-annual-finance .gaf-ticks {font-size:7.92pt}
+  .g3-annual-finance .gaf-years {font-size:7.8pt;padding-top:4.2pt}
+  .g3-annual-finance .gaf-legend {margin:0 0 4pt;font-size:9.36pt;gap:3pt 12pt}
+  .g3-annual-finance figcaption,.g3-annual-finance .gaf-source {margin-top:4pt;font-size:9.36pt}
+  .g3-annual-finance table {font-size:9.24pt}
   .g3-annual-finance :is(th,td) {padding:3pt 2pt}
-  .g3-annual-finance table caption {padding:4pt 0}
+  .g3-annual-finance table caption {padding:4pt 0;font-size:11.4pt}
+}
+
+/* At large root text sizes, fit each chart's full year labels without
+   reducing their font or changing the quantitative scale. Paper stays horizontal. */
+@media screen {
+  .g3-annual-finance figure {container-type:inline-size;container-name:gaf-chart}
+  @container gaf-chart (max-width:14rem) {
+    .g3-annual-finance .gaf-years span {writing-mode:vertical-rl;justify-self:center}
+  }
 }

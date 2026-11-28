@@ -1,0 +1,112 @@
+---
+/** Journal-only view of the shared reader narration service. Never owns speech,
+ * storage, voice selection, text extraction, progress or a second reader rail.
+ * Opt in only for long-form articles with an explicit reader range. */
+import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedContract';
+---
+<div class="jn-slot" data-journal-narration data-pagefind-ignore data-tts-policy="exclude" hidden>
+  <div class="jn-controls" role="group" aria-label="Озвучка основного текста">
+    <span class="jn-caption" aria-hidden="true">Озвучка</span>
+    <button type="button" class="jn-play" data-fc-action="play" aria-label="Озвучить статью" aria-pressed="false">
+      <span class="jn-dial" aria-hidden="true">
+        <svg class="jn-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        <svg class="jn-pause-icon" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </span>
+    </button>
+    <select data-jn-rate aria-label="Скорость озвучки">
+      {READER_SPEED_RATES.map(rate => <option value={rate}>{rate.toLocaleString('ru-RU')}×</option>)}
+    </select>
+    <button type="button" class="jn-stop" data-jn-stop aria-label="Остановить озвучку" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor"/></svg>
+    </button>
+    <span class="jn-status" data-jn-status role="status"></span>
+  </div>
+</div>
+<script>
+  type SpeechState = { phase: string; rate: number };
+  type SpeechOwner = { getState: () => SpeechState; stop: () => void };
+  type RateOwner = { read: () => number; persist: (value: string) => number | null };
+  type Projection = { getRoot: (scope?: Document) => Element | null; getTtsSegments: (scope?: Document) => { element: Element }[] };
+  const shared = window as Window & { GBReaderTTS?: SpeechOwner; GBReaderRatePolicy?: RateOwner; GBReaderProjection?: Projection };
+
+  async function mountNarration() {
+    const slot = document.querySelector<HTMLElement>('[data-journal-narration]');
+    const main = document.querySelector<HTMLElement>('main[data-reader-range]');
+    if (!slot || !main || !main.contains(slot) || slot.dataset.jnBound) return;
+    slot.dataset.jnBound = 'true';
+    // These are speech-only exclusions. Keep searchable, printable, accessible
+    // documentary exhibits and bibliographies exactly where they are authored.
+    // Inline source links inside narrative paragraphs are NOT excluded.
+    const speechOnly = [
+      '.je-article-meta', '.module-label', '.je-history-footnote', '.source-note-paragraph',
+      '.je-next-story', '.je-history-dateline', '.je-history-year-mark', '.je-history-projects',
+      '#bibliography', '#history-bibliography', '#g3-catalogue-matrix',
+      '.g3g', '.g3-annual-finance', '.g3-matrix', '.jcdi', 'figure',
+      '#g3-2018-document-index',
+    ].join(',');
+    main.querySelectorAll(speechOnly).forEach(node => node.setAttribute('data-tts-policy', 'exclude'));
+    // The platform owns all semantics and playback. Do not import the full
+    // ReaderActionsRuntime: it also mounts tools that Journal does not expose.
+    await import('./journalNarrationRuntime');
+    const speech = shared.GBReaderTTS, rate = shared.GBReaderRatePolicy, projection = shared.GBReaderProjection;
+    const play = slot.querySelector<HTMLButtonElement>('[data-fc-action="play"]');
+    const stop = slot.querySelector<HTMLButtonElement>('[data-jn-stop]');
+    const select = slot.querySelector<HTMLSelectElement>('[data-jn-rate]');
+    const status = slot.querySelector<HTMLElement>('[data-jn-status]');
+    if (!speech || !rate || !projection || !play || !stop || !select || !status ||
+        projection.getRoot(document) !== main || !projection.getTtsSegments(document).length) return;
+    let started = false;
+    const syncDock = () => slot.toggleAttribute('data-jn-docked', started && slot.getBoundingClientRect().bottom <= 56);
+    const sync = () => {
+      const state = speech.getState();
+      const active = ['starting', 'playing', 'paused'].includes(state.phase);
+      started ||= active;
+      slot.toggleAttribute('data-jn-active', active);
+      syncDock();
+      stop.disabled = !active;
+      select.value = String(rate.read());
+      play.title = play.getAttribute('aria-label') || 'Озвучить статью';
+      status.textContent = state.phase === 'starting' ? 'Подготовка озвучки…' :
+        state.phase === 'error' ? 'Не удалось воспроизвести. Повторите попытку.' :
+        state.phase === 'complete' ? 'Озвучка завершена.' : '';
+    };
+    select.addEventListener('change', () => { rate.persist(select.value); sync(); });
+    stop.addEventListener('click', () => { play.focus({ preventScroll: true }); speech.stop(); });
+    window.addEventListener('gb:reader-tts-state', sync);
+    window.addEventListener('gb:tts-rate-change', sync);
+    window.addEventListener('storage', sync);
+    window.addEventListener('pageshow', sync);
+    sync();
+    slot.hidden = false;
+    // Observe the original placeholder, not the fixed controls. Docking is
+    // local presentation state only; stopping never strands keyboard focus
+    // on a control above the viewport.
+    if (typeof window.IntersectionObserver === 'function') {
+      const observer = new IntersectionObserver(syncDock, { rootMargin: '-56px 0px 0px 0px' });
+      observer.observe(slot);
+    } else window.addEventListener('scroll', syncDock, { passive: true });
+  }
+  // A failed capability import must not show a dead control or break reading.
+  void mountNarration().catch(error => console.warn('[JournalNarration] unavailable', error));
+</script>
+<style>
+  .jn-slot[hidden] { display: none; }
+  .jn-slot { min-width: 0; max-width: 100%; min-height: 44px; }
+  .jn-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; color: var(--je-ink); font: 600 .875rem/1.35 var(--je-ui); }
+  .jn-controls :is(button, select) { min-height: 44px; min-width: 44px; max-width: 100%; color: var(--je-ink); background: var(--je-paper); font: inherit; border: 1px solid var(--je-rule); border-radius: 4px; cursor: pointer; }
+  .jn-caption { font-weight: 600; color: var(--je-muted); }
+  .jn-controls button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 8px; }
+  .jn-controls select { padding-inline: 5px; }
+  .jn-controls :is(button, select):focus-visible { outline: 2px solid var(--je-gold); outline-offset: 2px; }
+  .jn-controls button:disabled { opacity: .55; cursor: default; }
+  .jn-controls svg { width: 20px; height: 20px; flex: none; }
+  .jn-dial { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: conic-gradient(var(--je-gold) calc(var(--p, 0) * 1turn), var(--je-rule) 0); }
+  .jn-dial svg { grid-area: 1 / 1; box-sizing: content-box; padding: 2px; border-radius: 50%; background: var(--je-paper); }
+  .jn-pause-icon, .jn-play[data-state="playing"] .jn-play-icon { display: none; }
+  .jn-play[data-state="playing"] .jn-pause-icon { display: block; }
+  .jn-status { flex: 1 0 100%; color: var(--je-muted); font-weight: 400; overflow-wrap: anywhere; }
+  .jn-status:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; }
+  /* Same DOM controls stay reachable as the canonical narration follows text. */
+  .jn-slot:is([data-jn-active], [data-jn-docked]) .jn-controls { position: fixed; z-index: 900; inset-inline-end: max(12px, env(safe-area-inset-right)); inset-block-end: max(12px, env(safe-area-inset-bottom)); max-width: calc(100vw - 24px); padding: 7px; background: var(--je-paper); border: 1px solid var(--je-rule); box-shadow: 0 4px 18px #0002; border-radius: 6px; }
+  @media print { .jn-slot { display: none; } }
+</style>

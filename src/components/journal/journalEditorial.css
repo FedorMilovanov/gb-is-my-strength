@@ -86,7 +86,9 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .source-note, .journal-edition .claim-ref a, .journal-edition a.claim-ref { color: var(--je-gold); text-decoration: underline; text-decoration-style: dotted; }
 /* Standalone source notes are controls, not inline prose links. Keep a real touch target before figures. */
 @media screen and (max-width: 1023px) {
-  .journal-edition .source-note-paragraph > a.source-note { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding-block: 4px; }
+  .journal-edition :is(.source-note-paragraph, .timeline div) > .je-source-separator { display: none; }
+  .journal-edition :is(.source-note-paragraph > a.source-note, .timeline div > a.claim-ref) { display: grid; grid-template-columns: minmax(0, 1fr) .6rem; align-items: center; gap: .75rem; min-height: 44px; max-width: 100%; padding: 6px; font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+  .journal-edition :is(.source-note-paragraph > a.source-note, .timeline div > a.claim-ref)::after { content: ''; inline-size: .5rem; block-size: .5rem; border-block-start: 1.5px solid currentColor; border-inline-end: 1.5px solid currentColor; transform: rotate(45deg); justify-self: center; }
 }
 .journal-edition .claim-ref { color: var(--je-muted); font: 12px/1.55 var(--je-ui); }
 .journal-edition .timeline { list-style: none; padding: 0; margin: 27px 0 0; }
@@ -95,14 +97,15 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 .journal-edition .timeline h3 { margin: 0 0 10px; font: 600 23px/1.3 var(--je-serif); }
 .journal-edition .timeline p { margin: 0 0 10px; color: var(--je-ink); font: 16px/1.75 var(--je-body); hyphens: auto; }
 .journal-edition .sensitive-module { border-left: 2px solid var(--je-soft-gold); padding-left: 24px; }
-.journal-edition .unknown-module { margin-top: 30px; padding: 30px; background: var(--je-paper-raised); border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); }
+.journal-edition .unknown-module { margin-top: 30px; padding: 30px; background: var(--je-paper-raised); }
 .journal-edition .research-disclosure { margin: 25px 0 0; border-block: 1px solid var(--je-rule); color: var(--je-muted); font: 14px/1.7 var(--je-ui); }
 .journal-edition .research-disclosure summary { cursor: pointer; padding-block: 17px; color: var(--je-ink); font-weight: 600; }
 .journal-edition .research-disclosure p { margin: 0 0 15px; }
 .journal-edition .research-disclosure a { color: var(--je-gold); }
 
 /* Original data comparison. Never a stacked chart implying unproved arithmetic. */
-.journal-edition .je-data-figure { margin: 30px 0 0; padding: 26px 28px; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); background: var(--je-paper-raised); }
+.journal-edition .je-data-figure { margin: 30px 0 0; padding: 26px 28px; background: var(--je-paper-raised); }
+@media screen { .journal-edition :is(.unknown-module, .je-data-figure) { border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); } }
 .journal-edition .je-data-figure-heading h3 { margin: 0 0 6px; font: 600 25px/1.3 var(--je-serif); }
 .journal-edition .je-data-figure-heading p { margin: 0; color: var(--je-muted); font: 12px/1.5 var(--je-ui); }
 .journal-edition .je-data-figure dl { margin: 24px 0 21px; }
@@ -220,6 +223,11 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
      scrollY by 6px on summary.focus() even before the first Tab.
      Keep focus within the nested scrollport without moving the reader. */
   .journal-edition .journal-dossier-shell:not(.je-history-article) .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 0; }
+  /* History: keep the Firefox start clearance but provide physical room for
+     that margin. The previous 8px padding + 2px disclosure border let native
+     Chromium/WebKit summary focus move the root when the margin was 12px. */
+  .journal-edition .je-history-article .je-editorial-rail__scrollport { padding-block-start: 14px; }
+  .journal-edition .je-history-article .je-editorial-rail__scrollport :is(summary, a[href]) { scroll-margin-block-start: 12px; }
   /* A clear 3px focus outline fits short-window scroll edges better than a
      detached 3px+4px ring; unlike clipping, this remains fully painted. */
   .journal-edition .je-editorial-rail__scrollport :is(summary, a[href]):focus-visible { outline-offset: 0; }
@@ -262,10 +270,22 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
 @media screen and (max-width: 1023px) {
   /* Early access to the same native TOC, without moving the accepted opening. */
   .journal-edition .je-opening-label { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 8px; }
-  .journal-edition .je-contents-jump { display: inline-flex; align-items: center; flex: none; min-height: 24px; color: var(--je-ink); font: 600 12px/1.5 var(--je-ui); letter-spacing: normal; text-transform: none; text-decoration: underline; }
+  .journal-edition .je-contents-jump { display: inline-flex; align-items: center; gap: .6rem; min-width: 0; max-width: 100%; min-height: 44px; color: var(--je-ink); font: 600 12px/1.5 var(--je-ui); letter-spacing: normal; text-transform: none; text-decoration: none; overflow-wrap: anywhere; }
   /* One explicit SSR alternative; native Back remains the browser's own action. */
-  .journal-edition .je-contents > .je-contents-return { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; margin-top: 8px; color: var(--je-ink); font: 600 13px/1.5 var(--je-ui); text-decoration: underline; }
+  .journal-edition .je-contents > .je-contents-return { display: inline-flex; align-items: center; gap: .6rem; min-height: 44px; max-width: 100%; margin-top: 8px; color: var(--je-ink); font: 600 13px/1.5 var(--je-ui); text-decoration: none; overflow-wrap: anywhere; }
+  .journal-edition :is(.je-contents-jump, .je-contents > .je-contents-return)::after { content: ''; flex: none; inline-size: .5rem; block-size: .5rem; border-block-start: 1.5px solid currentColor; border-inline-end: 1.5px solid currentColor; transform: rotate(45deg); }
+  .journal-edition .je-next-story a { text-decoration: none; overflow-wrap: anywhere; }
+  @media (hover: hover) and (pointer: fine) {
+    .journal-edition :is(.je-contents-jump, .je-contents > .je-contents-return, .je-next-story a, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref):hover { text-decoration: underline; }
+  }
+  @media (forced-colors: active) {
+    .journal-edition :is(.je-contents-jump, .je-contents > .je-contents-return, .je-next-story a, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref) { color: LinkText; text-decoration: underline; }
+  }
   .journal-edition #journal-g3-toc { scroll-margin-block-start: calc(76px + env(safe-area-inset-top, 0px)); }
+}
+@media screen and (min-width: 1024px) {
+  /* Preserve a real focused compact control until native Tab/Shift+Tab leaves it. */
+  .journal-edition .je-contents-jump:focus, .journal-edition .je-contents > .je-contents-return:focus { display: inline-flex; }
 }
 @media (max-width: 690px) {
   .journal-edition { --je-reading-size: calc(1.0625rem * var(--gb-reader-font-scale, 1)); }
@@ -331,6 +351,35 @@ body[data-journal-surface] > a.skip-link { color: var(--color-canvas); }
      within the full text measure when the reader enlarges the text. */
   .journal-edition .journal-lead-phrase { display: inline-block; max-inline-size: 100%; }
 }
+/* The history route explicitly admits two feature chapters. Prose remains
+   the default measure; the TOC owns a separate grid track at every width. */
+@media screen and (min-width: 1440px) {
+  .journal-edition .journal-dossier-shell:has(> [data-editorial-layout="wide"]) {
+    max-width: 1840px; padding-inline: clamp(40px, 2.5vw, 48px);
+  }
+  .journal-edition .journal-dossier-shell:has(> [data-editorial-layout="wide"]) > .je-article-header {
+    max-width: 1200px; margin-inline: 0;
+  }
+  .journal-edition [data-editorial-layout="wide"] {
+    max-width: none; grid-template-columns: minmax(0, 1fr) clamp(220px, 13vw, 248px);
+    column-gap: clamp(32px, 2.1vw, 40px);
+  }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column {
+    --je-prose-measure: 740px; --je-wide-measure: 1000px; --je-feature-measure: 1500px;
+  }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column > .module {
+    width: 100%; max-width: var(--je-prose-measure);
+  }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column > [data-editorial-measure="wide"] { max-width: var(--je-wide-measure); }
+  .journal-edition [data-editorial-layout="wide"] > .journal-story-column > [data-editorial-measure="feature"] { max-width: var(--je-feature-measure); }
+  .journal-edition [data-editorial-layout="wide"] [data-editorial-measure="feature"] > :is(.je-history-heading, .je-history-origin, .prose),
+  .journal-edition [data-editorial-layout="wide"] [data-editorial-measure="feature"] > .je-history-text > p {
+    max-width: var(--je-prose-measure);
+  }
+  .journal-edition [data-editorial-layout="wide"] [data-editorial-measure="feature"] .jcdi { max-width: 1100px; }
+  .journal-edition .journal-dossier-shell:has(> [data-editorial-layout="wide"]) > .dossier-footer { max-width: 740px; }
+}
+
 @media print {
   .journal-edition, html.dark .journal-edition { --je-paper: #fff; --je-paper-raised: #fff; --je-ink: #111; --je-muted: #333; --je-gold: #333; --je-rule: #aaa; background: #fff; color: #111; }
   .journal-edition :is(.je-masthead, .je-editorial-rail, .skip-link, .je-source-return, .je-reading-exit) { display: none; }

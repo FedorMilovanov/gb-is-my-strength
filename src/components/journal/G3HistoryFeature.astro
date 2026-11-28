@@ -6,10 +6,11 @@
  */
 import { historyCitation as cite } from '@/data/journal/g3HistorySources';
 import G3SpeakerMatrix from './g3-visual/G3SpeakerMatrix.astro';
+import JournalCompactDocumentIndex from './editorial/JournalCompactDocumentIndex.astro';
 import G3HistoricalPanorama from './g3-graphics/G3HistoricalPanorama.astro';
 import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visual-inputs';
 ---
-<section id="g3-history" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-history-title">
+<section id="g3-history" class="module je-history-chapter" data-editorial-measure="feature" tabindex="-1" aria-labelledby="g3-history-title">
   <div class="je-history-heading">
     <p class="module-label">01 · Истоки</p>
     <h2 id="g3-history-title">Конференция при поместной церкви</h2>
@@ -17,14 +18,18 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
   <div class="je-history-origin">
     <div class="je-history-dateline"><span>2013</span><p>Pray’s Mill<br />Джорджия, США</p></div>
     <div class="je-history-text">
-      <p>Три слова дали конференции имя: <em>Gospel, Grace, Glory</em> — «Евангелие, благодать, слава».
-        Инициатором G3 стал Джош Бьюс (Josh Buice), пастор баптистской церкви Pray’s Mill
-        в Дугласвилле, штат Джорджия. Первая конференция состоялась в 2013 году.</p>
-      <p>Тим Чаллис, приглашённый уже на первое собрание, позднее вспоминал, что первые встречи
-        проходили в самой церкви и устраивались её общиной. Это существенная отправная точка:
-        перед нами не готовая общенациональная организация, а церковная конференция,
-        которая со временем приобретала новые формы.</p>
-      <p>У этой истории есть документальная отправная точка задолго до появления общенационального служения. Архивная копия приглашения 2011 года показывает, что Джош Бьюс публично готовил встречу на январь 2013-го и приглашал пасторов, миссионеров и прихожан в район Атланты. Слова «Евангелие, благодать, слава» уже задавали её богословскую рамку.</p>
+      <p>В 2011 году Джош Бьюс (Josh Buice), пастор баптистской церкви Pray’s Mill
+        в Дугласвилле, штат Джорджия, публично пригласил пасторов, миссионеров и прихожан
+        на конференцию, намеченную на январь 2013 года. Три слова дали ей имя:
+        <em>Gospel, Grace, Glory</em> — «Евангелие, благодать, слава».</p>
+      <p>Первая конференция состоялась в 2013 году. Тим Чаллис, приглашённый уже на первое собрание,
+        вспоминал, что первые встречи проходили в самой церкви и устраивались её общиной.
+        История G3 началась не с готовой общенациональной организации, а с поместной церкви,
+        открывшей свою кафедру для приглашённых служителей.</p>
+      <p>В этом различии заключён важный для дальнейшей истории вопрос: как служение,
+        возникшее при одной церкви, соотносится с жизнью и ответственностью других общин?
+        Проследить это можно сначала по богословской программе встреч, затем по появлению
+        издательских проектов и церковной сети.</p>
 <p class="je-history-footnote"><a id="cite-g3-invitation-2011" data-journal-citation href={cite('invitation-2011')}>Архивное приглашение 2011 года</a></p>
 <p class="je-history-footnote"><a id="cite-g3-history-challies" data-journal-citation href={cite('challies')}>Источник: Тим Чаллис, воспоминания участника</a></p>
     </div>
@@ -48,20 +53,20 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
           Стивена Лоусона (Steven Lawson), Тима Чаллиса и Дэвида Миллера.
           О собственном выступлении на первой конференции также вспоминал Чаллис.</p>
         <p>В сохранённой подборке 2013 года названия записей раскрывают разные стороны первоначальной программы. У Пола Вошера есть выступление о значении молитвы для христианского служения и миссии, у Стивена Лоусона — о проповеди Жана Кальвина и уроках для современного проповедника. Запись Тима Чаллиса названа «Миссия в меняющемся мире», а Дэвида Миллера — «Иисус молится за Своих последователей».</p>
-<p class="je-history-footnote"><a id="cite-g3-year-2013-gnl-2013" data-journal-citation href={cite('gnl-2013')}>Каталог записей 2013 года</a> · <a id="cite-g3-year-2013-challies" data-journal-citation href={cite('challies')}>Свидетельство Чаллиса</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2013-gnl-2013" data-journal-citation href={cite('gnl-2013')}>Каталог записей 2013 года</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2013-challies" data-journal-citation href={cite('challies')}>Свидетельство Чаллиса</a></p>
       </div>
     </li>
     <li id="g3-year-2014" class="je-history-year" tabindex="-1">
       <div class="je-history-year-mark"><time datetime="2014">2014</time><span>Учение о Церкви</span></div>
       <div class="je-history-year-text">
         <h3>Церковь с библейской точки зрения</h3>
-        <p>Современный анонс Южной баптистской семинарии назначал следующую конференцию
+        <p>Анонс Южной баптистской семинарии того времени назначал следующую конференцию
           на 23–25 января. В нём были указаны Стивен Лоусон, Водди Бокам (Voddie Baucham),
           Тим Чаллис, Конрад Мбеве и Дэвид Миллер. Анонс показывает замысел организаторов;
           каталог 2014 года служит отдельным маршрутом к записям о Церкви,
           проповеди и поклонении.</p>
         <p>Каталог 2014 года конкретизирует объявленную тему Церкви. Стивен Лоусон представлен записями о призвании Церкви к библейской проповеди и о Церкви, избранной и призванной Богом. Конрад Мбеве — материалом о поклоняющейся Церкви, Водди Бокам — выступлением об ученичестве и подготовке учеников. Вместе эти заголовки показывают переход от широкого разговора о Евангелии к вопросам проповеди, богослужения и передачи веры внутри общины.</p>
-<p class="je-history-footnote"><a id="cite-g3-year-2014-sbts-2014" data-journal-citation href={cite('sbts-2014')}>Анонс семинарии</a> · <a id="cite-g3-year-2014-gnl-2014" data-journal-citation href={cite('gnl-2014')}>Каталог записей 2014 года</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2014-sbts-2014" data-journal-citation href={cite('sbts-2014')}>Анонс семинарии</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2014-gnl-2014" data-journal-citation href={cite('gnl-2014')}>Каталог записей 2014 года</a></p>
       </div>
     </li>
     <li id="g3-year-2015" class="je-history-year" tabindex="-1">
@@ -88,7 +93,7 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
           В нём представлены Д. А. Карсон, Пол Вошер, Стивен Лоусон, Водди Бокам,
           Конрад Мбеве и Джеймс Уайт. Записи дают возможность изучать конкретные выступления
           о спасении, Писании и Реформации.</p>
-        <p>Некоторые сохранившиеся названия 2017 года особенно ясно показывают задуманный мост между историей и настоящим. Стивен Лоусон говорил на тему Реформации как возвращения к Евангелию, Водди Бокам — о необходимости Реформации в поклонении, Пол Вошер — о постоянной опасности отступничества. В каталоге Д. А. Карсон представлен, в частности, темой «Одному Богу слава». Тематический диапазон не исчерпывается юбилейным событием: он касается церковного исповедания, проповеди и практики поклонения.</p>
+        <p>Названия сохранившихся записей 2017 года показывают связь исторической темы с жизнью современной Церкви. Запись Стивена Лоусона посвящена возвращению к Евангелию, Водди Бокама — необходимости Реформации в поклонении, Пола Вошера — опасности отступничества. Среди тем Д. А. Карсона — «Одному Богу слава». В центре программы, таким образом, было не только осмысление юбилея, но и применение реформационного наследия к церковному исповеданию, проповеди и богослужению.</p>
 <p class="je-history-footnote"><a id="cite-g3-year-2017-gnl-2017" data-journal-citation href={cite('gnl-2017')}>Каталог Reformation 500</a></p>
       </div>
     </li>
@@ -100,12 +105,13 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
     sourceIds={{ 2013: 'gnl-2013', 2014: 'gnl-2014', 2015: 'gnl-2015', 2016: 'gnl-2016', 2017: 'gnl-2017', 2018: 'gnl-2018', 2019: 'gnl-2019', 2020: 'gnl-2020', 2021: 'gnl-2021' }} />
 </div>
 
-<section id="g3-year-2018" class="module je-history-chapter je-history-document" tabindex="-1" aria-labelledby="g3-statement-title" data-history-kind="statement">
+<section id="g3-year-2018" class="module je-history-chapter je-history-document" data-editorial-measure="feature" tabindex="-1" aria-labelledby="g3-statement-title" data-history-kind="statement">
   <div class="je-history-heading">
     <p class="module-label">03 · Богословская дискуссия · 2018</p>
-    <h2 id="g3-statement-title">Заявление о социальной справедливости и Евангелии</h2>
+    <h2 id="g3-statement-title">Жизнь общины и спор о социальной справедливости</h2>
   </div>
   <div class="je-history-text">
+    <p data-history-expansion-claim="G3-HIST-PUB-13">В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках. В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства. В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы.</p>
     <p>Отдельная линия истории — <em>The Statement on Social Justice and the Gospel</em>.
       Согласно рассказу Тома Аскола на сайте документа, 19 июня 2018 года в Далласе
       встретились четырнадцать евангельских деятелей. Организатором встречи назван Джош Бьюс;
@@ -116,10 +122,50 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
       и поддержку, и возражения против его формулировок и подхода к социальным вопросам.
       Чаллис позднее писал, что участвовал в обсуждениях, но не подписал текст.
       В своих воспоминаниях он также описал изменение атмосферы конференции.</p>
-<p data-history-expansion-claim="G3-HIST-PUB-13">В январе 2018 года Тим Чаллис рассказал на G3 об опыте Grace Fellowship Church: как христиане разных культур учатся жить единой общиной. Готовясь к выступлению, он пригласил прихожан обсудить этот вопрос за общим столом. По его собственному сообщению, выступление он завершил видеозаписью, на которой члены церкви читали Откровение 5 на разных языках. В феврале он отдельно изложил уроки этого опыта, в частности значение гостеприимства. В те же дни миссия FirstLove впервые участвовала в выставке G3; по её отчёту, за несколько дней бесплатно распространили более 16 тысяч экземпляров христианской литературы.</p>
-<p class="je-history-footnote"><a id="cite-r6-challies-2018-video" data-journal-citation href={cite('challies-2018-video')}>Тим Чаллис. From Every Tribe and Language and People and Nation</a> · <a id="cite-r6-challies-2018-lessons" data-journal-citation href={cite('challies-2018-lessons')}>Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church</a> · <a id="cite-r6-firstlove-2018" data-journal-citation href={cite('firstlove-2018')}>FirstLove Missions. G3 Conference in Atlanta, Georgia</a></p>
-<p class="je-history-footnote"><a id="cite-g3-year-2018-ascol-2018" data-journal-citation href={cite('ascol-2018')}>Датированное свидетельство Тома Аскола</a></p>
-<p class="je-history-footnote"><a id="cite-g3-year-2018-statement-2018" data-journal-citation href={cite('statement-2018')}>Текст и история подготовки заявления</a> · <a id="cite-g3-year-2018-responses-2018" data-journal-citation href={cite('responses-2018')}>Отклики современников</a> · <a id="cite-g3-year-2018-challies" data-journal-citation href={cite('challies')}>Позиция Чаллиса</a></p>
+<JournalCompactDocumentIndex id="g3-2018-document-index" title="Две линии одного года"
+    conferenceTitle="Жизнь общины" discussionTitle="Заявление" retrospectiveTitle="Ретроспектива · 2025">
+    <Fragment slot="conference">
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-01-23">23 января 2018</time> · публикация сообщения</p>
+        <p class="jcdi-label">Тим Чаллис: опыт общины</p>
+        <a id="cite-r6-challies-2018-video" data-journal-citation tabindex="0" href={cite('challies-2018-video')}>Тим Чаллис. From Every Tribe and Language and People and Nation</a>
+      </li>
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-01-30">30 января 2018</time> · публикация отчёта</p>
+        <p class="jcdi-label">FirstLove: отчёт о выставке</p>
+        <a id="cite-r6-firstlove-2018" data-journal-citation tabindex="0" href={cite('firstlove-2018')}>FirstLove Missions. G3 Conference in Atlanta, Georgia</a>
+      </li>
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-02-02">2 февраля 2018</time> · публикация статьи</p>
+        <p class="jcdi-label">Тим Чаллис: гостеприимство</p>
+        <a id="cite-r6-challies-2018-lessons" data-journal-citation tabindex="0" href={cite('challies-2018-lessons')}>Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church</a>
+      </li>
+    </Fragment>
+    <Fragment slot="discussion">
+      <li data-g44-date-kind="attributed_event">
+        <p class="jcdi-date"><time datetime="2018-06-19">19 июня 2018</time> · дата встречи по рассказу Аскола</p>
+        <p class="jcdi-label">Встреча в Далласе</p>
+        <a id="cite-g3-year-2018-ascol-2018" data-journal-citation tabindex="0" href={cite('ascol-2018')}>Датированное свидетельство Тома Аскола</a>
+      </li>
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2018-09-04">4 сентября 2018</time> · публикация заявления</p>
+        <p class="jcdi-label">Заявление о социальной справедливости и Евангелии</p>
+        <a id="cite-g3-year-2018-statement-2018" data-journal-citation tabindex="0" href={cite('statement-2018')}>Текст и история подготовки заявления</a>
+      </li>
+      <li data-g44-date-kind="publication_month">
+        <p class="jcdi-date"><time datetime="2018-09">Сентябрь 2018</time> · месяц освещения</p>
+        <p class="jcdi-label">Отклики на заявление</p>
+        <a id="cite-g3-year-2018-responses-2018" data-journal-citation tabindex="0" href={cite('responses-2018')}>Отклики современников</a>
+      </li>
+    </Fragment>
+    <Fragment slot="retrospective">
+      <li data-g44-date-kind="publication">
+        <p class="jcdi-date"><time datetime="2025-05-23">23 мая 2025</time> · публикация воспоминаний</p>
+        <p class="jcdi-label">Тим Чаллис: взгляд спустя годы</p>
+        <a id="cite-g3-year-2018-challies" data-journal-citation tabindex="0" href={cite('challies')}>Позиция Чаллиса</a>
+      </li>
+    </Fragment>
+  </JournalCompactDocumentIndex>
   </div>
 </section>
 
@@ -137,10 +183,10 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
         <h3>Всемирная миссия и ответственность церкви</h3>
         <p>В рекламном анонсе <em>The Mission of God</em> на 17–19 января были названы
           Джон Пайпер, Дэвид Платт, Марк Девер, Водди Бокам, Конрад Мбеве,
-          Пол Вошер, Стивен Лоусон и Тим Чаллис.</p>
+          Стивен Лоусон и Тим Чаллис.</p>
         <p>В опубликованных записях 2019 года видны разные грани миссионерской темы. У Стивена Лоусона есть сессия о Божьем суверенном избрании и миссии, у Водди Бокама — о миссионерском характере Авраамова завета, у Марка Девера — о Великом поручении и основании церквей. Конрад Мбеве представлен темой создания здоровых новых общин, Пол Вошер — обсуждением определения миссии.</p>
         <p data-history-expansion-claim="G3-HIST-PUB-10">17 января 2019 года Джон Пайпер проповедовал на G3 в Атланте по Флп. 2:17–18. В опубликованном им тексте проповеди речь идёт о страхе, ненасытном потреблении и привычке к обеспеченной жизни как о препятствиях для всемирной миссии. Он призывал к радости, готовой на жертву ради других, и отдельно обращался к старшему поколению и семьям миссионеров.</p>
-<p class="je-history-footnote"><a id="cite-g3-year-2019-announcement-2019" data-journal-citation href={cite('announcement-2019')}>Рекламный анонс</a> · <a id="cite-g3-year-2019-gnl-2019" data-journal-citation href={cite('gnl-2019')}>Каталог записей</a> · <a id="cite-g3-year-2019-piper-2019" data-journal-citation href={cite('piper-2019')}>Авторский текст проповеди Пайпера</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2019-announcement-2019" data-journal-citation href={cite('announcement-2019')}>Рекламный анонс</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2019-gnl-2019" data-journal-citation href={cite('gnl-2019')}>Каталог записей</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2019-piper-2019" data-journal-citation href={cite('piper-2019')}>Авторский текст проповеди Пайпера</a></p>
       </div>
     </li>
     <li id="g3-year-2020" class="je-history-year" tabindex="-1">
@@ -151,12 +197,20 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
 <p class="je-history-footnote"><a id="cite-g3-year-2020-gnl-2020" data-journal-citation href={cite('gnl-2020')}>Каталог сессий 2020 года</a></p>
       </div>
     </li>
+    <li id="g3-year-2021" class="je-history-year" tabindex="-1">
+      <div class="je-history-year-mark"><time datetime="2021">2021</time><span>Христос</span></div>
+      <div class="je-history-year-text">
+        <h3>Конференция о Христе</h3>
+        <p data-history-expansion-claim="G3-HIST-PUB-14">Пастор Джефф Кроттс, впервые посетивший G3 осенью 2021 года, в отчёте от 6 октября описал конференцию, посвящённую Христу. По его воспоминаниям, на предварительной встрече Джон МакАртур призывал проповедовать о Божьем суде, а в четверг обращался к Исайе 52–53, к образу страдающего Раба Господа. Кроттс также отметил, что общее пение вели Боб Кофлин и его сын Девон, а среди слушателей были семьи с детьми.</p>
+        <p class="je-history-footnote"><a id="cite-r6-crotts-2021" data-journal-citation href={cite('crotts-2021')}>Джефф Кроттс. Gospel, Grace and Glory</a></p>
+      </div>
+    </li>
     <li id="g3-year-2022" class="je-history-year" tabindex="-1">
       <div class="je-history-year-mark"><time datetime="2022">2022</time><span>Писание</span></div>
       <div class="je-history-year-text">
         <h3>Региональная встреча о Библии</h3>
         <p data-history-expansion-claim="G3-HIST-PUB-16">В сентябре 2022 года региональная встреча G3 о Писании проходила в Immanuel Bible Church в Спрингфилде, штат Виргиния. На сайте служения Джеймса Уайта появились материалы о двух выступлениях — об изучении библейских рукописей и о происхождении Библии.</p>
-        <p class="je-history-footnote"><a id="cite-r6-white-manuscripts-2022" data-journal-citation href={cite('white-manuscripts-2022')}>Джеймс Уайт. Making Sense of Manuscripts</a> · <a id="cite-r6-white-bible-2022" data-journal-citation href={cite('white-bible-2022')}>Джеймс Уайт. How We Got Our Bible</a></p>
+        <p class="je-history-footnote"><a id="cite-r6-white-manuscripts-2022" data-journal-citation href={cite('white-manuscripts-2022')}>Джеймс Уайт. Making Sense of Manuscripts</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-r6-white-bible-2022" data-journal-citation href={cite('white-bible-2022')}>Джеймс Уайт. How We Got Our Bible</a></p>
       </div>
     </li>
     <li id="g3-year-2023" class="je-history-year" tabindex="-1">
@@ -180,7 +234,7 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
           Джастин Питерс в письменном отчёте о поездках за 2024 год.
           Ранний анонс называл площадку в Калифорнии, поздняя форма регистрации издательств — Оклахому.
           Причину изменения места доступные документы не устанавливают.</p>
-<p class="je-history-footnote"><a id="cite-g3-year-2024-reformation-2024" data-journal-citation href={cite('reformation-2024')}>Майская регистрация</a> · <a id="cite-g3-year-2024-316-2024" data-history-expansion-claim="G3-HIST-PUB-11" data-journal-citation href={cite('316-2024')}>Отчёт издательства от 5 июня</a> · <a id="cite-g3-year-2024-cessationist-2024" data-journal-citation href={cite('cessationist-2024')}>Регистрация издательств</a> · <a id="cite-g3-year-2024-peters-2024" data-journal-citation href={cite('peters-2024')}>Отчёт Питерса</a> · <a id="cite-g3-year-2024-early-venue-2023" data-journal-citation href={cite('early-venue-2023')}>Ранний анонс площадки</a></p>
+<p class="je-history-footnote"><a id="cite-g3-year-2024-reformation-2024" data-journal-citation href={cite('reformation-2024')}>Майская регистрация</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2024-316-2024" data-history-expansion-claim="G3-HIST-PUB-11" data-journal-citation href={cite('316-2024')}>Отчёт издательства от 5 июня</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2024-cessationist-2024" data-journal-citation href={cite('cessationist-2024')}>Регистрация издательств</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2024-peters-2024" data-journal-citation href={cite('peters-2024')}>Отчёт Питерса</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-year-2024-early-venue-2023" data-journal-citation href={cite('early-venue-2023')}>Ранний анонс площадки</a></p>
       </div>
     </li>
   </ol>
@@ -192,19 +246,21 @@ import { adoptedMatrixData, adoptedMatrixClaim } from './g3-visual/adopted-visua
     <h2 id="g3-growth-title">От нескольких дней в году к постоянному служению</h2>
   </div>
   <div class="je-history-text">
-    <p>Расширение происходило не только у кафедры. Чаллис вспоминал переход
-      с церковного кампуса в конференц-центр, не указывая точного года.</p>
-    <p>Более определённую письменную опору даёт сообщение Скотта Аниола от 1 сентября 2021 года.
+    <p>Перемена масштаба, о которой вспоминал Чаллис, выразилась в переходе
+      с территории церкви в конференц-центр. Но увеличение пространства для встреч —
+      лишь одна сторона развития G3. Другая состояла в том, чтобы помогать церквам
+      не только в дни ежегодных собраний.</p>
+    <p>Об этом прямо говорится в сообщении Скотта Аниола от 1 сентября 2021 года.
       Он объявил о переходе в G3 исполнительным вице-президентом и главным редактором.
-      Впереди он видел издание книг, учебные материалы для поместных церквей,
-      богословский журнал и интернет-ресурсы.</p>
+      Предложенная им программа включала издание книг, подготовку учебных материалов для поместных церквей,
+      богословский журнал и интернет-ресурсы. Эти направления были представлены как планы нового этапа служения.</p>
     <p>В историческом обзоре <em>Sharper Iron</em> упоминаются G3 Press, G3+, Church Network и Gloria Deo.
-      Эти направления показывают, как служение расширялось за пределы ежегодных конференций.</p>
-<p data-history-expansion-claim="G3-HIST-PUB-14">Пастор Джефф Кроттс, впервые посетивший G3 осенью 2021 года, в отчёте от 6 октября описал конференцию, посвящённую Христу. По его воспоминаниям, на предварительной встрече Джон МакАртур призывал проповедовать о Божьем суде, а в четверг обращался к Исайе 52–53, к образу страдающего Раба Господа. Кроттс также отметил, что общее пение вели Боб Кофлин и его сын Девон, а среди слушателей были семьи с детьми.</p>
-<p class="je-history-footnote"><a id="cite-r6-crotts-2021" data-journal-citation href={cite('crotts-2021')}>Джефф Кроттс. Gospel, Grace and Glory</a></p>
+      Книги, цифровая платформа, журнал и сеть общин представляют разные способы работы
+      с церковной аудиторией: обучение, распространение материалов и сотрудничество.
+      Что означало последнее для отдельной общины, объяснял один из пасторов, решивших присоединиться к сети.</p>
 <p data-history-expansion-claim="G3-HIST-PUB-15">В начале 2022 года The Garden Church в Нью-Браунфелсе решила присоединиться к церковной сети G3. Пастор Рэнди Бенсон объяснил это доступом к полезным ресурсам и общением с близкими по убеждениям пасторами и общинами. Сотрудничество он понимал как помощь, не предполагающую передачи власти над своей поместной церковью.</p>
 <p class="je-history-footnote"><a id="cite-r6-benson-2022" data-journal-citation href={cite('benson-2022')}>Рэнди Бенсон. The G3 Church Network</a></p>
-<p class="je-history-footnote"><a id="cite-g3-growth-challies" data-journal-citation href={cite('challies')}>Воспоминания о смене площадки</a> · <a id="cite-g3-growth-aniol-2021" data-journal-citation href={cite('aniol-2021')}>Письменное сообщение Аниола</a> · <a id="cite-g3-growth-context-overview" data-journal-citation href={cite('context-overview')}>Исторический обзор</a></p>
+<p class="je-history-footnote"><a id="cite-g3-growth-challies" data-journal-citation href={cite('challies')}>Воспоминания о смене площадки</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-growth-aniol-2021" data-journal-citation href={cite('aniol-2021')}>Письменное сообщение Аниола</a><span class="je-footnote-separator" aria-hidden="true"> · </span><a id="cite-g3-growth-context-overview" data-journal-citation href={cite('context-overview')}>Исторический обзор</a></p>
   </div>
   <dl class="je-history-projects" aria-label="Направления служения">
     <div><dt>G3 Press</dt><dd>Книги и учебные материалы</dd></div>

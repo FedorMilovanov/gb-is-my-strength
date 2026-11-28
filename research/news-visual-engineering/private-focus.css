@@ -1,0 +1,86 @@
+/* Private fixture parity only: no public route imports this file.
+ * Keep the full 2px focus indicator inside the actual padded control.
+ * Bibliographic actions use the same wrapping/gap principle as G3. */
+@media screen {
+  .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]) {
+    display: inline-flex; align-items: center; min-height: 44px;
+    max-width: 100%; min-width: 0; padding: 6px;
+    /* Stable geometry before native focus scrolling. */
+    scroll-margin-block-end: 24px;
+    white-space: normal; overflow-wrap: anywhere; border-radius: 2px;
+  }
+  /* These private documents have no sticky header. Reserve the canonical
+   * fragment landing offset for the actual hash target, not unrelated Tab stops. */
+  .journal-edition article.news-private-review a[data-journal-citation]:not(:target) { scroll-margin-block-start: 0; }
+  .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]):focus-visible {
+    outline: 2px solid var(--je-ink); outline-offset: -2px;
+  }
+  /* Return navigation is reading UI, not a fixed-size bibliography caption. */
+  .journal-edition article.news-private-review .bibliography-item a.je-source-return {
+    box-sizing: border-box; max-width: 100%;
+    font: 500 calc(.875rem * var(--gb-reader-font-scale, 1))/1.5 var(--je-ui);
+    text-align: start; text-decoration: underline; text-underline-offset: .15em;
+  }
+  .journal-edition article.news-private-review .bibliography-item a.je-source-return span {
+    min-width: 0; overflow-wrap: anywhere;
+  }
+  /* One consistent, scalable source-navigation hierarchy for private specimens. */
+  .journal-edition article.news-private-review .bibliography-item {
+    padding-block: 14px; padding-inline-start: 28px;
+  }
+  .journal-edition article.news-private-review .bibliography-item :is(h2, h3) {
+    margin: 0 0 .4rem; letter-spacing: normal; hyphens: none; overflow-wrap: anywhere;
+    font: 600 calc(1rem * var(--gb-reader-font-scale, 1))/1.4 var(--je-ui);
+  }
+  .journal-edition article.news-private-review .bibliography-item > p:not(.biblio-meta) {
+    margin-block-start: .4rem; overflow-wrap: anywhere;
+    font: 400 calc(.875rem * var(--gb-reader-font-scale, 1))/1.6 var(--je-ui);
+  }
+  .journal-edition article.news-private-review .bibliography-item a[href] {
+    box-sizing: border-box; text-align: start;
+    font: 500 calc(.875rem * var(--gb-reader-font-scale, 1))/1.5 var(--je-ui);
+    color: var(--je-gold); text-decoration: underline; text-underline-offset: .15em;
+  }
+  .journal-edition article.news-private-review :is(.jdc-links, .jhe-group, .jhc-record) a[data-journal-citation] {
+    box-sizing: border-box;
+    font-size: calc(.875rem * var(--gb-reader-font-scale, 1));
+  }
+  .journal-edition article.news-private-review .bibliography-item > ul {
+    margin-block: .4rem 0; padding-inline-start: 1rem;
+  }
+  /* Evidence metadata is part of reading, including the distinction between dates. */
+  .journal-edition article.news-private-review :is(.jdc .jdc-kicker, .jhe .jhe-kicker, .jhc .jhc-kicker, .jdc-dates dt, .jdc-note dt) {
+    font-size: calc(.875rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review .jdc-dates dd {
+    font-size: calc(1rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review :is(.jdc h3, .jhe h3, .jhc h3) {
+    font-size: calc(1rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review :is(.jhe h2, .jhc h2) {
+    font-size: calc(1.5rem * var(--gb-reader-font-scale, 1));
+    overflow-wrap: anywhere;
+  }
+  .journal-edition article.news-private-review .jdc-dates {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, max(calc(8rem * var(--gb-reader-font-scale, 1)), calc((100% - .6rem) / 2))), 1fr));
+  }
+  .journal-edition article.news-private-review .jdc-dates > div { min-width: 0; }
+  .news-private-review .news-bib-actions {
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 8px;
+    margin-block-start: 6px;
+  }
+  .news-private-review .bibliography-item li > p {
+    margin: 0 6px .25rem; overflow-wrap: anywhere;
+    font: 400 calc(.875rem * var(--gb-reader-font-scale, 1))/1.6 var(--je-ui);
+  }
+  .news-private-review .bibliography-item li + li { margin-block-start: 8px; }
+  .news-private-review .jdc-links { row-gap: 8px; }
+  .news-private-review .jhe-group li { padding-block: 8px; }
+}
+@media screen and (forced-colors: active) {
+  .journal-edition article.news-private-review :is(a[data-journal-citation], .bibliography-item a[href]):focus-visible { outline-color: Highlight; }
+}

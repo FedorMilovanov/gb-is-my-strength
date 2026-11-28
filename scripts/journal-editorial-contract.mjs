@@ -28,8 +28,247 @@ function all(node, predicate) {
 const byId = (doc, id) => all(doc, (node) => attr(node, 'id') === id)[0];
 const text = (node) => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(text).join('');
 const normalize = (value) => value.replace(/\s+/gu, '');
+
+// Journal narration imports shared runtime directly. The workflow's deliberately
+// explicit quoted path lists must cover those inputs on both PR and main push.
+function assertNarrationWorkflowPaths(workflow, runtimeSource) {
+  const imports = [...runtimeSource.matchAll(/^import ['"]\.\.\/\.\.\/(runtime\/[^'"]+)['"];?$/gm)]
+    .map(match => 'src/' + match[1]);
+  assert.ok(imports.length > 0, 'Journal narration runtime import inventory missing');
+  const required = [...imports, 'src/components/reader-platform/ReaderSpeedContract.ts', 'scripts/lib/browser-runtime-noise.js'];
+  for (const event of ['pull_request', 'push']) {
+    // This is a source-format contract for the checked-in literal list, not a YAML parser.
+    const body = workflow.split('\n  ' + event + ':\n')[1]?.split(/\n  [a-z_]+:/)[0];
+    assert.ok(body, event + ' workflow trigger missing');
+    const list = body.match(/\n    paths:\n((?:      - '[^'\n]+'\n)+)/)?.[1];
+    assert.ok(list, event + ' explicit paths list missing');
+    const entries = new Set([...list.matchAll(/^      - '([^']+)'$/gm)].map(match => match[1]));
+    for (const file of required) assert.ok(entries.has(file), event + ' missing Journal narration dependency: ' + file);
+  }
+}
+{
+  const workflow = read('.github/workflows/journal-g3-history-publication-qa.yml');
+  const runtimeSource = read('src/components/journal/journalNarrationRuntime.ts');
+  assertNarrationWorkflowPaths(workflow, runtimeSource);
+  // Real mutation controls: removing one path from either event must fail.
+  const line = "      - 'src/runtime/reader-tts-media-session.js'\n";
+  const first = workflow.indexOf(line), last = workflow.lastIndexOf(line);
+  assert.ok(first >= 0 && last > first);
+  for (const offset of [first, last]) {
+    const broken = workflow.slice(0, offset) + workflow.slice(offset + line.length);
+    assert.throws(() => assertNarrationWorkflowPaths(broken, runtimeSource), /missing Journal narration dependency/);
+  }
+}
+
+/** Assert the actual ordered chronology, not a regex-filtered subset of
+ * descendant IDs: an extra/missing/misnested row must fail as well. */
+function assertLaterConferenceChronology(doc) {
+  const section = byId(doc, 'g3-later-conferences');
+  assert.ok(section, 'later conference section is present');
+  const lists = all(section, node => node.tagName === 'ol' && hasClass(node, 'je-history-years'));
+  assert.equal(lists.length, 1, 'one native chronological list');
+  assert.equal(lists[0].parentNode, section, 'chronology is a direct section child');
+  const rows = (lists[0].childNodes || []).filter(node => node.tagName);
+  const years = ['2019', '2020', '2021', '2022', '2023', '2024'];
+  assert.deepEqual(rows.map(row => [row.tagName, attr(row, 'id')]),
+    years.map(year => ['li', 'g3-year-' + year]), 'historical conference chronology includes 2021 in exact order');
+  rows.forEach((row, index) => {
+    const marks = all(row, node => hasClass(node, 'je-history-year-mark'));
+    assert.equal(marks.length, 1, 'one visible year marker per chronological row');
+    const dates = all(marks[0], node => node.tagName === 'time');
+    assert.equal(dates.length, 1, 'one semantic date per year marker');
+    assert.equal(attr(dates[0], 'datetime'), years[index]);
+    assert.equal(text(dates[0]).trim(), years[index]);
+  });
+  return rows[2];
+}
+// Native parse5 positive/negative controls run even with --source-only.
+{
+  const year = value => '<li id="g3-year-' + value + '"><div class="je-history-year-mark"><time datetime="' + value + '">' + value + '</time></div></li>';
+  const valid = ['2019', '2020', '2021', '2022', '2023', '2024'].map(year);
+  const fixture = rows => parse('<section id="g3-later-conferences"><ol class="je-history-years">' + rows.join('') + '</ol></section>');
+  assert.equal(attr(assertLaterConferenceChronology(fixture(valid)), 'id'), 'g3-year-2021');
+  assert.throws(() => assertLaterConferenceChronology(fixture(valid.filter((_, i) => i !== 2))), /chronology includes 2021/);
+  assert.throws(() => assertLaterConferenceChronology(fixture([valid[0], valid[2], valid[1], ...valid.slice(3)])), /chronology includes 2021/);
+  assert.throws(() => assertLaterConferenceChronology(fixture([...valid, year('2025')])), /chronology includes 2021/);
+  assert.throws(() => assertLaterConferenceChronology(fixture(valid.map((row, i) => i === 2 ? row.replace('datetime="2021"', 'datetime="2020"') : row))));
+  assert.throws(() => assertLaterConferenceChronology(fixture(valid.map((row, i) => i === 2 ? row.replace('>2021</time>', '>2020</time>') : row))));
+}
+
+/** Immutable G44 editorial witness, accepted ART/E36 on #2381. */
+const G44_ROWS = [
+  [
+    "cite-r6-challies-2018-video",
+    "#history-source-challies-2018-video",
+    "Тим Чаллис. From Every Tribe and Language and People and Nation",
+    "2018-01-23",
+    "publication",
+    "#g3-year-2018",
+    "Тим Чаллис: опыт общины",
+    "23 января 2018 · публикация сообщения"
+  ],
+  [
+    "cite-r6-firstlove-2018",
+    "#history-source-firstlove-2018",
+    "FirstLove Missions. G3 Conference in Atlanta, Georgia",
+    "2018-01-30",
+    "publication",
+    "#g3-year-2018",
+    "FirstLove: отчёт о выставке",
+    "30 января 2018 · публикация отчёта"
+  ],
+  [
+    "cite-r6-challies-2018-lessons",
+    "#history-source-challies-2018-lessons",
+    "Тим Чаллис. Seven Key Lessons in Diversity from Grace Fellowship Church",
+    "2018-02-02",
+    "publication",
+    "#g3-year-2018",
+    "Тим Чаллис: гостеприимство",
+    "2 февраля 2018 · публикация статьи"
+  ],
+  [
+    "cite-g3-year-2018-ascol-2018",
+    "#history-source-ascol-2018",
+    "Датированное свидетельство Тома Аскола",
+    "2018-06-19",
+    "attributed_event",
+    "#g3-year-2018",
+    "Встреча в Далласе",
+    "19 июня 2018 · дата встречи по рассказу Аскола"
+  ],
+  [
+    "cite-g3-year-2018-statement-2018",
+    "#history-source-statement-2018",
+    "Текст и история подготовки заявления",
+    "2018-09-04",
+    "publication",
+    "#g3-year-2018",
+    "Заявление о социальной справедливости и Евангелии",
+    "4 сентября 2018 · публикация заявления"
+  ],
+  [
+    "cite-g3-year-2018-responses-2018",
+    "#history-source-responses-2018",
+    "Отклики современников",
+    "2018-09",
+    "publication_month",
+    "#g3-year-2018",
+    "Отклики на заявление",
+    "Сентябрь 2018 · месяц освещения"
+  ],
+  [
+    "cite-g3-year-2018-challies",
+    "#history-source-challies",
+    "Позиция Чаллиса",
+    "2025-05-23",
+    "publication",
+    "#g3-history",
+    "Тим Чаллис: взгляд спустя годы",
+    "23 мая 2025 · публикация воспоминаний"
+  ]
+];
+const g44VisibleText=value=>value.replace(/\s+/gu,' ').trim();
+// Negative controls preserve meaningful word boundaries; wrapping is benign.
+const g44TextControls=[...G44_ROWS.flatMap(r=>[r[2],r[6],r[7]]),'Две линии одного года','Жизнь общины','Ретроспектива · 2025'];
+for(const label of g44TextControls){
+  assert.ok(label.includes(' '));
+  assert.notEqual(g44VisibleText(label.replace(' ','')),g44VisibleText(label),'G44 missing word separator must fail');
+  assert.equal(g44VisibleText(' \n '+label.replaceAll(' ',' \n ')+' \t '),g44VisibleText(label),'G44 benign wrapping must pass');
+}
+function assertG44Dist(doc) {
+  const one=(parent,predicate,label)=>{const matches=all(parent,predicate);assert.equal(matches.length,1,label);return matches[0];};
+  const id=(parent,key)=>one(parent,n=>attr(n,'id')===key,'unique ID '+key);
+  const section=id(doc,'g3-year-2018');
+  const prose=one(section,n=>hasClass(n,'je-history-text'),'history prose owner');
+  const paragraphs=(prose.childNodes||[]).filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote'));
+  const pinnedSource=execFileSync('git',['show','3ce78622de90705a11c37648cdef98021ff64b83:src/components/journal/G3HistoryFeature.astro'],{cwd:root,encoding:'utf8'});
+  const pinnedStart=pinnedSource.indexOf('<section id="g3-year-2018"');
+  assert.ok(pinnedStart>=0);
+  const pinned=parse(pinnedSource.slice(pinnedStart,pinnedSource.indexOf('</section>',pinnedStart)+10));
+  const pinnedOwner=one(pinned,n=>hasClass(n,'je-history-text'),'pinned prose owner');
+  const baselineParagraphs=pinnedOwner.childNodes.filter(n=>n.tagName==='p'&&!hasClass(n,'je-history-footnote')).map(n=>g44VisibleText(text(n)));
+  assert.equal(baselineParagraphs.length,3);
+  assert.deepEqual(paragraphs.map(n=>g44VisibleText(text(n))),[baselineParagraphs[2],baselineParagraphs[0],baselineParagraphs[1]],'same three immutable paragraphs in chronological editorial order');
+  assert.equal(one(section,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-13','PUB13 exactly once'),paragraphs[0]);
+  const index=id(section,'g3-2018-document-index');
+  assert.equal(index.parentNode,prose);
+  assert.equal(attr(section,'data-editorial-measure'),'feature','G44 explicit wide admission');
+  const origin=id(doc,'g3-history');
+  assert.equal(attr(origin,'data-editorial-measure'),'feature','atlas explicit wide admission');
+  const grid=one(doc,n=>attr(n,'data-editorial-layout')==='wide','one existing wide editorial grid');
+  assert.deepEqual(all(grid,n=>attr(n,'data-editorial-measure')==='feature').map(n=>attr(n,'id')),['g3-history','g3-year-2018'],'only the first two approved feature chapters');
+  assert.equal(all(grid,n=>attr(n,'data-editorial-measure')==='wide').length,0,'no premature additional wide modules');
+  assert.equal(paragraphs[2],(prose.childNodes||[]).filter(n=>n.tagName).at(-2),'index follows reordered complete narrative');
+  assert.equal(g44VisibleText(text(one(index,n=>n.tagName==='h3','index heading'))),g44VisibleText('Две линии одного года'));
+  const groups=all(index,n=>hasClass(n,'jcdi-group'));
+  assert.equal(groups.length,3);
+  assert.deepEqual(groups.map(n=>g44VisibleText(text(one(n,x=>x.tagName==='h4','group heading')))),['Жизнь общины','Заявление','Ретроспектива · 2025'].map(g44VisibleText));
+  assert.ok(hasClass(groups[2],'jcdi-retrospective'));
+  const lists=groups.map(n=>one(n,x=>x.tagName==='ol'&&hasClass(x,'jcdi-records'),'native ordered group'));
+  assert.deepEqual(lists.map(n=>n.childNodes.filter(x=>x.tagName==='li').length),[3,3,1]);
+  const links=all(section,n=>n.tagName==='a'&&attr(n,'data-journal-citation')!==undefined);
+  assert.deepEqual(links.map(n=>attr(n,'id')),G44_ROWS.map(r=>r[0]),'ordered source vector');
+  for(const [i,[citation,href,label,date,kind,backHref,heading,dateLabel]] of G44_ROWS.entries()){
+    const link=id(doc,citation);assert.equal(link,links[i]);assert.equal(attr(link,'href'),href);
+    assert.equal(g44VisibleText(text(link)),g44VisibleText(label));
+    const row=link.parentNode;assert.equal(row.tagName,'li');assert.equal(row.parentNode,lists[i<3?0:i<6?1:2]);
+    assert.equal(attr(row,'data-g44-date-kind'),kind);
+    assert.equal(attr(one(row,n=>n.tagName==='time','one date '+citation),'datetime'),date);
+    assert.equal(g44VisibleText(text(one(row,n=>hasClass(n,'jcdi-date'),'date role'))),g44VisibleText(dateLabel));
+    assert.equal(g44VisibleText(text(one(row,n=>hasClass(n,'jcdi-label'),'row heading'))),g44VisibleText(heading));
+    const source=id(doc,href.slice(1));
+    const back=one(source,n=>n.tagName==='a'&&attr(n,'data-journal-source-return')!==undefined,'one return '+citation);
+    assert.equal(attr(back,'href'),backHref);id(doc,backHref.slice(1));
+  }
+}
+
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 const load = (name) => import(pathToFileURL(path.join(root, name)).href);
+
+const { journalBreadcrumbItems, assertJournalDocumentMetadata } = await load('src/components/journal/journalDocumentMetadata.ts');
+const metadataDateWitness = Object.freeze({
+  kind: 'Article',
+  publishedAt: '2024-02-29T23:59:59+03:00',
+  modifiedAt: '2026-11-25T00:00:00Z',
+  socialImage: 'https://gospod-bog.ru/images/journal/g3-ministries-og-1200x630.webp',
+  socialImageAlt: 'Обложка G3 Ministries.',
+});
+for (const date of ['2024-02-29T23:59:59+03:00', '2000-02-29T00:00:00Z', '0000-02-29T00:00:00Z', '0096-02-29T00:00:00Z']) {
+  assert.doesNotThrow(() => assertJournalDocumentMetadata({ ...metadataDateWitness, publishedAt: date }), 'valid calendar timestamp: '+date);
+}
+for (const date of ['2026-11-24T24:00:00Z', '2026-11-24T23:60:00Z', '2026-11-24T23:59:60Z', '1900-02-29T00:00:00Z', '2026-04-31T00:00:00Z', '2026-11-24T00:00:00+24:00', Symbol('date'), null]) {
+  assert.throws(() => assertJournalDocumentMetadata({ ...metadataDateWitness, publishedAt: date }), /JournalDocumentHead: publishedAt must be an explicit valid ISO timestamp with timezone/);
+}
+assert.throws(() => assertJournalDocumentMetadata({ ...metadataDateWitness, modifiedAt: '2026-11-24T24:00:00Z' }), /JournalDocumentHead: modifiedAt/);
+// Independent expected vectors: do not derive expectations from the production helper.
+const breadcrumbVectors = new Map([
+  ['https://gospod-bog.ru/journal/', [
+    ['Главная', 'https://gospod-bog.ru/'], ['Журнал', 'https://gospod-bog.ru/journal/'],
+  ]],
+  ['https://gospod-bog.ru/journal/dossiers/g3/', [
+    ['Главная', 'https://gospod-bog.ru/'], ['Журнал', 'https://gospod-bog.ru/journal/'],
+    ['Досье G3', 'https://gospod-bog.ru/journal/dossiers/g3/'],
+  ]],
+  ['https://gospod-bog.ru/journal/dossiers/g3/history/', [
+    ['Главная', 'https://gospod-bog.ru/'], ['Журнал', 'https://gospod-bog.ru/journal/'],
+    ['Досье G3', 'https://gospod-bog.ru/journal/dossiers/g3/'],
+    ['История G3 (2011–2024)', 'https://gospod-bog.ru/journal/dossiers/g3/history/'],
+  ]],
+]);
+const expectedBreadcrumbItems = canonical => breadcrumbVectors.get(canonical).map(([name, item], index) => ({ '@type': 'ListItem', position: index + 1, name, item }));
+for (const canonical of breadcrumbVectors.keys()) {
+  assert.deepEqual(journalBreadcrumbItems(canonical), expectedBreadcrumbItems(canonical), 'breadcrumb source drift: ' + canonical);
+}
+for (const canonical of [
+  'https://gospod-bog.ru/journal/fake/',
+  'https://gospod-bog.ru/journal/dossiers/g3/other/',
+  'https://example.com/journal/',
+  'http://gospod-bog.ru/journal/',
+  'https://gospod-bog.ru/journal/?preview=1',
+  'https://gospod-bog.ru/journal/dossiers/g3/history/#intro',
+]) assert.throws(() => journalBreadcrumbItems(canonical), /unregistered breadcrumb canonical/);
+
 const { G3_PRODUCT_METADATA: metadata } = await load('src/data/journal/g3ProductMetadata.ts');
 const { JOURNAL_PRODUCT_METADATA: journal } = await load('src/data/journal/journalProductMetadata.ts');
 const { G3_HISTORY_METADATA: history } = await load('src/data/journal/g3HistoryMetadata.ts');
@@ -150,7 +389,13 @@ const readerLinks = new Map([
   ['G3-S012', 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html'],
   ['G3-S015', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
   ['G3-S017', 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/'],
+  ['G3-S035', 'https://protestia.com/2026/08/17/g3-promised-cooperative-not-competitive-the-anonymous-targeting-continued/4/'],
   ['G3-S042', 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html'],
+  ['G3-S033', 'https://apps.apple.com/us/app/g3/id1192776791'],
+  ['G3-S050', 'https://play.google.com/store/apps/details?id=com.subsplashconsulting.s_V9572P'],
+  ['G3-S053', 'https://shop.g3min.org/'],
+  ['G3-S054', 'https://web.archive.org/web/20260813111558/https://servantsofgrace.org/product/the-word-matters-defending-biblical-authority-against-the-spirit-of-the-age/'],
+  ['G3-S096', 'https://web.archive.org/web/20260721102641/http://g3min.org/about/who-we-are/'],
 ]);
 for (const [id, href] of readerLinks) {
   assert.ok(sources.some(source => source.id === id), `Unknown source: ${id}`);
@@ -176,6 +421,31 @@ for (const name of ['G3HistoryArticle', 'G3HistoryFeature']) {
   const source = read(`src/components/journal/${name}.astro`);
   assert.doesNotMatch(source, /PUBLICATION_HOLD|RESEARCH_DRAFT|Не опубликовано|data-research-candidates/, `${name} must be public-ready`);
 }
+// HIST-09/10: the 10 Sep 2018 sponsored invitation is not a record of
+// who spoke in January 2019. Paul Washer is absent from its advertised
+// speaker list, but his titled session is present in the GNL catalog.
+// Sources: announcement-2019 and gnl-2019 in the public registry.
+function assertMissionAttribution(doc) {
+  const row = byId(doc, 'g3-year-2019');
+  assert.ok(row, '2019 mission chapter is present');
+  const paragraphs = all(row, node => node.tagName === 'p' && !hasClass(node, 'je-history-footnote'));
+  const advertised = paragraphs.filter(node => text(node).includes('В рекламном анонсе'));
+  const recorded = paragraphs.filter(node => text(node).includes('В опубликованных записях 2019 года'));
+  assert.equal(advertised.length, 1, 'advertising witness is separate');
+  assert.equal(recorded.length, 1, 'recorded-session witness is separate');
+  assert.ok(paragraphs.indexOf(advertised[0]) < paragraphs.indexOf(recorded[0]), 'announcement precedes recorded sessions');
+  const announcement = g44VisibleText(text(advertised[0]));
+  for (const name of ['Джон Пайпер','Дэвид Платт','Марк Девер','Водди Бокам','Конрад Мбеве','Стивен Лоусон','Тим Чаллис']) {
+    assert.ok(announcement.includes(name), 'advertised name preserved: ' + name);
+  }
+  assert.doesNotMatch(announcement, /Вошер|Уошер|Washer/iu, 'do not place Washer in the sponsored invitation');
+  assert.match(g44VisibleText(text(recorded[0])), /Пол Вошер — обсуждением определения миссии/u, 'preserve the separately catalogued session');
+  for (const id of ['cite-g3-year-2019-announcement-2019', 'cite-g3-year-2019-gnl-2019']) {
+    assert.equal(all(row, node => node.tagName === 'a' && attr(node, 'id') === id).length, 1, 'retain separate source: ' + id);
+  }
+}
+
+assertMissionAttribution(parse(read('src/components/journal/G3HistoryFeature.astro')));
 const historyRoute = '/journal/dossiers/g3/history/';
 assert.ok(fs.existsSync(path.join(root, 'src/pages/journal/dossiers/g3/history/index.astro')));
 assert.equal(JSON.parse(read('migration/page-ownership.json')).routes[historyRoute]?.status, 'production-dist');
@@ -209,6 +479,12 @@ if (!process.argv.includes('--source-only')) {
     if (type === 'Article') {
       oneMeta('property', 'article:published_time', data.publishedAt);
       oneMeta('property', 'article:modified_time', data.modifiedAt);
+      const dateGroups = nodes.filter(node => hasClass(node, 'je-article-dates'));
+      assert.equal(dateGroups.length, 1, 'one visible article dateline at '+route);
+      const visibleDates = all(dateGroups[0], node => node.tagName === 'time');
+      const expectedDates = data.modifiedAt === data.publishedAt ? [data.publishedAt] : [data.publishedAt, data.modifiedAt];
+      assert.deepEqual(visibleDates.map(node => attr(node, 'datetime')), expectedDates, 'visible article dates match route metadata at '+route);
+      assert.ok(visibleDates.every(node => text(node).trim()), 'visible article dates must have text at '+route);
     } else {
       for (const field of ['article:published_time', 'article:modified_time']) assert.equal(metas('property', field).length, 0, `CollectionPage must not leak ${field}`);
     }
@@ -220,11 +496,25 @@ if (!process.argv.includes('--source-only')) {
     assert.match(attr(metas('name', 'robots')[0], 'content'), /^index, follow/);
     const graphs = nodes.filter((node) => node.tagName === 'script' && attr(node, 'type') === 'application/ld+json').map((node) => JSON.parse(text(node)));
     const entities = graphs.flatMap((graph) => graph['@graph'] || [graph]);
+    const breadcrumbs = entities.filter((item) => item['@type'] === 'BreadcrumbList');
+    assert.equal(breadcrumbs.length, 1, `exactly one BreadcrumbList at ${route}`);
+    assert.deepEqual(breadcrumbs[0].itemListElement, expectedBreadcrumbItems(data.canonical), `breadcrumb dist drift at ${route}`);
     const entity = entities.filter((item) => item['@type'] === type);
     assert.equal(entity.length, 1, `exactly one ${type} schema at ${route}`);
     assert.equal(entity[0].headline, data.title);
     assert.equal(entity[0].datePublished, data.publishedAt);
     assert.equal(entity[0].dateModified, data.modifiedAt);
+    const narration = nodes.filter(node=>attr(node,'data-journal-narration')!==undefined);
+    const ranges = nodes.filter(node=>attr(node,'data-reader-range')!==undefined);
+    assert.equal(narration.length,type==='Article'?1:0,'Journal narration is explicitly article-only');
+    assert.equal(ranges.length,type==='Article'?1:0,'one canonical reader projection range per opted-in article');
+    if(type==='Article') {
+      assert.equal(attr(ranges[0],'id'),'main-content');
+      assert.notEqual(attr(narration[0],'hidden'),undefined,'no inert controls without JS');
+      assert.notEqual(attr(narration[0],'data-pagefind-ignore'),undefined);
+      assert.equal(all(narration[0],node=>attr(node,'data-fc-action')==='play').length,1);
+      assert.deepEqual(all(narration[0],node=>node.tagName==='option').map(node=>Number(attr(node,'value'))),[.75,1,1.25,1.5,1.75,2]);
+    }
     const ids = nodes.map((node) => attr(node, 'id')).filter(Boolean);
     assert.equal(ids.length, new Set(ids).size, `duplicate element IDs at ${route}`);
     for (const node of nodes.filter((node) => node.tagName === 'a' && attr(node, 'href')?.startsWith('#'))) {
@@ -249,9 +539,9 @@ if (!process.argv.includes('--source-only')) {
     const covers = nodes.filter((node) => node.tagName === 'source' && attr(node, 'type') === 'image/avif');
     assert.equal(covers.length, 1, `exactly one responsive AVIF cover at ${route}`);
     const fontHints = nodes.filter((node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'font');
-    // The Journal collection retains its four original critical faces.
-    // Both G3 articles add semibold Source Sans for real labels; only the
-    // dossier uses semibold Lora. History must NOT preload the unused face
+    // Journal collection and both G3 articles use semibold Source Sans
+    // for visible labels. Only the dossier uses semibold Lora.
+    // Other Journal routes must NOT preload the unused face
     // (Firefox reports a genuine unused-WOFF2 console warning).
     // Reject any missing, extra, or duplicate font hint.
     const expectedFontHints = [
@@ -259,9 +549,7 @@ if (!process.argv.includes('--source-only')) {
       '/fonts/Lora/lora-cyrillic-400.woff2',
       '/fonts/SourceSans3/sourcesans3-cyrillic-400.woff2',
       '/fonts/SourceSans3/sourcesans3-latin-400.woff2',
-      ...(type === 'Article' ? [
-        '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
-      ] : []),
+      '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
       ...(route === '/journal/dossiers/g3/' ? [
         '/fonts/Lora/lora-cyrillic-600.woff2',
       ] : []),
@@ -361,6 +649,24 @@ if (!process.argv.includes('--source-only')) {
           assert.match(text(entry), /2026-08-27/);
           assert.doesNotMatch(text(entry), /2026-09-04/);
         }
+        if (source.id === 'G3-S054') {
+          assert.match(text(entry), /2026-08-13/);
+          assert.match(text(entry), /Архивная книжная карточка/);
+          assert.match(text(entry), /архивная карточка книги Дэйва Дженкинса/);
+          assert.match(text(entry), /20260813111558/);
+          assert.match(text(entry), /не подтверждает последующее переиздание книги или переход издательских прав/);
+          assert.doesNotMatch(text(entry), /2026-09-07|текущие авторские и магазинные поверхности/);
+          const archiveLinks = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));
+          assert.equal(archiveLinks.length, 1, 'Q020 must link the exact earlier archive, not the current storefront');
+          assert.match(text(archiveLinks[0]), /Архив книжной карточки от 13 августа 2026 года/);
+          assert.match(text(archiveLinks[0]), /доступ может быть ограничен/);
+        }
+        if (['G3-S033','G3-S050','G3-S053'].includes(source.id)) {
+          assert.match(text(entry), /Адрес наблюдавшейся площадки; её нынешнее состояние может отличаться от среза сентября 2026 года\./);
+          const liveLinks = all(entry, node => node.tagName === 'a' && attr(node, 'href') === readerLinks.get(source.id));
+          assert.equal(liveLinks.length,1);
+          assert.match(text(liveLinks[0]), /не архивный снимок/);
+        }
         const summaries = all(entry, node => node.tagName === 'summary');
         assert.equal(summaries.length, 1);
         assert.ok(attr(summaries[0], 'aria-label')?.includes('Локатор и доступ: '), 'contextual disclosure name');
@@ -403,11 +709,28 @@ if (!process.argv.includes('--source-only')) {
           assert.ok(byId(doc,'cite-r6-'+id));
         }
       }
+      assertMissionAttribution(doc);
+      const christYear=assertLaterConferenceChronology(doc);
+      assert.equal(all(christYear,n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-14').length,1,'2021 testimony belongs to its chronological chapter');
+      assert.equal(all(christYear,n=>attr(n,'id')==='cite-r6-crotts-2021').length,1,'2021 source remains next to testimony');
+      assert.equal(all(byId(doc,'g3-growth'),n=>attr(n,'data-history-expansion-claim')==='G3-HIST-PUB-15').length,1,'network account remains in institutional growth');
+      assertG44Dist(doc);
       const atlas=nodes.filter(node=>hasClass(node,'g3g-history'));
       assert.equal(atlas.length,1);
       const atlasCitations=all(atlas[0],node=>node.tagName==='a'&&attr(node,'data-journal-citation')!==undefined);
-      assert.equal(atlasCitations.length,18);
-      assert.equal(new Set(atlasCitations.map(node=>attr(node,'id'))).size,18);
+      // Independent reviewed evidence binding: a real bibliography destination
+      // is not sufficient if it belongs to another historical event.
+      const expectedAtlasSourceIds = [
+        'challies', 'ascol-2018', 'reformation-2024', 'cessationist-2024',
+        'peters-2024', 'invitation-2011', 'challies', 'gnl-2014', 'gnl-2015',
+        'gnl-2016', 'gnl-2017', 'statement-2018', 'gnl-2019', 'gnl-2020',
+        'aniol-2021', 'announcement-2023', 'reformation-2024', 'cessationist-2024',
+      ];
+      const expectedAtlasBindings = expectedAtlasSourceIds.map((sourceId,i)=>[
+        `cite-g3g-history-${i+1}`, `#history-source-${sourceId}`,
+      ]);
+      assert.deepEqual(atlasCitations.map(link=>[attr(link,'id'),attr(link,'href')]),
+        expectedAtlasBindings,'atlas ordered citation ID/source identity must survive layout changes');
       for (const link of atlasCitations) assert.ok(byId(doc,attr(link,'href').slice(1)),'atlas citation has exact rendered destination');
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);

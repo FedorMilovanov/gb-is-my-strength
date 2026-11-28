@@ -76,7 +76,7 @@ const sourceRoles: Record<string, string> = {
   'G3-S033': 'Листинг магазина приложений', 'G3-S035': 'Вторичный разбор',
   'G3-S042': 'Перепечатки одного письма', 'G3-S046': 'Страница мероприятия',
   'G3-S047': 'Страницы участников', 'G3-S050': 'Метаданные приложения',
-  'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Издательские страницы',
+  'G3-S053': 'Снимок книжной витрины', 'G3-S054': 'Архивная книжная карточка',
   'G3-S096': 'Архивная страница организации',
 };
 // Honest native fallback for a fresh source visit. The shared adapter can
@@ -119,7 +119,13 @@ const readerSourceLinks: Record<string, { href: string; label: string }> = {
   'G3-S012': { href: 'https://teampyro.blogspot.com/2026/08/hamans-gallows.html', label: 'Авторская статья Фила Джонсона (доступ может быть ограничен)' },
   'G3-S015': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Сообщение Christian Post с фрагментами заявления от 25 августа' },
   'G3-S017': { href: 'https://ministrywatch.com/g3-ministries-closes-amid-anonymous-smear-campaign/', label: 'MinistryWatch · публикация от 27 августа 2026 года' },
+  'G3-S035': { href: 'https://protestia.com/2026/08/17/g3-promised-cooperative-not-competitive-the-anonymous-targeting-continued/4/', label: 'Protestia · раздел о проверке проповедей и ответе церкви' },
   'G3-S042': { href: 'https://www.christianpost.com/news/g3-church-network-shuts-down-after-leaders-apologize-report.html', label: 'Christian Post · публикация от 26 августа 2026 года' },
+  'G3-S033': { href: 'https://apps.apple.com/us/app/g3/id1192776791', label: 'Карточка G3+ в App Store (не архивный снимок)' },
+  'G3-S050': { href: 'https://play.google.com/store/apps/details?id=com.subsplashconsulting.s_V9572P', label: 'Карточка G3+ в Google Play (не архивный снимок)' },
+  'G3-S053': { href: 'https://shop.g3min.org/', label: 'Веб-адрес витрины G3 Press (не архивный снимок)' },
+  'G3-S054': { href: 'https://web.archive.org/web/20260813111558/https://servantsofgrace.org/product/the-word-matters-defending-biblical-authority-against-the-spirit-of-the-age/', label: 'Архив книжной карточки от 13 августа 2026 года (доступ может быть ограничен)' },
+  'G3-S096': { href: 'https://web.archive.org/web/20260721102641/http://g3min.org/about/who-we-are/', label: 'Архив страницы «Who We Are» от 21 июля 2026 года (доступ может быть ограничен)' },
 };
 // Reader display only: pinned source objects, provenance and evidence stay intact.
 // Keep document identifiers; omit internal acquisition/storage workflow prose.
@@ -150,6 +156,17 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       period = null; // An acquisition route is not a document date.
       locator = 'Официальный архив электронных деклараций IRS Form 990; FY2025.';
       break;
+    case 'G3-S033':
+    case 'G3-S050':
+    case 'G3-S053':
+      locator += ' Адрес наблюдавшейся площадки; её нынешнее состояние может отличаться от среза сентября 2026 года.';
+      break;
+    case 'G3-S054':
+      // Adopted Q020 withdrawal: display the dated earlier card, not a current storefront.
+      title = 'Servants of Grace / Theology for Life Publishing — архивная карточка книги Дэйва Дженкинса «The Word Matters»';
+      period = '2026-08-13';
+      locator = 'Архивный снимок от 13 августа 2026 года (20260813111558). Карточка не подтверждает последующее переиздание книги или переход издательских прав.';
+      break;
     case 'G3-S096':
       locator = locator
         .replace('Raw archived payload SHA ', 'Префиксы SHA: архивное содержимое до декодирования — ')
@@ -161,11 +178,11 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
 };
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
-<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-source-navigation data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
+<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-source-navigation data-journal-dossier="g3" data-reader-range data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
   <JournalArticleHeader
     title={G3_PRODUCT_METADATA.title}
     label="Документальное досье" series="G3 Ministries" period="2025–2026"
-    readingTime={G3_PRODUCT_METADATA.readingTimeMinutes}
+    readingTime={G3_PRODUCT_METADATA.readingTimeMinutes} narration
     publishedAt={G3_PRODUCT_METADATA.publishedAt} modifiedAt={G3_PRODUCT_METADATA.modifiedAt}
   >
     <p>Отставка основателя, попытка обновления и новый конфликт.
@@ -258,8 +275,8 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><a id="cite-timeline-G3-S015" data-journal-citation class="claim-ref" href="#src-G3-S015" data-publication-claims="G3-PUB-011">Сохранившееся заявление пасторов</a></div>
       </li>
       <li>
-        <time datetime="2026-09">сентябрь 2026</time>
-        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a id="cite-timeline-G3-S011" data-journal-citation class="claim-ref" href="#src-G3-S011" data-publication-claims="G3-PUB-012">Сообщения о завершении и отмене</a></div>
+        <time datetime="2026-08">конец августа 2026</time>
+        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a id="cite-timeline-G3-S017" data-journal-citation class="claim-ref" href="#src-G3-S017" data-publication-claims="G3-PUB-012">MinistryWatch · сообщение от 27 августа</a><span class="je-source-separator" aria-hidden="true"> · </span><a id="cite-timeline-G3-S011" data-journal-citation class="claim-ref" href="#src-G3-S011" data-publication-claims="G3-PUB-012">Отмена конференции 2027 года</a></div>
       </li>
     </ol>
   </section>
@@ -342,7 +359,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         Следовательно, корректнее говорить о <strong>попытке продолжить и перестроить служение</strong>,
         а не утверждать, что реформа обязательно оказалась успешной.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-005 G3-PUB-006 G3-PUB-007"><a id="cite-buice-G3-S008" data-journal-citation class="source-note" href="#src-G3-S008">Официальные заявления G3 и даты назначений</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-005 G3-PUB-006 G3-PUB-007"><a id="cite-buice-G3-S008" data-journal-citation class="source-note" href="#src-G3-S008">Заявление G3 об отставке Бьюса</a><span class="je-source-separator" aria-hidden="true"> · </span><a id="cite-buice-G3-S009" data-journal-citation class="source-note" href="#src-G3-S009">Сообщение об обновлении служения</a><span class="je-source-separator" aria-hidden="true"> · </span><a id="cite-buice-G3-S010" data-journal-citation class="source-note" href="#src-G3-S010">Объявление о назначении Аниола</a></p>
     </div>
   </section>
 
@@ -380,7 +397,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         оригинальную запись проповеди, установить издание использованного комментария
         и проверить контекст ссылки на автора.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-010 G3-PUB-011 G3-PUB-016"><a id="cite-buck-G3-S012" data-journal-citation class="source-note" href="#src-G3-S012">Разбор Фила Джонсона; заявление четырёх пасторов — в библиографии</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-010 G3-PUB-011 G3-PUB-016"><a id="cite-buck-G3-S012" data-journal-citation class="source-note" href="#src-G3-S012">Разбор Фила Джонсона</a><span class="je-source-separator" aria-hidden="true"> · </span><a id="cite-buck-G3-S035" data-journal-citation class="source-note" href="#src-G3-S035">Проверка Protestia и сведения о рассмотрении в Линдейле</a><span class="je-source-separator" aria-hidden="true"> · </span><a id="cite-buck-G3-S015" data-journal-citation class="source-note" href="#src-G3-S015">Сохранившееся заявление четырёх пасторов</a></p>
     </div>
   </section>
 

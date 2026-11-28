@@ -6,21 +6,88 @@ on:
       - '.github/workflows/journal-g3-history-publication-qa.yml'
       - 'src/pages/journal/**'
       - 'src/components/journal/**'
-      - 'src/data/journal/g3History*.ts'
+      - 'src/styles/editorial-edition.css'
+      - 'src/components/article-pilots/_shared/mobileChromeTypes.ts'
+      - 'src/data/journal/**'
       - 'scripts/journal-editorial-browser.mjs'
+      - 'scripts/journal-editorial-contract.mjs'
+      - 'scripts/lib/journal-atlas-contrast-review.mjs'
+      - 'public/images/journal/**'
+      - 'research/news-visual-engineering/**'
       - 'scripts/lib/journal-print-pdf.py'
       - 'scripts/g3-history-publication-contract.mjs'
       - 'data/route-profiles/journal-dossiers-g3-history.json'
       - 'data/search-manifest.json'
+      - 'src/components/reader-platform/ReaderPreferencesHead.astro'
+      - 'src/runtime/reader-projection.js'
+      - 'src/runtime/reader-tts-defaults.js'
+      - 'src/runtime/reader-tts-click-guard.js'
+      - 'src/runtime/reader-tts-lifecycle.js'
+      - 'src/runtime/reader-tts.js'
+      - 'src/runtime/reader-tts-media-session.js'
+      - 'src/components/reader-platform/ReaderSpeedContract.ts'
+      - 'scripts/lib/browser-runtime-noise.js'
+      - 'src/components/article-pilots/_shared/MobileChrome*'
+      - 'src/lib/asset-version.js'
+      - 'css/site.css'
+      - 'css/reader-preferences.css'
+      - 'css/command-palette.css'
+      - 'css/mobile-hotfix.css'
+      - 'fonts/fonts.css'
+      - 'fonts/PlayfairDisplay/**'
+      - 'fonts/Lora/**'
+      - 'fonts/SourceSans3/**'
+      - 'js/reader-preferences*.js'
+      - 'js/reader-state.js'
+      - 'js/search.js'
+      - 'js/site.js'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
   push:
     branches: [main]
     paths:
       - '.github/workflows/journal-g3-history-publication-qa.yml'
       - 'src/pages/journal/**'
       - 'src/components/journal/**'
-      - 'src/data/journal/g3History*.ts'
+      - 'src/styles/editorial-edition.css'
+      - 'src/components/article-pilots/_shared/mobileChromeTypes.ts'
+      - 'src/data/journal/**'
       - 'scripts/journal-editorial-browser.mjs'
+      - 'scripts/journal-editorial-contract.mjs'
+      - 'scripts/lib/journal-atlas-contrast-review.mjs'
+      - 'public/images/journal/**'
+      - 'research/news-visual-engineering/**'
       - 'scripts/lib/journal-print-pdf.py'
+      - 'scripts/g3-history-publication-contract.mjs'
+      - 'data/route-profiles/journal-dossiers-g3-history.json'
+      - 'data/search-manifest.json'
+      - 'src/components/reader-platform/ReaderPreferencesHead.astro'
+      - 'src/runtime/reader-projection.js'
+      - 'src/runtime/reader-tts-defaults.js'
+      - 'src/runtime/reader-tts-click-guard.js'
+      - 'src/runtime/reader-tts-lifecycle.js'
+      - 'src/runtime/reader-tts.js'
+      - 'src/runtime/reader-tts-media-session.js'
+      - 'src/components/reader-platform/ReaderSpeedContract.ts'
+      - 'scripts/lib/browser-runtime-noise.js'
+      - 'src/components/article-pilots/_shared/MobileChrome*'
+      - 'src/lib/asset-version.js'
+      - 'css/site.css'
+      - 'css/reader-preferences.css'
+      - 'css/command-palette.css'
+      - 'css/mobile-hotfix.css'
+      - 'fonts/fonts.css'
+      - 'fonts/PlayfairDisplay/**'
+      - 'fonts/Lora/**'
+      - 'fonts/SourceSans3/**'
+      - 'js/reader-preferences*.js'
+      - 'js/reader-state.js'
+      - 'js/search.js'
+      - 'js/site.js'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -63,6 +130,38 @@ jobs:
           npm run pagefind:build:dist
       - name: Install real browser engine
         run: npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Provision and verify isolated Firefox CI audio sink
+        if: matrix.engine == 'firefox'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
+          audio_root="$(mktemp -d "${RUNNER_TEMP}/g3-audio-XXXXXX")"
+          chmod 700 "$audio_root"
+          export PULSE_SERVER="unix:$audio_root/native"
+          # A real audio server and dedicated virtual output, not muted media.
+          # Keep this private to the runner user; do not expose a TCP listener.
+          printf '%s\n' \
+            "load-module module-native-protocol-unix socket=$audio_root/native auth-anonymous=1" \
+            'load-module module-null-sink sink_name=g3_ci_audio rate=48000 channels=2' \
+            'set-default-sink g3_ci_audio' > "$audio_root/daemon.pa"
+          pulseaudio --daemonize=yes --exit-idle-time=-1 --use-pid-file=no \
+            --log-target="file:$audio_root/pulse.log" -n --file="$audio_root/daemon.pa"
+          ready=0
+          for attempt in {1..30}; do
+            if pactl info > "$audio_root/info.txt" 2>&1; then
+              printf 'Firefox audio server ready on attempt %s\n' "$attempt"
+              ready=1
+              break
+            fi
+            sleep .2
+          done
+          if (( ! ready )); then cat "$audio_root/info.txt" "$audio_root/pulse.log" >&2; exit 1; fi
+          test "$(pactl get-default-sink)" = g3_ci_audio
+          pactl list short sinks
+          cat "$audio_root/info.txt"
+          printf 'PULSE_SERVER=%s\nG3_REQUIRE_AUDIO_SINK=1\n' "$PULSE_SERVER" >> "$GITHUB_ENV"
       - name: Source-check published-only browser witness
         run: node --check scripts/journal-editorial-browser.mjs
       - name: Exercise three public routes and native noJS keyboard
@@ -80,7 +179,21 @@ jobs:
             fi
             sleep .2
           done
-          node scripts/journal-editorial-browser.mjs \
+          # A mobile failure must not erase independent desktop/forced-color evidence.
+          # Run every required suite on the same build; fail the job if ANY suite fails.
+          failed_suites=()
+          run_suite() {
+            local name="$1" status
+            shift
+            if "$@"; then
+              printf 'PASS suite %s\n' "$name"
+            else
+              status=$?
+              failed_suites+=("$name:$status")
+              printf 'FAIL suite %s (exit %s)\n' "$name" "$status" >&2
+            fi
+          }
+          run_suite mobile node scripts/journal-editorial-browser.mjs \
             --origin=http://127.0.0.1:4177 \
             --browser=${{ matrix.engine }} --suite=mobile \
             --stop-on-first-error=${{ matrix.engine == 'firefox' }} \
@@ -90,12 +203,22 @@ jobs:
           # AuditRepo W62: the replacement JournalContents/rail needs a real
           # desktop sticky/scroll/focus witness, not the obsolete dossier-nav test.
           # 2 routes × 2 heights × 2 palettes × JS/no-JS = 16 native cases/engine.
-          node scripts/journal-editorial-browser.mjs \
+          run_suite short node scripts/journal-editorial-browser.mjs \
             --origin=http://127.0.0.1:4177 \
             --browser=${{ matrix.engine }} --suite=short \
             --stop-on-first-error=${{ matrix.engine == 'firefox' }} \
             --axe="${G3_AXE_PATH}" --widths=1440 --heights=390,480 \
             --output=reports/g3-history-mobile-${{ matrix.engine }}/desktop-short
+          if [[ "${{ matrix.engine }}" == chromium ]]; then
+            run_suite forced-colors node scripts/journal-editorial-browser.mjs \
+              --origin=http://127.0.0.1:4177 --browser=chromium --suite=forced-colors \
+              --axe="${G3_AXE_PATH}" \
+              --output=reports/g3-history-mobile-chromium/forced-colors
+          fi
+          if (( ${#failed_suites[@]} )); then
+            printf 'Failed required suites: %s\n' "${failed_suites[*]}" >&2
+            exit 1
+          fi
       - name: Retain exact-head browser JSON and real screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
@@ -161,5 +284,116 @@ jobs:
         with:
           name: journal-g3-history-paper-${{ github.sha }}
           path: reports/g3-history-paper/
+          if-no-files-found: warn
+          retention-days: 14
+
+  news-document-exhibit:
+    name: NEWS document exhibit (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit, firefox]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v4.4.1
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Reproducible install
+        run: npm ci
+      - name: Verify NEWS model and runner syntax
+        run: |
+          node --test research/news-visual-engineering/document-exhibit.test.mjs
+          node --check research/news-visual-engineering/browser-test.mjs
+          node --check research/news-visual-engineering/pdf-test.mjs
+          node --check research/news-visual-engineering/specimen-review.mjs
+          node --check research/news-visual-engineering/ci-evidence-check.mjs
+          node --check research/news-visual-engineering/pdf-word-bounds.mjs
+          node --check research/news-visual-engineering/keyboard-scale-witness.mjs
+      - name: Install real browser engine
+        id: news_browser
+        run: npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Provision PDF text analyzer
+        id: news_pdf
+        if: matrix.engine == 'chromium'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+          pdftotext -v
+      - name: Compile private fixtures and exercise 24 scenarios
+        shell: bash
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          export ASTRO_TELEMETRY_DISABLED=1
+          output="reports/news-document-exhibit-${ENGINE}"
+          mkdir -p "$output"
+          git rev-parse HEAD > "$output/checkout-sha.txt"
+          TMPDIR="$(mktemp -d "${RUNNER_TEMP}/news-exhibit-XXXXXX")"
+          export TMPDIR
+          retain() {
+            local root
+            for root in "$TMPDIR"/news-document-exhibit-*; do
+              if [[ -d "$root/evidence" ]]; then
+                cp -a "$root/evidence/." "$output/"
+              fi
+            done
+          }
+          trap retain EXIT
+          node research/news-visual-engineering/browser-test.mjs "$ENGINE" 2>&1 | tee "$output/runner.log"
+          retain
+          if [[ "$ENGINE" == chromium ]]; then
+            node research/news-visual-engineering/pdf-test.mjs "$output" 2>&1 | tee "$output/pdf-check.log"
+          fi
+          node research/news-visual-engineering/ci-evidence-check.mjs "$ENGINE" "$output"
+      - name: Compile and verify all three real private evidence formats
+        if: ${{ !cancelled() && steps.news_browser.outcome == 'success' && (matrix.engine != 'chromium' || steps.news_pdf.outcome == 'success') }}
+        shell: bash
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: |
+          set -euo pipefail
+          export ASTRO_TELEMETRY_DISABLED=1
+          base="reports/news-document-exhibit-${ENGINE}/real"
+          mkdir -p "$base"
+          failed=0
+          for mode in compact history-2018 compare-2022; do
+            output="$base/$mode"
+            mkdir -p "$output"
+            git rev-parse HEAD > "$output/checkout-sha.txt"
+            TMPDIR="$(mktemp -d "${RUNNER_TEMP}/news-real-${mode}-XXXXXX")"
+            export TMPDIR
+            retain() {
+              local root
+              for root in "$TMPDIR"/news-real-specimen-*; do
+                if [[ -d "$root/evidence" ]]; then
+                  cp -a "$root/evidence/." "$output/"
+                fi
+              done
+            }
+            trap retain EXIT
+            args=()
+            if [[ "$mode" != compact ]]; then args+=("--$mode"); fi
+            if node research/news-visual-engineering/specimen-review.mjs "${args[@]}" "$ENGINE" 2>&1 | tee "$output/runner.log"; then
+              retain
+              if ! node research/news-visual-engineering/ci-evidence-check.mjs "$ENGINE" "$output" "$mode"; then failed=1; fi
+            else
+              retain
+              failed=1
+            fi
+            trap - EXIT
+          done
+          exit "$failed"
+      - name: Retain NEWS fixture reports, screenshots and physical PDFs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+        with:
+          name: news-document-exhibit-${{ matrix.engine }}-${{ github.sha }}
+          path: reports/news-document-exhibit-${{ matrix.engine }}/
           if-no-files-found: warn
           retention-days: 14

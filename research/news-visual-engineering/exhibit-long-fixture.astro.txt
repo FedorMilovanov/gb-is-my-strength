@@ -1,0 +1,24 @@
+---
+import Exhibit from '../components/journal/editorial/JournalDocumentExhibit.astro';
+import SourceReturn from '../components/journal/JournalSourceReturn.astro';
+import {documentCitationId} from '../components/journal/editorial/document-exhibit-model.mjs';
+import '../components/journal/journalEditorial.css';
+import '../news-private-focus.css';
+import '../../fonts/fonts.css';
+// Synthetic stress fixture: no names, dates or statements from historical records.
+const names=['Предмет и границы документа','Порядок фиксации сведений','Условия использования материала','Различение дат и событий','Проверка независимых свидетельств','Уточнения и исправления','Сохранение первоисточника','Ограничения интерпретации'];
+const sentences=[
+ 'Этот условный раздел используется для проверки устойчивости композиции при изменении длины текста.',
+ 'В техническом образце последовательность фрагментов определяется их положением в условном документе, а не хронологией реальных событий.',
+ 'Редакционное пояснение отделяется от пересказа, чтобы читатель мог сопоставить два уровня текста без потери контекста.',
+ 'Повторяющиеся ссылки проверяют доступность переходов и независимость возврата к каждому месту чтения.'
+];
+const sections=names.map((heading,i)=>({id:'part-'+(i+1),heading,locator:'Раздел '+(i+1)+' · Технический образец',summary:Array.from({length:[1,3,2,4,1,2,3,1][i]},(_,j)=>sentences[(i+j)%sentences.length]).join(' '),significance:'Проверяется '+['ритм короткого пояснения.','структура нескольких строк аннотации при узкой колонке.'][i%2],limitation:'Раздел не содержит исторических сведений и не может служить свидетельством реального события.',claimId:'fixture-'+(i+1),sourceId:i%2?'fixture-other':'fixture-source'}));
+const sources=[{id:'fixture-source',href:'#source-fixture',label:'Первый технический образец с длинным названием источника'},{id:'fixture-other',href:'#source-other',label:'Второй технический образец'}];
+const authority={claims:sections.map(s=>({id:s.claimId,references:[{sourceId:s.sourceId,locator:s.locator},...(s.id==='part-5'?[{sourceId:'fixture-other',locator:'Дополнительный локатор — технический образец'},{sourceId:s.sourceId,locator:'Повторный источник, иной локатор — технический образец'}]:[])]})),sources};
+const common={mode:'editorial-paraphrase' as const,issuer:'Условная редакционная комиссия по систематизации документальных материалов и проверке архивных описаний',deck:'Длинная синтетическая фикстура для проверки журнальной композиции, адаптивности и печати.',documentDate:'2024-02-29',publicationDate:null,captureDate:'2025-01-01'};
+const first={...common,id:'long-document',title:'Структура условного документа о порядке систематизации материалов и редакционных пояснений',sections};
+const second={...common,id:'second-document',title:'Дополнительный документ: независимые ссылки и повторное использование',sections:sections.slice(0,2)};
+---
+<html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/></head>
+<body style="margin:0"><main class="journal-edition"><article class="news-private-review" data-journal-source-navigation style="max-width:1000px;margin:auto;padding:16px"><Exhibit input={first} {authority}/><Exhibit input={second} {authority}/><section id="source-fixture" class="bibliography-item"><h2>Первый технический образец источника</h2><SourceReturn href={`#${documentCitationId(first.id,'part-1')}`} label="К разделу статьи"/></section><section id="source-other" class="bibliography-item"><h2>Второй технический образец источника</h2><SourceReturn href={`#${documentCitationId(first.id,'part-2')}`} label="К разделу статьи"/></section></article></main></body></html>

@@ -17,7 +17,8 @@
 .journal-edition .je-history-year-mark time { color: var(--je-gold); font: 600 41px/1 var(--je-serif); letter-spacing: -.04em; font-variant-numeric: lining-nums; }
 .journal-edition .je-history-year-mark > span { color: var(--je-muted); font: 600 11px/1.5 var(--je-ui); letter-spacing: .07em; text-transform: uppercase; }
 .journal-edition .je-history-year-text h3 { margin: 0 0 15px; color: var(--je-ink); font: 600 25px/1.3 var(--je-serif); letter-spacing: -.015em; text-wrap: pretty; }
-.journal-edition .je-history-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; padding: 8px 0 0; margin: 28px 0 0; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); }
+.journal-edition .je-history-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; padding: 8px 0 0; margin: 28px 0 0; }
+@media screen { .journal-edition .je-history-projects { border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); } }
 .journal-edition .je-history-projects > div { padding: 18px 0 23px; border-bottom: 1px solid var(--je-rule); }
 .journal-edition .je-history-projects dt { color: var(--je-ink); font: 600 22px/1.3 var(--je-serif); }
 .journal-edition .je-history-projects dd { margin: 8px 0 0; color: var(--je-muted); font: 14px/1.6 var(--je-ui); }
@@ -38,6 +39,23 @@
   .journal-edition .je-history-projects { column-gap: 24px; }
   .journal-edition .je-history-projects dt { font-size: 20px; }
 }
+@media screen and (max-width: 1023px) {
+  .journal-edition .je-history-footnote { display: grid; gap: .25rem; margin-block-start: 1.25rem; }
+  .journal-edition .je-history-footnote > a[data-journal-citation] { display: grid; grid-template-columns: minmax(0, 1fr) .6rem; align-items: center; gap: .75rem; min-height: 44px; padding: 6px; border-radius: 2px; font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+  .journal-edition .je-history-footnote > a[data-journal-citation]::after { content: ''; inline-size: .5rem; block-size: .5rem; border-block-start: 1.5px solid currentColor; border-inline-end: 1.5px solid currentColor; transform: rotate(45deg); justify-self: center; }
+  /* A single reference reads as an action; a list of references reads as a
+     compact, distinct source group, without fake inter-item text or links. */
+  .journal-edition .je-history-footnote:has(> a ~ a) { display: flex; flex-wrap: wrap; gap: .25rem .75rem; border-inline-start: 1px solid var(--je-rule); padding-inline-start: .625rem; }
+  .journal-edition .je-history-footnote:has(> a ~ a) > a[data-journal-citation] { display: inline-flex; gap: .55rem; min-width: 0; text-align: start; }
+  .journal-edition .je-history-footnote:has(> a ~ a) > a[data-journal-citation]::after { flex: none; }
+  .journal-edition .je-history-footnote > .je-footnote-separator { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .journal-edition .je-history-footnote > a[data-journal-citation]:hover { background: var(--je-paper-raised); text-decoration: underline; }
+  }
+  @media (forced-colors: active) {
+    .journal-edition .je-history-footnote > a[data-journal-citation] { color: LinkText; text-decoration: underline; }
+  }
+}
 @media (max-width: 359px) {
   .journal-edition .je-history-projects { grid-template-columns: 1fr; }
 }
@@ -51,8 +69,12 @@
   /* Print sources are references, not 44px touch targets. Retain headings,
      locators, rules and clickable originals while avoiding a near-empty
      standalone credits sheet after the expanded 33-entry bibliography. Screen is unchanged. */
-  .journal-edition .je-history-article .bibliography-item { padding-block: 10px 12px; }
+  .journal-edition .je-history-article .bibliography-item { padding-block: 8px 9px; }
   .journal-edition .je-history-article .bibliography-item::before { top: 14px; }
+  /* On paper all source boundaries are expanded by the Journal print owner.
+     Remove only the redundant disclosure affordance, not its evidence text. */
+  .journal-edition .je-history-article .bibliography-item .biblio-details > summary { display: none; }
+  .journal-edition .je-history-article .bibliography-item .biblio-details > p { margin-block: 4px 0; }
   .journal-edition .je-history-article .je-next-story { margin-top: 18px; padding-block: 16px; }
-  .journal-edition .je-history-article .dossier-footer { margin-top: 22px; padding-top: 12px; }
+  .journal-edition .je-history-article .dossier-footer { margin-top: 10px; padding-top: 8px; }
 }

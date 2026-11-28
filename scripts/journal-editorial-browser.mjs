@@ -60,11 +60,27 @@ const report = { engine, suite, version: null, head: execFileSync('git', ['rev-p
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
-  ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
+  ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalNarration.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3R6Adopted.json', 'g3ExpansionHandoff.ts', 'g3EditorialMedia.ts', 'g3HistorySources.ts', 'g3HistoryMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
   ...['G3AnnualFinance.astro','G3SpeakerMatrix.astro','adopted-visual-data.json','adopted-visual-inputs.ts','finance.css','matrix-data.json','matrix.css','matrix.js'].map(name => 'src/components/journal/g3-visual/'+name),
   ...['G3HistoricalPanorama.astro','G3ExpenseWaterfall.astro','G3EcosystemSpread.astro','finance-model.mjs','graphics.css'].map(name => 'src/components/journal/g3-graphics/'+name),
   'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro', 'src/pages/journal/dossiers/g3/history/index.astro',
+  'src/components/journal/editorial/JournalCompactDocumentIndex.astro',
+  'src/styles/editorial-edition.css',
+  'src/components/article-pilots/_shared/MobileChromePage.astro',
+  'src/components/reader-platform/ReaderPreferencesHead.astro',
+  'src/components/reader-platform/ReaderSpeedContract.ts',
+  'src/components/journal/journalNarrationRuntime.ts',
+  ...['reader-projection.js','reader-tts-defaults.js','reader-tts-click-guard.js','reader-tts-lifecycle.js','reader-tts.js','reader-tts-media-session.js'].map(name=>'src/runtime/'+name),
+  'css/reader-preferences.css',
+  'js/reader-preferences-head.js',
+  'js/reader-preferences.js',
+  'js/reader-state.js',
+  'public/images/journal/g3-ministries-cover-1200.avif',
+  'public/images/journal/g3-ministries-cover-1200.webp',
+  'public/images/journal/g3-ministries-cover-640.avif',
+  'public/images/journal/g3-ministries-cover-640.webp',
+  'public/images/journal/g3-ministries-og-1200x630.webp',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-atlas-contrast-review.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
 for (const name of witnessFiles) report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
@@ -105,15 +121,15 @@ const ready = async (page, url, stage = () => {}) => {
   assert.equal(response.status(), 200, url);
   // Verify the actual article preload contract on the shipped HTML; fail
   // independently of WebKit's CSS FontFaceSet status, not instead of it.
-  if (new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
+  if (/^\/journal\/?$/.test(new URL(url).pathname) || new URL(url).pathname.startsWith('/journal/dossiers/g3/')) {
     const hints = await page.locator('link[rel="preload"][as="font"]').evaluateAll((links) =>
       links.map((el) => new URL(el.href).pathname));
-    const history = new URL(url).pathname.startsWith('/journal/dossiers/g3/history/');
+    const dossier = /^\/journal\/dossiers\/g3\/?$/.test(new URL(url).pathname);
     const source600 = '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2';
     const lora600 = '/fonts/Lora/lora-cyrillic-600.woff2';
     assert.equal(hints.filter((hint) => hint === source600).length, 1,
-      'G3 Article must preload exactly one semibold Cyrillic Source Sans face');
-    assert.equal(hints.filter((hint) => hint === lora600).length, history ? 0 : 1,
+      'Journal must preload exactly one semibold Cyrillic Source Sans face');
+    assert.equal(hints.filter((hint) => hint === lora600).length, dossier ? 1 : 0,
       'Only G3 dossier must preload semibold Cyrillic Lora; history must not preload unused face');
   }
   stage('navigation/fonts-ready');
@@ -247,6 +263,603 @@ const sourceRoundTrip = async (page, citation, keyboard, onSource) => {
   assert.ok(Math.abs(position.y - position.expected) < 2, `citation hidden or offset from its native fragment destination: ${JSON.stringify(position)}`);
   return { id, source: hash, keyboardOutbound: keyboard, keyboardReturn: !keyboard, focusRestored: true, position };
 };
+
+const g44Sources = [
+  [
+    "cite-r6-challies-2018-video",
+    "challies-2018-video"
+  ],
+  [
+    "cite-r6-firstlove-2018",
+    "firstlove-2018"
+  ],
+  [
+    "cite-r6-challies-2018-lessons",
+    "challies-2018-lessons"
+  ],
+  [
+    "cite-g3-year-2018-ascol-2018",
+    "ascol-2018"
+  ],
+  [
+    "cite-g3-year-2018-statement-2018",
+    "statement-2018"
+  ],
+  [
+    "cite-g3-year-2018-responses-2018",
+    "responses-2018"
+  ],
+  [
+    "cite-g3-year-2018-challies",
+    "challies"
+  ]
+];
+async function g44NativeReturns(page, js) {
+  const section=page.locator('#g3-year-2018');
+  assert.equal(await section.count(),1);
+  const ordered=await section.locator('[data-journal-citation]').evaluateAll(nodes=>nodes.map(n=>n.id));
+  assert.deepEqual(ordered,g44Sources.map(([id])=>id),'G44 source order / no duplication');
+  const results=[];
+  for (const [i,[id,sourceId]] of g44Sources.entries()) {
+    const citation=section.locator('#'+id), hash='#history-source-'+sourceId;
+    assert.equal(await page.locator('#'+id).count(),1);
+    assert.equal(await citation.getAttribute('href'),hash);
+    assert.equal(await page.locator(hash).count(),1);
+    if(js) { results.push(await sourceRoundTrip(page,citation,i%2===0)); continue; }
+    const fallback=sourceId==='challies'?'#g3-history':'#g3-year-2018';
+    if(i%2===0){await citation.focus();await page.keyboard.press('Enter');}else await citation.click();
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,hash);
+    const source=page.locator(hash), back=source.locator('[data-journal-source-return]');
+    assert.equal(await source.evaluate(e=>e===document.activeElement),true);
+    assert.equal(await back.count(),1);
+    assert.equal(await back.getAttribute('href'),fallback);
+    assert.equal(await back.getAttribute('aria-label'),null);
+    if(i%2===0)await back.click();else{await back.focus();await page.keyboard.press('Enter');}
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,fallback);
+    assert.equal(await page.locator(fallback).evaluate(e=>e===document.activeElement),true);
+    results.push({id,source:hash,fallback,nativeFocus:true});
+  }
+  return results;
+}
+
+
+function g44MeasureFocus(root){
+  const a=document.activeElement, css=getComputedStyle(a), r=a.getBoundingClientRect(), header=document.querySelector('.mcp-top'), hs=header&&getComputedStyle(header);
+  const headerBottom=hs&&hs.display!=='none'&&hs.visibility!=='hidden'&&Number(hs.opacity)>0?Math.max(0,header.getBoundingClientRect().bottom):0;
+  const width=parseFloat(css.outlineWidth)||0, offset=parseFloat(css.outlineOffset)||0, outset=Math.max(0,width+offset);
+  const hit=(x,y)=>{const e=document.elementFromPoint(x,y);return e===a||a.contains(e);};
+  const rects=node=>{
+    const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT), out=[];
+    while(walker.nextNode())if(walker.currentNode.textContent.trim()){
+      const range=document.createRange();range.selectNodeContents(walker.currentNode);
+      for(const rect of range.getClientRects())if(rect.width>0&&rect.height>0)out.push({rect:rect.toJSON(),parent:walker.currentNode.parentElement});
+    }
+    return out;
+  };
+  const fragments=[...a.getClientRects()].filter(x=>x.width>0&&x.height>0).map(x=>({rect:x.toJSON(),hit:hit((x.left+x.right)/2,(x.top+x.bottom)/2)}));
+  const textRects=rects(a).map(x=>x.rect), inset=Math.max(0,-offset);
+  const textClear=textRects.length>0&&textRects.every(x=>fragments.some(f=>x.left>=f.rect.left+inset-1&&x.right<=f.rect.right-inset+1&&x.top>=f.rect.top+inset-1&&x.bottom<=f.rect.bottom-inset+1));
+  const samples=fragments.flatMap(({rect:f})=>[[f.left+width,f.top+width],[f.right-width,f.top+width],
+    [f.left+width,f.bottom-width],[f.right-width,f.bottom-width],...[.2,.5,.8].flatMap(t=>[
+    [f.left+(f.right-f.left)*t,f.top+width/2],[f.left+(f.right-f.left)*t,f.bottom-width/2],
+    [f.left+width/2,f.top+(f.bottom-f.top)*t],[f.right-width/2,f.top+(f.bottom-f.top)*t]])]);
+  const edgeMisses=samples.filter(([x,y])=>!hit(x,y));
+  const textMisses=textRects.filter(t=>!hit((t.left+t.right)/2,(t.top+t.bottom)/2));
+  const strips=fragments.flatMap(({rect:f})=>[
+    {left:f.left,right:f.right,top:f.top,bottom:f.top+width},{left:f.left,right:f.right,top:f.bottom-width,bottom:f.bottom},
+    {left:f.left,right:f.left+width,top:f.top,bottom:f.bottom},{left:f.right-width,right:f.right,top:f.top,bottom:f.bottom}]);
+  const intersects=(x,y)=>Math.min(x.right,y.right)-Math.max(x.left,y.left)>.5&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>.5;
+  const neighborCollisions=rects(root).filter(t=>!a.contains(t.parent)&&strips.some(strip=>intersects(strip,t.rect))).map(t=>t.rect);
+  const clippingAncestors=[];
+  for(let el=a.parentElement;el&&el!==document.documentElement;el=el.parentElement){
+    const st=getComputedStyle(el), box=el.getBoundingClientRect();
+    const cx=['hidden','clip','auto','scroll'].includes(st.overflowX),cy=['hidden','clip','auto','scroll'].includes(st.overflowY);
+    if(!cx&&!cy)continue;
+    const clip={left:box.left+el.clientLeft,right:box.left+el.clientLeft+el.clientWidth,top:box.top+el.clientTop,bottom:box.top+el.clientTop+el.clientHeight};
+    if(fragments.some(({rect:f})=>(cx&&(f.left-outset<clip.left-1||f.right+outset>clip.right+1))||(cy&&(f.top-outset<clip.top-1||f.bottom+outset>clip.bottom+1))))clippingAncestors.push({tag:el.tagName,id:el.id,clip});
+  }
+  const rgba=value=>{
+    const m=value.match(/^rgba?\(([^)]+)\)$/i);if(!m)return null;
+    const values=m[1].trim().split(/[,\s/]+/).map(Number);
+    return (values.length===3||values.length===4)&&values.every(Number.isFinite)?[...values.slice(0,3),values[3]??1]:null;
+  };
+  const ring=rgba(css.outlineColor);let background=null,determinable=true,opacity=1;
+  for(let el=a;el;el=el.parentElement){
+    const st=getComputedStyle(el);opacity*=Number(st.opacity);
+    if(!background&&determinable){
+      const bg=rgba(st.backgroundColor);
+      if(st.backgroundImage!=='none'||!bg||(bg[3]>0&&bg[3]<1))determinable=false;
+      else if(bg[3]===1)background=bg;
+    }
+  }
+  const luminance=c=>c.slice(0,3).map(n=>{const s=n/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;}).reduce((sum,n,i)=>sum+n*[.2126,.7152,.0722][i],0);
+  let contrast=null;
+  if(ring&&background&&determinable&&opacity===1){
+    const painted=ring.slice(0,3).map((n,i)=>n*ring[3]+background[i]*(1-ring[3]));
+    const l=[luminance(painted),luminance(background)];contrast=(Math.max(...l)+.05)/(Math.min(...l)+.05);
+  }
+  const indicatorVisible=Boolean(ring&&ring[3]>0&&opacity>0&&css.visibility==='visible');
+  const viewportWidth=document.documentElement.clientWidth;
+  return {id:a.id,inside:root.contains(a),focusVisible:a.matches(':focus-visible'),rect:r.toJSON(),headerBottom,width,offset,outset,style:css.outlineStyle,color:css.outlineColor,indicatorVisible,contrast,background,opacity,fragments,textRects,textClear,edgeSamples:samples.length,edgeMisses,textMisses,neighborCollisions,clippingAncestors,scrollY,viewportWidth,viewportHeight:innerHeight,
+    viewportOK:r.height>=44&&r.left-outset>=-1&&r.right+outset<=viewportWidth+1&&r.top-outset>=headerBottom-1&&r.bottom+outset<=innerHeight+1,
+    overflow:document.documentElement.scrollWidth-viewportWidth,
+    scrollMarginTop:css.scrollMarginTop,scrollMarginBottom:css.scrollMarginBottom};
+}
+
+// Standalone links must retain a distinct action cue without a resting
+// underline wall. Inspect real computed geometry and forced-color recovery.
+const historyActionIds = ["cite-g3-invitation-2011","cite-g3-history-challies","cite-g3-year-2013-gnl-2013","cite-g3-year-2013-challies","cite-g3-year-2014-sbts-2014","cite-g3-year-2014-gnl-2014","cite-g3-year-2015-gnl-2015","cite-g3-year-2016-gnl-2016","cite-g3-year-2017-gnl-2017","cite-r6-challies-2018-video","cite-r6-firstlove-2018","cite-r6-challies-2018-lessons","cite-g3-year-2018-ascol-2018","cite-g3-year-2018-statement-2018","cite-g3-year-2018-responses-2018","cite-g3-year-2018-challies","cite-g3-year-2019-announcement-2019","cite-g3-year-2019-gnl-2019","cite-g3-year-2019-piper-2019","cite-g3-year-2020-gnl-2020","cite-r6-crotts-2021","cite-r6-white-manuscripts-2022","cite-r6-white-bible-2022","cite-g3-year-2023-announcement-2023","cite-g3-year-2024-reformation-2024","cite-g3-year-2024-316-2024","cite-g3-year-2024-cessationist-2024","cite-g3-year-2024-peters-2024","cite-g3-year-2024-early-venue-2023","cite-r6-benson-2022","cite-g3-growth-challies","cite-g3-growth-aniol-2021","cite-g3-growth-context-overview"];
+const dossierActionKeys = ["#journal-g3-toc","#documents","#overview","cite-timeline-G3-S001","cite-timeline-G3-S008","cite-timeline-G3-S010","cite-timeline-G3-S096","cite-timeline-G3-S015","cite-timeline-G3-S017","cite-timeline-G3-S011","cite-finance-G3-S002","cite-governance-G3-S096","cite-buice-G3-S008","cite-buice-G3-S009","cite-buice-G3-S010","cite-buck-G3-S012","cite-buck-G3-S035","cite-buck-G3-S015","#bibliography","#documents"];
+async function assertDossierSourceSeparators(page, visible) {
+  const separators = await page.locator('.je-source-separator').evaluateAll(nodes=>nodes.map(el=>({
+    before:el.previousElementSibling?.id, after:el.nextElementSibling?.id,
+    hidden:el.getAttribute('aria-hidden'), text:el.textContent.trim(),
+    visible:el.getClientRects().length>0
+  })));
+  const expected = [["cite-timeline-G3-S017","cite-timeline-G3-S011"],["cite-buice-G3-S008","cite-buice-G3-S009"],["cite-buice-G3-S009","cite-buice-G3-S010"],["cite-buck-G3-S012","cite-buck-G3-S035"],["cite-buck-G3-S035","cite-buck-G3-S015"]];
+  assert.deepEqual(separators.map(s=>[s.before,s.after]),expected);
+  assert.ok(separators.every(s=>s.hidden==='true'&&s.text==='·'&&s.visible===visible),
+    'dossier source labels must remain separate on paper/desktop and clean on mobile');
+  return separators;
+}
+async function standaloneSourceActions(page, kind, forced = false) {
+  const selector = kind === 'history'
+    ? '.je-history-footnote > a, .jcdi-records a[data-journal-citation]'
+    : kind === 'atlas' ? '.g3g-history a[data-journal-citation]'
+    : kind === 'atlas-map' ? '.g3g-history .g3g-atlas-list a[data-journal-citation]'
+    : '.je-contents-jump, .je-contents > .je-contents-return, .source-note-paragraph > a.source-note, .timeline div > a.claim-ref';
+  // Measure resting affordance, never an incidental hover after scrolling.
+  await page.mouse.move(0, 0);
+  const rows = await page.locator(selector).evaluateAll(nodes => nodes.map(el => {
+    const style = getComputedStyle(el), arrow = getComputedStyle(el, '::after'), rect = el.getBoundingClientRect();
+    const blockers = [];
+    for (let node = el; node; node = node.parentElement) {
+      const css = getComputedStyle(node);
+      if (css.display === 'none' || css.visibility !== 'visible' || Number(css.opacity) === 0 ||
+          css.pointerEvents === 'none' || node.hasAttribute('inert') || node.getAttribute('aria-hidden') === 'true') blockers.push(node.tagName);
+    }
+    return { id: el.id, href: el.getAttribute('href'), height: rect.height, left: rect.left, right: rect.right,
+      viewport: document.documentElement.clientWidth, decoration: style.textDecorationLine,
+      width: rect.width, blockers, hovered: el.matches(':hover'), hoverCapable: matchMedia('(hover: hover) and (pointer: fine)').matches, nativeClosedReturn: el.matches('.je-contents-return') && !el.closest('details').open,
+      arrow: arrow.content !== 'none' && arrow.borderTopStyle === 'solid' && arrow.borderRightStyle === 'solid' };
+  }));
+  const expected = kind === 'history' ? historyActionIds : (kind === 'atlas' || kind === 'atlas-map')
+    ? Array.from({length:kind === 'atlas' ? 18 : 5},(_,i)=>'cite-g3g-history-'+(i+1)) : dossierActionKeys;
+  assert.deepEqual(rows.map(row => row.id || row.href), expected, kind + ' exact standalone action inventory');
+  if (kind === 'dossier') await assertDossierSourceSeparators(page,false);
+  for (const row of rows) {
+    const sourceId = row.id.match(/^cite-(?:timeline|finance|governance|buice|buck)-(G3-S\d{3})$/)?.[1];
+    if (sourceId) assert.equal(row.href, '#src-' + sourceId, 'source action must reach its named bibliography entry');
+    if (row.nativeClosedReturn) continue;
+    assert.ok(!row.blockers.length && row.width > 0 && row.height >= 43.5 && row.left >= -1 && row.right <= row.viewport + 1, JSON.stringify(row));
+    assert.ok(row.arrow, 'missing standalone action cue: ' + JSON.stringify(row));
+    assert.ok(!row.hovered || !row.hoverCapable, 'resting witness must not measure a pointer-hovered source: ' + JSON.stringify(row));
+    assert.equal(row.decoration.includes('underline'), forced, 'resting/forced-color action cue: ' + JSON.stringify(row));
+  }
+  return rows;
+}
+// Open the real native chronology only for its source-action witness; restore
+// the original state before the next screenshot or interaction.
+async function atlasSourceActions(page, forced = false) {
+  const chronology = page.locator('.g3g-history .g3g-chron-details');
+  const summary = chronology.locator('summary');
+  assert.equal(await chronology.count(),1);
+  assert.equal(await summary.count(),1);
+  const wasOpen = await chronology.evaluate(el=>el.open);
+  const map = await standaloneSourceActions(page,'atlas-map',forced);
+  const hiddenRows = chronology.locator('a[data-journal-citation]');
+  assert.equal(await hiddenRows.count(),13);
+  assert.deepEqual(await hiddenRows.evaluateAll(nodes=>nodes.map(n=>n.id)),Array.from({length:13},(_,i)=>'cite-g3g-history-'+(i+6)));
+  try {
+    if (!wasOpen) {
+      // Native summary activation, not forced visibility.
+      await summary.click();
+      assert.equal(await chronology.evaluate(el=>el.open),true);
+    }
+    const expanded = await standaloneSourceActions(page,'atlas',forced);
+    return { map, expanded, initiallyOpen:wasOpen };
+  } finally {
+    if ((await chronology.evaluate(el=>el.open))!==wasOpen) {
+      await summary.click();
+      assert.equal(await chronology.evaluate(el=>el.open),wasOpen,'restore native chronology state');
+    }
+  }
+}
+
+// Adversarial checks run on the real routed page AFTER visual capture, in a
+// discarded context. Restore each mutation before the next independent case.
+async function rejectBrokenSourceActions(page) {
+  const first = page.locator('#' + historyActionIds[0]);
+  const results = [];
+  for (const [name, value] of [['display','none'],['visibility','hidden'],['opacity','0'],['pointer-events','none'],['text-decoration','underline']]) {
+    const prior = await first.evaluate((el, prop) => ({ value:el.style.getPropertyValue(prop), priority:el.style.getPropertyPriority(prop) }), name);
+    try {
+      await first.evaluate((el, [prop, val]) => el.style.setProperty(prop,val,'important'), [name,value]);
+      await assert.rejects(standaloneSourceActions(page,'history'), { name:'AssertionError' }, 'hidden/noninteractive source must fail: '+name);
+      results.push(name);
+    } finally {
+      await first.evaluate((el, [prop, prior]) => { if(prior.value)el.style.setProperty(prop,prior.value,prior.priority);else el.style.removeProperty(prop); }, [name,prior]);
+    }
+  }
+  for (const attr of ['inert','aria-hidden','data-id-probe']) {
+    const original = await first.evaluate((el, attr) => attr==='data-id-probe'?el.id:el.getAttribute(attr),attr);
+    try {
+      await first.evaluate((el, attr) => { if(attr==='data-id-probe')el.id='missing-source-id-probe';else el.setAttribute(attr,'true'); },attr);
+      await assert.rejects(standaloneSourceActions(page,'history'), { name:'AssertionError' }, 'incomplete/noninteractive source must fail: '+attr);
+      results.push(attr);
+    } finally {
+      // The exact element is still in place even when its ID was mutated.
+      if(attr==='data-id-probe')await page.locator('#missing-source-id-probe').evaluate((el,id)=>el.id=id,original);
+      else await first.evaluate((el,[attr,original])=>{if(original===null)el.removeAttribute(attr);else el.setAttribute(attr,original);},[attr,original]);
+    }
+  }
+  assert.equal((await standaloneSourceActions(page,'history')).length,33,'restore original source inventory');
+  return results;
+}
+// Check the approved hover affordance separately from the strict resting oracle.
+async function sourceActionHoverWitness(page) {
+  if (!await page.evaluate(()=>matchMedia('(hover: hover) and (pointer: fine)').matches)) return { supported:false };
+  const ids=[historyActionIds[0],'cite-r6-challies-2018-video','cite-g3g-history-1'];
+  const results=[];
+  try {
+    for(const id of ids) {
+      const link=page.locator('#'+id);
+      await page.mouse.move(0,0);
+      const before=await link.evaluate(el=>({hovered:el.matches(':hover'),decoration:getComputedStyle(el).textDecorationLine}));
+      assert.ok(!before.hovered && !before.decoration.includes('underline'),id+' rest');
+      await link.hover();
+      const hover=await link.evaluate(el=>({hovered:el.matches(':hover'),decoration:getComputedStyle(el).textDecorationLine}));
+      assert.ok(hover.hovered && hover.decoration.includes('underline'),id+' native hover');
+      await page.mouse.move(0,0);
+      const after=await link.evaluate(el=>({hovered:el.matches(':hover'),decoration:getComputedStyle(el).textDecorationLine}));
+      assert.deepEqual(after,before,id+' restored rest');
+      results.push({id,before,hover,after});
+    }
+  } finally { await page.mouse.move(0,0); }
+  return {supported:true,results};
+}
+// Direct process.exit bypasses the outer finally. Retain explicitly partial
+// mobile evidence before any forced termination and before risky teardown.
+function writeMobileCheckpoint({ name, item, reason, exitCode = null }) {
+  const checkpoint = path.join(output,'mobile-checkpoint.json');
+  const payload = { head:report.head, worktree:report.worktree, engine, suite,
+    browserVersion:report.version, sourceSha256:report.sourceSha256,
+    complete:false, reason, exitCode, completedRows:report.mobileFocus.length,
+    expectedRows:routes.filter(route=>route.kind!=='journal').length * mobileWidths.length * mobileHeights.length * 4,
+    rows:report.mobileFocus, problems:report.problems,
+    activeCase:{name,item,rowRetained:report.mobileFocus.includes(item)} };
+  fs.writeFileSync(checkpoint+'.tmp',JSON.stringify(payload,null,2)+'\n');
+  fs.renameSync(checkpoint+'.tmp',checkpoint);
+}
+async function captureWideHistoryEvidence(page, name) {
+  const failures = [];
+  const capture = async (label, operation) => {
+    try { await operation(); }
+    catch (error) { failures.push({ label, message: error.message }); }
+  };
+  const contextShot = async (label, selector, suffix) => {
+    await capture(label + suffix, async () => {
+      await page.locator(selector).evaluate(el => window.scrollTo({top:scrollY + el.getBoundingClientRect().top - 160,behavior:'instant'}));
+      await settleWithoutScripts(page);
+      await shot(page, name + '-' + label + suffix, { fullPage: false });
+    });
+  };
+  const contextShots = async (suffix) => {
+    for (const [label, selector] of [
+      ['atlas','.g3g-history'], ['legend','.g3g-map-key'], ['map-list-end','.g3g-atlas-list > li:last-child'],
+      ['g44','#g3-2018-document-index']
+    ]) await contextShot(label, selector, suffix);
+    await capture('chronology' + suffix, async () => {
+      const chronology = page.locator('.g3g-history .g3g-chron-details');
+      const summary = chronology.locator('summary');
+      const wasOpen = await chronology.evaluate(el=>el.open);
+      try {
+        if (!wasOpen) await summary.click();
+        assert.equal(await chronology.evaluate(el=>el.open),true,'native chronology must open for visual evidence');
+        await page.mouse.move(0,0);
+        await contextShot('chronology-first','.g3g-history .g3g-timeline > li:first-child',suffix);
+        await contextShot('chronology-last','.g3g-history .g3g-timeline > li:last-child',suffix);
+      } finally {
+        if ((await chronology.evaluate(el=>el.open))!==wasOpen) await summary.click();
+        assert.equal(await chronology.evaluate(el=>el.open),wasOpen,'restore chronology after evidence');
+      }
+    });
+  };
+  const original = await page.evaluate(() => {
+    const style = document.documentElement.style;
+    return { value:style.getPropertyValue('--gb-reader-font-scale'), priority:style.getPropertyPriority('--gb-reader-font-scale'), x:scrollX, y:scrollY };
+  });
+  try {
+    await capture('full', () => shot(page, name + '-full', { fullPage: true }));
+    await contextShots('');
+    await capture('200pct', async () => {
+      await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+      await settleWithoutScripts(page);
+      await contextShots('-200pct');
+    });
+  } finally {
+    await page.evaluate(prior => {
+      const style = document.documentElement.style;
+      if (prior.value) style.setProperty('--gb-reader-font-scale',prior.value,prior.priority);
+      else style.removeProperty('--gb-reader-font-scale');
+      window.scrollTo({left:prior.x,top:prior.y,behavior:'instant'});
+    }, original);
+    await settleWithoutScripts(page);
+  }
+  return failures;
+}
+
+async function historyChronologyGeometry(page) {
+  const details = page.locator('.g3g-history .g3g-chron-details');
+  const summary = details.locator('summary');
+  const wasOpen = await details.evaluate(el => el.open);
+  const scroll = await page.evaluate(() => ({x:scrollX,y:scrollY}));
+  try {
+    if (!wasOpen) await summary.click();
+    assert.equal(await details.evaluate(el => el.open), true, 'chronology must be visible');
+    await settleWithoutScripts(page);
+    const result = await details.evaluate(root => ({
+      scale: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-font-scale') || '1'),
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      open: root.open,
+      rows: Array.from(root.querySelectorAll('.g3g-timeline > li')).map(li => {
+        const t = li.querySelector('time'), text = t.nextElementSibling;
+        const range = document.createRange(); range.selectNodeContents(t);
+        const boxes = Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
+        const bounds = li.getBoundingClientRect(), copy = text.getBoundingClientRect();
+        return { year:t.textContent.trim(), font:parseFloat(getComputedStyle(t).fontSize),
+          lines:boxes.length, contained:boxes.every(r => r.left >= bounds.left - 1 && r.right <= bounds.right + 1),
+          separated:boxes.every(r => r.right <= copy.left + 1) };
+      }),
+      projects: (() => {
+        const el = document.querySelector('.je-history-projects');
+        if (!el) return null;
+        const css = getComputedStyle(el);
+        return [css.borderBlockStartWidth, css.borderBlockEndWidth];
+      })()
+    }));
+    assert.deepEqual(result.rows.map(row => row.year), ['2011','2013','2014','2015','2016','2017','2018','2019','2020','2021','2023','2024']);
+    assert.ok(result.rows.every(row => row.lines === 1 && row.contained && row.separated), 'chronology years must remain single-line and clear of prose: ' + JSON.stringify(result.rows));
+    assert.deepEqual(result.projects, ['2px','1px'], 'history projects screen borders');
+    return result;
+  } finally {
+    if ((await details.evaluate(el => el.open)) !== wasOpen) await summary.click();
+    assert.equal(await details.evaluate(el => el.open), wasOpen, 'restore chronology after geometry');
+    await page.evaluate(({x,y}) => window.scrollTo({left:x,top:y,behavior:'instant'}),scroll);
+    await settleWithoutScripts(page);
+  }
+}
+
+async function wideHistoryGeometry(page) {
+  const state = await page.evaluate(() => {
+    const rect = el => el.getBoundingClientRect().toJSON();
+    const grid = document.querySelector('[data-editorial-layout="wide"]');
+    const rail = grid.querySelector('.je-editorial-rail'), story = grid.querySelector('.journal-story-column');
+    const atlas = story.querySelector('.g3g-history'), index = story.querySelector('#g3-2018-document-index');
+    const svg = atlas.querySelector('.g3g-atlas-map svg'), land = svg.querySelector('.g3g-atlas-land');
+    const frame = rect(svg), painted = rect(land);
+    const label = svg.querySelector('.g3g-atlas-coordinate text');
+    const matrix = label.getScreenCTM();
+    return { viewport: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth,
+      grid: rect(grid), rail: rect(rail), story: rect(story), atlas: rect(atlas), index: rect(index),
+      ordinary: rect(story.querySelector('#g3-speakers')), origin: rect(story.querySelector('.je-history-origin')),
+      paragraph: rect(story.querySelector('#g3-year-2018 .je-history-text > p')), frame, painted,
+      paintedWidth: Math.max(0, Math.min(frame.right, painted.right) - Math.max(frame.left, painted.left)),
+      labelSize: parseFloat(getComputedStyle(label).fontSize) * Math.hypot(matrix.a, matrix.b),
+      atlasTextSizes: [atlas.querySelector('.g3g-map-key'),atlas.querySelector('.g3g-atlas-list h5'),atlas.querySelector('.g3g-atlas-list a')].map(el=>parseFloat(getComputedStyle(el).fontSize)),
+      markers: Array.from(svg.querySelectorAll('.g3g-atlas-marker > *')).map(rect),
+      mapLabels: Array.from(svg.querySelectorAll('text')).map(el => ({ text:el.textContent.trim(), box:rect(el),
+        size:parseFloat(getComputedStyle(el).fontSize)*Math.hypot(el.getScreenCTM().a,el.getScreenCTM().b) })),
+      mapKey: rect(atlas.querySelector('.g3g-map-key')),
+      mapKeyItems: Array.from(atlas.querySelectorAll('.g3g-map-key > span')).map(rect),
+      mapList: rect(atlas.querySelector('.g3g-atlas-list')),
+      mapRows: Array.from(atlas.querySelectorAll('.g3g-atlas-list li')).map(rect),
+      mapLinks: atlas.querySelectorAll('.g3g-atlas-list a').length,
+      allAtlasLinks: Array.from(atlas.querySelectorAll('a[data-journal-citation]')).map(a => a.id),
+      scale: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-font-scale') || '1') };
+  });
+  assert.equal(state.scrollWidth, state.viewport, 'wide layout root overflow');
+  assert.equal(state.markers.length, 4);
+  assert.equal(state.mapLabels.length,13);
+  assert.equal(state.mapKeyItems.length,2);
+  assert.equal(state.mapRows.length,4);
+  assert.equal(state.mapLinks, 5);
+  const inside=(box,parent)=>box.width>0&&box.height>0&&box.left>=parent.left-1&&box.right<=parent.right+1&&box.top>=parent.top-1&&box.bottom<=parent.bottom+1;
+  const disjoint=(boxes)=>boxes.every((a,i)=>boxes.slice(i+1).every(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)<=1||Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)<=1));
+  assert.ok(state.markers.every(box=>inside(box,state.frame))&&disjoint(state.markers),'atlas markers must be inside map and separated');
+  assert.ok(state.mapLabels.every(label=>label.text&&inside(label.box,state.frame))&&disjoint(state.mapLabels.map(label=>label.box)),'atlas text must be inside map and not overlap other labels');
+  assert.ok(inside(state.mapKey,state.atlas)&&inside(state.mapList,state.atlas)&&state.mapKey.top>=state.frame.bottom-1&&state.mapList.top>=state.mapKey.bottom-1,'map, key and source list must occupy separate natural flow');
+  assert.ok(state.mapKeyItems.every(box=>inside(box,state.mapKey))&&disjoint(state.mapKeyItems),'legend must fit without overlapping');
+  assert.ok(state.mapRows.every(box=>inside(box,state.mapList))&&disjoint(state.mapRows),'map source rows must fit without overlapping');
+  assert.deepEqual(state.allAtlasLinks, Array.from({length:18}, (_,i) => 'cite-g3g-history-' + (i+1)));
+  for (const box of [state.atlas,state.index,state.ordinary,state.origin,state.paragraph]) {
+    assert.ok(box.left >= -1 && box.right <= state.viewport + 1 && box.left >= state.story.left - 1 && box.right <= state.story.right + 1, JSON.stringify(state));
+  }
+  assert.ok(state.ordinary.width <= 741 && state.origin.width <= 741 && state.paragraph.width <= 741, 'prose measure changed');
+  assert.ok(state.paintedWidth >= state.frame.width * .94, 'SVG painted geography must use the actual frame, not a small centered drawing');
+  if (page.viewportSize().width >= 1440) {
+    assert.ok(state.atlas.width >= state.story.width - 2 && state.atlas.width > state.ordinary.width * 1.4, 'wide atlas not using its track');
+    assert.ok(state.atlas.right <= state.rail.left - 16 && state.index.right <= state.rail.left - 16, 'figure intersects separate TOC track');
+    assert.ok(state.index.width >= Math.min(1100,state.story.width) - 2 && state.index.width <= 1101);
+    assert.ok(state.paintedWidth > state.ordinary.width * 1.35 && state.mapLabels.every(label=>label.size>=14), 'map itself must scale and retain readable desktop labels');
+  }
+  return state;
+}
+async function g44RouteWitness(page, js, name, controlOnly=false) {
+  const index=page.locator('#g3-2018-document-index'), toc=page.locator('[data-journal-contents]');
+  assert.equal(await index.count(),1);
+  const links=index.locator('a[data-journal-citation]');
+  const ids=g44Sources.map(([id])=>id);
+  assert.deepEqual(await links.evaluateAll(nodes=>nodes.map(n=>n.id)),ids);
+  const result={viewport:page.viewportSize(),js,forward:[],backward:[],controlOnly};
+  const diagnostic=engine==='webkit'&&!js&&[320,390].includes(result.viewport.width);
+  const trace=async()=>page.evaluate(()=>{
+    const a=document.activeElement, r=a.getBoundingClientRect(), v=window.visualViewport;
+    return {id:a.id,tag:a.tagName,href:a.getAttribute('href'),focusVisible:a.matches(':focus-visible'),
+      hash:location.hash,scrollY,rect:r.toJSON(),innerHeight,innerWidth,
+      visualViewport:v?{width:v.width,height:v.height,offsetTop:v.offsetTop,offsetLeft:v.offsetLeft,pageTop:v.pageTop,scale:v.scale}:null};
+  });
+  const traceSeries=async()=>{
+    const values=[{elapsedMs:0,state:await trace()}];
+    let elapsed=0;
+    for(const delay of [75,75,150,300,600]){
+      await page.waitForTimeout(delay);elapsed+=delay;
+      values.push({elapsedMs:elapsed,state:await trace()});
+    }
+    return values;
+  };
+  const startNative=async()=>{
+    if(!await toc.evaluate(el=>el.open)) await toc.locator('summary').click();
+    await toc.locator('a[href="#g3-year-2018"]').click();
+    await settleWithoutScripts(page);
+    assert.equal(new URL(page.url()).hash,'#g3-year-2018');
+    assert.equal(await page.locator('#g3-year-2018').evaluate(el=>el===document.activeElement),true);
+  };
+  // Capture the real, built component before sequential keyboard navigation.
+  // A locator screenshot can scroll; never use it to make a focus state pass.
+  await index.screenshot({path:path.join(output,'after',name+'-g44-spread.png'),timeout:8000});
+  // Ordinary wheel input is a separate art witness, before the native
+  // keyboard sequence starts. Keep all real sticky chrome in the capture.
+  if(js&&result.viewport.width<=430){
+    const firstRow=()=>index.evaluate(root=>{
+      const row=root.querySelector('li'), rect=row.getBoundingClientRect();
+      const visibleRects=[...row.querySelectorAll('.jcdi-date,.jcdi-label,a[data-journal-citation]')].flatMap(el=>{
+        const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT), rects=[];
+        while(walker.nextNode())if(walker.currentNode.textContent.trim()){
+          const range=document.createRange();range.selectNodeContents(walker.currentNode);
+          for(const r of range.getClientRects()){
+            if(!r.width||!r.height)continue;
+            const hit=document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+            rects.push({text:walker.currentNode.textContent,rect:r.toJSON(),visible:r.top>=0&&r.bottom<=innerHeight&&el.contains(hit)});
+          }
+        }
+        return rects;
+      });
+      return {scrollY,rect:rect.toJSON(),height:innerHeight,visibleRects,
+        allTextVisible:visibleRects.length>0&&visibleRects.every(r=>r.visible)};
+    });
+    result.artWitness={before:await firstRow()};
+    await shot(page,name+'-g44-mobile-before-wheel');
+    const now=await firstRow();
+    // A single native wheel gesture aims the first row at mid-viewport.
+    // No scrollIntoView/focus/hidden-header intervention.
+    await page.mouse.move(Math.floor(result.viewport.width/2),Math.floor(result.viewport.height*.8));
+    await page.mouse.wheel(0,Math.round(now.rect.top+now.rect.height/2-now.height/2));
+    await settleWithoutScripts(page);
+    result.artWitness.after=await firstRow();
+    await shot(page,name+'-g44-mobile-after-wheel');
+    result.artWitness.afterShot=await firstRow();
+    console.log('G44_ART_WHEEL '+JSON.stringify({name,before:result.artWitness.before.allTextVisible,after:result.artWitness.after.allTextVisible,afterShot:result.artWitness.afterShot.allTextVisible}));
+    assert.ok(result.artWitness.after.allTextVisible&&result.artWitness.afterShot.allTextVisible,'G44 first row must be readable after ordinary wheel input');
+  }
+  const original=await page.evaluate(()=>{
+    const style=document.documentElement.style;
+    return {value:style.getPropertyValue('--gb-reader-font-scale'),priority:style.getPropertyPriority('--gb-reader-font-scale')};
+  });
+  const font=()=>links.first().evaluate(a=>parseFloat(getComputedStyle(a).fontSize));
+  const before=await font();
+  try {
+    await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+    const after=await font();
+    assert.ok(Math.abs(after-2*before)<.25,'G44 must actually scale reading labels to 200%');
+    result.scale={before,after};
+    // Native TOC activation is the sequential starting point, not focus() on
+    // every link. The first Tab must arrive at the first real document citation.
+    await startNative();
+    const focusState=async expected=>{
+      let state, previous, stable=0;
+      for(let attempt=0;attempt<45;attempt++){
+        state=await index.evaluate(g44MeasureFocus);
+        result.lastState=state;
+        if(state.id!==expected){
+          // Keep the original mismatch a failure; retain subsequent native
+          // observations to distinguish a transient from a repeated focus.
+          if(diagnostic)result.mismatchSeries=await traceSeries();
+          break;
+        }
+        const now=[state.scrollY,state.rect.top,state.rect.bottom,state.headerBottom];
+        stable=previous&&now.every((x,i)=>Math.abs(x-previous[i])<.5)?stable+1:0;
+        if(stable>=4&&state.viewportOK)break;
+        previous=now;await page.waitForTimeout(75);
+      }
+      assert.equal(state.id,expected,'native G44 Tab/Shift+Tab order');
+      assert.ok(stable>=4,'G44 native focus did not settle: '+JSON.stringify(state));
+      assert.ok(state.inside&&state.focusVisible&&state.width>=2&&state.style==='solid'&&state.viewportOK&&state.overflow===0,'G44 focus / viewport: '+JSON.stringify(state));
+      assert.ok(state.fragments.length>0&&state.fragments.every(f=>f.hit)&&state.textClear,'G44 focus fragments or text clipped: '+JSON.stringify(state));
+      assert.ok(state.indicatorVisible&&state.offset===-state.width,'G44 fully inset painted focus indicator: '+JSON.stringify(state));
+      // G44 is a flat-paper component: unknown composited contrast is missing evidence,
+      // not permission to pass. Other Journal surfaces retain their own rules.
+      assert.ok(state.contrast!==null&&state.contrast>=3,'G44 focus indicator contrast not established: '+JSON.stringify(state));
+      assert.ok(state.edgeSamples>0&&!state.edgeMisses.length&&!state.textMisses.length&&!state.neighborCollisions.length&&!state.clippingAncestors.length,'G44 focus edge/text/ancestor occlusion: '+JSON.stringify(state));
+      return state;
+    };
+    // B: the acceptance sequence is native input only. No screenshot or
+    // locator scrolling between any forward and reverse key presses.
+    result.keyboardTrace={variant:'B-no-intermediate-screenshot',keys:[]};
+    for(const [i,id] of (controlOnly?ids.slice(0,2):ids).entries()){
+      const step=diagnostic&&i<2?{expected:id,before:await trace()}:null;
+      if(step)result.keyboardTrace.keys.push(step);
+      await page.keyboard.press('Tab');
+      if(step)step.afterKey=await trace();
+      const state=await focusState(id);result.forward.push(state);
+      if(step)step.settled=await trace();
+    }
+    if(!controlOnly){
+      for(const id of ids.slice(0,-1).reverse()){
+        await page.keyboard.press('Shift+Tab');result.backward.push(await focusState(id));
+      }
+      assert.equal(result.forward.length,7);assert.equal(result.backward.length,6);
+    }else assert.equal(result.forward.length,2);
+    // The following screenshot is AFTER the entire uninterrupted witness.
+    await shot(page,name+(controlOnly?'-g44-control-end':'-g44-2x-reverse'));
+    // A: independently restart by the same native fragment; isolate the
+    // screenshot operation from acceptance. Never use this replay to make B pass.
+    await startNative();
+    await page.keyboard.press('Tab');await focusState(ids[0]);
+    if(diagnostic)result.screenshotTrace={variant:'A-intermediate-screenshot',beforeShot:await trace()};
+    await shot(page,name+'-g44-2x-first');
+    if(diagnostic){
+      result.screenshotTrace.afterShot=await trace();
+      result.screenshotTrace.beforeSecondKey=await trace();
+      await page.keyboard.press('Tab');
+      result.screenshotTrace.afterSecondKey=await traceSeries();
+      result.screenshotTrace.secondReachedExpected=result.screenshotTrace.afterSecondKey.at(-1).state.id===ids[1];
+      fs.writeFileSync(path.join(output,'after',name+'-g44-screenshot-ab.json'),JSON.stringify({
+        head:report.head,engine,viewport:result.viewport,controlOnly,
+        expected:ids.slice(0,2),B:result.keyboardTrace,A:result.screenshotTrace
+      },null,2)+'\n');
+      console.log('G44_SCREENSHOT_AB '+JSON.stringify({name,controlOnly,
+        B:result.keyboardTrace.keys.map(k=>({expected:k.expected,before:k.before.id,after:k.afterKey.id,settled:k.settled.id})),
+        A:{before:result.screenshotTrace.beforeShot,after:result.screenshotTrace.afterShot,
+          secondReachedExpected:result.screenshotTrace.secondReachedExpected,final:result.screenshotTrace.afterSecondKey.at(-1).state}}));
+    }
+    if(!controlOnly){
+      // Independent native replay for the final-link screenshot. No screenshot
+      // before reaching it, and no acceptance claim based on this replay.
+      await startNative();
+      for(const id of ids){await page.keyboard.press('Tab');await focusState(id);}
+      await shot(page,name+'-g44-2x-last');
+    }
+  }catch(error){
+    result.failure=error.message;
+    fs.writeFileSync(path.join(output,'after',name+'-g44-failure.json'),JSON.stringify({head:report.head,engine,...result},null,2)+'\n');
+    await shot(page,name+'-g44-failure',{timeout:8000}).catch(()=>{});
+    throw error;
+  }finally{
+    await page.evaluate(({value,priority})=>{
+      const style=document.documentElement.style;
+      if(value)style.setProperty('--gb-reader-font-scale',value,priority);else style.removeProperty('--gb-reader-font-scale');
+    },original);
+  }
+  if(!controlOnly){
+    result.returns=await g44NativeReturns(page,js);
+    assert.equal(result.returns.length,7);
+  }
+  return result;
+}
+
 // axe reports contrast review items for rows clipped by a native scrollport.
 // Retain every item; accept only this measured case, with a flat opaque paper
 // background and independently computed >=4.5:1 foreground contrast. Anything
@@ -290,7 +903,463 @@ const reviewClippedContrast = async (page, reviews) => {
   }
   return witnesses;
 };
+function assertNarrationMediaEvidence(item) {
+  assert.ok(!item.mediaAnchorDiagnosticFailure, 'Narration media evidence collection failed: ' + item.mediaAnchorDiagnosticFailure);
+  const evidence = item.mediaAnchor;
+  assert.ok(Array.isArray(evidence?.events) && evidence.events.length > 0, 'Narration media event evidence missing');
+  assert.ok(Array.isArray(evidence.anchors) && evidence.anchors.length === 1 && evidence.anchors[0]?.blob === true, 'Expected exactly one real blob audio anchor');
+  assert.ok(!evidence.anchors.some(audio => audio.error) && !evidence.events.some(event => event.error), 'Media error before narration context teardown');
+  assert.deepEqual(item.runtime, [], 'Runtime error before narration context teardown');
+}
+// Synthetic negative controls validate the gate, not browser playback.
+{
+  const valid = () => ({runtime:[],mediaAnchor:{events:[{type:'playing',error:null}],anchors:[{blob:true,error:null}]}});
+  assert.doesNotThrow(() => assertNarrationMediaEvidence(valid()));
+  for (const mutate of [
+    v=>v.mediaAnchorDiagnosticFailure='execution context lost',
+    v=>delete v.mediaAnchor,
+    v=>v.mediaAnchor.events=[],
+    v=>v.mediaAnchor.anchors=[],
+    v=>v.mediaAnchor.anchors.push({blob:true,error:null}),
+    v=>v.mediaAnchor.anchors[0].blob=false,
+    v=>v.mediaAnchor.anchors[0].error={code:3},
+    v=>v.mediaAnchor.events[0].error={code:3},
+    v=>v.runtime.push('warning')
+  ]) {
+    const v=valid(); mutate(v);
+    assert.throws(() => assertNarrationMediaEvidence(v), assert.AssertionError);
+  }
+}
 try {
+  // Isolated diagnostic only: distinguish sink failure from the actual WAV format.
+  // Never replace or waive the unmuted, routed narration gate below.
+  if (engine==='firefox' && ['full','mobile'].includes(suite)) {
+    report.audioSinkProbe={diagnosticOnly:true,cases:[]};
+    const anchorSource=fs.readFileSync(path.join(root,'src/runtime/reader-tts-media-session.js'),'utf8');
+    const setupProbe=async ({kind,muted}) => {
+  const events=[];
+  const audio=kind==='anchor' ? window.GBReaderTTSMediaSession.getAnchor() : document.createElement('audio');
+  let referenceUrl;
+  if (kind==='pcm16') {
+    // Independent 48 kHz mono 16-bit PCM silence; no production helper reuse.
+    const frames=96000, bytes=new ArrayBuffer(44+frames*2), view=new DataView(bytes);
+    for (const [offset,word] of [[0,'RIFF'],[8,'WAVE'],[12,'fmt '],[36,'data']])
+      for (let i=0;i<word.length;i++) view.setUint8(offset+i,word.charCodeAt(i));
+    view.setUint32(4,bytes.byteLength-8,true); view.setUint32(16,16,true);
+    view.setUint16(20,1,true); view.setUint16(22,1,true); view.setUint32(24,48000,true);
+    view.setUint32(28,96000,true); view.setUint16(32,2,true); view.setUint16(34,16,true);
+    view.setUint32(40,frames*2,true);
+    referenceUrl=URL.createObjectURL(new Blob([bytes],{type:'audio/wav'}));
+  }
+  const snapshot=()=>({readyState:audio.readyState,networkState:audio.networkState,
+    currentTime:audio.currentTime,duration:Number.isFinite(audio.duration)?audio.duration:null,
+    paused:audio.paused,muted:audio.muted,errorCode:audio.error?.code??null});
+  for (const type of ['loadstart','loadedmetadata','canplay','playing','pause','error','stalled','ended'])
+    audio.addEventListener(type,()=>{if(events.length<32) events.push({type,...snapshot()});});
+  audio.muted=muted; audio.volume=.01; audio.loop=true;
+  if(referenceUrl){audio.src=referenceUrl;document.body.appendChild(audio);}
+  const button=document.querySelector('button');
+  button.addEventListener('click',async()=>{
+    let timer,play;
+    try {
+      play=await Promise.race([
+        Promise.resolve().then(()=>audio.play()).then(()=>({state:'resolved'}),e=>({state:'rejected',name:e.name,message:e.message})),
+        new Promise(resolve=>{timer=setTimeout(()=>resolve({state:'timeout'}),2500);})
+      ]);
+      // A resolved play promise is not proof that the sink keeps running.
+      // Audio output may start later than a single 650ms sample; observe a
+      // bounded real clock without accepting a stationary or errored stream.
+      const samples=[];
+      const observationStart=performance.now();
+      let end=snapshot();
+      if (play.state==='resolved') {
+        do {
+          await new Promise(resolve=>setTimeout(resolve,100));
+          end=snapshot();
+          samples.push({elapsedMs:Math.round(performance.now()-observationStart),...end});
+          if (end.errorCode||end.paused) break;
+        } while (performance.now()-observationStart<5000 &&
+          (performance.now()-observationStart<650||end.currentTime<.15));
+      }
+      window.__g3SinkProbe={kind,muted,play,end,events:[...events],samples,
+        progressed:play.state==='resolved'&&!end.errorCode&&!end.paused&&end.currentTime>=.15&&
+          !events.some(event=>event.errorCode)};
+    } finally {
+      clearTimeout(timer); audio.pause();
+      if(referenceUrl){audio.removeAttribute('src');audio.load();URL.revokeObjectURL(referenceUrl);audio.remove();}
+    }
+  },{once:true});
+};
+    for (const kind of ['anchor','pcm16']) for (const muted of [false,true]) {
+      const context=await contextFor(320,'light');
+      try {
+        const page=await context.newPage();
+        await page.setContent('<button type="button">Audio diagnostic</button>');
+        await page.addScriptTag({content:anchorSource});
+        await page.evaluate(setupProbe,{kind,muted});
+        await page.locator('button').click();
+        await page.waitForFunction(()=>window.__g3SinkProbe!==undefined,{},{timeout:10000});
+        report.audioSinkProbe.cases.push(await page.evaluate(()=>window.__g3SinkProbe));
+      } catch(error) {
+        report.audioSinkProbe.cases.push({kind,muted,harnessFailure:String(error)});
+        report.problems.push('Isolated Firefox audio diagnostic harness: '+String(error));
+      } finally { await context.close(); }
+    }
+    // Hosted Firefox now provides an isolated real audio server. Its output
+    // is virtual, but both unmuted streams must actually decode and advance.
+    // Local runs retain diagnostic-only behavior without a provisioned sink.
+    if (process.env.G3_REQUIRE_AUDIO_SINK==='1') {
+      report.audioSinkProbe.diagnosticOnly=false;
+      const cases=report.audioSinkProbe.cases;
+      if (cases.length!==4 || cases.some(item=>item.progressed!==true)) {
+        report.problems.push('Provisioned Firefox audio sink did not pass all four playback probes');
+      }
+    }
+  }
+  // The hosted workflow invokes --suite=mobile, not --suite=full.
+  // One bounded capability witness per route/browser, outside the large
+  // viewport matrix; the speech transport alone is mocked, never the reader.
+  if (['full','mobile'].includes(suite)) {
+    report.narrationCases = [];
+    for (const route of routes) {
+      const item = { kind: route.kind, transport: 'controlled Web Speech; not audible playback', runtime: [] };
+      const context = await contextFor(320,'light',{reducedMotion:'reduce'});
+      let page;
+      try {
+        page = await context.newPage();
+        monitorRuntime(page,item.runtime,{isIgnoredConsole:isExpectedJournalConsole});
+        await page.addInitScript(() => {
+          // Observe the real shared audio anchor, not the mocked speech transport.
+          const trace=[];
+          window.__journalAnchorEvidence=trace;
+          for (const type of ['loadstart','loadedmetadata','canplay','playing','pause','error','abort','emptied','stalled','suspend']) {
+            document.addEventListener(type, event => {
+              const audio=event.target;
+              if (!(audio instanceof HTMLAudioElement) || !audio.hasAttribute('data-gb-reader-tts-anchor') || trace.length>=64) return;
+              trace.push({type,time:Math.round(performance.now()),readyState:audio.readyState,
+                networkState:audio.networkState,currentTime:audio.currentTime,
+                error:audio.error ? {code:audio.error.code,message:audio.error.message} : null});
+            }, true);
+          }
+          const fixture={speak:0,pause:0,resume:0,cancel:0,last:null};
+          window.__journalSpeechFixture=fixture;
+          Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class { constructor(text){this.text=text;} }});
+          Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
+            getVoices:()=>[],addEventListener:()=>{},
+            speak(u){fixture.last=u;fixture.speak++;u.onstart?.();},
+            pause(){fixture.pause++;},resume(){fixture.resume++;},cancel(){fixture.cancel++;}
+          }});
+          window.VoskTTSEngine={isSupported:()=>false,isReady:()=>false};
+        });
+        await ready(page,route.url);
+        const slot=page.locator('[data-journal-narration]');
+        if(route.kind==='journal') {
+          assert.equal(await slot.count(),0);
+          assert.equal(await page.evaluate(()=>typeof window.GBReaderTTS),'undefined','landing must not mount the TTS runtime');
+          item.landingWithoutNarration=true;
+          // Reuse the already loaded landing, not another browser matrix.
+          // Preserve lazy-image evidence without changing production attributes.
+          try {
+            const images=page.locator('main img:visible');
+            for (const image of await images.all()) await image.scrollIntoViewIfNeeded({timeout:5000});
+            await page.waitForFunction(() => [...document.querySelectorAll('main img')]
+              .filter(image=>image.getClientRects().length)
+              .every(image=>image.complete && image.naturalWidth>0), {}, {timeout:10000});
+            await page.evaluate(() => window.scrollTo({top:0,left:0,behavior:'instant'}));
+            await settle(page);
+            await shot(page,'journal-landing-320-light-viewport',{fullPage:false});
+            await shot(page,'journal-landing-320-light-full',{fullPage:true});
+            item.landingEvidence={width:320,theme:'light',viewport:'after/journal-landing-320-light-viewport.png',
+              full:'after/journal-landing-320-light-full.png',images:await images.count()};
+          } catch(error) {
+            item.landingEvidenceFailure=String(error);
+          }
+        } else {
+          await slot.waitFor({state:'visible'});
+          const play=slot.locator('[data-fc-action="play"]'), stop=slot.locator('[data-jn-stop]'), rate=slot.locator('[data-jn-rate]');
+          const speech=await page.evaluate(() => {
+            const projection=window.GBReaderProjection, segments=projection.getTtsSegments(document);
+            const search=projection.getSearchText(document);
+            return {
+              root:projection.getRoot(document)?.id, first:segments[0]?.element.tagName,
+              count:segments.length, excluded:segments.filter(s=>s.element.closest('[data-tts-policy="exclude"],aside,footer')).length,
+              history:segments.some(s=>s.text.includes('Пастор Джефф Кроттс')),
+              crisis:segments.some(s=>s.text.includes('Согласно заявлению совета G3 от 12 мая 2025 года')),
+              bibliographyInSearch:search.includes('Источники и материалы для проверки')||search.includes('Источники истории'),
+              engine:typeof window.GBReaderTTS?.getState, rate:window.GBReaderRatePolicy?.read()
+            };
+          });
+          assert.equal(speech.root,'main-content'); assert.equal(speech.first,'H1');
+          assert.ok(speech.count>20); assert.equal(speech.excluded,0);
+          assert.equal(route.kind==='history'?speech.history:speech.crisis,true);
+          assert.equal(speech.bibliographyInSearch,true,'speech-only exclusions preserve document search');
+          assert.equal(speech.engine,'function'); assert.equal(await play.count(),1);
+          assert.equal(await stop.isDisabled(),true);
+          await rate.selectOption('1.25');
+          assert.equal(await page.evaluate(()=>window.GBReaderRatePolicy.read()),1.25);
+          await page.reload({waitUntil:'load'});
+          await slot.waitFor({state:'visible'});
+          assert.equal(await rate.inputValue(),'1.25');
+          await play.focus(); await page.keyboard.press('Enter');
+          await page.waitForFunction(()=>window.GBReaderTTS?.getState().phase==='playing'&&window.__journalSpeechFixture.speak===1);
+          const first=await page.evaluate(()=>({spoken:window.__journalSpeechFixture.last.text,title:document.querySelector('h1').textContent.replace(/\s+/g,' ').replace(/\s+([,.;:!?»])/g,'$1').replace(/([«])\s+/g,'$1').trim(),rate:window.__journalSpeechFixture.last.rate}));
+          assert.equal(first.spoken,first.title,'single canonical first narration segment');
+          assert.equal(first.rate,1.25,'shared speed reaches the canonical transport');
+          await page.evaluate(()=>window.__journalSpeechFixture.last.onboundary({charIndex:10}));
+          assert.ok(Number(await play.evaluate(el=>el.style.getPropertyValue('--p')))>0,'canonical progress ring receives progress');
+          await play.click();
+          await page.waitForFunction(()=>window.GBReaderTTS.getState().phase==='paused');
+          assert.equal(await page.evaluate(()=>window.__journalSpeechFixture.pause),1);
+          await play.click();
+          await page.waitForFunction(()=>window.GBReaderTTS.getState().phase==='playing');
+          assert.equal(await page.evaluate(()=>window.__journalSpeechFixture.resume),1);
+          await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+          await page.waitForFunction(()=>document.querySelector('[data-journal-narration]').hasAttribute('data-jn-docked'));
+          await stop.click();
+          assert.equal(await page.evaluate(()=>window.GBReaderTTS.getState().phase),'idle');
+          assert.equal(await play.evaluate(el=>el===document.activeElement),true);
+          const geometry=await slot.locator('.jn-controls').evaluate(el=>({rect:el.getBoundingClientRect().toJSON(),w:innerWidth,h:innerHeight}));
+          assert.ok(geometry.rect.left>=0&&geometry.rect.right<=geometry.w&&geometry.rect.bottom<=geometry.h&&geometry.rect.top>=0,JSON.stringify(geometry));
+          assert.equal(await stop.isDisabled(),true);
+          await shot(page,route.kind+'-narration-320-stopped');
+          await page.emulateMedia({media:'print'});
+          assert.equal(await slot.isVisible(),false);
+          item.projection=speech; item.firstSegment=true; item.playPauseResumeStop=true;
+          item.progress=true; item.focus=true; item.geometry=geometry; item.printHidden=true;
+        }
+        assert.deepEqual(item.runtime,[]);
+      } catch(error) {
+        item.failure=error.message; item.stack=error.stack;
+        report.problems.push(route.kind+' narration: '+error.message);
+      } finally {
+        // Collect diagnostics even on failure; never exempt a media warning.
+        if (page && !page.isClosed() && route.kind!=='journal') {
+          try {
+            item.mediaAnchor=await page.evaluate(() => ({
+              events:window.__journalAnchorEvidence || [],
+              anchors:[...document.querySelectorAll('audio[data-gb-reader-tts-anchor]')].map(audio=>({
+                blob:(audio.currentSrc || audio.src).startsWith('blob:'),
+                readyState:audio.readyState,networkState:audio.networkState,paused:audio.paused,
+                currentTime:audio.currentTime,duration:Number.isFinite(audio.duration)?audio.duration:null,
+                error:audio.error?{code:audio.error.code,message:audio.error.message}:null
+              }))
+            }));
+          } catch (error) { item.mediaAnchorDiagnosticFailure=String(error); }
+        }
+        // A missing or failed evidence capture is not successful acceptance.
+        // Preserve any earlier failure and retain its diagnostic independently.
+        if (route.kind!=='journal' && !item.failure) {
+          try { assertNarrationMediaEvidence(item); }
+          catch (error) {
+            item.failure=error.message;
+            report.problems.push(route.kind+' narration: '+item.failure);
+          }
+        }
+        await context.close();
+      }
+      if (route.kind!=='journal') {
+        const noJs=await contextFor(320,'light',{javaScriptEnabled:false});
+        try {
+          const page=await noJs.newPage(); await ready(page,route.url);
+          assert.equal(await page.locator('[data-journal-narration]').count(),1);
+          assert.equal(await page.locator('[data-journal-narration]').isVisible(),false);
+          assert.equal(await page.locator('h1').isVisible(),true);
+          item.noJsReading=true;
+        } catch(error) { report.problems.push(route.kind+' narration no-JS: '+error.message); }
+        finally { await noJs.close(); }
+      }
+      report.narrationCases.push(item);
+    }
+  }
+  // W64: actual authored history page, not another off-route geometry fixture.
+  // Keep normal viewport captures with neighbouring prose and sticky chrome.
+  if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
+    report.wideHistory = [];
+    for (const width of [390,430,768,1023,1024,1440,1920]) for (const theme of ['light','dark']) {
+      const viewport = { width, height: width <= 430 ? 844 : 900 };
+      const context = await contextFor(width, theme, { viewport });
+      const page = await context.newPage();
+      const name = 'history-wide-' + width + 'x' + viewport.height + '-' + theme;
+      const item = { name, viewport, theme, runtime: [] };
+      monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
+      try {
+        const response = await ready(page, routes.find(route => route.kind === 'history').url);
+        await assertPublishedHistory(page, response);
+        // Capture both clean composition states before any geometry/action
+        // assertion can abort the case. Capture errors still fail the report.
+        // Visual interactions run in a fresh context, never in the keyboard witness.
+        const captureContext = await contextFor(width, theme, { viewport });
+        item.captureProblems = [];
+        try {
+          const capturePage = await captureContext.newPage();
+          await ready(capturePage, routes.find(route => route.kind === 'history').url);
+          item.captureProblems = await captureWideHistoryEvidence(capturePage,name);
+        } catch (error) {
+          item.captureProblems.push({label:'capture-context',message:error.message});
+        } finally {
+          await captureContext.close();
+        }
+        for (const problem of item.captureProblems)
+          report.problems.push(name + ': capture ' + problem.label + ': ' + problem.message);
+        item.normal = await wideHistoryGeometry(page);
+        // Root text scaling is independent of the Reader preference scale.
+        // Measure the actual matrix children, not just the clipped root.
+        if (theme === 'light' && [768,1024,1440].includes(width)) {
+          item.matrixRootText200 = await page.locator('.g3-matrix').evaluate(matrix => {
+            const root = document.documentElement;
+            const size = root.style.getPropertyValue('font-size');
+            const priority = root.style.getPropertyPriority('font-size');
+            try {
+              root.style.setProperty('font-size','200%');
+              const box = matrix.getBoundingClientRect();
+              const links = [...matrix.querySelectorAll('.gm-cell a')];
+              const cells = [...matrix.querySelectorAll('.gm-head span,.gm-name,.gm-cell,.gm-cell a')]
+                .filter(el => el.getClientRects().length);
+              return { font:parseFloat(getComputedStyle(root).fontSize), width:box.width,
+                overflow:Math.max(0,...cells.map(el => {
+                  const r=el.getBoundingClientRect();
+                  return Math.max(box.left-r.left,r.right-box.right);
+                })),
+                rows:matrix.querySelectorAll('.gm-row').length,
+                links:links.length, visible:links.filter(el=>el.getClientRects().length).length,
+                layout:getComputedStyle(matrix.querySelector('.gm-row')).display };
+            } finally {
+              if (size) root.style.setProperty('font-size',size,priority);
+              else root.style.removeProperty('font-size');
+            }
+          });
+          const m = item.matrixRootText200;
+          assert.ok(m.font >= 30 && m.width > 0,'root text increase must be effective');
+          assert.equal(m.rows,26);
+          assert.equal(m.links,60); assert.equal(m.visible,60);
+          assert.ok(m.overflow <= 1,'matrix labels or citation cells overflow at 200% root text: '+JSON.stringify(m));
+        }
+
+        item.chronologyNormal = await historyChronologyGeometry(page);
+        item.atlasSourceActions = await atlasSourceActions(page);
+        if (width <= 430) item.sourceActions = await standaloneSourceActions(page,'history');
+        await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale','2'));
+        await settleWithoutScripts(page);
+        item.scaled = await wideHistoryGeometry(page);
+        item.chronologyScaled = await historyChronologyGeometry(page);
+        assert.equal(item.chronologyScaled.scale, 2);
+        assert.ok(item.chronologyScaled.rows.every((row,i) => Math.abs(row.font - 2 * item.chronologyNormal.rows[i].font) < .25), 'chronology dates must follow 200% Reader scale');
+        item.scaledAtlasSourceActions = await atlasSourceActions(page);
+        assert.equal(item.scaled.scale,2);
+        assert.ok(item.scaled.atlasTextSizes.every((size,i)=>Math.abs(size-item.normal.atlasTextSizes[i]*2)<.25),'atlas text alternative must follow 200% Reader scale');
+        assert.deepEqual(item.captureProblems,[],'required visual evidence must be present');
+        if (width===390 && theme==='light') {
+          await page.evaluate(()=>document.documentElement.style.setProperty('--gb-reader-font-scale','1'));
+          await settleWithoutScripts(page);
+          item.negativeSourceActions = await rejectBrokenSourceActions(page);
+          item.sourceActionHover = await sourceActionHoverWitness(page);
+          const atlasChronology = page.locator('.g3g-history .g3g-chron-details');
+          assert.equal(await atlasChronology.evaluate(el=>el.open),false,'native closed chronology baseline');
+          item.atlasNativeReturns = [await sourceRoundTrip(page,page.locator('#cite-g3g-history-1'),true)];
+          await atlasChronology.locator('summary').click();
+          try {
+            assert.equal(await atlasChronology.evaluate(el=>el.open),true);
+            item.atlasNativeReturns.push(await sourceRoundTrip(page,page.locator('#cite-g3g-history-6'),false));
+          } finally {
+            if(await atlasChronology.evaluate(el=>el.open))await atlasChronology.locator('summary').click();
+          }
+          assert.equal(await atlasChronology.evaluate(el=>el.open),false);
+        }
+        assert.deepEqual(item.runtime, []);
+        console.log('PASS '+name);
+      } catch (error) {
+        item.failure = error.message; report.problems.push(name + ': ' + error.message);
+        console.error('FAIL '+name+': '+error.message);
+        await shot(page,name+'-failure').catch(()=>{});
+      } finally { report.wideHistory.push(item); await context.close(); }
+    }
+  }
+  // W50: normal desktop context in a fresh browser context, outside native Tab.
+  // Mobile contextual evidence already exists in the mobile suite.
+  if (engine === 'chromium' && ['full', 'short'].includes(suite) && widths.includes(1440)) {
+    report.g44DesktopContext = [];
+    for (const theme of ['light', 'dark']) {
+      const viewport = { width: 1440, height: 900 };
+      const context = await contextFor(viewport.width, theme, { viewport });
+      const page = await context.newPage();
+      const name = 'history-context-1440x900-' + theme + '-g44';
+      const item = { name, theme, viewport, runtime: [] };
+      monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
+      try {
+        const response = await ready(page, routes.find(route => route.kind === 'history').url);
+        await assertPublishedHistory(page, response);
+        const index = page.locator('#g3-2018-document-index');
+        assert.equal(await index.count(), 1);
+        const measure = () => index.evaluate(root => {
+          const lanes = root.querySelector('.jcdi-lanes'), css = getComputedStyle(root);
+          const rect = el => el.getBoundingClientRect().toJSON();
+          const style = el => {
+            const s = getComputedStyle(el);
+            return { fontSize: parseFloat(s.fontSize), lineHeight: s.lineHeight,
+              fontFamily: s.fontFamily, fontWeight: s.fontWeight, color: s.color, rect: rect(el) };
+          };
+          const preceding = root.previousElementSibling;
+          const header = document.querySelector('.mcp-top'), hs = header && getComputedStyle(header);
+          const headerBottom = hs && hs.display !== 'none' && hs.visibility !== 'hidden' && Number(hs.opacity) > 0
+            ? Math.max(0, rect(header).bottom) : 0;
+          const tracks = getComputedStyle(lanes).gridTemplateColumns;
+          return { viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
+            theme: document.documentElement.dataset.readerTheme, paper: css.getPropertyValue('--je-paper').trim(),
+            readerScale: parseFloat(css.getPropertyValue('--gb-reader-font-scale').trim() || '1'),
+            container: rect(root), containerFont: parseFloat(css.fontSize), tracks, columns: tracks.trim().split(/\s+/).length,
+            heading: style(root.querySelector('.jcdi-title')), headerBottom, scrollY,
+            preceding: preceding ? { tag: preceding.tagName, rect: rect(preceding) } : null,
+            rootOverflow: root.scrollWidth - root.clientWidth,
+            documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            rows: [...root.querySelectorAll('.jcdi-records > li')].map(li => {
+              const link = li.querySelector('a[data-journal-citation]');
+              return { id: link.id, rect: rect(li), overflow: li.scrollWidth - li.clientWidth,
+                date: style(li.querySelector('.jcdi-date')), event: style(li.querySelector('.jcdi-label')), link: style(link) };
+            }) };
+        });
+        // Match the heading-relative reading position, keep real chrome/prose.
+        await index.evaluate(root => window.scrollTo({ top: scrollY + root.getBoundingClientRect().top - 180, behavior: 'instant' }));
+        await settleWithoutScripts(page);
+        item.normal = await measure();
+        await shot(page, name + '-normal', { fullPage: false });
+        item.afterShot = await measure();
+        const normal = item.normal;
+        assert.deepEqual(normal.viewport, { ...viewport, dpr: 1 });
+        assert.equal(normal.theme, theme);
+        assert.equal(normal.readerScale, 1);
+        assert.equal(normal.columns, 2);
+        assert.equal(normal.rootOverflow, 0);
+        assert.equal(normal.documentOverflow, 0);
+        assert.deepEqual(normal.rows.map(row => row.id), g44Sources.map(([id]) => id));
+        assert.ok(normal.rows.every(row => row.overflow <= 0 && row.link.rect.height >= 44));
+        assert.ok(normal.heading.rect.top >= normal.headerBottom && normal.heading.rect.bottom <= viewport.height);
+        assert.ok(normal.preceding?.tag === 'P' && normal.preceding.rect.bottom > normal.headerBottom
+          && normal.preceding.rect.top < normal.heading.rect.top, 'capture must include surrounding prose');
+        assert.ok(Math.abs(item.afterShot.container.top - normal.container.top) < 2, 'viewport capture moved the article');
+        // Reflow measurement is deliberately after the normal screenshot.
+        // This context is discarded; native keyboard tests never use it.
+        await page.evaluate(() => document.documentElement.style.setProperty('--gb-reader-font-scale', '2'));
+        await settleWithoutScripts(page);
+        item.scaled = await measure();
+        assert.equal(item.scaled.columns, 1);
+        assert.equal(item.scaled.rootOverflow, 0);
+        assert.equal(item.scaled.documentOverflow, 0);
+        assert.ok(item.scaled.rows.every((row, i) => row.overflow <= 0 && row.link.rect.height >= 44
+          && ['date', 'event', 'link'].every(key => Math.abs(row[key].fontSize - 2 * normal.rows[i][key].fontSize) < .25)));
+        assert.deepEqual(item.runtime, []);
+        console.log('G44_DESKTOP_CONTEXT ' + JSON.stringify({ name, normal: { viewport: normal.viewport,
+          width: normal.container.width, columns: normal.columns, theme: normal.theme, font: normal.rows[0].event.fontSize },
+          scaled: { width: item.scaled.container.width, columns: item.scaled.columns, font: item.scaled.rows[0].event.fontSize } }));
+      } catch (error) {
+        item.failure = error.message;
+        report.problems.push(name + ': ' + error.message);
+        console.error('FAIL ' + name + ': ' + error.message);
+      } finally {
+        report.g44DesktopContext.push(item);
+        await context.close();
+      }
+    }
+  }
   if (suite === 'full') for (const route of routes) for (const width of widths) for (const theme of ['light', 'dark']) {
     const context = await contextFor(width, theme);
     await context.addInitScript(() => {
@@ -436,6 +1505,7 @@ try {
         assert.equal(item.citationMarkup.returns, item.citationMarkup.sources);
         assert.equal(item.citationMarkup.oneReturnPerSource, true);
         item.citationRoundTrip = await sourceRoundTrip(page, citationFor(page, route.kind), theme === 'light');
+        if (route.kind === 'history' && [320,390,768,1440].includes(width)) item.g44Returns = await g44NativeReturns(page,true);
         if ([390, 1440].includes(width)) {
           await shot(page, `${route.kind}-body-${width}-${theme}`);
           item.repeatedSourceRoundTrip = await sourceRoundTrip(page, citationFor(page, route.kind, true), theme !== 'light', async (source) => {
@@ -643,6 +1713,7 @@ try {
         assert.equal(new URL(p.url()).hash, fallback);
         assert.equal(await p.locator(fallback).evaluate((el) => el === document.activeElement), true);
         result.noJsSourceFallback = { source: sourceHash, destination: fallback };
+        if (route.kind === 'history') result.g44NoJsReturns = await g44NativeReturns(p,false);
       }
       result.noJsReadingAndAnchors = true;
     } catch (error) { report.problems.push(`${route.kind} no-JS: ${error.message}`); }
@@ -672,6 +1743,47 @@ try {
           paper: getComputedStyle(el).getPropertyValue('--je-paper').trim() }));
         try {
           await ready(page, route.url);
+          // Reuse one existing short-desktop case per engine. Measure the
+          // 540px finance table at normal and doubled root text before keyboard QA.
+          if (route.kind === 'dossier' && javaScriptEnabled && theme === 'light' &&
+              width === Math.min(...widths.filter(w=>w>=1024)) && height === Math.max(...shortHeights)) {
+            item.sourceSeparators = await assertDossierSourceSeparators(page,true);
+            item.financeTableReflow = await page.locator('.g3-annual-finance').evaluate(annual => {
+              const root=document.documentElement;
+              const saved=[[root,'font-size'],[annual,'inline-size']].map(([el,key])=>
+                [el,key,el.style.getPropertyValue(key),el.style.getPropertyPriority(key)]);
+              const measure=()=>{
+                const box=annual.getBoundingClientRect(),table=annual.querySelector('table');
+                const cells=[...table.querySelectorAll('tbody th,tbody td')];
+                const bounds=[table.getBoundingClientRect(),...cells.flatMap(cell=>{
+                  const range=document.createRange();range.selectNodeContents(cell);
+                  return [...range.getClientRects()];
+                })];
+                return {width:box.width,rootFont:parseFloat(getComputedStyle(root).fontSize),
+                  layout:getComputedStyle(table.querySelector('tbody tr')).display,
+                  rows:table.querySelectorAll('tbody tr').length,cells:cells.length,
+                  overflow:Math.max(0,...bounds.map(r=>Math.max(box.left-r.left,r.right-box.right)))};
+              };
+              try {
+                annual.style.setProperty('inline-size','540px','important');
+                root.style.setProperty('font-size','16px','important');
+                const normal=measure();
+                root.style.setProperty('font-size','32px','important');
+                return {normal,scaled:measure()};
+              } finally {
+                for(const [el,key,value,priority] of saved) {
+                  if(value)el.style.setProperty(key,value,priority);else el.style.removeProperty(key);
+                }
+              }
+            });
+            const {normal,scaled}=item.financeTableReflow;
+            assert.equal(normal.rootFont,16);assert.equal(scaled.rootFont,32);
+            assert.equal(normal.layout,'table-row');assert.equal(scaled.layout,'grid');
+            for(const state of [normal,scaled]) {
+              assert.ok(Math.abs(state.width-540)<=1 && state.overflow<=1,'numeric table overflows: '+JSON.stringify(state));
+              assert.equal(state.rows,7);assert.equal(state.cells,35);
+            }
+          }
           await middle.scrollIntoViewIfNeeded(); await settleWithoutScripts(page);
           item.before = await railState();
           item.sticky = await stickyRail.evaluate((el) => ({ position: getComputedStyle(el).position,
@@ -754,10 +1866,28 @@ try {
           item.summaryReturn = await focused(null);
           item.summaryScrollTop = (await railState()).scrollTop;
           await rail.hover({ position: { x: 80, y: 80 } });
-          await page.mouse.wheel(0, 1500); await page.waitForTimeout(160);
+          // Wheel delivery is engine/OS dependent (Firefox can clamp a single
+          // large synthetic wheel event). Require real pointer scrolling until
+          // the link is inside the actual rail clip, not merely the viewport.
+          // Never force-click or set scrollTop; stop before chaining to the article.
+          item.pointerWheelSteps = [];
+          let lastRect = await last.boundingBox(), pointerState = await railState();
+          const pointerVisible = () => lastRect && lastRect.y >= pointerState.rect.top - 1 &&
+            lastRect.y + lastRect.height <= pointerState.rect.bottom + 1;
+          for (let step = 0; step < 24 && !pointerVisible(); step++) {
+            const remaining = pointerState.scrollHeight - pointerState.clientHeight - pointerState.scrollTop;
+            assert.ok(remaining > .5, 'last TOC entry clipped at end of native rail range');
+            const previousTop = pointerState.scrollTop;
+            await page.mouse.wheel(0, Math.min(120, Math.max(1, Math.ceil(remaining))));
+            await page.waitForTimeout(160);
+            pointerState = await railState();
+            lastRect = await last.boundingBox();
+            item.pointerWheelSteps.push({ scrollTop: pointerState.scrollTop, y: pointerState.y, rect: lastRect });
+            assert.ok(pointerState.scrollTop > previousTop, 'native wheel must advance the rail');
+            assert.ok(Math.abs(pointerState.y - item.before.y) < 1, 'pointer traversal must not scroll the article');
+          }
           const href = await last.getAttribute('href');
-          const lastRect = await last.boundingBox();
-          assert.ok(lastRect.y >= 0 && lastRect.y + lastRect.height <= height, 'last TOC entry must be visible before pointer activation');
+          assert.ok(pointerVisible(), 'last TOC entry must be fully inside its rail before pointer activation');
           await last.click(); await settleWithoutScripts(page);
           assert.equal(new URL(page.url()).hash, href);
           assert.equal(await page.locator(href).evaluate((el) => el === document.activeElement), true);
@@ -796,6 +1926,130 @@ try {
             await page.mouse.wheel(0, 200); await settleWithoutScripts(page);
             assert.ok((await railState()).y > item.tallResize.y + 100, 'native wheel must still reach the article when the rail fits');
           }
+          if (route.kind === 'history' && width === 1440 && height === 480) {
+            item.g44 = await g44RouteWitness(page,javaScriptEnabled,name);
+            const originalViewport=page.viewportSize();
+            try {
+              await page.setViewportSize({width:768,height:1024});
+              item.g44Tablet=await g44RouteWitness(page,javaScriptEnabled,name+'-768x1024');
+            } finally { await page.setViewportSize(originalViewport); }
+          }
+          // Real route breakpoint regression: establish focus before resize.
+          // No forced post-resize focus or synthetic change event.
+          if (width === 1440 && height === 480 && theme === 'light') {
+            item.tocBreakpointFocus = [];
+            const originalViewport = page.viewportSize();
+            try {
+              const targets = [
+                ['first', toc.locator('nav a').first(), true],
+                ['last', toc.locator('nav a').last(), true],
+                ['outside', middle, false],
+                ['summary', summary, false],
+              ];
+              for (const [label, target, descendant] of targets) {
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await settleWithoutScripts(page);
+                assert.equal(await toc.evaluate(el => el.open), true);
+                await target.focus();
+                assert.equal(await target.evaluate(el => el === document.activeElement), true, label + ' initial focus');
+                await page.setViewportSize({ width: 1023, height: 768 });
+                await settleWithoutScripts(page);
+                const expected = javaScriptEnabled && descendant ? summary : target;
+                const compactOpen = await toc.evaluate(el => el.open);
+                const compactFocus = await expected.evaluate(el => el === document.activeElement);
+                assert.equal(compactOpen, !javaScriptEnabled, label + ' compact state');
+                assert.equal(compactFocus, true, label + ' compact focus');
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await settleWithoutScripts(page);
+                const desktopOpen = await toc.evaluate(el => el.open);
+                const desktopFocus = await expected.evaluate(el => el === document.activeElement);
+                assert.equal(desktopOpen, true, label + ' desktop state');
+                assert.equal(desktopFocus, true, label + ' desktop focus');
+                item.tocBreakpointFocus.push({ label, compactOpen, compactFocus, desktopOpen, desktopFocus });
+              }
+              if (route.kind === 'dossier') {
+                item.compactOnlyFocus = [];
+                for (const [label, target] of [['jump', page.locator('.je-contents-jump')], ['return', toc.locator('.je-contents-return')]]) {
+                  for (const key of ['Tab', 'Shift+Tab']) {
+                    await page.setViewportSize({ width: 1023, height: 768 });
+                    await settleWithoutScripts(page);
+                    if (label === 'return' && !await toc.evaluate(el => el.open)) await summary.click();
+                    await target.focus();
+                    assert.equal(await target.evaluate(el => el === document.activeElement), true);
+                    await page.setViewportSize({ width: 1024, height: 768 });
+                    await settleWithoutScripts(page);
+                    assert.equal(await target.evaluate(el => el === document.activeElement && el.getClientRects().length > 0), true, label + ' retained focus');
+                    await page.keyboard.press(key);
+                    await settleWithoutScripts(page);
+                    assert.equal(await target.isVisible(), false, label + ' hides after native departure');
+                    assert.equal(await page.evaluate(() => document.activeElement !== document.body), true, label + ' native departure');
+                    item.compactOnlyFocus.push({ label, key, retained: true, departed: true });
+                  }
+                }
+              }
+              if (javaScriptEnabled) {
+                await page.setViewportSize({ width: 1023, height: 768 });
+                await settleWithoutScripts(page);
+                if (!await toc.evaluate(el => el.open)) await summary.click();
+                const link = toc.locator('nav a').first();
+                const hash = await link.getAttribute('href');
+                // Separate the adapter's cancellable fallback from native fragment
+                // navigation. Firefox may deliver the latter after el.click()
+                // returns; a same-task focus() cannot cancel a native navigation.
+                // Observe the real scheduled/cancelled frame IDs and actual JS
+                // focus calls without preventing the default fragment action.
+                item.staleTocFocusTrace = await link.evaluate(async (el, outsideId) => {
+                  const sample=()=>({id:document.activeElement?.id,tag:document.activeElement?.tagName,hash:location.hash});
+                  const before=sample(), target=document.getElementById(decodeURIComponent(el.hash.slice(1))), outside=document.getElementById(outsideId);
+                  const frame=window.requestAnimationFrame, cancel=window.cancelAnimationFrame, nativeFocus=target.focus, ownFocus=Object.getOwnPropertyDescriptor(target,'focus');
+                  const scheduled=[],cancelled=[],scriptFocus=[];let competing=false,resolveHash,timer;
+                  const navigated=new Promise((resolve,reject)=>{resolveHash=()=>{if(location.hash===el.hash)resolve()};window.addEventListener('hashchange',resolveHash);timer=setTimeout(()=>reject(Error('native fragment did not settle')),5000)});
+                  try {
+                    target.focus=function(...args){scriptFocus.push({competing,state:sample()});return nativeFocus.apply(this,args)};
+                    window.requestAnimationFrame=function(callback){const id=frame.call(window,callback);scheduled.push(id);return id};
+                    window.cancelAnimationFrame=function(id){cancelled.push(id);return cancel.call(window,id)};
+                    let afterActivation,afterCompetingFocus;
+                    try {el.click();afterActivation=sample();competing=true;outside.focus();afterCompetingFocus=sample()}
+                    finally {window.requestAnimationFrame=frame;window.cancelAnimationFrame=cancel}
+                    resolveHash();await navigated;await new Promise(resolve=>frame.call(window,()=>frame.call(window,resolve)));
+                    const nativeSettled=sample();
+                    outside.focus();await new Promise(resolve=>frame.call(window,()=>frame.call(window,resolve)));
+                    return {before,afterActivation,afterCompetingFocus,nativeSettled,afterLaterFocus:sample(),scheduled,cancelled,scriptFocus,outsideId};
+                  } finally {
+                    window.requestAnimationFrame=frame;window.cancelAnimationFrame=cancel;
+                    if(ownFocus)Object.defineProperty(target,'focus',ownFocus);else delete target.focus;
+                    clearTimeout(timer);window.removeEventListener('hashchange',resolveHash);
+                  }
+                }, await middle.getAttribute('id'));
+                const trace=item.staleTocFocusTrace;
+                assert.notEqual(trace.before.hash, hash, 'probe requires actual fragment navigation');
+                assert.equal(trace.afterCompetingFocus.id,trace.outsideId,'competing focus must really occur');
+                assert.ok(trace.scheduled.some(id=>trace.cancelled.includes(id)), 'competing focus must cancel the scheduled adapter frame: '+JSON.stringify(trace));
+                assert.ok(!trace.scriptFocus.some(call=>call.competing), 'adapter must not issue stale focus: '+JSON.stringify(trace));
+                assert.equal(trace.nativeSettled.hash,hash,'native fragment must remain authoritative');
+                if(trace.afterActivation.hash===hash) assert.equal(trace.nativeSettled.id,trace.outsideId,'already-completed native navigation must not override newer focus');
+                else assert.ok([trace.outsideId,decodeURIComponent(hash.slice(1))].includes(trace.nativeSettled.id),'only the native fragment may finish after the competing focus');
+                await settleWithoutScripts(page);
+                assert.equal(new URL(page.url()).hash,hash);
+                assert.equal(trace.afterLaterFocus.id,trace.outsideId);
+                assert.equal(await middle.evaluate(el=>el===document.activeElement),true,'later focus after native navigation must remain authoritative: '+JSON.stringify(trace));
+                item.staleTocFocus = true;
+                if (!await toc.evaluate(el => el.open)) await summary.click();
+                const last = toc.locator('nav a').last();
+                const lastHash = await last.getAttribute('href');
+                await link.evaluate((el, nextHash) => {
+                  const disclosure = el.closest('details');
+                  el.click();
+                  disclosure.open = true;
+                  Array.from(disclosure.querySelectorAll('nav a')).find(a => a.getAttribute('href') === nextHash).click();
+                }, lastHash);
+                await settleWithoutScripts(page);
+                assert.equal(new URL(page.url()).hash, lastHash);
+                assert.equal(await page.locator(lastHash).evaluate(el => el === document.activeElement), true, 'new activation must own native focus');
+                item.supersededTocFocus = true;
+              }
+            } finally { await page.setViewportSize(originalViewport); }
+          }
           assert.deepEqual(item.runtime, []);
           console.log(`PASS ${name}`);
         } catch (error) {
@@ -823,17 +2077,39 @@ try {
       for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
         const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
         const page = await context.newPage();
+        const caseStarted=performance.now();
         const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [], phase: 'initialization' };
+        const caseElapsed=()=>Math.round(performance.now()-caseStarted);
         const name = `${route.kind}-mobile-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
-        // Kill a truly stalled engine with a failing, artifact-backed result.
-        // This cannot turn missing checks into PASS or change route behavior.
-        const watchdog = setTimeout(() => {
-          const diagnostic = { head: report.head, engine, name, item, timeoutMs: 75_000 };
-          fs.writeFileSync(path.join(output, 'after', `${name}-watchdog.json`), JSON.stringify(diagnostic, null, 2) + '\n');
-          console.error(`FAIL ${name}: 75s mobile-case watchdog in phase ${item.phase}; diagnostic JSON retained`);
-          process.exit(124);
-        }, 75_000);
+        // Each independent witness gets the same bounded deadline. The catalogue
+        // is not a retry of the mobile/G44 witness, and may start only after it
+        // passes. Never reset a budget within a witness or drop native assertions.
+        const watchdogMs=75_000;
+        item.watchdogStages=[];
+        let watchdog, watchdogStage;
+        const armWatchdog=(label)=>{
+          assert.ok(!watchdogStage || watchdogStage.status==='complete','previous watchdog stage must pass before starting another');
+          watchdogStage={label,startedCaseMs:caseElapsed(),timeoutMs:watchdogMs,status:'running'};
+          item.watchdogStages.push(watchdogStage);
+          watchdog=setTimeout(()=>{
+            item.caseElapsedMs=caseElapsed();
+            watchdogStage.elapsedMs=item.caseElapsedMs-watchdogStage.startedCaseMs;
+            watchdogStage.status='timeout';
+            const diagnostic={head:report.head,engine,name,item,timeoutMs:watchdogMs};
+            fs.writeFileSync(path.join(output,'after',`${name}-watchdog.json`),JSON.stringify(diagnostic,null,2)+'\n');
+            console.error(`FAIL ${name}: 75s ${watchdogStage.label} watchdog in phase ${item.phase}; diagnostic JSON retained`);
+            writeMobileCheckpoint({name,item,reason:'watchdog',exitCode:124});
+            process.exit(124);
+          },watchdogMs);
+        };
+        const finishWatchdog=()=>{
+          watchdogStage.elapsedMs=caseElapsed()-watchdogStage.startedCaseMs;
+          assert.ok(watchdogStage.elapsedMs<=watchdogMs,'witness exceeded its deadline: '+watchdogStage.label);
+          watchdogStage.status='complete';
+          clearTimeout(watchdog);
+        };
+        armWatchdog('mobile/G44');
         const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
         const selected = [390, 844].includes(width);
         const settleMobile = async () => {
@@ -933,6 +2209,52 @@ try {
           const response = await ready(page, route.url, (phase) => { item.phase = phase; });
           if (route.kind === 'history') await assertPublishedHistory(page, response);
           else if (route.kind === 'dossier') await assertAdoptedFinance(page);
+          // Reuse a single existing mobile case per engine for real 200% root text.
+          // Element boxes alone can fit while the actual year glyphs overlap.
+          if (route.kind === 'dossier' && javaScriptEnabled && theme === 'light' &&
+              width === Math.min(...mobileWidths) && height === Math.max(...mobileHeights)) {
+            item.annualFinanceAxes = await page.locator('.g3-annual-finance').evaluate((annual) => {
+              const root = document.documentElement;
+              const oldSize = root.style.getPropertyValue('font-size');
+              const priority = root.style.getPropertyPriority('font-size');
+              const measure = () => ({
+                rootFont: parseFloat(getComputedStyle(root).fontSize),
+                axes: [...annual.querySelectorAll('.gaf-years')].map(axis => {
+                  const figure = axis.closest('figure').getBoundingClientRect();
+                  const labels = [...axis.querySelectorAll('span')].map(label => {
+                    const range = document.createRange();
+                    range.selectNodeContents(label);
+                    return { year: label.textContent.trim(), rects: [...range.getClientRects()].map(r => r.toJSON()) };
+                  });
+                  const rects = labels.flatMap(label => label.rects);
+                  const outside = rects.filter(r => r.left < figure.left - .5 || r.right > figure.right + .5);
+                  const overlap = rects.flatMap((r,i) => rects.slice(i+1).filter(s =>
+                    Math.min(r.right,s.right)-Math.max(r.left,s.left) > .5 &&
+                    Math.min(r.bottom,s.bottom)-Math.max(r.top,s.top) > .5));
+                  return { labels, outside: outside.length, overlap: overlap.length };
+                })
+              });
+              try {
+                const normal = measure();
+                root.style.setProperty('font-size','200%');
+                return { normal, scaled: measure() };
+              } finally {
+                if (oldSize) root.style.setProperty('font-size',oldSize,priority);
+                else root.style.removeProperty('font-size');
+              }
+            });
+            assert.ok(item.annualFinanceAxes.scaled.rootFont >= 30, '200% root font must be effective');
+            for (const measurement of Object.values(item.annualFinanceAxes)) {
+              assert.equal(measurement.axes.length,3);
+              for (const axis of measurement.axes) {
+                assert.deepEqual(axis.labels.map(label => label.year), ['2019','2020','2021','2022','2023','2024','2025']);
+                assert.ok(axis.labels.every(label => label.rects.length === 1 &&
+                  label.rects[0].width > 0 && label.rects[0].height > 0), 'all years must be visible and unsplit');
+                assert.equal(axis.outside,0,'year label leaves chart bounds');
+                assert.equal(axis.overlap,0,'year labels overlap');
+              }
+            }
+          }
           // The shared dark-theme anchor color must not override Journal's
           // inverse skip-navigation foreground. Check the *focused* control
           // in every real mobile engine/theme and JS/no-JS mode.
@@ -960,6 +2282,7 @@ try {
           await settleMobile();
           await page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth').scrollIntoViewIfNeeded();
           await settleMobile();
+          item.standaloneSourceActions = await standaloneSourceActions(page, route.kind);
           const links = await nav.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
           item.phase = 'native Tab to return link';
           const nativeReturn = route.kind === 'dossier' ? toc.locator('.je-contents-return') : null;
@@ -1033,9 +2356,103 @@ try {
           assert.equal(item.viewport.scrollWidth, item.viewport.usableWidth);
           assert.deepEqual(item.layout.overflow, []);
           assert.deepEqual(item.runtime, []);
+          if (route.kind === 'history' && [320,390].includes(width) && height === 844) {
+            item.phase = 'G44 real route witness';
+            item.g44Timing={startedCaseMs:caseElapsed()};
+            item.g44 = await g44RouteWitness(page,javaScriptEnabled,name);
+            item.g44Timing.finishedCaseMs=caseElapsed();
+            assert.deepEqual(item.runtime, []);
+          }
+          // One real catalogue interaction case per engine; no extra context.
+          if (route.kind === 'history' && javaScriptEnabled && theme === 'light' &&
+              width === Math.min(...mobileWidths) && height === Math.max(...mobileHeights)) {
+            finishWatchdog();
+            armWatchdog('catalogue navigation');
+            item.phase = 'matrix filter and native source return';
+            const matrix=page.locator('.g3-matrix');
+            const query=matrix.locator('input[type="search"]'), year=matrix.locator('select'), reset=matrix.locator('button');
+            const visible=()=>matrix.locator('.gm-row:visible').count();
+            const citation=matrix.locator('#cite-g3-matrix-lawson-2019');
+            const source=page.locator('#history-source-gnl-2019');
+            const back=source.locator('[data-journal-source-return]');
+            const states=[];
+            // Attach evidence before the first awaited action so a case watchdog
+            // preserves completed states and the precise pending operation.
+            item.matrixNavigation=states;
+            item.matrixSteps=[];
+            item.matrixStartedCaseMs=caseElapsed();
+            const matrixStarted=performance.now();
+            const step=async(label,action)=>{
+              item.phase='matrix: '+label;
+              const record={label,startedMs:Math.round(performance.now()-matrixStarted),status:'pending'};
+              item.matrixSteps.push(record);
+              try {
+                const result=await action();
+                record.status='complete';return result;
+              } catch(error) {
+                record.status='failed';record.error=String(error);throw error;
+              } finally {
+                record.elapsedMs=Math.round(performance.now()-matrixStarted-record.startedMs);
+              }
+            };
+            const state=async(label,expected)=>{
+              const actual=await step('count: '+label,visible);
+              assert.equal(actual,expected,label);
+              states.push({label,visible:actual,hash:new URL(page.url()).hash});
+            };
+            const focus=el=>el.evaluate(node=>node===document.activeElement);
+            await state('initial',26);
+            assert.equal(await step('count citations',()=>matrix.locator('[data-journal-citation]').count()),60);
+            await step('select 2019',()=>year.selectOption('2019')); await state('year only',5);
+            await step('fill padded name',()=>query.fill(' ЛОУСОН ')); await state('name and year',1);
+            assert.equal(await citation.isVisible(),true);
+            await step('select 2020',()=>year.selectOption('2020')); await state('different year',1);
+            assert.equal(await matrix.locator('#cite-g3-matrix-lawson-2020').isVisible(),true);
+            await step('fill unknown name',()=>query.fill('неизвестный участник')); await state('no matches',0);
+            assert.match(await matrix.locator('.gm-status').textContent(),/Нет совпадений/);
+            await step('native reset click',()=>reset.click()); await state('reset',26);
+            assert.equal(await query.inputValue(),'');assert.equal(await year.inputValue(),'');
+            assert.equal(await focus(query),true);
+            const hideTarget=async()=>{
+              await step('hide target: fill MacArthur',()=>query.fill('МакАртур')); await step('hide target: select 2020',()=>year.selectOption('2020'));
+              await state('hidden citation',1); assert.equal(await citation.isVisible(),false);
+            };
+            const restored=async(label)=>{
+              await step('settle: '+label,settleMobile);
+              assert.equal(new URL(page.url()).hash,'#cite-g3-matrix-lawson-2019');
+              await state(label,26);
+              assert.equal(await query.inputValue(),'');assert.equal(await year.inputValue(),'');
+              assert.equal(await citation.isVisible(),true);assert.equal(await focus(citation),true);
+            };
+            await step('fill Lawson',()=>query.fill('Лоусон'));await step('select Lawson 2019',()=>year.selectOption('2019'));
+            await step('focus citation',()=>citation.focus());await step('native Enter citation',()=>page.keyboard.press('Enter'));await step('settle source',settleMobile);
+            assert.equal(new URL(page.url()).hash,'#history-source-gnl-2019');
+            assert.equal(await focus(source),true);
+            assert.equal(await back.getAttribute('href'),'#cite-g3-matrix-lawson-2019');
+            await hideTarget();await step('native return click',()=>back.click());await restored('return reveals target');
+            await hideTarget();await step('history back',()=>page.goBack());await step('settle history back',settleMobile);
+            assert.equal(new URL(page.url()).hash,'#history-source-gnl-2019');
+            await state('history back retains filter',1);
+            assert.equal(await citation.isVisible(),false);
+            await step('history forward',()=>page.goForward());await restored('history forward reveals target');
+            await hideTarget();await step('native same-fragment click',()=>back.click());await restored('same fragment reveals target');
+            assert.deepEqual(item.runtime,[]);
+          }
+          if (route.kind==='history'&&engine==='webkit'&&!javaScriptEnabled&&width===390&&height===390){
+            item.phase='G44 short-viewport screenshot A/B control';
+            item.g44Control=await g44RouteWitness(page,false,name,true);
+            assert.deepEqual(item.runtime,[]);
+          }
+          finishWatchdog();
           item.phase = 'complete';
+          item.caseElapsedMs=caseElapsed();
           console.log(`PASS ${name}`);
         } catch (error) {
+          item.caseElapsedMs=caseElapsed();
+          if(watchdogStage.status==='running'){
+            watchdogStage.elapsedMs=item.caseElapsedMs-watchdogStage.startedCaseMs;
+            watchdogStage.status='failed';
+          }
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
           console.error(`FAIL ${name}: ${error.message.slice(0, 1600)}`);
           fs.writeFileSync(path.join(output, 'after', `${name}-diagnostic.json`),
@@ -1043,6 +2460,7 @@ try {
           await shot(page, `${name}-failure`, { timeout: 8000 }).catch(() => {});
         } finally {
           report.mobileFocus.push(item);
+          writeMobileCheckpoint({name,item,reason:'teardown-pending'});
           // Firefox may retain a native disclosure/scroll task after an assertion
           // failure. A hung teardown must fail closed, not monopolize CI for 55m.
           let teardownTimeout;
@@ -1053,12 +2471,18 @@ try {
             ]);
           } catch (closeError) {
             console.error(`FAIL ${name}: ${closeError.message}; diagnostic JSON retained`);
+            item.teardownFailure=closeError.message;
+            report.problems.push(`${name}: ${closeError.message}`);
+            writeMobileCheckpoint({name,item,reason:'teardown-failure',exitCode:1});
             process.exit(1);
           } finally {
             clearTimeout(teardownTimeout);
             clearTimeout(watchdog);
           }
-          if (stopOnFirstError && item.failure) process.exit(1);
+          if (stopOnFirstError && item.failure) {
+            writeMobileCheckpoint({name,item,reason:'fail-fast',exitCode:1});
+            process.exit(1);
+          }
         }
       }
   // Agent4/#2339 confirmed this on selected Agent8: forced colors exposes all
@@ -1088,7 +2512,8 @@ try {
               }) };
           });
           assert.equal(item.state.active, true);
-          assert.equal(item.state.links.length, 4, 'one four-link navigation owner');
+          assert.equal(item.state.links.length, 3, 'one three-link Journal navigation owner');
+          assert.equal(await page.locator('.je-masthead__navigation > a.je-masthead__home[href="/"]').count(), 1, 'separate main-site return');
           assert.equal(item.state.links.filter((link) => link.current).length, 1);
           assert.notEqual(item.state.expected.canvas, item.state.expected.highlight);
           for (const link of item.state.links) {
@@ -1096,6 +2521,9 @@ try {
             assert.equal(link.border, link.current ? item.state.expected.highlight : item.state.expected.canvas,
               'Forced colors must distinguish the current section, not underline every link equally');
           }
+          if (width < 1024 && route.kind !== 'journal') item.standaloneSourceActions = await standaloneSourceActions(page, route.kind, true);
+          // Masthead focus is a separate native navigation scenario. Measure it
+          // before the atlas witness scrolls deep into the historical article.
           await shot(page, name);
           const current = page.locator('.je-masthead__nav a[aria-current]');
           await current.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
@@ -1112,6 +2540,7 @@ try {
           assert.ok(f.rect.left - outset >= -1 && f.rect.right + outset <= f.usableWidth + 1
             && f.rect.top - outset >= -1 && f.rect.bottom + outset <= f.height + 1);
           await shot(page, `${name}-focus`);
+          if (route.kind === 'history') item.atlasSourceActions = await atlasSourceActions(page,true);
           assert.deepEqual(item.runtime, []);
           console.log(`PASS ${name}`);
         } catch (error) {
@@ -1137,6 +2566,102 @@ try {
           if (route.kind === 'history') await assertPublishedHistory(page, response);
           else if (route.kind === 'dossier') await assertAdoptedFinance(page);
           await page.emulateMedia({ media: 'print' });
+          // Isolate paper-track geometry at actual A4/Letter content width.
+          // A PDF engine may silently shrink the sheet if rem minima overflow.
+          if (route.kind === 'history' && theme === 'light' && javaScriptEnabled) {
+            item.matrixPaperTracks = await page.locator('.g3-matrix').evaluate((matrix, paper) => {
+              const root = document.documentElement;
+              const oldSize = root.style.getPropertyValue('font-size');
+              const oldPriority = root.style.getPropertyPriority('font-size');
+              const oldWidth = matrix.style.getPropertyValue('inline-size');
+              const widthPriority = matrix.style.getPropertyPriority('inline-size');
+              const measure = () => {
+                const b = matrix.getBoundingClientRect();
+                const row = matrix.querySelector('.gm-row');
+                const cells = [...matrix.querySelectorAll('.gm-head span,.gm-name,.gm-cell,.gm-cell a')]
+                  .filter(el => el.getClientRects().length);
+                return { width:b.width, font:parseFloat(getComputedStyle(root).fontSize),
+                  columns:getComputedStyle(row).gridTemplateColumns,
+                  overflow:Math.max(0,...cells.map(el => {
+                    const r=el.getBoundingClientRect();
+                    return Math.max(b.left-r.left,r.right-b.right);
+                  })),
+                  rows:[...matrix.querySelectorAll('.gm-row')].filter(el=>el.getClientRects().length).length };
+              };
+              try {
+                matrix.style.setProperty('inline-size',paper==='A4'?'182mm':'187.9mm','important');
+                root.style.setProperty('font-size','16px','important');
+                const normal=measure();
+                root.style.setProperty('font-size','32px','important');
+                return {normal,scaled:measure()};
+              } finally {
+                if(oldSize) root.style.setProperty('font-size',oldSize,oldPriority);
+                else root.style.removeProperty('font-size');
+                if(oldWidth) matrix.style.setProperty('inline-size',oldWidth,widthPriority);
+                else matrix.style.removeProperty('inline-size');
+              }
+            }, paper);
+            const {normal,scaled}=item.matrixPaperTracks;
+            assert.equal(normal.font,16); assert.equal(scaled.font,32);
+            assert.equal(normal.rows,26); assert.equal(scaled.rows,26);
+            assert.ok(Math.abs(normal.width-scaled.width)<=1 && scaled.overflow<=1 && normal.overflow<=1,
+              'paper matrix must fit at either root text size');
+            assert.equal(normal.columns,scaled.columns,'paper track minima must not scale with root text');
+          }
+          // Keep the actual paper axes and numeric table independent of screen
+          // root zoom, without silently shrinking the physical PDF.
+          if (route.kind === 'dossier' && theme === 'light' && javaScriptEnabled) {
+            item.sourceSeparators = await assertDossierSourceSeparators(page,true);
+            item.financePaperGeometry = await page.locator('.g3-annual-finance').evaluate((annual,paper) => {
+              const root=document.documentElement;
+              const saved=[[root,'font-size'],[annual,'inline-size']].map(([el,key])=>
+                [el,key,el.style.getPropertyValue(key),el.style.getPropertyPriority(key)]);
+              const measure=()=>{
+                const box=annual.getBoundingClientRect(),table=annual.querySelector('table');
+                const axes=[...annual.querySelectorAll('.gaf-years')].map(axis=>{
+                  const figure=axis.closest('figure').getBoundingClientRect();
+                  const labels=[...axis.querySelectorAll('span')].map(el=>{
+                    const range=document.createRange();range.selectNodeContents(el);
+                    return {year:el.textContent.trim(),rects:[...range.getClientRects()].map(r=>r.toJSON())};
+                  });
+                  const rects=labels.flatMap(label=>label.rects);
+                  return {font:parseFloat(getComputedStyle(axis).fontSize),width:figure.width,labels,
+                    outside:rects.filter(r=>r.left<figure.left-.5||r.right>figure.right+.5).length,
+                    overlap:rects.flatMap((r,i)=>rects.slice(i+1).filter(s=>
+                      Math.min(r.right,s.right)-Math.max(r.left,s.left)>.5 &&
+                      Math.min(r.bottom,s.bottom)-Math.max(r.top,s.top)>.5)).length};
+                });
+                return {rootFont:parseFloat(getComputedStyle(root).fontSize),width:box.width,axes,
+                  tableFont:parseFloat(getComputedStyle(table).fontSize),
+                  rows:table.querySelectorAll('tbody tr').length,cells:table.querySelectorAll('tbody th,tbody td').length};
+              };
+              try {
+                annual.style.setProperty('inline-size',paper==='A4'?'182mm':'187.9mm','important');
+                root.style.setProperty('font-size','16px','important');
+                const normal=measure();
+                root.style.setProperty('font-size','32px','important');
+                return {normal,scaled:measure()};
+              } finally {
+                for(const [el,key,value,priority] of saved) {
+                  if(value)el.style.setProperty(key,value,priority);else el.style.removeProperty(key);
+                }
+              }
+            },paper);
+            const {normal,scaled}=item.financePaperGeometry;
+            assert.equal(normal.rootFont,16);assert.equal(scaled.rootFont,32);
+            assert.ok(normal.width>0&&Math.abs(normal.width-scaled.width)<=1);
+            for(const state of [normal,scaled]) {
+              assert.equal(state.rows,7);assert.equal(state.cells,35);assert.equal(state.axes.length,3);
+              assert.ok(Math.abs(state.tableFont-12.32)<.05,'paper table keeps its existing physical font size');
+              for(const axis of state.axes) {
+                assert.ok(Math.abs(axis.font-10.4)<.05,'paper axis keeps its existing physical font size');
+                assert.deepEqual(axis.labels.map(label=>label.year),['2019','2020','2021','2022','2023','2024','2025']);
+                assert.ok(axis.labels.every(label=>label.rects.length===1&&label.rects[0].width>0&&label.rects[0].height>0));
+                assert.equal(axis.outside,0);assert.equal(axis.overlap,0);
+              }
+            }
+            assert.ok(scaled.axes.every((axis,i)=>Math.abs(axis.width-normal.axes[i].width)<=1),'paper chart widths must remain stable');
+          }
           item.dom = await page.evaluate(() => {
             const next = document.querySelector('.je-next-story');
             const title = next?.querySelector('a').cloneNode(true);
@@ -1144,6 +2669,10 @@ try {
             const normalize = (element) => element.textContent.replace(/\s+/gu, ' ').trim();
             return { heading: normalize(document.querySelector('h1')),
               sourceTitles: [...document.querySelectorAll('.bibliography-item h3')].map(normalize),
+              // Every historical evidence boundary is reader-facing text, not
+              // disclosure chrome. Require it in the real PDF, even when the
+              // redundant summary label is absent.
+              sourceBoundaries: [...document.querySelectorAll('.je-history-article .bibliography-item .biblio-details > p')].map(normalize),
               companion: next ? { label: normalize(next.querySelector('p')), title: normalize(title), breakInside: getComputedStyle(next).breakInside } : null,
               reviewWarning: document.querySelector('.je-review-note') ? normalize(document.querySelector('.je-review-note')) : null,
               // The shared skip link is off-canvas, not display:none; prove its
@@ -1153,9 +2682,51 @@ try {
               paper: getComputedStyle(document.querySelector('.journal-edition')).getPropertyValue('--je-paper').trim() };
           });
           assert.equal(item.dom.screenControlsHidden, true, 'print must omit only screen navigation, not bibliography');
+          if (route.kind === 'history') {
+            assert.equal(item.dom.sourceBoundaries.length, item.dom.sourceTitles.length, 'each historical source must retain its printed evidence boundary');
+            assert.ok(item.dom.sourceBoundaries.every(Boolean), 'historical evidence boundaries cannot be empty');
+          }
           assert.equal(item.dom.paper, '#fff', 'print must use white paper in either browser preference');
           await page.pdf({ path: item.pdf, format: paper, printBackground: true,
             margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
+
+          if(route.kind==='history'){
+            const index=page.locator('#g3-2018-document-index');
+            const paperIndex=await index.evaluate(root=>{
+              const groups=[...root.querySelectorAll('.jcdi-group')];
+              return {heading:root.querySelector('h3').textContent.trim(),nextHeading:document.querySelector('#g3-later-title').textContent.trim(),
+                columns:getComputedStyle(root.querySelector('.jcdi-lanes')).display,
+                groups:groups.map(g=>({heading:g.querySelector('h4').textContent.trim(),rows:[...g.querySelectorAll('li')].map(li=>({
+                  date:li.querySelector('.jcdi-date').textContent.trim(),label:li.querySelector('.jcdi-label').textContent.trim(),
+                  citation:li.querySelector('a[data-journal-citation]').textContent.trim(),id:li.querySelector('a[data-journal-citation]').id,
+                  breakInside:getComputedStyle(li).breakInside
+                }))}))};
+            });
+            assert.equal(paperIndex.columns,'block');
+            assert.deepEqual(paperIndex.groups.map(g=>g.rows.length),[3,3,1]);
+            assert.deepEqual(paperIndex.groups.flatMap(g=>g.rows.map(r=>r.id)),g44Sources.map(([id])=>id));
+            assert.ok(paperIndex.groups.flatMap(g=>g.rows).every(r=>r.breakInside==='avoid'),'G44 print keeps only individual rows together');
+            item.g44Paper=paperIndex;
+            const pdfCheck=spawnSync(args['pdf-python']||'python3',['-c',[
+              'import fitz, json, sys, unicodedata',
+              'spec=json.loads(sys.argv[2])',
+              'norm=lambda t: "".join(c for c in unicodedata.normalize("NFKC",t) if not c.isspace() and ord(c)!=173)',
+              'with fitz.open(sys.argv[1]) as doc: content=norm(" ".join(p.get_text(sort=True) for p in doc))',
+              'title=norm(spec["heading"]); end=norm(spec["nextHeading"])',
+              'start=content.find(title); assert start>=0, "missing compact print heading"',
+              'stop=content.find(end,start+len(title)); assert stop>start, "missing next section"',
+              'region=content[start:stop]; cursor=0; total=0',
+              'for group in spec["groups"]:',
+              '    tokens=[group["heading"]]+[v for row in group["rows"] for v in (row["date"],row["label"],row["citation"])]',
+              '    for token in tokens:',
+              '        value=norm(token); at=region.find(value,cursor); assert at>=0, "missing/out-of-order printed G44 item: "+token',
+              '        cursor=at+len(value); total+=1',
+              'print(json.dumps({"orderedFields":total,"rows":sum(len(g["rows"]) for g in spec["groups"])}))'
+            ].join('\n'),item.pdf,JSON.stringify(paperIndex)],{cwd:root,encoding:'utf8'});
+            assert.equal(pdfCheck.status,0,pdfCheck.error?.message||pdfCheck.stderr);
+            item.g44Paper.actual=JSON.parse(pdfCheck.stdout);
+            assert.deepEqual(item.g44Paper.actual,{orderedFields:24,rows:7});
+          }
           assert.deepEqual(item.runtime, []);
         } catch (error) {
           item.failure = error.message; item.stack = error.stack;
@@ -1177,6 +2748,7 @@ try {
 } finally {
   await browser.close();
   fs.writeFileSync(path.join(output, `browser-${engine}.json`), JSON.stringify(report, null, 2) + '\n');
+  if (['full','mobile'].includes(suite)) fs.rmSync(path.join(output,'mobile-checkpoint.json'),{force:true});
 }
 console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.mobileFocus.length} mobile-focus + ${report.forcedColors.length} forced-colors + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
 if (report.problems.length) { console.error(report.problems.join('\n')); process.exitCode = 1; }

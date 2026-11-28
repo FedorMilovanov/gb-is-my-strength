@@ -24,7 +24,16 @@ const specs=[
 const financeRoot='.g3g-finance .g3g-chart svg';
 const fm=financeModel({total:1061800,conferences:817283,advertising:246511});
 const at=(cls,x,y)=>financeRoot+' text'+cls+'[x="'+x+'"][y="'+y+'"]';
+const atlasListSpecs=[
+ ...['Дугласвилл, Джорджия · 2013','Даллас, Техас · 2018','Саутлейк, Техас · 2024','Мустанг, Оклахома · 2024'].flatMap((title,i)=>[
+  [root+' .g3g-atlas-list > li:nth-child('+(i+1)+') > b',String(i+1),'marker'],
+  [root+' .g3g-atlas-list > li:nth-child('+(i+1)+') > div > h5',title,'html']
+ ])
+];
 const shortSpecs=[
+ ...atlasListSpecs,
+ ['.g3g-history > header > .g3g-kicker','Исторический атлас · 2011–2024','html'],
+ ['.g3g-history > header > h3','От поместной церкви к региональным встречам','html'],
  ['.g3g-history > header .g3g-deck','Избранные даты и места по документам, каталогам и свидетельствам участников.','html'],
  [root+' .g3g-map-key > span:nth-child(1)','Место конференции или анонса','html'],
  [root+' .g3g-map-key > span:nth-child(2)','Встреча по заявлению 2018 года','html'],
@@ -36,6 +45,7 @@ const shortSpecs=[
 ];
 const allowedSummaries={
  html:["Element's background color could not be determined because it is overlapped by another element"],
+ marker:["Element content is too short to determine if it is actual text content","Element's background color could not be determined because it is overlapped by another element"],
  svg:["Element's background color could not be determined because it is overlapped by another element","Element's background color could not be determined because element contains an image node","Element content is too short to determine if it is actual text content"]
 };
 const settle=async page=>{let prev='',stable=0;for(let i=0;i<60;i++){const now=await page.evaluate(()=>JSON.stringify([scrollY,document.querySelector('.mcp-top')?.getBoundingClientRect().bottom,document.querySelector('[data-journal-contents]')?.getBoundingClientRect().bottom]));stable=now===prev?stable+1:0;if(stable>=3)return;prev=now;await page.waitForTimeout(50)}throw Error('atlas viewport did not settle')};
@@ -44,9 +54,9 @@ export async function reviewAtlasContrast(page,reviews,{short=false}={}){
  const activeSpecs=short?[...specs,...shortSpecs]:specs;
  const pending=[],remaining=[];
  for(const rule of reviews){const rest=[];for(const node of rule.nodes){
-  const match=await page.evaluate(({target,specs,short})=>{if(target.length!==1)return null;const hits=document.querySelectorAll(target[0]);if(hits.length!==1)return null;const el=hits[0];if(!el.closest('.g3g-atlas')&&!(short&&(el.closest('.g3g-finance')||el.matches('.g3g-history > header .g3g-deck'))))return null;const hit=specs.findIndex(([sel])=>document.querySelectorAll(sel).length===1&&document.querySelector(sel)===el);return {hit,text:el.textContent.trim()}},{target:node.target,specs:activeSpecs,short});
+  const match=await page.evaluate(({target,specs,short})=>{if(target.length!==1)return null;const hits=document.querySelectorAll(target[0]);if(hits.length!==1)return null;const el=hits[0];if(!el.closest('.g3g-atlas')&&!(short&&(el.closest('.g3g-finance')||el.matches('.g3g-history > header > :is(.g3g-kicker,h3,.g3g-deck)'))))return null;const hit=specs.findIndex(([sel])=>document.querySelectorAll(sel).length===1&&document.querySelector(sel)===el);return {hit,text:el.textContent.trim(),decorative:el.tagName==='B'&&el.getAttribute('aria-hidden')==='true'}},{target:node.target,specs:activeSpecs,short});
   if(match===null){rest.push(node);continue}
-  assert.equal(rule.id,'color-contrast');assert(match.hit>=0,'unknown atlas axe node: '+JSON.stringify(node));const [sel,expected,kind]=activeSpecs[match.hit];assert.equal(match.text,expected);assert(allowedSummaries[kind==='finance'?'svg':kind].some(s=>node.summary?.includes(s)),'unknown atlas axe reason: '+JSON.stringify(node));assert(!pending.some(x=>x.sel===sel),'duplicate atlas review');pending.push({sel,expected,kind,target:node.target,summary:node.summary});
+  assert.equal(rule.id,'color-contrast');assert(match.hit>=0,'unknown atlas axe node: '+JSON.stringify(node));const [sel,expected,kind]=activeSpecs[match.hit];assert.equal(match.text,expected);if(kind==='marker')assert.equal(match.decorative,true,'atlas marker must be redundant to ordered list');assert(allowedSummaries[kind==='finance'?'svg':kind].some(s=>node.summary?.includes(s)),'unknown atlas axe reason: '+JSON.stringify(node));assert(!pending.some(x=>x.sel===sel),'duplicate atlas review');pending.push({sel,expected,kind,target:node.target,summary:node.summary});
  }if(rest.length)remaining.push({...rule,nodes:rest});}
  if(!pending.length)return {witnesses:[],remaining};
  if(pending.some(x=>x.sel.startsWith(root)||x.sel==='#g3g-history-atlas-heading'))assert.equal(await page.locator(svg+' text').count(),13);
@@ -65,13 +75,23 @@ export async function reviewAtlasContrast(page,reviews,{short=false}={}){
     const parse=s=>{const m=s.match(/^rgba?\(([\d.,\s]+)\)$/);if(!m)return null;const a=m[1].split(',').map(Number);return a.length>=3&&(a[3]??1)===1?a.slice(0,3):null};
     const lum=c=>c.map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((s,x,i)=>s+x*[.2126,.7152,.0722][i],0);
     const contrast=(a,b)=>{if(!a||!b)return 0;const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
-    const fg=parse(getComputedStyle(e)[kind!=='html'?'fill':'color']);
+    const html=kind==='html'||kind==='marker';
+    const fg=parse(getComputedStyle(e)[html?'color':'fill']);
     const paper=parse(getComputedStyle(svg).backgroundColor),panel=land?parse(getComputedStyle(land).fill):null;
     let parent=e,flat=true,htmlBackground=null;
     while(parent){const st=getComputedStyle(parent);flat&&=Number(st.opacity)===1&&st.filter==='none'&&st.mixBlendMode==='normal'&&st.backgroundImage==='none';if(!htmlBackground){const color=parse(st.backgroundColor);if(color)htmlBackground=color;}parent=parent.parentElement;}
-    const r=e.getBoundingClientRect(),s=svg.getBoundingClientRect();const inset=Math.min(1,r.width/4,r.height/4);const xs=[r.left+inset,(r.left+r.right)/2,r.right-inset],ys=[r.top+inset,(r.top+r.bottom)/2,r.bottom-inset];const hit=[];
-    for(const x of xs)for(const y of ys){const h=document.elementFromPoint(x,y);hit.push({x,y,ok:!!h&&(kind!=='html'?svg.contains(h):e.contains(h)),target:h?.tagName,className:h?.getAttribute('class')});}
-    const bounds=r.width>0&&r.height>0&&r.left>=0&&r.top>=0&&r.right<=document.documentElement.clientWidth+1&&r.bottom<=innerHeight+1&&(kind==='html'||(r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1));
+    const r=e.getBoundingClientRect(),s=svg.getBoundingClientRect();
+    // A circular marker's bounding-box corners are transparent. Verify the
+    // real number's text Range (all nine hit points), not the empty corners.
+    let probe=r,markerText=null,markerTextValid=true;
+    if(kind==='marker'){
+     const range=document.createRange();range.selectNodeContents(e);
+     probe=range.getBoundingClientRect();markerText=probe.toJSON();
+     markerTextValid=range.getClientRects().length===1&&probe.width>0&&probe.height>0&&probe.left>=r.left&&probe.right<=r.right&&probe.top>=r.top&&probe.bottom<=r.bottom;
+    }
+    const inset=Math.min(1,probe.width/4,probe.height/4);const xs=[probe.left+inset,(probe.left+probe.right)/2,probe.right-inset],ys=[probe.top+inset,(probe.top+probe.bottom)/2,probe.bottom-inset];const hit=[];
+    for(const x of xs)for(const y of ys){const h=document.elementFromPoint(x,y);hit.push({x,y,ok:!!h&&(html?e.contains(h):svg.contains(h)),target:h?.tagName,className:h?.getAttribute('class')});}
+    const bounds=markerTextValid&&r.width>0&&r.height>0&&r.left>=0&&r.top>=0&&r.right<=document.documentElement.clientWidth+1&&r.bottom<=innerHeight+1&&(html||(r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1));
     const intersections=[];let stateGlyphReviews=[];
     if(kind==='finance'){
      // Test filled and stroked geometry, including zero-height grid/connector lines.
@@ -113,7 +133,7 @@ export async function reviewAtlasContrast(page,reviews,{short=false}={}){
      }
      stateGlyphReviews=glyphReviews;
     }
-    return {fg,paper,panel,htmlBackground,flat,bounds,hit,intersections,glyphReviews:stateGlyphReviews,ratios:kind==='svg'?[contrast(fg,paper),contrast(fg,panel)]:[contrast(fg,htmlBackground),...intersections.map(x=>x.ratio)],rect:r.toJSON()};
+    return {fg,paper,panel,htmlBackground,flat,bounds,hit,intersections,glyphReviews:stateGlyphReviews,ratios:kind==='svg'?[contrast(fg,paper),contrast(fg,panel)]:[contrast(fg,htmlBackground),...intersections.map(x=>x.ratio)],rect:r.toJSON(),markerText};
    },item.kind);
    if(state.bounds&&state.hit.every(x=>x.ok))break;
   }

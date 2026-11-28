@@ -121,6 +121,41 @@ html.dark .g3g{--accent:#8fd4bd;--rust:#f1a38d}
  .g3g .g3g-plan-branches{grid-template-columns:1fr;gap:0}
  .g3g .g3g-plan-branches li{border-bottom:0;padding:4px 0}
 }
+/* History only: the original map, labels, dates and evidence remain intact.
+   Use the widened plate, readable text alternative and distinct source actions.
+   All screen-specific composition is outside the physical paper contract. */
+@media screen {
+ .g3g.g3g-history{font-size:calc(1rem * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history :is(h3,h4,h5,.g3g-source,.g3g-era-years){hyphens:none;-webkit-hyphens:none;text-align:start;overflow-wrap:anywhere}
+ .g3g.g3g-history h3{font-size:calc(clamp(25px,4cqi,39px) * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history h4{font-size:calc(1.375rem * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history h5{font-size:calc(1.0625rem * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history .g3g-deck{font-size:calc(1rem * var(--gb-reader-font-scale,1));max-width:68ch}
+ .g3g.g3g-history :is(.g3g-atlas-list p,.g3g-era-ribbon p,.g3g-note,.g3g-map-key,.g3g-atlas-map figcaption,.g3g-event-kind){font-size:calc(.875rem * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history .g3g-era-years{font-size:calc(1.1875rem * var(--gb-reader-font-scale,1))}
+ .g3g.g3g-history .g3g-timeline li{grid-template-columns:minmax(50px,max-content) minmax(0,1fr)}
+ .g3g.g3g-history .g3g-timeline time{font-size:calc(1.0625rem * var(--gb-reader-font-scale,1));white-space:nowrap;overflow-wrap:normal;word-break:normal;hyphens:none}
+ .g3g.g3g-history .g3g-source{display:inline-flex;gap:.5rem;align-items:center;max-width:100%;min-width:0;padding:6px 2px;font-size:calc(.875rem * var(--gb-reader-font-scale,1));text-decoration:none}
+ .g3g.g3g-history .g3g-source::after{content:'';flex:none;inline-size:.5rem;block-size:.5rem;border-block-start:1.5px solid currentColor;border-inline-end:1.5px solid currentColor;transform:rotate(45deg)}
+ .g3g.g3g-history .g3g-source:focus-visible{outline-offset:-2px}
+ @media (hover:hover) and (pointer:fine){.g3g.g3g-history .g3g-source:hover{text-decoration:underline}}
+ @media (forced-colors:active){.g3g.g3g-history .g3g-source{color:LinkText;text-decoration:underline}}
+ @container (min-width:900px){
+  .g3g.g3g-history .g3g-atlas-coordinate{font-size:9px}
+  .g3g.g3g-history .g3g-atlas-water{font-size:11px}
+  .g3g.g3g-history .g3g-atlas-number{font-size:11px}
+  .g3g.g3g-history .g3g-atlas-list{column-gap:clamp(24px,3cqi,44px);row-gap:8px}
+  .g3g.g3g-history .g3g-atlas-list li{padding-block:12px 8px}
+  .g3g.g3g-history .g3g-map-key{margin-block:16px 12px}
+  .g3g.g3g-history .g3g-era-ribbon{margin-block:12px}
+  .g3g.g3g-history .g3g-timeline{column-gap:32px}
+ }
+ @container (max-width:38em){
+  .g3g.g3g-history .g3g-atlas-list,.g3g.g3g-history .g3g-timeline,.g3g.g3g-history .g3g-era-ribbon{grid-template-columns:minmax(0,1fr)}
+  .g3g.g3g-history .g3g-era-ribbon li{display:block;padding:12px 0;border-inline-start:0;border-top:1px solid var(--line)}
+  .g3g.g3g-history .g3g-timeline li{grid-template-columns:auto minmax(0,1fr)}
+ }
+}
 @media(forced-colors:active){
  .g3g{--accent:CanvasText;--rust:CanvasText;--ink:CanvasText;--paper:Canvas;--panel:Canvas;--muted:CanvasText;--line:CanvasText}
  .g3g .g3g-dot.g3g-full{forced-color-adjust:none;background:CanvasText}

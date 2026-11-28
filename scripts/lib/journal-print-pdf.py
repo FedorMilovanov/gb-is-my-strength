@@ -39,6 +39,32 @@ def key(case):
     return (case["kind"], case["paper"], case["theme"], case["javaScriptEnabled"])
 
 
+def missing_source_boundaries(dom, all_text):
+    """Match every boundary in its own bibliography entry, not anywhere in prose."""
+    titles = dom["sourceTitles"]
+    boundaries = dom.get("sourceBoundaries", [])
+    if not boundaries:
+        return []
+    start = all_text.find(normalize("Источники истории", fold=True))
+    if start < 0 or len(titles) != len(boundaries):
+        return list(boundaries)
+    cursor = start
+    missing = []
+    for index, (title, boundary) in enumerate(zip(titles, boundaries)):
+        needle = normalize(title, fold=True)
+        position = all_text.find(needle, cursor)
+        if position < 0:
+            missing.append(boundary)
+            continue
+        cursor = position + len(needle)
+        next_position = (all_text.find(normalize(titles[index + 1], fold=True), cursor)
+                         if index + 1 < len(titles) else
+                         all_text.find(normalize("Кризисы руководства — отдельная история", fold=True), cursor))
+        if next_position < 0 or not boundary.strip() or normalize(boundary, fold=True) not in all_text[cursor:next_position]:
+            missing.append(boundary)
+    return missing
+
+
 def inspect(case):
     with fitz.open(resolve(case["pdf"])) as document:
         texts = [page.get_text(sort=True) for page in document]
@@ -60,6 +86,11 @@ def inspect(case):
             geometry.append(positioned)
     dom = case["dom"]
     all_text = "".join(folded)
+    # Chromium inserts hard Cyrillic line-wrap hyphens in extracted PDF text.
+    # Rejoin only those wraps for the boundary witness; retain the existing
+    # strict normalized text, typography and geometry hashes for other gates.
+    boundary_text = "".join(normalize(re.sub(r"(?<=[А-Яа-яЁё])-[ \t]*\n[ \t]*(?=[А-Яа-яЁё])", "", text), fold=True)
+                            for text in texts)
     companion = dom.get("companion")
     locations = {part: [i + 1 for i, text in enumerate(folded) if normalize(companion[part], fold=True) in text]
                  for part in ("label", "title")} if companion else None
@@ -74,6 +105,8 @@ def inspect(case):
         "headingFirstPage": bool(folded) and normalize(dom["heading"], fold=True) in folded[0],
         "sourceTitles": len(dom["sourceTitles"]),
         "missingSourceTitles": [title for title in dom["sourceTitles"] if normalize(title, fold=True) not in all_text],
+        "sourceBoundaries": len(dom.get("sourceBoundaries", [])),
+        "missingSourceBoundaries": missing_source_boundaries(dom, boundary_text),
         "printedScreenControls": [label for label in dom.get("screenOnlyLabels", []) if normalize(label, fold=True) in all_text],
         "reviewWarningFirstPage": bool(folded) and normalize(dom["reviewWarning"], fold=True) in folded[0] if dom.get("reviewWarning") else None,
         "holdPrinted": "publication_hold" in all_text,
@@ -112,12 +145,14 @@ def analyze(capture, baseline=None):
             for field in ("paperSizeCorrect", "allPagesHaveText", "headingFirstPage", "companionTogether"):
                 if not result[field]:
                     failures.append(field)
-            for field in ("missingSourceTitles", "printedScreenControls"):
+            for field in ("missingSourceTitles", "missingSourceBoundaries", "printedScreenControls"):
                 if result[field]:
                     failures.append(field)
             if case["kind"] != "journal" and not result["sourceTitles"]:
                 failures.append("missing bibliography")
             if case["kind"] == "history":
+                if result["sourceBoundaries"] != result["sourceTitles"] or not result["sourceBoundaries"]:
+                    failures.append("missing historical source-boundary witness")
                 if result["reviewWarningFirstPage"] is not None:
                     failures.append("unpublished manuscript warning leaked into printed article")
                 if result["holdPrinted"]:

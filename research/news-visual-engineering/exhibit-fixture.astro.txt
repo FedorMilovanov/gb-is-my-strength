@@ -1,0 +1,16 @@
+---
+import Exhibit from '../components/journal/editorial/JournalDocumentExhibit.astro';
+import SourceReturn from '../components/journal/JournalSourceReturn.astro';
+import '../components/journal/journalEditorial.css';
+import '../news-private-focus.css';
+import '../../fonts/fonts.css';
+const sections = [
+  {id:'one',heading:'Первое положение',locator:'§ 1 · Технический образец',summary:'Редакционный пересказ для проверки композиции, чтения на узком экране и навигации по документу.',significance:'Проверяется доступность редакционной аннотации.',limitation:'Образец не подтверждает исторические факты.',claimId:'fixture-one',sourceId:'fixture-source'},
+  {id:'two',heading:'Второе положение',locator:'§ 2 · Технический образец',summary:'Вторая часть документа позволяет оценить вертикальный ритм и порядок чтения.',significance:'Проверяется последовательность аннотаций.',limitation:'Проверяются только программные свойства.',claimId:'fixture-two',sourceId:'fixture-source'},
+  {id:'three',heading:'Третье положение',locator:'§ 3 · Технический образец',summary:'Другая запись библиографии позволяет проверить независимость переходов.',significance:'Проверяется второй источник.',limitation:'Технический образец не является историческим свидетельством.',claimId:'fixture-three',sourceId:'fixture-other'}
+];
+const authority={claims:sections.map(s=>({id:s.claimId,references:[{sourceId:s.sourceId,locator:s.locator}]})),sources:[{id:'fixture-source',href:'#source-fixture',label:'Технический образец'},{id:'fixture-other',href:'#source-other',label:'Второй образец'}]};
+const input={id:'test-document',mode:'editorial-paraphrase' as const,title:'Анатомия документа',issuer:'Техническая фикстура',deck:'Синтетический образец структуры. Не исторический материал и не предназначен для публикации.',documentDate:'2024-02-29',publicationDate:null,captureDate:'2025-01-01',sections};
+---
+<html lang="ru"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/></head>
+<body style="margin:0"><main class="journal-edition"><article class="news-private-review" data-journal-source-navigation style="max-width:1000px;margin:auto;padding:16px"><Exhibit {input} {authority}/><section id="source-fixture" class="bibliography-item"><h2>Технический образец источника</h2><SourceReturn href="#cite-13-test-document-document-one"/></section><section id="source-other" class="bibliography-item"><h2>Второй образец источника</h2><SourceReturn href="#cite-13-test-document-document-three"/></section></article></main></body></html>
