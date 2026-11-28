@@ -21,6 +21,11 @@ import BiografiiArticleEndBlock from './BiografiiArticleEndBlock.astro';
 <main id="main-content" data-pagefind-body>
   <BiografiiRecentSection />
   <BiografiiFocusSection />
+  <header class="bio-archive-intro" data-pagefind-ignore>
+    <p class="bio-archive-intro__kicker">Личность · Контекст · Наследие</p>
+    <h2>Исторический архив</h2>
+    <p>Исследование жизни служителей, городов их деятельности, ключевых богословских дебатов и миссионерских путей. Материалы в подготовке отмечены отдельно.</p>
+  </header>
   <BiografiiEraStubSection badge="I–V вв." id="era-ancient" title="Ранняя Церковь" desc="Апостолы, мученики и Отцы Церкви, заложившие основы веры." />
   <BiografiiEraStubSection badge="VI–XIV вв." id="era-medieval" title="Средние века" desc="Монастырское движение, схоластика и борьба за чистоту Евангелия." />
   <BiografiiEraStubSection badge="XV–XVII вв." id="era-reformation" title="Реформация" desc="Великий перелом: возвращение к Писанию и рождение протестантизма." />
@@ -30,3 +35,71 @@ import BiografiiArticleEndBlock from './BiografiiArticleEndBlock.astro';
   <BiografiiEpigraphSection />
   <BiografiiArticleEndBlock />
 </main>
+<style>
+.bio-archive-intro{margin:2rem 0 1rem;padding:1.3rem 0 .5rem;border-top:2px solid var(--color-accent);color:var(--color-text)}
+.bio-archive-intro__kicker{margin:0 0 .5rem;font-size:.8rem;font-weight:600;line-height:1.5;letter-spacing:.035em;color:var(--color-accent-strong)}
+.bio-archive-intro h2{font:600 clamp(1.5rem,3vw,2rem)/1.3 Lora,Georgia,serif;margin:0 0 .65rem;color:var(--color-text)}
+.bio-archive-intro p:not(.bio-archive-intro__kicker){max-width:68ch;margin:0;font-size:.95rem;line-height:1.65;color:var(--color-text-muted)}
+@media print{.bio-archive-intro{break-after:avoid}}
+
+/* These two shelves share one native catalogue layout; the shared home card
+   rules still own all other routes and card families. */
+main :global(.bio-study-list){
+  display:grid;
+  gap:12px;
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+main :global(.bio-study-list > li){min-width:0;margin:0;padding:0}
+main :global(.bio-study-list .h-article-card){
+  display:grid;
+  grid-template-columns:minmax(100px,144px) minmax(0,1fr);
+  align-items:start;
+  gap:16px;
+  padding:16px;
+  margin:0;
+  border:1px solid var(--color-border);
+  border-radius:14px;
+  background:var(--color-surface-quote);
+  text-decoration:none;
+}
+main :global(.bio-study-list .h-article-thumb){
+  width:100%;height:auto;aspect-ratio:40/27;min-width:0;
+}
+main :global(.bio-study-list .h-article-thumb picture){
+  display:block;width:100%;height:100%;
+}
+main :global(.bio-study-list .h-article-thumb img){
+  width:100%;height:100%;object-fit:contain;transform:none;
+}
+main :global(.bio-study-list .h-article-body){min-width:0}
+main :global(.bio-study-list .h-article-title){
+  display:block;-webkit-line-clamp:unset;overflow:visible;
+  font-size:clamp(1.05rem,2vw,1.2rem);line-height:1.35;
+  margin:0 0 .5rem;hyphens:none;overflow-wrap:break-word;
+}
+main :global(.bio-study-list .h-article-abstract){
+  display:block;-webkit-line-clamp:unset;overflow:visible;
+  font:normal .9rem/1.55 var(--f-ui,system-ui,sans-serif);
+  color:var(--color-text-muted);margin:.5rem 0 0;
+}
+main :global(.bio-study-list .h-article-card:focus-visible){
+  outline:2px solid var(--color-accent-strong);outline-offset:3px;
+}
+@media(max-width:480px){
+  main :global(.bio-study-list .h-article-card){
+    grid-template-columns:minmax(0,7rem) minmax(0,1fr);gap:8px 12px;padding:14px;
+  }
+  main :global(.bio-study-list .h-article-thumb){grid-column:1;aspect-ratio:40/21}
+  main :global(.bio-study-list .h-article-body){display:contents}
+  main :global(.bio-study-list .h-article-kicker){
+    grid-column:2;align-self:center;margin:0;overflow-wrap:break-word;
+  }
+  main :global(.bio-study-list .h-article-title),
+  main :global(.bio-study-list .h-article-meta),
+  main :global(.bio-study-list .h-article-abstract){
+    grid-column:1/-1;margin:0;min-width:0;
+  }
+}
+</style>
