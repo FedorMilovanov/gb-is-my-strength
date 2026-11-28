@@ -8,14 +8,16 @@ interface Props {
 const { id } = Astro.props as Props;
 const source = lawsonSource(id);
 ---
-<span class="lawson-source-ref">
-  <button type="button" aria-expanded="false" aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</button>
+<span class="lawson-source-ref" data-reader-exclude data-pagefind-ignore>
+  <a class="lawson-source-fallback" href={`#source-${source.id}`} aria-label={`Источник ${source.n}: ${source.label}`}>[{source.n}]</a>
+  <button type="button" hidden aria-expanded="false" aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</button>
   <span class="lawson-source-popover" role="note" hidden>
     <span class="lawson-source-meta">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
     <strong>{source.label}</strong>
     <span>{source.proves}</span>
     {source.boundary && <span class="lawson-source-boundary"><b>Предел вывода:</b> {source.boundary}</span>}
-    <a href={source.href} rel="noopener noreferrer">Открыть источник ↗</a>
+    <a href={source.href} rel="noopener noreferrer">{source.destinationLabel ?? 'Открыть источник ↗'}</a>
+    <a class="lawson-source-bibliography" href={`#source-${source.id}`}>К записи в библиографии</a>
   </span>
 </span>
 
@@ -29,7 +31,7 @@ const source = lawsonSource(id);
     vertical-align: super;
     line-height: 1;
   }
-  .lawson-source-ref > button {
+  .lawson-source-ref > :is(button, .lawson-source-fallback) {
     display: inline-grid;
     place-items: center;
     min-width: 1.42rem;
@@ -41,8 +43,11 @@ const source = lawsonSource(id);
     color: var(--accent, #7a2e2e);
     font: 700 .67rem/1 var(--font-body, Inter, system-ui, sans-serif);
     cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
   }
-  .lawson-source-ref > button:focus-visible {
+  .lawson-source-ref > :is(button, .lawson-source-fallback)[hidden] { display: none; }
+  .lawson-source-ref > :is(button, .lawson-source-fallback):focus-visible {
     outline: 2px solid var(--accent, #7a2e2e);
     outline-offset: 2px;
   }
@@ -53,8 +58,10 @@ const source = lawsonSource(id);
     bottom: calc(100% + .55rem);
     width: min(22rem, calc(100vw - 2rem));
     max-height: min(32rem, calc(100dvh - 6rem));
-    overflow-y: auto;
+    overflow: auto;
     overscroll-behavior: contain;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
     display: grid;
     gap: .48rem;
     padding: .85rem .9rem;
@@ -81,9 +88,8 @@ const source = lawsonSource(id);
     color: var(--muted, #6b6862);
   }
   .lawson-source-popover a {
-    position: sticky;
-    bottom: 0;
     width: fit-content;
+    max-width: 100%;
     padding: .35rem .55rem;
     border-radius: .4rem;
     background: var(--bg, #fff);
@@ -92,41 +98,80 @@ const source = lawsonSource(id);
     text-decoration: underline;
     text-underline-offset: .2em;
   }
+  @media screen {
+    .lawson-source-popover a {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) .65rem;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 44px;
+      padding: .4rem .55rem;
+      color: var(--accent);
+      background: transparent;
+      border-radius: 2px;
+      font-weight: 600;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    .lawson-source-popover a::after {
+      content: '';
+      inline-size: .45rem;
+      block-size: .45rem;
+      border-block-start: 1.5px solid currentColor;
+      border-inline-end: 1.5px solid currentColor;
+      transform: rotate(45deg);
+      justify-self: center;
+    }
+    .lawson-source-popover a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    @media (hover: hover) and (pointer: fine) {
+      .lawson-source-popover a:hover { text-decoration: underline; text-underline-offset: .2em; }
+    }
+  }
+  @media screen and (forced-colors: active) {
+    .lawson-source-popover a { color: LinkText; text-decoration: underline; }
+    .lawson-source-popover a:focus-visible { outline-color: Highlight; }
+  }
   @media (max-width: 1199px) {
     .lawson-source-popover {
       position: fixed;
       left: 1rem;
       right: 1rem;
-      bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+      --lawson-popover-bottom: max(calc(4.5rem + env(safe-area-inset-bottom, 0px)), var(--lawson-popover-chrome-bottom, 0px));
+      --lawson-popover-top: max(calc(.5rem + env(safe-area-inset-top, 0px)), var(--lawson-popover-chrome-top, 0px));
+      bottom: var(--lawson-popover-bottom);
       width: auto;
-      max-height: calc(100dvh - 6rem - env(safe-area-inset-bottom, 0px));
+      max-height: max(0px, calc(100dvh - var(--lawson-popover-bottom) - var(--lawson-popover-top)));
     }
   }
   @media print {
     .lawson-source-ref { vertical-align: baseline; }
-    .lawson-source-ref > button { border: 0; background: transparent; min-width: 0; height: auto; padding: 0; color: inherit; }
-    .lawson-source-ref > button::before { content: '['; }
-    .lawson-source-ref > button::after { content: ']'; }
+    /* A single literal bracketed anchor preserves the PDF destination.
+       The explicit override is needed for the enhanced fallback's hidden state. */
+    .lawson-source-ref > button { display: none !important; }
+    .lawson-source-ref > .lawson-source-fallback,
+    .lawson-source-ref > .lawson-source-fallback[hidden] {
+      display: inline !important;
+      border: 0; background: transparent; min-width: 0; height: auto;
+      padding: 0; color: inherit; font: inherit; text-decoration: none;
+    }
     .lawson-source-popover { display: none !important; }
   }
 </style>
 
 <script>
+  import { placeLawsonPopover } from './lawsonPopoverPlacement';
+
   function placeSourceCard(ref: HTMLElement) {
     if (!ref.hasAttribute('data-open')) return;
     const card = ref.querySelector<HTMLElement>('.lawson-source-popover');
     if (!card) return;
-    if (!matchMedia('(min-width: 1200px)').matches) {
-      card.style.removeProperty('left');
-      card.style.translate = '';
-      return;
+    if (!placeLawsonPopover(ref, card, .55 * parseFloat(getComputedStyle(document.documentElement).fontSize))) {
+      const restore = card.contains(document.activeElement);
+      closeSource(ref);
+      if (restore) ref.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
     }
-    card.style.translate = '';
-    const marker = ref.getBoundingClientRect();
-    card.style.left = `${Math.min(0, innerWidth - 16 - marker.left - card.offsetWidth)}px`;
-    const bounds = card.getBoundingClientRect();
-    const verticalShift = Math.max(16 - bounds.top, Math.min(0, innerHeight - 16 - bounds.bottom));
-    card.style.translate = `0 ${verticalShift}px`;
   }
   function closeSource(ref: HTMLElement) {
     ref.removeAttribute('data-open');
@@ -136,8 +181,14 @@ const source = lawsonSource(id);
   }
   document.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
+    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const marker = event.target.closest<HTMLElement>('.lawson-source-ref');
     const trigger = event.target.closest<HTMLButtonElement>('.lawson-source-ref > button');
+    const bibliography = event.target.closest<HTMLAnchorElement>('.lawson-source-bibliography');
+    if (bibliography && marker) {
+      closeSource(marker);
+      return;
+    }
     const wasOpen = marker?.hasAttribute('data-open');
     document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach((ref) => {
       if (ref !== marker || trigger) closeSource(ref);
@@ -150,6 +201,13 @@ const source = lawsonSource(id);
     trigger.setAttribute('aria-expanded', 'true');
     placeSourceCard(marker);
   });
+  document.addEventListener('focusin', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const target = event.target;
+    document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach((ref) => {
+      if (!ref.contains(target)) closeSource(ref);
+    });
+  });
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     const open = document.querySelector<HTMLElement>('.lawson-source-ref[data-open]');
@@ -157,7 +215,19 @@ const source = lawsonSource(id);
     closeSource(open);
     open.querySelector('button')?.focus();
   });
-  window.addEventListener('resize', () => {
+  function repositionOpenCards() {
     document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach(placeSourceCard);
-  }, { passive: true });
+  }
+  window.addEventListener('resize', repositionOpenCards, { passive: true });
+  window.addEventListener('scroll', repositionOpenCards, { passive: true });
+  // Keep the native link until all delegated handlers are installed.
+  document.querySelectorAll<HTMLElement>('.lawson-source-ref').forEach((ref) => {
+    const fallback = ref.querySelector<HTMLAnchorElement>('.lawson-source-fallback');
+    const button = ref.querySelector<HTMLButtonElement>('button');
+    if (!fallback || !button || !ref.querySelector('.lawson-source-popover')) return;
+    const focused = document.activeElement === fallback;
+    button.hidden = false;
+    fallback.hidden = true;
+    if (focused) button.focus();
+  });
 </script>

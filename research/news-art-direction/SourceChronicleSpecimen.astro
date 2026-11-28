@@ -1,0 +1,61 @@
+---
+/** Private off-route design specimen; caller supplies source authority. */
+import { groupSourceChronicle } from './source-chronicle-model.mjs';
+interface Source { id: string; title: string; role: string; boundary: string; url: string; }
+interface Selection { years: number[]; title: string; rows: { id: string; year: number }[]; }
+interface Props { sources: Source[]; selection: Selection[]; label: string; }
+const { sources, selection, label } = Astro.props;
+if (!label?.trim()) throw new Error('Visible source selection boundary required');
+const periods = groupSourceChronicle(sources, selection);
+---
+<div class="news-chronicle-specimen">
+  <p class="chronicle-selection-label">{label}</p>
+  {periods.map(period => <section class="chronicle-period">
+    <header class="chronicle-period-head">
+      <p>{period.label}</p>
+      <h3>{period.title}</h3>
+    </header>
+    <ol class="chronicle-sources">
+      {period.rows.map(({year, source}) => <li data-source-id={source.id}>
+        <span class="chronicle-source-year">{year}<span class="chronicle-year-role">Год выборки</span></span>
+        <div class="chronicle-source-text">
+          <p class="chronicle-source-role">{source.role}</p>
+          <h4><a href={source.url} rel="noopener">{source.title}</a></h4>
+          <p class="chronicle-source-boundary">{source.boundary}</p>
+        </div>
+      </li>)}
+    </ol>
+  </section>)}
+</div>
+<style>
+.news-chronicle-specimen { min-width:0; color:var(--je-ink); }
+.chronicle-selection-label,.chronicle-period-head p,.chronicle-source-role { font:600 .8rem/1.5 var(--je-ui); margin:0 0 .4rem; color:var(--je-muted); }
+.chronicle-period { margin-block:1.75rem 2.375rem; }
+.chronicle-period-head { border-top:2px solid var(--je-gold); padding-block:.875rem 1rem; }
+.chronicle-period-head p { color:var(--je-gold); letter-spacing:.06em; }
+.chronicle-period-head h3 { font:600 clamp(1.45rem,2.6vw,2rem)/1.25 var(--je-serif); margin:0; overflow-wrap:anywhere; }
+.chronicle-sources { list-style:none; margin:0; padding:0; }
+.chronicle-sources li { display:grid; grid-template-columns:minmax(90px,1fr) minmax(0,4fr); gap:1.5rem; align-items:start; border-top:1px solid var(--je-rule); padding-block:1rem; }
+.chronicle-source-year { font:600 clamp(1.7rem,4vw,2.5rem)/1.15 var(--je-serif); color:var(--je-gold); font-variant-numeric:tabular-nums; }
+.chronicle-year-role { display:block; font:400 .72rem/1.4 var(--je-ui); color:var(--je-muted); letter-spacing:normal; }
+.chronicle-source-text { min-width:0; }
+.chronicle-source-text h4 { font:600 1.25rem/1.35 var(--je-serif); margin:0 0 .5rem; overflow-wrap:anywhere; }
+.chronicle-source-text a { color:var(--je-ink); text-decoration-color:var(--je-gold); text-underline-offset:3px; }
+.chronicle-source-text a:focus-visible { outline:2px solid var(--je-gold); outline-offset:3px; }
+.chronicle-source-boundary { font:calc(var(--je-reading-size,1.125rem)*.9)/1.65 var(--je-body); color:var(--je-muted); margin:0; overflow-wrap:anywhere; }
+@media(max-width:540px) {
+  .chronicle-period { margin-block:1.375rem 1.875rem; }
+  .chronicle-sources li { grid-template-columns:minmax(0,1fr); gap:.25rem; }
+  .chronicle-source-year { font:600 .9rem/1.5 var(--je-ui); letter-spacing:.04em; display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; }
+}
+@media print {
+  .chronicle-period-head { break-inside:avoid; break-after:avoid; }
+  .chronicle-sources { break-before:avoid; }
+  .chronicle-sources li:first-child { break-before:avoid; }
+  .chronicle-sources li { display:block; }
+  .chronicle-source-year { display:flex; align-items:baseline; gap:.65rem; font:600 11pt/1.4 var(--je-ui); margin-bottom:4pt; }
+  .chronicle-year-role { display:inline; color:#333; }
+  .chronicle-sources li { break-inside:avoid; }
+  .chronicle-source-year,.chronicle-period-head p,.chronicle-source-boundary { color:#111; }
+}
+</style>

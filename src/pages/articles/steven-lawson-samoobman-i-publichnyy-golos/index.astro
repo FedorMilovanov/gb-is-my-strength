@@ -19,7 +19,7 @@ const canonical = `${SITE.url}/articles/${slug}/`;
 <ArticleLayout
   entry={entry}
   canonical={canonical}
-  mainClass="astro-main article-main--hrail"
+  mainClass="astro-main article-main--hrail lawson-news-edition"
   mainAttrs={{ 'data-reader-rail-main': true }}
   hideHeader
   extraFontPreloads={[
@@ -28,6 +28,10 @@ const canonical = `${SITE.url}/articles/${slug}/`;
     '/fonts/Lora/lora-latin-600.woff2',
   ]}
 >
-  <LawsonPageChrome slot="chrome" />
+  <LawsonPageChrome slot="chrome" title={entry.data.h1 || entry.data.title} readingMinutes={entry.data.readingTime} />
+  <nav class="lawson-journal-return" aria-label="Навигация журнала" data-pagefind-ignore>
+    <a href="/journal/"><span aria-hidden="true">←</span> В журнал</a>
+    <span class="lawson-journal-kind">Документальное исследование</span>
+  </nav>
   <Content />
 </ArticleLayout>

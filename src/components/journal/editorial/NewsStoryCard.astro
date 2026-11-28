@@ -1,0 +1,83 @@
+---
+import { assertNewsStoryCard } from './news-story-card-model.mjs';
+interface Media {
+  src: string; alt: string; caption: string; width: number; height: number;
+  webpSrcset?: string; avifSrcset?: string; sizes: string; note?: string;
+  presentation?: { mode: 'intrinsic' } | { mode: 'crop'; ratio: '16:9' | '4:3' | '3:4' | '1:1'; focalX: number; focalY: number };
+}
+interface Props {
+  title: string; href: string; label: string; deck?: string;
+  publishedAt?: string; publishedLabel?: string; updatedAt?: string; updatedLabel?: string; readingLabel?: string;
+  variant?: 'feature' | 'analysis' | 'brief'; headingLevel?: 2 | 3; media?: Media;
+  companion?: boolean; actionLabel?: string; landingLead?: boolean;
+}
+const props = Astro.props as Props;
+assertNewsStoryCard(props);
+const { title, href, label, deck, publishedAt, publishedLabel, updatedAt, updatedLabel, readingLabel,
+  variant = 'analysis', headingLevel = 3, media, companion = false, actionLabel, landingLead = false } = props;
+const crop = media?.presentation?.mode === 'crop' ? media.presentation : undefined;
+const cropStyle = crop ? `--news-media-ratio:${crop.ratio.replace(':', ' / ')};--news-media-position:${crop.focalX}% ${crop.focalY}%` : undefined;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+---
+<article class:list={['news-story-card', 'news-story-card--' + variant, companion && 'news-story-card--companion', companion && 'je-next-story']}
+  data-pagefind-ignore={companion ? true : undefined}>
+  <header class="news-story-head">
+    <p class="news-story-label">{label}</p>
+    <Heading class="news-story-title"><a href={href}>{title}{companion && !actionLabel && <span aria-hidden="true"> ↗</span>}{actionLabel && <span class="news-story-action" aria-hidden="true">{actionLabel} <span>↗</span></span>}</a></Heading>
+  </header>
+  {media && <figure class:list={['news-story-media', landingLead && 'lead-context', crop && 'news-story-media--crop']} style={cropStyle}>
+    <picture>
+      {media.avifSrcset && <source type="image/avif" srcset={media.avifSrcset} sizes={media.sizes}/>}
+      <img src={media.src} srcset={media.webpSrcset} sizes={media.sizes} alt={media.alt}
+        width={media.width} height={media.height} loading={variant === 'feature' ? 'eager' : 'lazy'} fetchpriority={variant === 'feature' ? 'high' : 'auto'} decoding="async"/>
+    </picture>
+    <figcaption><span>{media.caption}</span>{media.note && <span>{media.note}</span>}</figcaption>
+  </figure>}
+  {deck && <p class="news-story-deck">{deck}</p>}
+  {(publishedAt || readingLabel) && <div class="news-story-meta">
+    {publishedAt && <span>{updatedAt && 'Опубликовано: '}<time datetime={publishedAt}>{publishedLabel}</time></span>}
+    {updatedAt && <span>Обновлено: <time datetime={updatedAt}>{updatedLabel}</time></span>}
+    {readingLabel && <span>{readingLabel}</span>}
+  </div>}
+</article>
+<style>
+.news-story-card {display:grid;align-content:start;gap:.8rem;min-width:0;padding-block:1rem;border-block-start:1px solid var(--je-rule);color:var(--je-ink)}
+.news-story-head {min-width:0}
+.news-story-label {margin:0 0 .45rem;color:var(--je-gold);font:600 .78rem/1.5 var(--je-ui);letter-spacing:.065em}
+.news-story-title {margin:0;font:600 1.55rem/1.22 var(--je-serif);letter-spacing:-.02em;text-wrap:balance;hyphens:none;overflow-wrap:anywhere}
+.news-story-title a {display:inline-block;min-height:44px;color:var(--je-ink);text-decoration:none}
+.news-story-title a:hover {text-decoration:underline;text-decoration-color:var(--je-gold);text-underline-offset:.18em}
+.news-story-title a:focus-visible {outline:2px solid var(--je-gold);outline-offset:3px}
+.news-story-card--feature .news-story-title {max-width:29ch;font-size:clamp(1.9rem,3.2vw,2.65rem);line-height:1.16}
+.news-story-card--companion .news-story-title a {font:inherit;line-height:inherit;text-decoration:none}
+.news-story-card--companion .news-story-title {font-size:clamp(1.65rem,2.6vw,2.35rem)}
+.news-story-card--companion .news-story-deck {margin:0;color:var(--je-muted);font:calc(var(--je-reading-size,1.125rem) * .9)/1.65 var(--je-body);text-transform:none;letter-spacing:normal}
+.news-story-card--companion .news-story-title a:hover {text-decoration:underline;text-decoration-color:var(--je-gold)}
+.news-story-action {display:block;margin-top:.5rem;color:var(--je-gold);font:600 .8rem/1.5 var(--je-ui);letter-spacing:.035em;text-decoration:underline;text-underline-offset:.2em}
+.news-story-action > span {padding-inline-start:.25em}
+.news-story-card--brief .news-story-title {font-size:1.2rem;line-height:1.35}
+.news-story-card--brief {gap:.5rem}
+.news-story-card .news-story-media {margin:0;min-width:0;order:0}
+.news-story-media picture,.news-story-media img {display:block;width:100%;height:auto}
+/* Explicitly neutralize legacy lead-context crop on the single compatibility hook. */
+.news-story-card .news-story-media img {aspect-ratio:auto;object-fit:contain}
+.news-story-card .news-story-media--crop img {aspect-ratio:var(--news-media-ratio);object-fit:cover;object-position:var(--news-media-position)}
+.news-story-media figcaption {display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem 1rem;margin:.4rem 0 0;color:var(--je-muted);font:.8rem/1.45 var(--je-ui);overflow-wrap:anywhere}
+.news-story-deck {margin:0;color:var(--je-muted);font:calc(var(--je-reading-size, 1.125rem) * .9)/1.65 var(--je-body);overflow-wrap:anywhere;text-wrap:pretty}
+.news-story-meta {display:flex;flex-wrap:wrap;gap:.25rem 1rem;color:var(--je-muted);font:.8rem/1.5 var(--je-ui)}
+@media print {
+.news-story-card {display:block;padding-block:8pt;}
+.news-story-head,.news-story-media,.news-story-deck {margin-block-end:6pt}
+.news-story-card--companion {break-inside:avoid}
+.news-story-action {display:none}
+.news-story-title,.news-story-card--feature .news-story-title,.news-story-card--companion .news-story-title {font-size:19pt;break-after:avoid}
+.news-story-card--brief .news-story-title {font-size:14pt}
+.news-story-title a {min-height:0;display:inline;color:#111}
+.news-story-card .news-story-media {max-width:290pt;break-inside:avoid}
+/* Paper preserves the full approved image, regardless of screen cover treatment. */
+.news-story-card .news-story-media img {aspect-ratio:auto;object-fit:contain;object-position:center}
+.news-story-deck,.news-story-card--companion .news-story-deck {font:11pt/1.45 var(--je-body);color:#111;orphans:3;widows:3}
+.news-story-head {break-inside:avoid;break-after:avoid}
+.news-story-meta {break-inside:avoid}
+}
+</style>

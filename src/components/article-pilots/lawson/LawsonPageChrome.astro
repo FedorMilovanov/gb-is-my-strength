@@ -9,7 +9,11 @@ import { LAWSON_TOC } from './lawsonToc';
 // Статья о Лоусоне потребляет канонических владельцев одиночной читательской
 // поверхности (рельс, угловой кластер, мобильная панель, лист настроек) и не
 // форкает их рантайм — так же, как lot-i-sodom и kod-da-vinchi.
-const railTitle = 'Падение Стивена Лоусона: что должно говорить громче слов';
+interface Props { title: string; readingMinutes?: number; }
+const { title: railTitle, readingMinutes } = Astro.props;
+if (!railTitle?.trim() || !Number.isSafeInteger(readingMinutes) || (readingMinutes ?? 0) < 1) {
+  throw new Error('Canonical Lawson title and reading time required');
+}
 ---
 
 <div class="lawson-cluster-scope">
@@ -21,7 +25,7 @@ const railTitle = 'Падение Стивена Лоусона: что долж
   }
 </style>
 <ReaderRail
-  eyebrow="Библиотека проекта · Разбор"
+  eyebrow="Журнал · Документальное исследование"
   title={railTitle}
   backHref="../../"
   toc={LAWSON_TOC}
@@ -30,7 +34,7 @@ const railTitle = 'Падение Стивена Лоусона: что долж
 <HermenevtikaMobileBar
   title={railTitle}
   backHref="../../"
-  readingMinutes={87}
+  readingMinutes={readingMinutes!}
   toc={LAWSON_TOC}
   palette="ink-gold"
 />
