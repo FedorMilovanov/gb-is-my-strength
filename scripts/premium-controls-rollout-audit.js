@@ -29,6 +29,8 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const assert = require('node:assert/strict');
+const { parse } = require('parse5');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -83,6 +85,140 @@ function markupOnly(html) {
     .replace(/<template\b[^>]*>[\s\S]*?<\/template>/gi, '');
 }
 
+
+// Journal's opt-in Play uses the canonical reader-tts capture owner, not
+// FloatingCluster. A route name alone never exempts a control. Only the exact
+// fail-hidden SSR adapter shape, on the two admitted routes, is recognized.
+// The real Journal browser gate separately proves lazy runtime and behavior.
+const JOURNAL_NARRATION_ROUTES = new Set([
+  'journal/dossiers/g3', 'journal/dossiers/g3/history',
+]);
+const attr = (node, key) => node.attrs?.find(a => a.name === key)?.value;
+const hasAttr = (node, key) => attr(node, key) !== undefined;
+const named = node => Boolean(attr(node, 'aria-label')?.trim());
+function descendants(node) {
+  return [node, ...(node.childNodes || []).flatMap(descendants)];
+}
+function within(node, parent) {
+  for (let n = node.parentNode; n; n = n.parentNode) if (n === parent) return true;
+  return false;
+}
+// Only the slot's own SSR hidden attribute is lifted by mountNarration.
+// Hidden/inert ancestors still prevent interaction; aria-hidden ancestors
+// remove named controls and the status from assistive technology even if visible.
+function blockedNarrationNode(node, slot, control = true) {
+  for (let n = node; n; n = n.parentNode) {
+    if (hasAttr(n, 'inert') || (n !== slot && hasAttr(n, 'hidden')) ||
+        (attr(n, 'aria-hidden') || '').trim().toLowerCase() === 'true' ||
+        (control && ((attr(n, 'aria-disabled') || '').trim().toLowerCase() === 'true' ||
+          (n.tagName === 'fieldset' && hasAttr(n, 'disabled'))))) return true;
+  }
+  return false;
+}
+// The runtime reveals the slot and toggles only stop.disabled. Preserve the
+// native keyboard order and accessibility roles after both transitions.
+function nativeNarrationControl(node) {
+  return !hasAttr(node, 'role') &&
+    (!hasAttr(node, 'tabindex') || attr(node, 'tabindex').trim() === '0');
+}
+function journalNarrationShape(route, markup) {
+  // Avoid parsing unrelated pages; markupOnly has removed script/style/template
+  // content. A marker in a comment does not count as an actual element.
+  if (!markup.includes('data-journal-narration')) return 'none';
+  const nodes = descendants(parse(markup)).filter(n => n.tagName);
+  const slots = nodes.filter(n => hasAttr(n, 'data-journal-narration'));
+  if (!slots.length) return 'none';
+  if (!JOURNAL_NARRATION_ROUTES.has(route) || slots.length !== 1) return 'invalid';
+  const slot = slots[0];
+  const ranges = nodes.filter(n => hasAttr(n, 'data-reader-range'));
+  const fc = nodes.filter(n => hasAttr(n, 'data-fc-action'));
+  const scopes = nodes.filter(n => hasAttr(n, 'data-fc-root') || hasAttr(n, 'data-fc-controls'));
+  const otherControls = nodes.some(n => (attr(n, 'class') || '').split(/\s+/).some(k => k === 'gb-ember' || k === 'gb-save'));
+  if (ranges.length !== 1 || ranges[0].tagName !== 'main' ||
+      attr(ranges[0], 'id') !== 'main-content' || !within(slot, ranges[0]) ||
+      !hasAttr(slot, 'hidden') || !hasAttr(slot, 'data-pagefind-ignore') ||
+      attr(slot, 'data-tts-policy') !== 'exclude' ||
+      scopes.length || otherControls || fc.length !== 1) return 'invalid';
+  const play = fc[0];
+  const local = nodes.filter(n => within(n, slot));
+  const groups = local.filter(n => attr(n, 'role') === 'group');
+  const rates = local.filter(n => hasAttr(n, 'data-jn-rate'));
+  const stops = local.filter(n => hasAttr(n, 'data-jn-stop'));
+  const statuses = local.filter(n => hasAttr(n, 'data-jn-status'));
+  if (groups.length !== 1 || !named(groups[0]) ||
+      rates.length !== 1 || stops.length !== 1 || statuses.length !== 1) return 'invalid';
+  const group = groups[0], rate = rates[0], stop = stops[0], status = statuses[0];
+  const interactive = local.filter(n => ['button', 'select', 'input', 'textarea', 'a'].includes(n.tagName));
+  if (interactive.length !== 3 || ![play, rate, stop, status].every(n => within(n, group)) ||
+      new Set([play, rate, stop, status]).size !== 4 ||
+      [play, rate, stop].some(n => !nativeNarrationControl(n) || blockedNarrationNode(n, slot)) ||
+      blockedNarrationNode(status, slot, false) ||
+      play.tagName !== 'button' || attr(play, 'type') !== 'button' ||
+      attr(play, 'data-fc-action') !== 'play' || !named(play) ||
+      attr(play, 'aria-pressed') !== 'false' || hasAttr(play, 'disabled') ||
+      hasAttr(play, 'aria-haspopup') || hasAttr(play, 'aria-expanded') ||
+      rate.tagName !== 'select' || !named(rate) || hasAttr(rate, 'disabled') ||
+      stop.tagName !== 'button' || attr(stop, 'type') !== 'button' ||
+      !named(stop) || !hasAttr(stop, 'disabled') || attr(status, 'role') !== 'status') return 'invalid';
+  return 'valid';
+}
+
+function assertJournalNarrationClassifier() {
+  const route = 'journal/dossiers/g3/history';
+  const slot = '<div data-journal-narration hidden data-pagefind-ignore data-tts-policy="exclude"><div role="group" aria-label="Narration"><button type="button" data-fc-action="play" aria-label="Play" aria-pressed="false"></button><select data-jn-rate aria-label="Rate"><option value="1">1</option></select><button type="button" data-jn-stop aria-label="Stop" disabled></button><span data-jn-status role="status"></span></div></div>';
+  const wrap = body => '<main id="main-content" data-reader-range>' + body + '</main>';
+  const valid = wrap(slot);
+  for (const r of JOURNAL_NARRATION_ROUTES) assert.equal(journalNarrationShape(r, valid), 'valid');
+  assert.equal(journalNarrationShape(route, valid.replace('data-jn-rate', 'tabindex="0" data-jn-rate')), 'valid');
+  assert.equal(journalNarrationShape('journal', valid), 'invalid');
+  assert.equal(journalNarrationShape('articles/example', valid), 'invalid');
+  assert.equal(journalNarrationShape(route, wrap('<!-- data-journal-narration -->')), 'none');
+  assert.equal(journalNarrationShape(route, markupOnly('<script>const s="data-journal-narration"</script>')), 'none');
+  for (const [label, input] of [
+    ['duplicate adapter', wrap(slot + slot)],
+    ['outside article', wrap('') + slot],
+    ['duplicate reader range', valid + wrap('')],
+    ['exposed before binding', valid.replace(' hidden', '')],
+    ['missing speech exclusion', valid.replace(' data-tts-policy="exclude"', '')],
+    ['other action', valid.replace('data-fc-action="play"', 'data-fc-action="share"')],
+    ['extra action outside slot', valid + '<button data-fc-action="play"></button>'],
+    ['mixed save control', valid + '<button class="gb-save"></button>'],
+    ['mixed floating scope', valid + '<div data-fc-root></div>'],
+    ['unnamed play', valid.replace(' aria-label="Play"', '')],
+    ['wrong initial pressed', valid.replace('aria-pressed="false"', 'aria-pressed="true"')],
+    ['fake popup state', valid.replace('aria-pressed="false"', 'aria-pressed="false" aria-expanded="false"')],
+    ['stop exposed as enabled', valid.replace(' disabled', '')],
+    ['disabled ancestor fieldset', valid.replace('<div role="group"', '<fieldset disabled role="group"').replace('</span></div>', '</span></fieldset>')],
+    ['inert ancestor group', valid.replace('<div role="group"', '<div inert role="group"')],
+    ['hidden play', valid.replace('<button type="button" data-fc-action', '<button hidden type="button" data-fc-action')],
+    ['hidden rate', valid.replace('<select data-jn-rate', '<select hidden data-jn-rate')],
+    ['hidden group', valid.replace('<div role="group"', '<div hidden role="group"')],
+    ['hidden main', valid.replace('<main id=', '<main hidden id=')],
+    ['hidden status', valid.replace('<span data-jn-status', '<span hidden data-jn-status')],
+    ['aria-hidden group', valid.replace('<div role="group"', '<div aria-hidden="true" role="group"')],
+    ['aria-hidden slot', valid.replace('<div data-journal-narration', '<div aria-hidden="true" data-journal-narration')],
+    ['aria-hidden status', valid.replace('<span data-jn-status', '<span aria-hidden="true" data-jn-status')],
+    ["play skipped by Tab", valid.replace("data-fc-action=\"play\"", "tabindex=\"-1\" data-fc-action=\"play\"")],
+    ["rate skipped by Tab", valid.replace("data-jn-rate", "tabindex=\"-1\" data-jn-rate")],
+    ["stop skipped by Tab after enable", valid.replace("data-jn-stop", "tabindex=\"-1\" data-jn-stop")],
+    ["positive tabindex reorders controls", valid.replace("data-jn-rate", "tabindex=\"1\" data-jn-rate")],
+    ["ARIA-disabled play", valid.replace("data-fc-action=\"play\"", "aria-disabled=\"true\" data-fc-action=\"play\"")],
+    ["ARIA-disabled stop after enable", valid.replace("data-jn-stop", "aria-disabled=\"true\" data-jn-stop")],
+    ["ARIA-disabled group", valid.replace("role=\"group\"", "role=\"group\" aria-disabled=\"true\"")],
+    ["role override on rate", valid.replace("data-jn-rate", "role=\"listbox\" data-jn-rate")],
+    ["play aliased as status", valid.replace("data-fc-action=\"play\"", "data-jn-status role=\"status\" data-fc-action=\"play\"").replace("<span data-jn-status role=\"status\"></span>", "")],
+    ['missing rate', valid.replace(/<select[\s\S]*?<\/select>/, '')],
+    ['non-native rate', valid.replace('<select', '<div').replace('</select>', '</div>')],
+    ['extra interactive control', valid.replace('</select>', '</select><button>extra</button>')],
+    ['missing status', valid.replace(' role="status"', '')],
+  ]) {
+    assert.notEqual(input, valid, label + ': fixture mutation must be real');
+    assert.equal(journalNarrationShape(route, input), 'invalid', label);
+  }
+}
+assertJournalNarrationClassifier();
+ok('Journal narration ownership classifier: admitted shape and negative controls pass');
+
 const files = walk(DIST);
 
 const CONTROL_RE = /\b(gb-ember|gb-save)\b|data-fc-action=/;
@@ -96,11 +232,21 @@ if (CONTROL_RE.test(markupOnly(selectorLiteralFixture))) {
 }
 
 let pagesWithControls = 0;
+const journalNarrationPages = new Set();
 
 for (const f of files) {
   const route = routeOf(f);
   const html = fs.readFileSync(f, 'utf8');
   const markup = markupOnly(html);
+  const journalShape = journalNarrationShape(route, markup);
+  if (journalShape === 'invalid') {
+    bad(`invalid Journal narration adapter: /${route}/`, 'only the admitted fail-hidden single Play adapter is allowed; mixed or malformed controls are not exempt');
+  }
+  if (journalShape === 'valid') {
+    journalNarrationPages.add(route);
+    ok(`/${route}/ canonical standalone narration shape (browser behavior checked by Journal QA)`);
+    continue;
+  }
   const hasControls = CONTROL_RE.test(markup);
   if (!hasControls) continue;
   pagesWithControls++;
@@ -130,7 +276,7 @@ for (const f of files) {
   }
 }
 
-ok(`scanned ${files.length} dist pages; ${pagesWithControls} carry PremiumControls`);
+ok(`scanned ${files.length} dist pages; ${pagesWithControls} carry PremiumControls; ${journalNarrationPages.size} admitted standalone Journal narration adapters`);
 
 // ── PC-004 invariant: no double CSS delivery of the floating-cluster styles ──
 // A page must not receive the SAME PremiumControls CSS twice — i.e. it must not
@@ -192,7 +338,7 @@ for (const f of files) {
   const html = fs.readFileSync(f, 'utf8');
   const markup = markupOnly(html);
   const isAstro = html.includes('data-astro-cid-') || html.includes('data-pc-anchor') || html.includes('FloatingCluster');
-  if (CONTROL_RE.test(markup)) {
+  if (!journalNarrationPages.has(route) && CONTROL_RE.test(markup)) {
     if (html.includes('aria-haspopup') && html.includes('aria-expanded')) {
       ok(`/${route}/ ARIA / accessibility parity OK`);
     } else {
