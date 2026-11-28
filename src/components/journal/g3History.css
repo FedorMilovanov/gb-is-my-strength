@@ -69,12 +69,12 @@
   /* Print sources are references, not 44px touch targets. Retain headings,
      locators, rules and clickable originals while avoiding a near-empty
      standalone credits sheet after the expanded 33-entry bibliography. Screen is unchanged. */
-  .journal-edition .je-history-article .bibliography-item { padding-block: 10px 12px; }
+  .journal-edition .je-history-article .bibliography-item { padding-block: 8px 9px; }
   .journal-edition .je-history-article .bibliography-item::before { top: 14px; }
   /* On paper all source boundaries are expanded by the Journal print owner.
      Remove only the redundant disclosure affordance, not its evidence text. */
   .journal-edition .je-history-article .bibliography-item .biblio-details > summary { display: none; }
   .journal-edition .je-history-article .bibliography-item .biblio-details > p { margin-block: 4px 0; }
   .journal-edition .je-history-article .je-next-story { margin-top: 18px; padding-block: 16px; }
-  .journal-edition .je-history-article .dossier-footer { margin-top: 22px; padding-top: 12px; }
+  .journal-edition .je-history-article .dossier-footer { margin-top: 10px; padding-top: 8px; }
 }
