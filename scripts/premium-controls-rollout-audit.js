@@ -110,9 +110,16 @@ function blockedNarrationNode(node, slot, control = true) {
   for (let n = node; n; n = n.parentNode) {
     if (hasAttr(n, 'inert') || (n !== slot && hasAttr(n, 'hidden')) ||
         (attr(n, 'aria-hidden') || '').trim().toLowerCase() === 'true' ||
-        (control && n.tagName === 'fieldset' && hasAttr(n, 'disabled'))) return true;
+        (control && ((attr(n, 'aria-disabled') || '').trim().toLowerCase() === 'true' ||
+          (n.tagName === 'fieldset' && hasAttr(n, 'disabled'))))) return true;
   }
   return false;
+}
+// The runtime reveals the slot and toggles only stop.disabled. Preserve the
+// native keyboard order and accessibility roles after both transitions.
+function nativeNarrationControl(node) {
+  return !hasAttr(node, 'role') &&
+    (!hasAttr(node, 'tabindex') || attr(node, 'tabindex').trim() === '0');
 }
 function journalNarrationShape(route, markup) {
   // Avoid parsing unrelated pages; markupOnly has removed script/style/template
@@ -143,7 +150,8 @@ function journalNarrationShape(route, markup) {
   const group = groups[0], rate = rates[0], stop = stops[0], status = statuses[0];
   const interactive = local.filter(n => ['button', 'select', 'input', 'textarea', 'a'].includes(n.tagName));
   if (interactive.length !== 3 || ![play, rate, stop, status].every(n => within(n, group)) ||
-      [play, rate, stop].some(n => blockedNarrationNode(n, slot)) ||
+      new Set([play, rate, stop, status]).size !== 4 ||
+      [play, rate, stop].some(n => !nativeNarrationControl(n) || blockedNarrationNode(n, slot)) ||
       blockedNarrationNode(status, slot, false) ||
       play.tagName !== 'button' || attr(play, 'type') !== 'button' ||
       attr(play, 'data-fc-action') !== 'play' || !named(play) ||
@@ -161,6 +169,7 @@ function assertJournalNarrationClassifier() {
   const wrap = body => '<main id="main-content" data-reader-range>' + body + '</main>';
   const valid = wrap(slot);
   for (const r of JOURNAL_NARRATION_ROUTES) assert.equal(journalNarrationShape(r, valid), 'valid');
+  assert.equal(journalNarrationShape(route, valid.replace('data-jn-rate', 'tabindex="0" data-jn-rate')), 'valid');
   assert.equal(journalNarrationShape('journal', valid), 'invalid');
   assert.equal(journalNarrationShape('articles/example', valid), 'invalid');
   assert.equal(journalNarrationShape(route, wrap('<!-- data-journal-narration -->')), 'none');
@@ -189,6 +198,15 @@ function assertJournalNarrationClassifier() {
     ['aria-hidden group', valid.replace('<div role="group"', '<div aria-hidden="true" role="group"')],
     ['aria-hidden slot', valid.replace('<div data-journal-narration', '<div aria-hidden="true" data-journal-narration')],
     ['aria-hidden status', valid.replace('<span data-jn-status', '<span aria-hidden="true" data-jn-status')],
+    ["play skipped by Tab", valid.replace("data-fc-action=\"play\"", "tabindex=\"-1\" data-fc-action=\"play\"")],
+    ["rate skipped by Tab", valid.replace("data-jn-rate", "tabindex=\"-1\" data-jn-rate")],
+    ["stop skipped by Tab after enable", valid.replace("data-jn-stop", "tabindex=\"-1\" data-jn-stop")],
+    ["positive tabindex reorders controls", valid.replace("data-jn-rate", "tabindex=\"1\" data-jn-rate")],
+    ["ARIA-disabled play", valid.replace("data-fc-action=\"play\"", "aria-disabled=\"true\" data-fc-action=\"play\"")],
+    ["ARIA-disabled stop after enable", valid.replace("data-jn-stop", "aria-disabled=\"true\" data-jn-stop")],
+    ["ARIA-disabled group", valid.replace("role=\"group\"", "role=\"group\" aria-disabled=\"true\"")],
+    ["role override on rate", valid.replace("data-jn-rate", "role=\"listbox\" data-jn-rate")],
+    ["play aliased as status", valid.replace("data-fc-action=\"play\"", "data-jn-status role=\"status\" data-fc-action=\"play\"").replace("<span data-jn-status role=\"status\"></span>", "")],
     ['missing rate', valid.replace(/<select[\s\S]*?<\/select>/, '')],
     ['non-native rate', valid.replace('<select', '<div').replace('</select>', '</div>')],
     ['extra interactive control', valid.replace('</select>', '</select><button>extra</button>')],
