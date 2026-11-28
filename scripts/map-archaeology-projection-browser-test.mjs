@@ -48,7 +48,7 @@ try {
   await page.route('https://example.test/**', request => request.fulfill({
     status: 200,
     contentType: 'text/html; charset=utf-8',
-    body: `<!doctype html><html><head><meta charset="utf-8"></head><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:false,archaeologyProjection:${JSON.stringify(projection)}});<\/script></body></html>`,
+    body: `<!doctype html><html><head><meta charset="utf-8"></head><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:true,archaeologyProjection:${JSON.stringify(projection)}});<\/script></body></html>`,
   }));
   checkpoint = 'navigate';
   await page.goto('https://example.test/karty/test/?place=ur');
@@ -56,6 +56,7 @@ try {
   await page.waitForSelector('.me-panel--open');
   await page.waitForFunction(() => !document.querySelector('.me-loading'));
   checkpoint = 'initial-panel';
+  assert.equal(await page.locator('.me-intro').count(), 0, 'valid URL place must never be covered by the Intro');
   assert.equal(await panel.getAttribute('inert'), null, 'standalone open panel must not remain inert');
   assert.equal(await panel.getAttribute('aria-hidden'), 'false');
   assert.equal(await page.locator('[data-archaeology-projection-root]').count(), 0, 'story tab must not render archaeology');
@@ -145,10 +146,30 @@ try {
     originalTheme === 'light' ? 'rgb(46, 36, 24)' : 'rgb(233, 228, 214)');
   assert.equal(await page.locator('[data-source-id="retracted-source"][data-evidence-use="negative"][data-source-status="retracted"]').count(), 1);
   assert.equal(await page.locator('.me-arch-footer').count(), 0);
+  checkpoint = 'initial-entry-ownership';
+  const entryProfiles = [{ mode: 'explicit-place', intro: false, panel: true }];
+  await page.evaluate(() => localStorage.setItem('me-map-state-projection-test', JSON.stringify({ place: 'ur', story: 'main' })));
+  await page.goto('https://example.test/karty/test/');
+  await page.waitForSelector('.me-panel--open');
+  assert.equal(await page.locator('.me-intro').count(), 0, 'resumed place must never compete with the Intro');
+  assert.equal(await panel.getAttribute('inert'), null);
+  await page.locator('[data-tab="arch"]').click();
+  await page.waitForSelector('[data-claim-id="ur-context"]');
+  entryProfiles.push({ mode: 'saved-place', intro: false, panel: true });
+  for (const [mode, query] of [['default', ''], ['invalid-place', '?place=missing'], ['story-only', '?story=main']]) {
+    await page.evaluate(() => localStorage.removeItem('me-map-state-projection-test'));
+    await page.goto('https://example.test/karty/test/' + query);
+    await page.locator('.me-intro').waitFor();
+    await page.waitForFunction(() => document.activeElement?.classList.contains('me-intro__btn'));
+    await page.locator('.me-intro__btn').click();
+    await page.locator('.me-intro').waitFor({ state: 'detached' });
+    assert.equal(await page.locator('.me-panel--open').count(), 0, mode + ' must not invent a selected place');
+    entryProfiles.push({ mode, intro: true, panel: false });
+  }
   assert.deepEqual(errors, []);
 
-  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, errors }, null, 2));
-  console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, errors: 0 }, null, 2));
+  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, entryProfiles, errors }, null, 2));
+  console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, entryProfiles, errors: 0 }, null, 2));
 } catch (error) {
   const panelState = await page.locator('.me-panel').evaluate(element => ({
     className: element.className,

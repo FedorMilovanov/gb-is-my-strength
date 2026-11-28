@@ -3826,7 +3826,9 @@ container.appendChild(panel);
 
     // Intro screen: one shared special-overlay lifecycle owns underlay inerting,
     // focus entry, Escape/background/button dismissal and post-dismissal focus.
-    if (opts.showIntro !== false) {
+    // A resolved initial place already owns the first meaningful view. Never
+    // create an intro above the asynchronously opened place panel.
+    if (opts.showIntro !== false && !initialPlaceId) {
       const intro = document.createElement('div');
       intro.className = 'me-intro';
       intro.innerHTML = `
