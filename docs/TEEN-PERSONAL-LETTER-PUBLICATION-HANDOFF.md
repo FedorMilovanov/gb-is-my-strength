@@ -1,0 +1,469 @@
+# Подросток: самостоятельное личное обращение — передача интеграции
+
+Статус: **EDITORIAL DRAFT / НЕ ПУБЛИКОВАТЬ**. Авторский PR: #2377. Системная интеграция: #2368 (3+4). Дата: 2026-11-23.
+
+## W55 — импорт окончательной обложки (24.11.2026)
+
+Окончательные семь файлов из W54 загружены напрямую в GitHub; все Git blob SHA-1 совпали с локальными байтами архива. В этом же коммите переключены только `ogImage` и `ogImageAlt` авторского MDX. Содержание письма, draft/noindex, прочие обложки и компоненты не изменяются. W54 pending import superseded. Перед публикацией требуются интеграция #2368 с точным HEAD #2377, проверка сборки и браузерная приёмка; этот импорт сам по себе не разрешает публикацию и не объявляет CI зелёным.
+
+## W54 — окончательный выбор владельца: фотореалистичный кадр и AVIF (24.11.2026)
+
+**Supersedes W51 artwork selection and hashes.** Владелец окончательно выбрал именно приложенный кадр: подросток в чёрной толстовке смотрит в тёмный телефон, сидя на диване, тёплый рассеянный фон справа. Без Библии, двери, дополнительных символов, изменения лица, перегенерации. Прежняя картина с большой тенью и все её W51 производные больше не являются утверждёнными. Не импортировать прежний ZIP. Остальные обложки серии не изменять.
+
+**Mode LANE / existing author PR #2377; rollback `2bda52f064830a1217a3f6ac59e479a0dab3e010`.** Исходник 1672×941, SHA-256 `e69ef3e9b3b8e04787c33d256339b5613d328ddafc7c9c9caede62bdfed815de`. Оптимизация из выбранных пикселей: три полноформатных адаптивных размера, AVIF с WebP fallback, отдельный OG WebP с минимальным вертикальным кадрированием (лицо и телефон сохранены). Все семь декодированы и проверены по размеру, без дополнительных графических элементов. Архив `teen-personal-letter-final-avif-webp.zip` содержит структуру `public/images/teen-series/` и manifest.json; передан владельцу в чате. Архив не добавлять в репозиторий целиком, только семь медиафайлов после проверки manifest.
+
+| Имя | Размер | Байт | SHA-256 |
+|---|---:|---:|---|
+| personal-letter-cover.avif | 1600×900 | 33756 | fe0c7b460656f8f27178e7d47a91ea2dd859cca78dbbae5bb0fae175bb59bf7a |
+| personal-letter-cover.webp | 1600×900 | 50494 | 122ce5ab889ea2d31d7f2d504278c4ea2673b74a16e6dccf75ddaf72f941900f |
+| personal-letter-cover-1200w.avif | 1200×675 | 24100 | 912c032e99b66b606d1e1177a01ba2632e0ebb5ed274fa2464852cd2a0e94cc0 |
+| personal-letter-cover-1200w.webp | 1200×675 | 35496 | 823085f8004b7649290c7541946c93a397cfde0412ab5120e9fec36b95f19de5 |
+| personal-letter-cover-600w.avif | 600×338 | 10293 | 4e330d5510264670e6982e22c6a9952e16079a6964b6003ccddb69cc96955984 |
+| personal-letter-cover-600w.webp | 600×338 | 12766 | 2ba20b76a32d8f2360c74f938f5357b411753b29a3ae60aa243887c0fffa8c38 |
+| personal-letter-og.webp | 1200×630 | 32328 | 4ac445b6ca7bb34c928b93e7850738319a2bd7687f43d855fce952f742304b29 |
+
+**Code:** resolver `94ded268` exports all seven required asset paths and AVIF srcset; Astro component `a1d99488` uses native picture/source type=image/avif, existing WebP img fallback, consistent sizes and intrinsic aspect ratio. W53 fail-closed guard now covers seven files. No new browser JS. Canonical MDX remains unchanged until actual verified binary import; only then switch ogImage to `/images/teen-series/personal-letter-og.webp` and alt to «Подросток в тёмной толстовке смотрит в телефон, сидя на диване в полутёмной комнате». No old painting alt. Article hero and card must use the same selected image. Final integration must validate image response, srcset selection and AVIF/WebP fallback on Chromium/WebKit, W54 hashes, release contract and draft no-leak. No new branch, route or publication. Binary transfer from container to GitHub remains uncompleted; do not report new assets as committed or change MDX metadata prematurely.
+
+## W53 — fail-closed media guard and source-link recheck (24.11.2026)
+
+**Mode LANE / existing author PR #2377; rollback `42ee4d1f57c15c5b69cacb2d3599c15d8a2f1374`, main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** Four existing author files remain the scope; MDX untouched in W53. #2368 family HEAD observed `6a52784da6f21bb9d65822a611d93211925d8f47`: exact Teen Series Release success, full matrix not yet complete at preflight.
+
+**Confirmed defect:** W52 resolver selected the four artwork URLs by OG metadata alone. Premature OG change or a partially imported asset family could emit broken images. A published card could also render text-only with the obsolete general OG image.
+
+**Fix:** resolver commit `8a26c022`, blob `b9073ea56fff09250b3234d69f830382d55b129a`, exports a single four-path asset list and pure `assertTeenPersonalLetterMedia(card,isFile)`. Source-only draft preview without artwork remains valid. Once artwork is declared, any missing asset (including OG) throws; published card without approved artwork throws. Existing draft/noindex/owner/source/status gates unchanged. Astro component commit `207d3828`, blob `86243a39f3e0642117fdc484350cc3c1efda5348`, invokes guard during server-side rendering with `statSync(resolve(process.cwd(),'public',url.slice(1)))`, requiring regular nonempty files. No browser runtime or layout changes. This checks presence, not integrity of WebP: the W51 exact SHA-256/dimensions acceptance remains mandatory at import.
+
+**Evidence:** exact resolver fetched from GitHub, written to isolated Windows TEMP and independently git-hashed (identical blob); Node v22.23.1 native TS stripping, 22/22 executable checks, exit 0: production hides draft; draft without media previews; both preview/published with complete media pass; removal of each individual asset or all four fails; published without selected art and blank alt fail; duplicate and mismatched route owner/source/status remain blocked. This is targeted resolver/guard execution, not full Astro acceptance. W51 ZIP independently reopened: all four dimensions/bytes/SHA-256 identical to W51. All five existing reader-facing safety URLs reopened on official sites on 24.11, content supports corresponding advice; no new prose or links necessary. Integrator must include the guard and its negative scenarios in the combined build/browser/release contract. For a published-state fixture supply all four assets; do not simulate publication with the old general cover.
+
+**Unresolved:** targeted Windows Downloads lookup again found no W51 archive; no binary commit or OG switch claimed. Keep Draft/noindex, publication HOLD and article content unchanged. Need actual four-asset import, verified hashes, coordinated full Astro DEV + production tests and final exact-head CI, then separate publication approval. Do not use public file relays or loosen the new guard.
+
+## W52 — выбранное полотно, visual polish и reader-facing источники (24.11.2026)
+
+**Mode LANE / existing author #2377; rollback `d119b550037a92f4e7ddb6db39cd7173fd272894`, main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** No changes to #2368 active lane, route ownership, series arrays, Reader runtime, or existing seven articles. Four existing author-owned files only.
+
+**Implemented:** `ab52fe02` resolver (blob `0497ded4bbdfa249b813bda3c0a6bfbe8b38f3a1`) reads artwork identity from canonical MDX ogImage/ogImageAlt, resolves 600/1200/1600 WebP family only when the selected W51 OG path and nonempty alt are present, never uses the general trilogy hero as fallback in the new card. `495edb86` Astro component (blob `4c90e4101a8b273e740adcddf1805f98548c4b2f`) places the entire 16:9 artwork above the text without cropping or text overlay; removes decorative quote, reserves intrinsic image dimensions, uses responsive srcset, theme tokens, no client JS, accessible link with focus outline. Local `text-align:start` repairs inherited justified paragraphs, reported independently by #2368 W46. Both preview and publication states preserve W50 rules.
+
+**S11:** `37b1d7c7` MDX blob `31bab3642baec20c0a87a7f751e70104320a00f7`. Added separate, compact H2 «Источники и сверка» after the intact literary conclusion and further-reading links, with all cited Bible loci (Russian Synodal translation) and verified official resources: UNICEF / StopBullying.gov (bullying and evidence), NCMEC / Take It Down (coercion and image non-distribution), NIMH (urgent help for suicidality). Five external links, no claim that all 68 research leads were used/read in full. Source requirement enabled; unchanged draft/noindex/status, OG metadata intentionally still points to existing asset until actual binary commit. Five narrative H2 remain; sixth H2 is bibliography only. Source text preceding bibliography unchanged byte-for-byte except `sourcesRequired` flag. External sources verified against official pages in this wave; local clinical/emergency advice not substituted by US-specific phone numbers.
+
+**Verification:** exact resolver copied to isolated container, Git blob identical, strict TypeScript compile, 36/36 executable Node assertions PASS across draft/published, absent/duplicate entry, owner/source/status gates, missing flags, metadata and responsive artwork variants. Isolated Chromium fixture using exact component CSS and equivalent markup + actual selected WebP + representative theme tokens: 20/20 scenarios at 320/390/768/1024/1440, both themes and both card states; no document overflow, all text contained, 16:9 image preserved, correct text alignment, draft 0 links, simulated publication 1 focusable CTA ≥44 px. Desktop/mobile screenshots generated and inspected; this is **not** actual Astro/production browser acceptance. W51 ZIP readback verified 4/4 dimensions, bytes and SHA-256. The earlier combined W50 exact `f5aa9bf2` build/production contract was independently reported PASS by integrator #2368 W47 (113 Astro pages, 588 links, 401 anchors, no missing; no draft route/slug/title in 742 output files). That is historical baseline, not W52 acceptance.
+
+**Remaining blocker:** current remote device online through current connection, but W51 ZIP or exact source image absent from Downloads/Desktop (targeted read-only checks). GitHub connector accepts inline binary base64 only, not local file reference; no external public file relay used. Therefore W51 bytes remain in the local archive, not committed. Once transferred to the authorized Windows worktree, verify all four W51 hashes before adding assets, update OG+alt atomically, and run actual Astro check/build/DEV+production browser tests. Keep public card gated and no dangling asset links; no separate new branch or public deployment. Human reading, final exact-head CI, route/profile/card/index/search/sitemap release gate still open.
+
+## W51 — утверждённое владельцем полотно для личного обращения (24.11.2026)
+
+**Выбор владельца:** из десяти вариантов выбрано конкретное изображение (повторно прикреплено владельцем): подросток в полутёмном монументальном пространстве, большая тень на стене слева, высокий открытый проём с естественным светом справа. Смешанная живопись/графика, фактурная охра и графит; без телефона, надписей, постановочных слёз или киношных спецэффектов. Не перегенерировать утверждённый образ и не заменять его общим hero трилогии.
+
+Исходник 1672×941 PNG, авторский выбор, generated illustration (не фотография реального подростка). Подготовлены четыре отдельные оптимизированные WebP из исходных пикселей, без добавления текста или объектов. **Файлы пока подготовлены в рабочем контейнере, не внесены в GitHub**: бинарный транспорт в текущем сеансе не подтверждён. Не добавлять ссылки на отсутствующие файлы и не заменять ogImage преждевременно. Архив с готовой структурой `public/images/teen-series/` передан владельцу в чате.
+
+| Имя | Размер | Байт | SHA-256 |
+|---|---:|---:|---|
+| personal-letter-cover.webp | 1600×900 | 309446 | 20d640b1aa5fa5a0b43c8a1a912319b91f0fbaa39724df9d31df683a81c27f69 |
+| personal-letter-cover-1200w.webp | 1200×675 | 163814 | 83b1d07d8a4b3614d822d2225cea82dd723fb127c4377fea9eb1984de000a5b1 |
+| personal-letter-cover-600w.webp | 600×338 | 25358 | 3553ad72b690992412b0d2a7a0a48dcd32ded8f731d1fd746b6a78240fde5b76 |
+| personal-letter-og.webp | 1200×630 | 155210 | c84f1a843fea410ab0658c06b39fee2ed8d4a89ff7fed51398993fd22173b7be |
+
+**Интеграция после проверки байтов:** добавить ресурсы в согласованный авторский/интеграционный lane, обновить канонический MDX ogImage → `/images/teen-series/personal-letter-og.webp`; alt: «Подросток в полутёмном пространстве рядом с большой тенью на стене, впереди открытый проём со светом». Карточка W50 использует самостоятельное изображение, а не повтор общего hero. Предпочтительна цельная иллюстрация 16:9 над текстом с theme-aware редакционным блоком; на больших ширинах возможна сбалансированная асимметричная сетка только при сохранении обоих ключевых визуальных элементов. Не размещать текст поверх полотна; не обрезать тень или световой проём на узких экранах; использовать responsive srcset 600/1200/1600, intrinsic dimensions и корректный sizes. На странице статьи — тот же образ, не ещё одна конкурирующая иллюстрация. Доступность, фактический media response, вес, light/dark и 320–1440 browser QA проверяются после внедрения. До тех пор W50 gate, draft/noindex, отдельность I–III, S11 и публикационный HOLD не меняются.
+
+## W50 — «Личное обращение»: самостоятельная карточка флагмана (24.11.2026)
+
+**Новое решение владельца supersedes W49 только в позиционировании:** не «Введение в серию», не часть 0/IV и не обязательная ступень, а **«Личное обращение»**, самостоятельное пастырское письмо подростку, визуально выделенное непосредственно перед тремя исследованиями. Тематическое пересечение с I осознанно: письмо говорит с подростком, I исследует причины двойной жизни для родителей/наставников/служителей. Не расширять письмо до научного досье и не переписывать трилогию. W49 о будущей самостоятельной созидательной серии остаётся в силе.
+
+**Mode LANE, автор #2377; rollback `734e1ef32b6d4c56a1bca42ade8c848879bf3852`; main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`.** #2368 actively owns landing `src/pages/podrostok-za-kadrom/index.astro` (observed head `6e9ac2b08440aefdc0116700e8252d262802eb9f`); shared registry still has overlapping lane #2300. Do not overwrite integrator's current changes. Author lane adds exactly two standalone component files, and this handoff. MDX unchanged. No new branches, no route or registry edits, no publication.
+
+**Implemented source:**
+- `src/components/article-pilots/teen-series/teenPersonalLetterCard.ts` (commit `7f79ff2b497dc860687a27d51e1baa2e5bd60795`, blob `52fcefd81c6e8ae0ac824f1846b0a411cde424b3`): canonical slug/href/source, one resolver for visible card and structured data. Exact unique article data; actual draft/noindex flags must both be false and route ownership must match astro/production-dist/exact source to return published. DEV may show an inert preview of existing draft, without a link; production returns null for unavailable article. No hardcoded duplicate title/description. Route existence and production eligibility remain verified by existing route contracts.
+- `src/components/article-pilots/teen-series/TeenPersonalLetterCard.astro` (commit `62344175de1ec3cebe0bb29be2d2b1623711b6c7`, blob `ca0fea4dfeb177dcacb951c2327a74b38a1b7568`): typographic personal-letter card, theme tokens, distinct hierarchy, mobile-safe padding/wrapping, accessible real CTA with focus-visible outline, no extra client runtime or animation. Existing collection hero remains once; do not duplicate its image directly underneath. Decorative quote glyph hidden from assistive technology and small screens. DEV preview explicitly labelled and Pagefind-ignored.
+
+**Integrator contract #2368 or agreed successor:** after coordinated incorporation of both component files AND canonical draft MDX (prefer existing isolated merge-tree for preview, no duplicate branch), use existing content collection and page ownership registry. Suggested exact shape for landing frontmatter:
+```ts
+import { getCollection } from 'astro:content';
+import ownership from '../../../migration/page-ownership.json';
+import TeenPersonalLetterCard from '@/components/article-pilots/teen-series/TeenPersonalLetterCard.astro';
+import { resolveTeenPersonalLetterCard, TEEN_PERSONAL_LETTER_HREF } from '@/components/article-pilots/teen-series/teenPersonalLetterCard';
+const letterEntries = await getCollection('articles', ({ data }) =>
+  data.slug === 'poka-vse-dumayut-chto-u-tebya-vse-normalno');
+const letterOwner = Object.entries(ownership.routes).find(([route]) => route === TEEN_PERSONAL_LETTER_HREF)?.[1];
+const letterCard = resolveTeenPersonalLetterCard(letterEntries.map(({ data }) => data), letterOwner, import.meta.env.DEV);
+```
+After existing hero and before `section[aria-labelledby="series-order"]`, render `{letterCard && <TeenPersonalLetterCard card={letterCard} />}`. Rename heading copy to «Три исследования» (retain existing section ID, anchor and all I–III semantics). In `CollectionPage.hasPart` conditionally add the personal letter only for `letterCard?.kind === 'published'` (same resolver, not independent conditions); published description/how-to-use copy distinguish the unnumbered letter. Do not add it to `TEEN_DOUBLE_LIFE_SERIES.items`, adult config, progress, Roman marks or search ordering. While Draft, production 7-article structured data/8 canonical routes stay unchanged; only eventual atomic publication changes those exact expectations to 8 articles/9 routes including landing, not series count 4. Preserve #2368 existing responsive adult labels, focus, reduced-motion, route IDs and shared Reader invariants.
+
+**Verified locally:** exact resolver source copied to isolated container, Git blob `52fcefd81c6e8ae0ac824f1846b0a411cde424b3` matches remote; strict TypeScript compile and 18/18 executable state scenarios PASS (missing/duplicate entry, wrong route status/source/owner, draft/noindex/missing flags, dev inert preview, published, metadata fallback). Component readback checks are static only. No full Astro build, browser QA or screenshot claims: desktop connector offline. Before activation, integrator must run actual Astro/production build, existing source+dist release contract, exact JSON-LD membership and targeted Chromium/WebKit desktop/mobile light/dark focus/overflow/contrast. Preview with draft in combined isolated tree must show card and no clickable href; production must not show draft/metadata/search/404 link. On actual release, verify card link 200, accessible heading, browser snapshots, route/profile/registry, ArticleLayout robots, S11 bibliography and atomic sitemap/Pagefind/metadata. Do not weaken current guard or publish solely from a green unit test.
+
+## W49 — решение владельца: флагманское введение и отдельный созидательный цикл (24.11.2026)
+
+**Актуальное редакционное решение владельца, приоритет над более ранними предложениями W46–W48 о расширении текущей серии.** Mode FAST, existing author lane #2377; rollback `9cc28be2991fde67ca6e2331932ff869ddb8eb5d`; main при сверке `22a44d43e347d141924dfa93a3ec7bfad822dbae`. Только этот handoff, MDX письма и чужие системные поверхности не изменять.
+
+**«Подросток за кадром» сохраняет узкую проблемную рамку:** скрытая двойная жизнь, её нравственная динамика, реакция семьи и ответственность церкви. Статья «Пока все думают, что у тебя всё „нормально“» — самостоятельное **флагманское введение** в этот проблемный цикл, а не общее введение во все материалы о подростках. На каталоге после hero и перед трилогией разместить визуально выделенную карточку с коротким обозначением «Введение в серию». Не превращать письмо в обязательную часть 0/IV, не добавлять в счётчик прогресса I–III, не менять его самостоятельный canonical URL. Сохранить три исследовательские главы I–III, отдельную взрослую группу из четырёх материалов, текущие URL и Reader ownership. Из письма можно направлять к первой части и общему каталогу (две ссылки уже есть); не создавать искусственную обязательность прочтения.
+
+**Нераскрытые темы сохранить для отдельного будущего созидательного цикла** (рабочее направление «Личная вера и духовное взросление подростка», название и состав не утверждены для публикации). Это не универсальная энциклопедия подросткового возраста. Основная аудитория — молодые люди в орбите верующей семьи и церкви; фокус — собственная вера во Христа, ученичество и благодать. Трудные вопросы допустимы внутри этого созидательного фокуса, не как дублирование проблемной трилогии.
+
+- Приоритетная тема: личная вера и крещение — желание креститься, страх слабой веры, отсутствие яркой даты обращения, свидетельство, ожидания родителей/сверстников, честное исповедание, радость крещения и дальнейший путь. Библейский сюжет-кандидат Деян. 8:26–39; стих 37 имеет текстологическое разночтение, не строить обязательную аргументацию на нём. Сверка источников до написания.
+- Уверенность в спасении: слабая вера, покаяние, сомнения, избрание, Божьи обещания, не механический тест обращения. 1689, главы 14, 17, 18 — исследовательская опора.
+- Конкурирующие желания: «Когда правильное стало тяжёлым, а тайное — желанным»; сохранить подробный W46–W48 банк, но для нового материала строить положительную ось новой любви ко Христу и роста, а не второй пересказ двойной жизни.
+- Служение подростка: радость служения, дары, мотивы, ответственность, перегрузка, границы ролей; церковную дисциплину и safeguarding не повторять как центральную тему.
+- Собственные вопросы о Боге; молитва, Писание, дружба, самостоятельное ученичество и жизнь после крещения; включая подростка, чьи родители не веруют, если это органично теме. Не делать отдельную статью на каждый вопрос; объединять по смыслу после аудита пересечений.
+
+**Disposition:** W46–W48 сохраняются полностью как исследовательский резерв этого будущего цикла. Не расширять текущую трилогию, не дописывать новые большие главы к письму и не создавать новые PR/маршруты/публикационный план без отдельного задания. Публикация введения по-прежнему отдельная согласованная транзакция с #2368/route owners: compact S11, редакционная/визуальная приёмка, exact-head CI, корректные даты, route/card/index/search/sitemap вместе. Пока Draft/noindex, без публичной карточки-ссылки на недоступную страницу.
+
+## W48 — аудит двух новых банков: переходы, желание и ложные выходы (24.11.2026)
+
+**Mode FAST / author lane #2377.** Rollback `579608dab53c1f19a3cb03380874d7f19bc3745e`; main preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`. Источники владельца: `Вставленный текст(20261123-230347).txt` (82 строки) и `Вставленный текст (2)(20261123-230355).txt` (93 строки), оба о старом W39. Сверены с текущим W47 MDX, а не применены как готовый патч. Никаких изменений route/Reader/landing, веток или публикаций.
+
+**MDX `9e364ab690f6f7119e0b267afd883a01fa0a4c9a`: 10 адресных замен, +29 слов по whitespace count.**
+- Добавлено последствие отложенного решения в сценарии асимметрии желания: пока сознательно защищаешь скрытую жизнь неправдой, она может становиться привычной. Не предсказание отступничества и не диагноз по количеству энергии. Условие о настоящей усталости и нормальной дружбе сохранено.
+- Явный мост от удовольствия к страху: иногда шутка вовсе не смешна, но страшно выделиться. Не приписывать подростку одинаковую мотивацию в семье и среди друзей.
+- Дрейф оценки («вчера / сегодня») обозначен как возможный процесс, а не установленный факт биографии читателя.
+- Удалена повторная фраза о прочитанном унизительном сообщении; «Допустим» заменяет двусмысленное «Пусть». Сцену коридора и конкретный вред сохранить.
+- Чужая неправда может встречаться у ровесников, а не только у взрослых; не делать из этого приговора всей церкви или другу у воды.
+- Иак. 4:8 помещён в собственный контекст Иак. 4:4, а приложение к оправданию жестокости отделено от определения двоедушия. Сверка Синодального текста и контекста: https://www.bible-center.ru/ru/bibletext/synnew_ru/jas/4%3A1-10 ; https://www.bible.com/ru/bible/400/JAS.4.1-10.SYNO . Убран дублирующий финальный абзац о приватности (граница сохранена в первом абзаце раздела).
+- Прямой ответ на вопрос вступления: может быть страшно потерять не только удовольствие, но и место, где тебя ждут; дружба и самостоятельность не обязаны строиться на лжи. Не обещать, что прежний круг останется доступен, или что все потребности удовлетворятся немедленно.
+- «Прости, но ты сам напросился» названо самооправданием, а не вторым видом признания; облегчена фраза о помощи.
+- Frontmatter, пять H2, ссылки, весь safety block и заключение от safety до конца файла неизменны. Заголовки не переименованы по старому PDF: актуальные заголовки соответствуют собственным темам, финальная реплика «Давай завтра?» уже реализует обещание заголовка «Расскажу позже».
+
+**Из двух банков — обязательные разграничения для будущих W46/W47 сателлитов, не новые главы письма:**
+1. Крещение: отсутствие уверенности в личной вере, страх недостоинства у кающегося верующего и намеренное откладывание покаяния ради греха — разные состояния. Ни ожидание безгрешности, ни честный отказ от фальшивого исповедания не являются способом заслужить спасение; честность отказа сама по себе не равна покаянию. Не диктовать дату/допуск, не требовать публичной интимной исповеди. 1 Пет. 3:21 — прежние W45 экзегетические ограничения.
+2. Служение: изменение нагрузки или добровольная пауза может быть необходимой, в частности при истощении и риске вреда. Но устранение внешнего противоречия путём прекращения служения не тождественно отказу от сознательного греха. Не предписывать оставаться в опасной роли/среде, не делать паузу «капитуляцией», не считать признание одному наставнику автоматически достаточным для safeguarding. Обсуждение ответственности за конкретную роль отдельно от духовной поддержки.
+3. Время: сознательные повторения и оправдания могут укреплять привычку, но не утверждать, что любая отсрочка — грех или что по расписанию определяется спасение. Не указывать дату гарантированного отступничества или неизбежного проигрыша. Не приравнивать тревогу, болезнь, недосып, законный отдых или сомнение к сознательной защите вреда.
+4. «Новая роль» не обязательно заёмная и фальшивая целиком. Можно испытывать настоящее чувство принадлежности, радость юмора и инициативу, не оправдывая ложь или унижение. Не романтизировать грех и не стигматизировать вопрос о себе, никнейм либо обычное изменение интересов.
+5. Рим. 7:18 не подменяет анализ: в самом тексте желание добра **есть**, невозможность осуществить его — другой вопрос; спор о говорящем в Рим. 7 требует экзегезы. Не вставлять стих как доказательство отсутствия желания добра. Не давать псевдонаучное объяснение «дешёвым дофамином». Флп. 2:12–13 уже применён в W47 и сохраняется.
+6. Чужое лицемерие не отменяет собственную ответственность; нельзя диагностировать истинность крещения друга по одному эпизоду. Не добавлять в письмо длинные блоки о крещальной воде и сцене: сохранить как две самостоятельные темы, не смешивая с нравственной обязанностью прекратить конкретный вред.
+
+**Disposition:** старые дубли притчи, «взрослые неправы», прежние сбои цитат и удаления переписки, отсутствие ответа на похвалу, отсутствие помощи при самоповреждении — уже устранены в текущем тексте до W48; не возвращать старые варианты. Не вводить неподтверждённые советы о том, что Бог обещал каждому читателю, или обещание обязательного счастливого ответа семьи. Не заявлять «без единого бага» по результатам литературного чтения. Publication HOLD остаётся: exact-head CI и reader-facing bibliography/preview/human reading до согласованной интеграции.
+
+## W47 — два новых редакционных банка: желание, время, вода и служение (24.11.2026)
+
+**Mode FAST / existing author lane #2377.** Rollback `458dbaab64de5af865d9fb262eae05fc0260b901`; main при preflight `22a44d43e347d141924dfa93a3ec7bfad822dbae`. Два прежних файла, без route/Reader/landing/system. Исходники владельца: `Вставленный текст(20261123-225106).txt` и `Вставленный текст (2)(7).txt`. Это предложения к старому W39, не актуальный текст и не научные исследования. Сопоставлены с действующим письмом W45 и тематическим резервом W46.
+
+**Принято в MDX (`460e1d75d0b28d9ccf7f05e26eaaccc27ccb25f1`):** одна бытовая сцена контраста искреннего согласия с воскресной проповедью, вечерней усталости и неожиданной живости после сообщения. Граница прямо встроена: настоящая усталость и радость дружбы сами по себе не грех; нравственная проблема — сознательно беречь то, что сам признаёшь неправильным, всё чаще откладывая важное и придумывая оправдания. Сохранены молитва Пс. 85:11 и её объяснение; рядом добавлена связь Флп. 2:12–13 (Бог производит хотение и действие в верующих, призыв к послушанию не отменяется). Сверка Синодального и контекста: https://bible.by/syn/57/2/ ; https://www.bible.com/ru/bible/400/PHP.2.12-13.SYNO . Не обещать каждому читателю автоматически полученное хотение и не советовать ждать приятного чувства, прежде чем обращаться ко Христу или делать правильное. Две адресные правки, +92 слова по whitespace-count, те же пять H2, неизменный frontmatter и финал.
+
+### Дополнительное золото для W46 (не новые статьи/ветки)
+
+- **Три разных состояния:** «не могу» (истощение, болезнь, перегрузка, последствия привычки), «не хочу» (слабая мотивация, вопросы веры), «не хочу расставаться» (сознательная защита неправильного удовольствия). Могут сочетаться. Не классифицировать подростка по одному признаку, не считать физиологическую усталость оправданием любого поступка или доказательством отсутствия веры.
+- **Не отнимать настоящую потребность вместе с греховным способом:** дружба, юмор, самостоятельность, творческое начало и возможность быть услышанным могут быть ценны; ложь, принуждение и унижение — нет. Если тайный круг даёт подростку пространство для инициативы, предложить искать честный способ сохранить эту возможность, а не уничтожать все увлечения. Социальная роль/никнейм не равно клинической второй личности и не равно любому личному вопросу о себе. Не навязывать отказ от идентичности как лечение.
+- **Томящий выбор во времени:** один вечер не приговор, но повторяющиеся сознательные решения способны укреплять привычки. Сначала подросток защищает возможность снова вернуться к тайному занятию; затем боится потерять место в кругу и приобретённую репутацию. Ни неизбежности отступления, ни пассивного ожидания, что всё рассосётся. Без искусственного теста по расписанию, подсчёта молитв и экранных часов.
+- **Перед водой:** неготовность из-за неуверенности в личной вере отличать от сознательного откладывания отказа от греха; отдельно — страх недостоинства у верующего, имеющего реальную борьбу. Внешнее давление бывает невысказанным. Не превращать красивое свидетельство в обязательный драматический сюжет обращения. Возможное «подожди» от церкви может быть пережито как отвержение, но не равнозначно автоматически отвержению Богом. Не диктовать срок/допуск и обязательное раскрытие интимных сведений. Решение обсуждается с безопасным наставником; церковь ответственна за собственную пастырскую практику.
+- **Служение:** желание послужить, долг, поиск признания, истощение и использование репутации как ширмы — не одно и то же. «Без тебя не справимся» может и радовать, и давить. Пауза или смена обязанностей не равны отказу от Христа. Не утверждать, что знание тайны одним взрослым делает служение безопасным: конкретная роль, причинённый вред и safeguarding оцениваются отдельно, особенно при работе с детьми. Не требовать обязательной исповеди пастору. Если есть риск, нужна помощь и защита вне опасного круга.
+- **Новая формула для отдельного материала:** «Не обязательно отречься от того, что считаешь правильным, чтобы понемногу перестать жить ради него». Не выдавать за цитату, закон развития или диагноз.
+
+### Экзегетические ограничения для предложенных опор
+
+- Флп. 2:12–13 — принят в письме: обращение Павла к общине, Божье действие в хотении и поступке, человеческое послушание. Не сводить к мгновенной смене эмоций.
+- Мк. 4:18–19 — перспективная опора отдельной статьи, точная Синодальная формулировка **«другие пожелания»**, не «пожелания о прочем»; контекст притчи о сеятеле: https://www.bible-center.ru/ru/bibletext/synnew_ru/mr/4%3A13-20 . Не объявлять любой новый интерес грехом или определять тип почвы по одной привычке.
+- Рим. 7:14–25 — не использовать как готовую универсальную диагностику подростковой психологии: идентичность говорящего и смысл отрывка требуют собственной экзегезы. В письме опора уже яснее через Флп. 2 и Рим. 8.
+- Ин. 5:6–7 — не делать вопрос к больному доказательством, что тот не хотел исцеления, оправдывался или сам виноват в болезни. Сюжет о знамении Христа не заменяет Пс. 85:11, который прямо отвечает на тему сердца. Отклонён W-2.
+- Мф. 6:19–24 — два господина в контексте сокровища и маммоны; пастырская аналогия соперничающей любви допустима с контекстом, но не закон неизбежной гибели.
+- 3 Цар. 18:21; Лк. 22:31–32; 2 Тим. 4:10–11; Деян. 15:38 — перспективный резерв, точную цитату и контекст проверить при создании статьи; не утверждать неизвестную судьбу Димаса или мотивы Марка, не переносить уникальное обещание Петру автоматически на каждого читателя. Не складывать четыре сюжета в одно короткое письмо.
+- 3 Цар. 19:4–8 и Лк. 10:38–42 — отдельное исследование о служении, не медицинская модель депрессии и не отмена служения. При мыслях о смерти у подростка нужен безопасный взрослый и срочная помощь, не только совет поспать/поесть.
+- Деян. 8:36–37 — потенциальный сюжет о крещении; стих 37 имеет текстологическую проблему, не строить аргумент без проверки критического аппарата. 1 Пет. 3:21 сохраняет ограничения W45 (не плоский экзамен совести).
+- Другие ссылки из двух банков — research leads, **не** заявлять, будто все сверены по оригиналам. Сателлиты остаются в W46, без публикации и создания конкурирующих документов.
+
+**Публикационный HOLD:** неизменен. Не переносить новые длинные блоки A/Б, W-3/W-4. Не превращать письмо в чек-лист духовного статуса, не заменять утверждённую молитву рассказом о больном. Проверить final exact-head CI, reader-facing bibliography (S11), human reading и mobile/desktop preview при согласованной интеграции.
+
+## W46 — тематический банк: две притягивающие жизни, истощение, крещение, служение и медленный выбор (24.11.2026)
+
+**Статус:** owner-requested **редакционный резерв будущих материалов**, не согласованная дополнительная глава письма и не команда создавать публикацию/PR/маршрут. Исходный trigger: подросток считает верное правильным, но чувствует усталость и не хочет; на скрытые увлечения неожиданно находятся силы и внимание; он осваивает разные роли и живёт в нарастающем конфликте желаний. Уточнить, что это **возможная история**, не неизбежный психологический/духовный закон. Текущее письмо W45 уже содержит «Мне это нравится» и личное обращение ко Христу: **не дублировать** его целым новым трактатом.
+
+### Центральный замысел
+
+Рабочая формула: **«Когда правильное стало тяжёлым, а тайное — желанным»**. Конфликт не только «я знаю заповедь, но нарушаю», а также «я признаю добро, но перестаю его хотеть; то, чего стыжусь, начинаю защищать». Драматургия идёт во времени: `согласен на словах → усталость/отчуждение → быстрые награды другого круга → регулярные маленькие уступки → новая версия себя → страх потерять тайную жизнь → обращение ко Христу/продолжение самооправдания`. **Не писать финал как предсказуемую победу греха**: возможно покаяние, изменение окружения, помощь взрослого, отдых и восстановление отношений. «Со временем выясняется, что растёт» — не машина определения спасён ли человек.
+
+Важная граница: недостаток энергии для духовных занятий **сам по себе не доказывает нежелание Бога**. Обязанности могут быть навязаны, служение перегружать, сон нарушен, интересы меняться, психическое/физическое здоровье ухудшаться, а быстрые цифровые стимулы легче захватывать внимание. За обычные увлечения, личное пространство, отдых, изменение вкусов, вопросы веры и сомнения не назначать вину. Отличать от **сознательных** лжи, унижения, эксплуатации, сокрытия вреда и взращивания греховной привычки. Ни один одиночный пример не является тестом возрождения.
+
+### Семь независимых сюжетных линз, без смешения
+
+1. **«Я согласен — но не хочу»** (осевой материал). Подросток умеет повторять правильные формулировки и даже искренне с ними согласен, но его повседневные предпочтения не поспевают за словами. Не выводить из этого автоматически неверие. Живой вопрос: *когда слова перестали быть его собственным желанием, и способен ли он честно сказать об этом?*
+2. **«Для собрания сил нет, для ночи — находятся»** (замещение желаний, осторожно). Внешний контраст молитвы/подготовки и тайной переписки/увлечений; объяснить различие между усилием с отложенным результатом и деятельностью с немедленным вознаграждением, **без нейродиагнозов**. Сцена: нет сил закончить поручение, зато не хочется прервать чат; конкретное наблюдение, не доказательство злой природы по расписанию.
+3. **«Служение стало ролью»** (границы подросткового служения). Редко спрашивают, сам ли он захотел вести звук, играть музыку, помогать с детьми или отвечать за молодёжку; отказ может восприниматься как духовная слабость. Различить реальное служение, семейные ожидания, хроническую нагрузку и притворство. Если подростку нужен отдых/снижение нагрузки, это не равняется отречению. Если он пользуется церковной репутацией как ширмой для сознательного вреда, нужна правда, а не увеличение служебной нагрузки.
+4. **«Вторая биография»** (не медицинская «раздвоенная личность»). В церкви у него один язык и репутация, в другом кругу — иные друзья, нормы и способы получить одобрение. Он может чувствовать близость к обоим кругам. Сюжетный вопрос: *кому он начинает доверять настолько, чтобы не притворяться, а чьё одобрение теперь оберегает любой ценой?* Не утверждать, что всякая разная манера общения — лицемерие.
+5. **«Крещение как чужой календарь»** (отдельная статья/сцена). Друзья идут готовиться, взрослые надеются, подростку неясно, исповедует ли он веру сам. Показать двойной страх: разочаровать людей или произнести то, во что сам не верит. Не требовать публичного признания всех личных секретов, не диктовать сроки, не объявлять наличие искушений запретом на крещение. Смысл: крещение связано с личным исповеданием Христа, не с выпускным молодёжки.
+6. **«Я уже крестился; теперь страшнее признаться»**. Подросток верил, участвовал в служении, а теперь скрывает повторяющийся добровольный поступок или честно сомневается. Различать нравственный поступок и вопросы веры; крещение не становится магической страховкой и не отменяется автоматически одним срывом. Честный безопасный разговор и борьба с грехом возможны без гарантии быстрой реакции окружающих.
+7. **«Что станет желаннее через год?»** (заключительный сюжет). Не моментальное «кто победил?» и не счёт часов молитвы против часов телефона. Показать смену привычек через маленькие решения: какие границы он теперь защищает, чего ждёт, с кем может говорить правду, какую неправду научился объяснять, кто получает его заботу. Два возможных исхода без фатализма: усиление скрытности или возвращение к правде, живому общению и Христу. Тон не судебный: Божья благодать способна менять и сами желания.
+
+### Как распределить по материалам серии, не засоряя письмо #2377
+
+- **Кандидат №1 (приоритет):** «Когда правильное стало тяжёлым, а тайное — желанным». Один сильный художественно-пастырский текст о конкурирующих желаниях; главная сцена — вечер, когда на правильное «нет сил», а на другую жизнь внезапно находится время. Центр — не управление временем, а сердце, которому нужен Христос.
+- **Кандидат №2:** «Крещение за компанию: если все готовы, а ты не уверен». Пастырский материал об исповедании, страхе ожиданий и добровольной честности с безопасным наставником. Нельзя превращать в экзамен спасения или локальный протокол крещения.
+- **Кандидат №3:** «Служение, от которого устал: вера, долг или чужая роль?» Различить духовное служение, перегрузку, удовольствие от публичного одобрения и возможность сказать «нет» без стыда. Важен ответ родителей и служителей: не эксплуатировать подростковое усердие.
+- **Кандидат №4:** «Два круга, два имени: кем я становлюсь?» Про школьные/церковные компании, тайные профили и язык; осторожно отличать защиту приватности/социальную адаптацию от осознанного обмана и вреда. Если тема раскрывается в кандидате №1, самостоятельный текст не плодить.
+
+### Источниковые и богословские опоры (перед reader-facing написанием читать в контексте)
+
+- **Иак. 1:13–15:** собственное желание, искушение, развитие греха. Это нравственная последовательность у Иакова, **не** медицинская модель формирования зависимости: https://bible.by/synu/45/1/
+- **Гал. 5:16–25:** конфликт плоти и Духа и плод Духа, **адресован церкви**, не универсальный диагноз любого подростка, который устал: https://bible.by/syn/55/5/
+- **2 Тим. 2:22:** бежать юношеских похотей и вместе с другими искать правду, веру, любовь, мир; послание обращено Тимофею, применять к подростку как пастырский принцип с оговоркой контекста: https://bible.by/verse/62/2/22/
+- **Мф. 6:19–24:** сокровище, сердце и два господина; различать нравственную направленность любви и ситуативное падение: https://bible.by/jbl/40/6/
+- **Второе Лондонское баптистское исповедание (1689), 16.3:** способность верующего к добрым делам — от Духа Христа, при этом призыв к прилежанию остаётся; не проповедовать самоспасение силой воли и не оправдывать пассивность: https://baptistconfession.org/harmony/16
+- **То же, 29.2:** крещение связано с действительным исповеданием покаяния, веры и послушания Христу; не привязывать его к настроению, чистоте без слабостей и обязательным срокам: https://baptistconfession.org/29
+- **Томас Чалмерс (1780–1847), `The Expulsive Power of a New Affection`:** историко-богословская линия, что старую любовь нельзя вытеснить одной пустотой; проверять полный текст и смысл до точных цитат. Чалмерс — **XIX век, не пуританин**: https://www.unionpublishing.org/resource/the-expulsive-power-of-a-new-affection/
+
+### Пастырские защитные ограничения и критерии хорошего текста
+
+- Не строить систему «сколько часов служит/читает Библию» = «насколько он спасён», не принимать физическую усталость, депрессию, тревогу, травму, принуждение и обычное взросление за грех автоматически.
+- Не представлять две скрытые социальные роли как клинические «две личности»; идентичность и общение разнородны, духовную оценку дают конкретные добровольные поступки и желания, не ярлык.
+- Не считать самообвинение, боль, слёзы или силу искушения надёжными индикаторами обращения/его отсутствия. «У меня не получается» может требовать отдыха, помощи и поддержки, а не только обличения.
+- Не противопоставлять «плохую школу» и «хорошую церковь» или наоборот; не идеализировать друзей-верующих и не клеймить всякую молодёжку.
+- Если грех сопровождается угрозами, шантажом, травлей или сексуальным принуждением, защита несовершеннолетнего и помощь компетентных служб выше конфиденциальности группы и репутации церковного служения.
+- **Не прикручивать эти темы к существующему эмоциональному письму W45 длинным разделом.** Оно уже раскрывает «мне нравится»/«что останется»; для отдельного материала нужен самостоятельный сюжет, опорный текст и редакционная приёмка S1–S54. Пока это список идей **без создания нового маршрута, статьи или публикационного плана**.
+
+## W45 — независимая сверка нового редакционного банка W39 с действующим W44 (24.11.2026)
+
+**Источниковая граница:** предоставленный владельцем `Вставленный текст(20261123-220126).txt` — составной редакционный банк на **исторической версии W39**, а не current MDX и не новая обязательная спецификация. Все предложенные формулировки сначала сопоставлены с текущим `#2377` HEAD `5dfe2482`. Важные ограничения W40–W44, Хартия S1–S54, `AGENTS.md` и article source policy остаются сильнее устаревшего патча.
+
+**Внедрено строго в авторском MDX (`87250e062b505f100847d360ae26db0d7945aae7`; восемь хирургических замен, без новых рубрик):**
+1. Реплика воскресной церковной жизни обозначена как **условный случай** («Если ходишь в церковь…»), так что нецерковный читатель не получает чужую биографию при первом чтении.
+2. В двух местах уменьшена повторяемость «компания»: живой «общий чат» и поведенческое «чтобы не выделяться» вместо механической подстановки синонимов.
+3. Одна короткая сцена показывает, что давление сверстников иногда возникает **внутри церковной молодёжки**, не только в школе; без клеймения верующих друзей и без требования спорить с группой в одиночку.
+4. К уже существовавшему в W44 разграничению личной веры и крещения добавлена **одна строка**: подготовка друзей к крещению не может заменить личную веру подростка. Не определены сроки, допуск или процедура крещения.
+5. Исправлен сохранившийся адресный сбой в извинении: обращённому к потерпевшему «Прости…» теперь соответствует **«ты сам напросился»**, а не «он сам напросился».
+6. Двухчастная мысль «до: пустяк / после: не простят» получила разные последствия: первая ведёт к плохому поступку, вторая удерживает от обращения к Богу. Прежнее «обе оставляют на месте» было логически некорректно.
+7. Убран смежный повтор инструкции «первый взрослый не помог — ищи другого» перед safety-врезкой: теперь в прозе — один неудачный разговор не означает, что никто не услышит; конкретная рекомендация искать другого безопасного взрослого сохранена **внутри safety-врезки**.
+
+**Не переносить из банка механически:**
+- Половина предлагаемой «хирургии W39» уже реализована в W40–W44: корректная молитва Пс.85:11 с мостиком, приватность ≠ обман, личная вера/служение/крещение, устранение ошибочной инструкции удалить угрозы, один проход Лк.15 и уменьшение лексических повторов. Не возвращать прежний text snapshot или PDF.
+- **1 Пет. 3:21:** Синодальный действительно имеет «обещание Богу доброй совести», но контекст прямо включает **«спасает воскресением Иисуса Христа»** и противопоставляет внешнему омовению. Значение `ἐπερώτημα` («обещание»/«обращение с просьбой») обсуждается в литературе; запрещено превращать стих в плоскую формулу «подросток с нечистой совестью не имеет права креститься» или предписывать раскрыть все тайны до даты крещения. Проверка: https://azbyka.org/biblia/?1Pet.3%3A21=&r= ; https://tips.translation.bible/tip_term/translation-commentary-on-1-peter-321/ ; https://doi.org/10.1093/jts/flw085 ; 1689 гл.29: https://baptistconfession.org/29 .
+- **Притч. 29:25:** в Синодальном вторая часть — «а надеющийся на Господа будет безопасен». Не добавлять как безоговорочное обещание физической неприкосновенности подростку, которого травят; действующая короткая дословная цитата достаточна: https://azbyka.org/biblia/?Prov.29%3A25=&r= .
+- **Ин. 21:21–22** — разговор о судьбе другого ученика, не прямая «разоблачающая» цитата о лицемерии ровесников. Для короткого письма сохраняется Иак.3–4 и Лк.15, без нового proof-texting.
+- Истории «ровесник на крещении тайно лжёт», «все церковные друзья прикрывают друг друга», «если не возразил — ты соучастник», «когда креститься скажет пастор», «сор из избы не выносят» **не превращать в универсальный диагноз, регламент разглашения или обвинение**. Насилие/травля/шантаж имеют отдельные безопасностные маршруты: защита пострадавшего выше церковной репутации.
+- Не добавлять список В1–В9+К1–К9 целиком, новые H2, анкету на веру, новых источниковых чисел или формальное «докажи духовную пригодность». Кандидаты для **другого материала серии**: давление во время подготовки к крещению, границы подросткового служения, доверие церковной молодёжи, конфиденциальность несовершеннолетнего; это не доказанные пробелы именно письма.
+
+**Зафиксирован читатель:** прежде всего подросток, которому знакома верующая семья/церковная среда; **не подразумеваются** ни личная вера, ни крещение, ни обязательное посещение церкви, ни безопасность родителей. Нецерковный подросток тоже должен понимать письмо. Эта аудитория не является набором «типов», каждому из которых автор определяет спасение.
+
+**Publication boundary:** после MDX-волн — повторная exact-head CI/readback; `draft:true/noindex:true/contentStatus:draft` неизменны, route+card+metadata/search/sitemap принадлежат будущему согласованному интегратору #2368. «Источники и сверка» (S11) и реальная mobile/desktop browser review остаются отдельными gate. Никакого merge/deploy или публикации из авторского PR.
+
+## W44 — граница семейной веры, личного исповедания и церковной активности (24.11.2026)
+
+**Подтверждённый редакционный пробел:** прежнее письмо рисовало воскресную церковную среду, но практически не различало подростка, который ходит на собрания с верующими родителями без собственного исповедания, подростка, ищущего веру/размышляющего о крещении, и лично верующего (возможно, уже крещённого и участвующего в служении), который боится открыть реальную борьбу. **Нельзя выводить спасение, лицемерие или отсутствие веры из одной внешней активности, сомнения либо факта крещения.**
+
+**Исправление в существующем авторском MDX:** commit `17da567860b325b02b8bac322c7bd41bd7a31572`, одна дополнительная живая микросцена (69 слов) в разделе `Когда тебя считают «хорошим»`, после страха разрушить родительский образ. Без новой рубрики, опросника, теста на обращение, обязательного срока крещения или читательских 70 источников. Основная тема не меняется: ложь, страх похвалы и личное обращение к Христу. Не редактировались route/manifest/Reader/System.
+
+**Доказательная и исповедальная граница:**
+- Pew Research Center, `U.S. Teens Take After Their Parents Religiously` (2020; N=1 811 teen-parent pairs), различает посещение собраний, личную веру, желание самого подростка и влияние родителей; США и разнородные конфессии — **не** российская репрезентативная выборка: https://www.pewresearch.org/religion/2020/09/10/u-s-teens-take-after-their-parents-religiously-attend-services-together-and-enjoy-family-rituals/
+- Hendricks et al. (2025), longitudinal N=1 391 parent-child dyads: деидентификация от семейной религии может сопровождаться конфликтом и снижением воспринимаемой теплоты, **не** доказательство небезопасности конкретной семьи и не тождество сомнений/обмана: https://pmc.ncbi.nlm.nih.gov/articles/PMC12425472/
+- Второе Лондонское баптистское исповедание (1689), гл. 29 §2: крещение связано с действительным исповеданием покаяния, веры и послушания Христу. Не превращать его в меру родительского одобрения или приз за безошибочность: https://baptistconfession.org/29
+- Родственная статья `podrostok-za-kadrom-roditelyam-posle-razoblacheniya.mdx` уже отдельно объясняет, что благочестивый дом не передаёт возрождение автоматически. Новая вставка не должна дублировать её богословскую лекцию в письме подростку.
+
+**Отклонено:** приписывать всем церковным детям притворство; объявлять сомнения отказом от Христа; обещать, что крещение гарантирует спасение, либо требовать крещения до самостоятельного исповедания; измерять веру числом посещений/служений. Не подменять разговор о конкретной добровольной лжи «тестом, верующий ли ты». Фактическая проверка CI нового HEAD и читаемости рендера — отдельные gates; `draft:true/noindex:true`, запрет публичного route, S11 sources gate и координация #2368 сохранены.
+
+## W42 — редакционная шлифовка логики, безопасности и библейского применения (24.11.2026)
+
+**Источник истины:** авторский MDX этого PR; содержательная правка `88f874de7e31075220d3bc68fb7812c2e9bfad6c`. Применены действующие `AGENTS.md`, `AGENTS-REFERENCE.md`, `ARTICLE-STANDARD-CHARTER.md` (S1–S54), `EDITORIAL-SOURCE-POLICY.md`, `CONTENT-QUALITY-STANDARD.md` и ограничения W34–W41. Это **редакция существующей статьи**, не новый сценарий, не расширение серии и не разрешение на публикацию.
+
+**Сделано в MDX:**
+1. Два соседних фрагмента о негласном давлении друзей сведены в один причинный ход: право на дружбу → страх быть исключённым → молчаливое согласие с травлей. Страх самому оказаться следующей жертвой признан реальным; подростку не предписано в одиночку выступать против опасной компании. Сохранено неудобное, но важное наблюдение: компания всё ещё может нравиться.
+2. Раздел `«Пока никто не знает»` уточнён до `«Если обман не раскрылся»`. Внутренний эксперимент говорит об **отсутствии разоблачения**, а не об отсутствии пострадавшего; в школьной сцене именно одноклассник уже видел унизительные слова. Исправлено прежнее смысловое трение `«никто не знает»` / `«он всё прочитал»`.
+3. Тяжёлый абзац о страхе признания разделён: реакция семьи и риск разглашения в общине — разные вещи. Разговор о конфиденциальности предлагается **только с человеком, рядом с которым безопасно**, без обещания абсолютной тайны.
+4. Уточнено применение `Рим. 8:13–15`: вместо технического `«приглашение и обещание — не одно и то же»` прямо сказано об усыновлении **принадлежащих Христу** и даре Духа; никаких автоматических гарантий прощения/усыновления для любого читателя.
+5. Safety-абзац разделён на две читаемые части: отдельная защита пострадавшего и срочная помощь при мыслях о самоповреждении. Советы сохранить доказательства угроз, не пересылать интимные изображения, не платить шантажисту и искать безопасного взрослого не ослаблены.
+
+**Проверка редакционного принципа:** не добавлены новые психологические диагнозы, нейрообъяснения «плохого мозга», обязательная исповедь родителям, дополнительная притча или новая программа самоанализа. Умолчание о личном не приравнено ко лжи; внешняя вежливость взрослых не оправдывает травлю. В статье всё ещё ровно пять H2, две действующие внутренние ссылки, прежний H1/title и `draft:true / noindex:true / contentStatus:draft`.
+
+**Открыто перед публикацией:** (а) по S11 Хартии отдельно согласовать компактный **reader-facing «Источники и сверка»** без перечня всех 68 исследований и без разрушения эмоционального финала; `sourcesRequired:false` в черновике не отменяет публикационного редакционного стандарта; (б) заменить черновые `publishedAt/updatedAt=2026-11-23` на даты реальной редакции/публикации только в согласованной release-транзакции; (в) пройти человеческий reading test с подростковой аудиторией/редактором, фактический mobile/desktop browser preview и exact-head CI. Сохранить source-only ownership до отдельного решения интегратора #2368 и page-ownership owners. Не создавать публичный URL, карточку, 404, sitemap/search запись или новый шаг Reader из этого PR.
+
+## W41b — церковная община: не обвинять, но проговорить границу доверия
+
+- MDX `d9b830bfb0c38f75d46044fe5baeb3c85a36596b`: одна короткая читательская строка о возможном страхе, что семейное признание без согласования будет передано кому-то ещё в общине. Это **ожидаемый риск в голове читателя**, а не утверждение, что конкретные родители/пасторы распространят тайну.
+- **Три дополнительных ссылки к основному реестру 65 (итого 68 разных исследовательских/официальных страниц):**
+  - [Desmond (2019), Secrets and Lies: Adolescent Religiosity and Concealing Information from Parents](https://www.mdpi.com/2077-1444/10/2/132) — открытый обзор аннотации: религиозная вовлечённость ассоциирована с меньшей ложью и скрытностью в исследованной выборке, *не* доказательство автоматической честности каждого церковного подростка.
+  - [Spirituality and Religious Coping in African American Youth With Depressive Illness](https://pmc.ncbi.nlm.nih.gov/articles/PMC4612492/) — качественные интервью: часть подростков боялась религиозного осуждения, часть ценила поддержку доверенных взрослых в общине; клиническая/культурная выборка, **не** переносить автоматически на всех.
+  - [Hendricks et al., Religious Deidentification and Parental Sanctification](https://pmc.ncbi.nlm.nih.gov/articles/PMC12425472/) — лонгитюд N=1 391 пар родитель–подросток: при расхождении в вере меняются конфликт и воспринимаемая теплота; **сомнение или перемена религиозной позиции не равны моральному обману**.
+- Остальное W41 прежнее: не публиковать, не нарушать `draft/noindex`, перед релизом сделать exact-head CI и браузерную приёмку. Отдельно от обличения **поступков** держать вопросы веры, болезни, принуждение и безопасность.
+
+## W41 — обзор 65 источников и внедрение только 5 микронаблюдений (не психологические диагнозы)
+
+**Объём и метод:** отобрано 65 **различных** ссылок из результатов исследовательского поиска: 30 об отношениях с родителями и скрытности, 16 о сверстниках/онлайне, 13 о стыде и помощи, 6 официальных источников безопасности. Уровни: **A** — просмотр библиографической карточки/аннотации/фрагмента, не заявляется прочтение платного полного текста; **F** — изучен доступный развёрнутый первичный текст/аннотация с методологией; **G** — официальное практическое руководство. **Это тематический обзор и редакционный отбор, не систематический метаанализ, не 65 независимых экспериментальных подтверждений.** Корреляции не превращать в причинность, лабораторные эффекты группы — в обязательные мотивы каждого подростка.
+
+**Содержательный коммит W41:** `11174e700f06b8af7fd346c291d72a180951a0e5`; 5 адресных редактирований, 1987→~2065 слов, пять прежних H2.
+1. **Компания может не приказывать:** иногда подросток *предполагает* риск отвержения за отказ поддержать травлю. Опора: Gardner–Steinberg; Chein et al.; метаанализ влияния сверстников; Jungert et al. о защитниках.
+2. **Страх разоблачения может заслонить вред жертве:** в рассказе о чате дана возможная внутренняя перемена фокуса «найдут переписку» vs. «её уже увидел пострадавший». Это художественная иллюстрация морального самоустранения, **не установленная универсальная последовательность**.
+3. **Похвала за «без проблем» как возможный источник давления:** не утверждать, что родители реально любят условно. Опора: Assor et al. о переживаемом условном одобрении.
+4. **Честное признание могут припомнить в следующем конфликте:** страх отдалённых последствий отделён от факта, что родитель неизбежно так поступит. Опора: Tilton-Weaver et al. 2010, 982 подростка, 3 волны, семейный ответ и дальнейшее раскрытие; подростку не назначать обязательное признание опасному взрослому.
+5. **Стыд «я весь плохой» vs конкретный поступок:** сохранён приоритет покаяния, исправления вреда и милости во Христе; не утверждать, что стыд, слёзы или постоянная тревога всегда доказывают ожесточение. Опора: Tangney et al.; Stuewig et al.; ограничение из обзора pediatric scrupulosity.
+
+**Не внедрять по итогам 65 ссылок:** формулу «секретность вызывает депрессию» как однозначный закон: Dutch longitudinal Frijns et al. и urban US Smetana/Laird дают разные направленности, поэтому причинность зависит от выборки/модели. Не равнять право не раскрывать медицинский/личный факт добровольному обману. Не классифицировать богословские сомнения как «дым». Не использовать нейроисследования как оправдание жестокости «мозг подростка виноват». Не назначать постоянные тесты нравственной чистоты подростку с навязчивыми религиозными опасениями. Не обещать секретности там, где есть угрозы/насилие. Регистр ниже содержит источники для агентов, **не для размещения 65 ссылок в читательской статье**.
+
+### Регистр просмотренных исследований и рекомендаций
+
+**Родители, автономия, секретность — 30:**
+1. [Stattin & Kerr — Parental Monitoring: A Reinterpretation](https://pubmed.ncbi.nlm.nih.gov/11016567/) — **A**; Знания родителей сильнее связаны с тем, что дети рассказывают сами, чем с надзором.
+2. [Kerr & Stattin — What Parents Know](https://pubmed.ncbi.nlm.nih.gov/10830980/) — **A**; Проверка разницы между слежкой и добровольным раскрытием.
+3. [Smetana et al. — Disclosure and Secrecy](https://pubmed.ncbi.nlm.nih.gov/16460534/) — **A**; Нормы родительского права знать различаются по темам.
+4. [Smetana et al. — Activities in Different Domains](https://pubmed.ncbi.nlm.nih.gov/18708247/) — **A**; Личное, дружеское и рискованное не образуют одну категорию.
+5. [Keijsers & Poulin — Developmental Changes](https://pubmed.ncbi.nlm.nih.gov/23477535/) — **A**; С возрастом меняется объём раскрытия и секретов.
+6. [Tilton-Weaver et al. — Open Up or Close Down](https://pubmed.ncbi.nlm.nih.gov/19716171/) — **F**; 982 подростка, 3 волны: ответ родителя влияет на дальнейшую открытость.
+7. [Tilton-Weaver — Information Management](https://pubmed.ncbi.nlm.nih.gov/24002679/) — **A**; Причины скрытности зависят от поддержки и правил.
+8. [Marshall et al. — Information Management](https://pubmed.ncbi.nlm.nih.gov/16154632/) — **A**; Подростки балансируют самостоятельность и сохранение связи с родителями.
+9. [Cumsille et al. — Shading the Truth](https://pubmed.ncbi.nlm.nih.gov/19926123/) — **A**; Частичное раскрытие, избегание и ложь — разные стратегии.
+10. [Laird et al. — Concealing Misbehavior](https://pubmed.ncbi.nlm.nih.gov/19570571/) — **A**; Сокрытие проступка и социальный контекст; без универсального вывода.
+11. [Authority, Autonomy, and Deception](https://pubmed.ncbi.nlm.nih.gov/29152872/) — **A**; Оценка допустимости родительского контроля зависит от области жизни.
+12. [Frijns et al. — Disclosure–Adjustment Link](https://pubmed.ncbi.nlm.nih.gov/19573902/) — **A**; Различать секретность и отсутствие добровольных рассказов.
+13. [Keijsers et al. — Gender Differences in Secrecy](https://pubmed.ncbi.nlm.nih.gov/20053026/) — **A**; Лонгитюдные различия с возрастом и семейными отношениями.
+14. [Keeping Secrets from Parents: Daily Variations](https://pubmed.ncbi.nlm.nih.gov/19446872/) — **A**; Дневниковые данные о ежедневной динамике сокрытия.
+15. [Disclosure, Secrecy and Lying: Latent Classes](https://pmc.ncbi.nlm.nih.gov/articles/PMC9090863/) — **A**; 332 подростка: различаются сочетания раскрытия, секретов и лжи.
+16. [Voluntariness, Timing and Consistency](https://pubmed.ncbi.nlm.nih.gov/37859549/) — **A**; Добровольность и момент признания — разные измерения.
+17. [I Didn't Want To, But Then I Told](https://pubmed.ncbi.nlm.nih.gov/30507221/) — **A**; Рассказы подростков о трудных признаниях.
+18. [Mother-Adolescent Monitoring Dynamics](https://pubmed.ncbi.nlm.nih.gov/24931554/) — **A**; Родительская вовлечённость работает по-разному при разном признании авторитета.
+19. [Eight-Country Longitudinal Disclosure Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC12894135/) — **A**; Нельзя автоматически приравнивать расспросы к вредному контролю.
+20. [Family Emotional Climate and Communication](https://pmc.ncbi.nlm.nih.gov/articles/PMC7826314/) — **A**; Близость и ощущение чрезмерного контроля меняют взаимосвязи.
+21. [Conditional Positive Regard and Shame](https://pubmed.ncbi.nlm.nih.gov/22078668/) — **A**; Условная похвала может усиливать стыд после неудачи.
+22. [Emotional Costs of Parents' Conditional Regard](https://pubmed.ncbi.nlm.nih.gov/14686884/) — **A**; Цена одобрения, переживаемого как условное.
+23. [Autonomy Support and Honesty](https://pubmed.ncbi.nlm.nih.gov/24636683/) — **A**; Поддержка автономии связана с ценностью правдивости.
+24. [Beliefs About Parents' Right to Know](https://doi.org/10.1111/jora.12194) — **A**; Различия между личными и рискованными вопросами.
+25. [Parental Responses and Guilt Induction (2026)](https://pubmed.ncbi.nlm.nih.gov/42484288/) — **A**; Роль реакции на признание и различия в вине за поступок / стыде.
+26. [Secretive Monitoring and Lying (2026)](https://pubmed.ncbi.nlm.nih.gov/42489010/) — **A**; Подростки оценивают даже родительский обман не единообразно.
+27. [Configurations of Disclosure and Concealment (2026)](https://pmc.ncbi.nlm.nih.gov/articles/PMC13440715/) — **A**; Профили мотивации: приватность, санкции, стыд.
+28. [Parents' Judgments About Lying to Adolescents](https://pubmed.ncbi.nlm.nih.gov/31006944/) — **A**; Двойные стандарты взрослых и детей требуют контекста.
+29. [What Parents Don't Know: Urban Adolescents](https://pmc.ncbi.nlm.nih.gov/articles/PMC5116251/) — **F**; В этой выборке депрессивные симптомы предсказывали дальнейшую секретность.
+30. [Privacy Invasion and Communication Theories](https://doi.org/10.1017/9781009418652.003) — **A**; Вторжение в частную жизнь и информационные границы.
+
+**Сверстники и кибертравля — 16:**
+31. [Gardner & Steinberg — Peer Influence on Risk Taking](https://pubmed.ncbi.nlm.nih.gov/16060809/) — **A**; Эксперимент: присутствие сверстников способно менять оценку риска.
+32. [Chein et al. — Peers Increase Risk Taking](https://pubmed.ncbi.nlm.nih.gov/21499511/) — **A**; Потенциальный механизм вознаграждения при сверстниках.
+33. [Meta-Analysis of Susceptibility to Peer Influence (2026)](https://onlinelibrary.wiley.com/doi/10.1002/jad.70214) — **A**; Влияние различается по методам; литература перекошена к рискованию.
+34. [Peers Increase Risk Taking with Known Probabilities](https://pmc.ncbi.nlm.nih.gov/articles/PMC4305434/) — **A**; Реакция сверстников влияет даже при известном риске.
+35. [Age Differences in Resistance to Peer Influence](https://pmc.ncbi.nlm.nih.gov/articles/PMC2779518/) — **A**; Восприимчивость к ровесникам зависит от возраста.
+36. [Functions of Peer Influence — Synthesis](https://onlinelibrary.wiley.com/doi/full/10.1111/jora.12606) — **A**; Подстройка под компанию не всегда происходит через прямой приказ.
+37. [Suler — Online Disinhibition Effect](https://pubmed.ncbi.nlm.nih.gov/15257832/) — **A**; Шесть механизмов растормаживания, не только отсутствие лица.
+38. [Kowalski et al. — Cyberbullying Meta-analysis](https://pubmed.ncbi.nlm.nih.gov/24512111/) — **A**; Обзор причин и последствий кибертравли.
+39. [Moral Disengagement and Bullying Roles](https://pubmed.ncbi.nlm.nih.gov/30900277/) — **A**; Отличать агрессора, защитника, безучастного свидетеля.
+40. [Moral Disengagement and Cyberbullying — Meta](https://pubmed.ncbi.nlm.nih.gov/34916984/) — **A**; Связь оправданий и киберагрессии, корреляция, не диагноз.
+41. [Early Adolescents' Motivations to Defend Victims](https://pmc.ncbi.nlm.nih.gov/articles/PMC9324175/) — **F**; 460 подростков: автономная мотивация связана с защитой жертв.
+42. [Fear of Being Singled Out in Bullying](https://www.tandfonline.com/doi/full/10.1080/01425692.2020.1789846) — **A**; Свидетели боятся стать следующей мишенью.
+43. [Determinants of Cyberbullying Bystander Behavior](https://pubmed.ncbi.nlm.nih.gov/24359305/) — **A**; Влияние морального оправдания и положения в группе.
+44. [Bystander Intervention: Systematic Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC13612459/) — **A**; Факторы вмешательства свидетелей, без приказа стать героем.
+45. [Internet Impropriety and Moral Identity](https://pubmed.ncbi.nlm.nih.gov/36344780/) — **A**; Моральная идентичность и онлайн-поступки.
+46. [Peer Influences on Adolescent Decision Making](https://pmc.ncbi.nlm.nih.gov/articles/PMC4276317/) — **A**; Критическая рамка: экспериментальная задача не равна всей жизни.
+
+**Стыд, религия, просьба о помощи — 13:**
+47. [Guilt–Shame Proneness in Early Adolescence](https://pubmed.ncbi.nlm.nih.gov/23895166/) — **A**; Стыд за всё «я» и вина за действие связаны с разными реакциями.
+48. [Shame and Guilt Predict Later Risk Behavior](https://pubmed.ncbi.nlm.nih.gov/24842762/) — **A**; Лонгитюд: разные связи с рискованным поведением.
+49. [Shame/Guilt and Responses to Anger](https://pubmed.ncbi.nlm.nih.gov/8636899/) — **A**; Стыд связан с отстранением и агрессией, не сводить к раскаянию.
+50. [Pediatric Scrupulosity Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC12025576/) — **F**; Морально-религиозная тревога не равна реальной нравственной вине.
+51. [Religious Doubts and Mental Health](https://pubmed.ncbi.nlm.nih.gov/20382416/) — **A**; Религиозные сомнения сами по себе не доказывают намеренного зла.
+52. [Young People's Mental Health Help-Seeking Review](https://pubmed.ncbi.nlm.nih.gov/31965309/) — **F**; Обзор 53 исследований: стыд, доверие и секретность как барьеры.
+53. [Adolescents' Disclosure of Mental Illness to Parents](https://pubmed.ncbi.nlm.nih.gov/33106039/) — **A**; Скрываемое состояние здоровья не равняется добровольной лжи.
+54. [Help-Seeking Systematic Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC7291482/) — **A**; Важна фигура одного заслуживающего доверия взрослого.
+55. [Lie-Telling, Secrecy and Depressive Symptoms](https://pubmed.ncbi.nlm.nih.gov/31933060/) — **A**; Продольные связи; без причинных диагнозов.
+56. [Keeping a Secret and Psychosocial Adjustment](https://journals.sagepub.com/doi/10.1177/0165025408098020) — **A**; Один личный секрет не то же, что устойчивая стратегия обмана.
+57. [European Adolescent Mental Health Focus Groups (2026)](https://link.springer.com/article/10.1007/s00787-026-03216-y) — **A**; Страх, что взрослые не воспримут всерьёз.
+58. [Qualitative Interviews on Anxiety Help-Seeking](https://link.springer.com/article/10.1007/s00787-020-01707-0) — **A**; Стыд и зависимость от взрослых как барьеры.
+59. [Parents' Experiences of Adolescent Depression Review](https://link.springer.com/article/10.1186/s40359-025-03923-2) — **A**; Семейный страх стигмы без универсального диагноза подростку.
+
+**Официальная безопасность — 6:**
+60. [StopBullying.gov — Report Cyberbullying](https://www.stopbullying.gov/cyberbullying/how-to-report) — **G**; Не пересылать травлю; сохранять доказательства.
+61. [NCMEC — Sextortion](https://www.ncmec.org/theissues/sextortion) — **G**; Не платить; блокировать, но не удалять сообщения/профиль.
+62. [NCMEC — Take It Down](https://takeitdown.ncmec.org/) — **G**; Не пересылать и не скачивать изображения ради обращения за помощью.
+63. [AAP — Adolescent Confidentiality Policy (2024)](https://publications.aap.org/pediatrics/article/153/5/e2024066326/197124/) — **G**; Конфиденциальность имеет пределы и зависит от ситуации/юрисдикции.
+64. [AAP — Confidentiality Technical Report (2024)](https://publications.aap.org/pediatrics/article/153/5/e2024066327/197125/) — **G**; Личное пространство и безопасность требуют раздельного обсуждения.
+65. [FBI — Sextortion](https://www.fbi.gov/how-we-can-help-you/common-frauds-and-scams/sextortion) — **G**; Угрозы и шантаж требуют помощи, а не наказания жертвы.
+
+**Редакторская граница:** W41 не является допуском к публикации. Title/H1 = `Пока все думают, что у тебя всё «нормально»`, `draft: true`, `noindex: true`, source-only PR #2377, интеграцию и общие файлы не трогать. Проверки на точном SHA записывать отдельно.
+
+## W40 — независимая вычитка W39, текстовые швы, Евангелие и сохранение доказательств
+
+- Источник: входящий составной редакторский разбор `Вставленный текст(20261123-202323).txt`, ~493 строки с тремя независимыми проходами, рейтингами и патчами. **Оценки 8,8/10, 6,5/10, «после 12 правок будет 10/10» — мнения редакторов, не результаты формального QA**. Не превращать их в публикационный критерий.
+- MDX W40: `d937b74c69b0892bcc6927b7006f72e2f33d9831`, `07cfe0767f54675a5b93d95d2f7fc2ca659c4fdb`, `1ac157d965062d5d20c2db4ab3cd3a66a1873a04`, `488e14b0cc9baa7cfe4049451feb3f11d9ec02fc` (гендерно-нейтральная прямая речь); суммарно 32 адресных исправления, около 1987 слов, прежние пять H2, без нового маршрута.
+- **Исправлено:** композиционный дубль о старшем сыне Лк. 15; три страха вместо «оба»; смысловая инверсия «не поддержать шутку, даже если никто с тобой не смеётся»; избыточные страховочные обороты, мета-описание «эта статья — о…»; обрыв перехода после вопроса «что произошло, если никто не узнает»; повторение взрослой неправоты; ход от «хвалят не меня» к Евангелию; редакторский конспект о Духе усыновления; разделены два значения коридора (школьный/домашний); половая нейтральность непосредственного обращения, где возможно.
+- **Экзегеза:** `Ин. 16:27` удалён из статьи (его обращение к верующим ученикам нельзя без разбора делать обещанием каждому читателю), вместо него `Рим. 5:8` в проверенном Синодальном; `Рим. 8:15` процитирован как обращение к принадлежащим Христу и пояснён; `Рим. 8:13` связан с действием Духа; `Лк. 15:20,28–32` только факты текста — **не** утверждать, что отец знал точное место жительства сына, точные траты, собранную на него толпу, подол одежды и подробности речи по дороге. `Пс. 85:11` оставить по Синодальному, «объедини сердце» может появиться только при отдельной проверке оригинала.
+- **Практика:** не требовать от подростка полного откровения родителям, если дома опасно; честная частичная речь лучше замаскированной неполноты; поддержка одного безопасного человека после выхода из компании; разговор без действий не устраняет вред; непреложны границы секретности для взрослого; никаких гарантий эмоционального облегчения или немедленного восстановления доверия.
+- **Критическое исправление по безопасности:** при травле, угрозах, шантаже **не удалять механически сообщения**, которые могут быть свидетельствами. Не распространять интимные изображения; показать угрозы безопасному взрослому, при непосредственной опасности — экстренная помощь. В safety-блоке добавлена одна фраза о срочной помощи при мыслях о причинении себе вреда. Это не приглашение к самоанализу «достаточно ли я сокрушён».
+- **Отвергнуто из предложенных патчей:** «отец знал, где сын и как растратил» (недоказанная нарративная деталь); «проверить страх любви только признанием родителям» (небезопасно); фиктивное обещание, что конкретный наставник свяжется в среду; формула «Бог уже любит и простил каждого читателя» без покаяния и веры; автоматическое публичное обнародование переписок или интимных материалов; смена заголовка на «По ту сторону экрана…»; второй длинный сюжет-параллель.
+- **Публикационные границы:** `title`=`h1` «Пока все думают, что у тебя всё «нормально»» без `|`; `draft:true/noindex:true/contentStatus:draft`, source-only PR #2377; вся общая маршрутная интеграция отдельно у владельца #2368. Ранее выданные PDF W39 — **снимок прошлого текста, после W40 они не актуальны**. Не называть текущую версию полностью принятой без exact-head CI, браузерного рендера и редакторского допуска.
+- Тексты Писания для проверки: https://www.bible-center.ru/ru/bibletext/synnew_ru/ro/5%3A8-10 , https://www.bible-center.ru/ru/bibletext/synnew_ru/ro/8%3A12-16 , https://www.biblegateway.com/passage/?search=%D0%9E%D1%82+%D0%9B%D1%83%D0%BA%D0%B8+15%3A11-32&version=RUSV .
+
+## W39 — микро-механика ложного «нормально» без психологических диагнозов
+
+- Источник: 7 наблюдений пользователя о семейной холодности, взрослении, скрытом желании раскрытия, чатах, сомнениях, компромате и подмене действия разговором; дополнительный `Вставленный текст(20261123-192231).txt` (190 строк, «Хирургический банк», A–L). **Статус идей — литературно-пастырские гипотезы, не клинические и не научные закономерности.**
+- MDX commit `e53a4a69972f96830b36ded33418541ba196114b`: 7 точечных замен, **1883→1990 слов**, 5 прежних разделов. Добавлено: первая успешно прошедшая ложь и необходимость затем поддерживать прежнее объяснение; реакция компании вместо лица пострадавшего на экране; активный глагол «я сделал» вместо «так получилось» (только для **добровольного** действия); школьный обход другого коридора как возможное поведение, а не тест на наличие совести; страх потерять самостоятельность после признания; облегчение после разговора ещё не отменяет ущерб; честно признать частичность раскрытия без давления выдать всё небезопасному взрослому.
+- **Защита подростка:** не утверждать, что раздражение к маме всегда подсознательно создаётся специально ради удобства лжи; не говорить, что забытый пароль или рискованный жест = скрытое желание быть пойманным; не объявлять вопросы о Боге «дымовой завесой» греха, не превращать заботу о матери в ложь без контекста. Нельзя требовать признания лицу, способному причинить вред, и нельзя сводить тревожность, зависимость, травму или насилие к слабой совести.
+- Цифровой парадокс: отсутствие видимых невербальных реакций адресата при текстовом общении — возможная составляющая online disinhibition, не утверждать «Бог устроил совесть срабатывать только через глаза». Обзор: Suler (2004), `The Online Disinhibition Effect`, https://pubmed.ncbi.nlm.nih.gov/15257832/ .
+- `Еф. 4:15` в **Синодальном**: `«но истинною любовью все возращали в Того...»`, а не дословное `«говорите истину в любви»`; `Еф. 4:25`: `«говорите истину каждый ближнему своему»`. Первичный текст: https://azbyka.org/biblia/?Eph.4%3A15=&r= и https://bible.by/synu/56/4/ . Неверную кавычечную цитату не вводить в MDX.
+- `Мф. 21:28–31` по Синодальному: первый сначала `«не хочу»`, затем пошёл; другой `«иду, государь»`, но не пошёл. Сюжет хорошо связан с темой слов и дела, однако **не добавлять вторую притчу** при уже центральной Лк.15 без отдельной оценки плотности; https://www.bible-center.ru/ru/bibletext/synnew_ru/mt/21%3A28-31 .
+- Актуальная граница: `title` и `h1` `Пока все думают, что у тебя всё «нормально»`; `draft: true` / `noindex: true`; только author-owned MDX + этот handoff. Интеграция и публикация — отдельный PR #2368 после CI/browser gates.
+
+## W38 — хирургическая выборка из пуританского редакционного банка
+
+- Исходный пакет `Вставленный текст(20261123-190954).txt`: 716 строк, ~13k слов, составные разделы «Золотые мысли пуритан без пуритан», длинный AI-черновик и отдельный банк психологических наблюдений. **Не заменять текущую статью длинной версией и не переносить все советы разом.**
+- Содержательный коммит `81b2e0142955a7fa49e5e437107853aa32a051e7`: шесть точечных правок, исходный текст 1750→~1883 слова, пять заголовков без изменения. Добавлено: (1) две искренние, но конфликтующие стороны — не автоматический ярлык лицемера; (2) обман специально выбранными правдивыми деталями, не превращая всякое умолчание в ложь; (3) страх огорчить маму ≠ страх потерять её одобрение (оба могут смешиваться, особенно если дома небезопасно); (4) Отец **сам** выходит к сыновьям, `Ин. 16:27` относится к ученикам Христа, не универсальное обещание любой аудитории; (5) «до поступка пустяк, после невозможно простить», с `Ин. 6:37` без гарантии восстановления доверия родителей; (6) признание без оправдательного «но» в истории с травлей.
+- Исторические / авторские связи проверять до публикации в научном аппарате: Брукс, `Precious Remedies Against Satan's Devices` (малость греха, доступность покаяния в искушении и последующее отчаяние); Чалмерс `The Expulsive Power of a New Affection` (**XIX век, не пуританин**). Пересказ не является кавычечной цитатой. https://www.uecf.net/books/the-works-of-thomas-brooks/chapter8.html ; https://www.unionpublishing.org/resource/the-expulsive-power-of-a-new-affection/
+- Не внедрены: аллегория Буньяна «Боковая тропа/Замок Отчаяния» (вырастит ненужную вторую историю), диагностика психологического состояния по тревоге/совести, жестокая формула «лицемер тот, кто бережёт всё скрываемое», механизм автоматического прощения для всех читателей, «двоедушие» по `Иак.1:8` без контекста, образ собаки и кости как сравнение с подростком, жёсткая формула «ты только тот, кто ночью», срок раскрытия тайны без проверки домашней безопасности.
+- Ключевое ограничение: оставлять `title` = `h1` `Пока все думают, что у тебя всё «нормально»`; `draft`, `noindex`; авторский source-only PR #2377, никаких публикационных маршрутов и интеграционных файлов. CI/браузерную приёмку фиксировать отдельно по exact-head.
+
+## W37 — «двоедушие» по контексту Писания
+
+- В `af50b7f403ee9ba65d2be78951f716d1f79b9da0` точечно добавлены два небольших места в авторский MDX (примерно 1750 слов всего), без новой рубрики или подмены названия.
+- `Иак. 3:9–10`: благословение Бога и унижение человека, сотворённого по Его подобию, исходящие из одного языка; в статье дословная короткая цитата из 3:10, конкретное приложение к церковной и чат-жизни.
+- `Иак. 4:8`: дословное «исправьте сердца, двоедушные»; **прямой контекст 4:1–10 — конфликт желаний, дружба с миром и призыв приблизиться к Богу**, а не право родителей читать все переписки. Приватность, болезнь, сомнения, уязвимость и чужое принуждение не равны духовному двоедушию.
+- `Пс. 85:11`: дословное «утверди сердце мое в страхе имени Твоего»; дополнительный ход к положительной молитве вместо одного только обличения. Русский Синодальный перевод сверен.
+- `Иак. 1:8` **не цитировать как доказательство двуличного подростка**: там ближайший контекст — сомневающаяся молитва о мудрости. Пс. 11:3, 3 Цар. 18:21 и Ис. 29:13 годятся как редакторский резерв, но не загружать ими короткое письмо.
+- Проверенные первичные тексты: https://www.bible-center.ru/ru/bibletext/synnew_ru/jas/3%3A9-12 ; https://www.bible-center.ru/ru/bibletext/synnew_ru/jas/4%3A1-10 ; https://psalmi.ru/viewchapter.php?chapterbook=85&idbook=25 .
+- До release-approval сохранять: `draft: true`, `noindex: true`, source-only diff в PR #2377, без вмешательства в интеграционный PR #2368.
+
+## W36 — три нехватки: тайна, любовь, круговая порука; безопасность и Евангелие
+
+- Авторский MDX обновлён в `29fca5592d0cddd916d05f4ea92bf0190cfe7112` по внешнему аналитическому пакету `Вставленный текст(20261123-185238).txt`: 8 смысловых замен; около 1666 слов, всё ещё 5 разделов. Не копировать внешний ~5k-словный текст как master и не возвращать к нему коммиты целиком.
+- Усталость от сокрытия показана **как возможный опыт**, не как неизбежный симптом или клинический диагноз; без переноса `Иак. 1:8` как доказательства двух профилей в сети: прямой контекст стиха — просьба о мудрости и колебание в вере (`Иак. 1:5–8`).
+- «Хвалят не меня»: подростку может **казаться**, что его любят только за приличный образ. Не писать `«пока ты прячешься, тебя невозможно любить»`: это недоказанное и опасное отрицание настоящей любви родителей. Реакцию семьи после признания не обещать.
+- Общая тайна в компании не означает обязанности скрывать травлю или причинённый вред; при этом не клеймить вынужденное молчание запуганной жертвы как «соучастие».
+- Личное переживание, болезнь, вопрос о себе не равны сознательному причинению вреда; отдельная строка в safety-параграфе для подростка, которого травят.
+- Возражение `«уже поздно»`: добавлено без объявления отчаяния «новым видом лжи»; Ин. 6:37 говорит о приходящем ко Христу, не обещает мгновенное восстановление доверия людей.
+- Святой Дух и усыновление в `Рим. 8:13–15` — обещание для **принадлежащих Христу**, не объявлять безусловно собственностью каждого читателя. Перепроверить цитаты и по релизу.
+- Плохая реакция первого взрослого не означает, что нет других безопасных вариантов. Никаких обещаний абсолютной конфиденциальности или обязательной исповеди родителю.
+- Заголовок/H1 неизменны: `Пока все думают, что у тебя всё «нормально»` без `|`; `draft: true` и `noindex: true`; пересборка и browser-QA только в согласованной integration lane.
+
+## W35 — ирония без насмешки над уязвимым
+
+- Содержательные commits: `cf253b9f2dcbcd0b7c98ed7380d3fc5fd29e03f6` (три дозированных иронических места), `9e0caab11b81e4a4fa7838d2ecc6e5ea699a554c` (удалена повторная мораль про пострадавшего; вместо неё конкретная сцена следующего школьного дня). Объём тела ~1477 слов.
+- Ирония адресована **позиции**, не подростку: зависимость показного «сам решаю» от реакции компании; самооправдание в роли адвоката и судьи. Взрослые включены в критику той же двойной морали.
+- **Запрещать** иронию по отношению к страху родителей, насилию, шантажу, зависимостям, стыду, самоповреждению и самой личности читателя. Не дописывать «профессионального церковного ребёнка», «суперагента», «гордого наёмника», новые экскурсы в Кармил, Пс.93, Амоса, Рим.2 только для подтверждения юмора. Не обещать, что одна реплика «перерубит верёвку» давления компании.
+- Количество иронических мест — три, не увеличивать ради «остроты»; по окончании каждого нужна конкретная человеческая реальность, а не новое издевательство.
+- Точный заголовок `title` и `h1` по решению владельца: `Пока все думают, что у тебя всё «нормально»`; не менять по другим AI-переписываниям.
+
+## W34 — адресная редактура против штампов
+
+- H1 и title из одного источника: «Пока все думают, что у тебя всё „нормально“» (в статье вложенное слово оформлено русскими кавычками-ёлочками). Никакой SEO-приписки через `|`.
+- Содержательная волна: `5a0ed91cd824cef71a4ac33e869f682fdbb9e6f0`; последующая чистка от редакторских оговорок и короткий финал — `3a43447e276f0b4a416e1bf561d3bf2cb980db65`. Объём тела — около 1476 слов, пять смысловых разделов, всего 26 конкретных правок относительно предыдущей редакции.
+- Главные цели: не приписывать подростку обязательное страдание/зависимость, заменить мотивирующие афоризмы узнаваемыми деталями, разделить приватность и причинение вреда, не превращать исповедь взрослому в обязательный первый шаг, не обещать полного облегчения после признания.
+- Сохранять фактическое чтение Лк. 15 и не добавлять к истории вымышленных соседей, повторяющуюся в дороге речь или мотив наёмника как установленный факт. 1 Кор. 15:3–4 — смерть/воскресение; Рим. 6:4 — новая жизнь.
+- Навигация к серии только после заключительной эмоциональной точки; в публикационном кандидате должен быть отдельный визуально вторичный блок, без битой ссылки на unpublished route.
+
+## Контекст и редакционная граница
+
+- Исходник: `src/content/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno.mdx`.
+- Утверждённый заголовок статьи (title и H1): «Пока все думают, что у тебя всё „нормально“». Без SEO-приписки, вертикальной палочки «|» и автоматического Title Case. Это исходный редакционный заголовок, заново выбранный владельцем после независимого аудита банальностей; его не подменять заголовком «По ту сторону экрана…».
+- Письмо от второго лица непосредственно подростку; не инструкция родителям, не новый обязательный шаг Reader и не раздел взрослого цикла.
+- Вступление сразу обращается к переживаниям и реальному выбору подростка. Ни научного обзора, ни длинного предупреждения о насилии в начале.
+- Короткая оговорка о принуждении и безопасности располагается **ближе к концу**, отделяет чужое насилие от добровольной лжи и не подменяет главную тему.
+- Богословие включено в живой разговор: желание, самооправдание, покаяние и новая жизнь во Христе; минимум ссылок, без лекционного списка.
+- Пока редактирование не утверждено, `draft: true` / `noindex: true` и `contentStatus: "draft"`.
+
+## Почему маршрут вынесен из авторского PR
+
+Временная реализация существовала в коммите `bfcb840c39345ff7d59131d022d1e0d02dbf087f` (#2377):
+1. `src/pages/articles/poka-vse-dumayut-chto-u-tebya-vse-normalno/index.astro` с `ArticleLayout`, MDX и `robots="noindex, follow"`.
+2. `migration/page-ownership.json` с владельцем `astro-noindex`, статусом `build-only`.
+3. `data/route-profiles/articles-poka-vse-dumayut-chto-u-tebya-vse-normalno.json` с `surface=article`, `routeType=article`, `mdx-native`, `currentStatus=build-only`.
+4. Отдельная карточка *между hero и началом подростковой трилогии* на `src/pages/podrostok-za-kadrom/index.astro`, ограниченная `import.meta.env.DEV`.
+
+Эта версия прошла `Deploy Candidate Contract`, 22 независимые проверки и browser QA, но **правильно провалила Shared Files Guard**: `migration/page-ownership.json` занят #2300 и #2357, а лендинг подростковой серии занят #2368. Это конфликт владения **на уровне веток**, не повод менять общие guard-правила. Поэтому код интеграции из author-owned PR вынесен в этот handoff, без изменения и без потери MDX.
+
+## Требования к следующей публикационной транзакции
+
+1. Сначала принять редакцию письма, цитаты и безопасность. Нельзя считать зелёный технический CI доказательством утверждения текста.
+2. Владелец текущей интеграционной серии (#2368 или согласованный наследник) должен добавить карточку перед **подростковой трилогией I–III**, не нарушая отдельную группу **взрослых 4**. Не переносить старый целиком семишаговый лендинг из письма: в #2368 уже актуальная схема 3+4.
+3. Координатор `migration/page-ownership.json` (после согласования #2300 и #2357) одним источником истины регистрирует маршрут; его `data/route-profiles/articles-*.json` обязателен для `public-surface-registry-audit.js`.
+4. **Пока статья черновик:** маршрут может быть только `astro-noindex / build-only`, а карточка — только в DEV; production-like build должен исключать HTML и ссылку. Это можно оставить до следующей транзакции — сам MDX не делает URL публичным.
+5. **Только после редакционного одобрения:** атомарно обновить MDX draft/noindex → false, route ownership → `astro / production-dist`, профиль → `production-dist`, включить карточку в production, перевести ArticleLayout robots/index и обновить search/manifest/sitemap через принятый проектом конвейер. Ни одного промежуточного публичного 404/noindex.
+6. Для release-кандидата обязательно: `page-ownership:check`, `public-surface-registry-audit.js`, `check-route-profiles.js`, `article-qa.js`, `astro:check`, `strangler:build:production-like`, `page-ownership:dist:production-like`, `pagefind:build:dist`, `teen-series-release-contract.mjs` и browser QA на 390px/desktop и проверка отсутствия битой ссылки; полная матрица CI на точном SHA.
+7. Не нарушать 181 исторический якорь семи статей, Reader TOC, таймкоды/прогресс, правые панели, TTS, защиту публичных маршрутов и чужие writer leases.
+
+## Что уже доказано
+
+Для `bfcb840c` на отдельном PR:
+- `Deploy Candidate Contract`: 37 успешных этапов, `SUCCESS`.
+- Production-like route exclusion, Pagefind, URL, Schema, source contracts, mobile smoke, existing teen-browser gate: `PASS`.
+- `Shared Files Guard`: `FAIL` по активному перекрытию `page-ownership.json` с #2300/#2357 и лендинга с #2368. Требовалось изолировать авторскую ветку, а не ослаблять CI.
+
+Все результаты до удаления интеграционных файлов относятся к тому точному SHA; после разделения нужна новая exact-head CI проверка.
+
+## Приёмка человеком
+
+Проверить читательскую поверхность на телефоне и десктопе, фактическое первое лицо обращения, отсутствие длинных disclaimer в начале, умеренность библейских ссылок и простоту шага к правде. Текст письма нельзя автоматически объявлять окончательным только на основании успешных технических проверок.
