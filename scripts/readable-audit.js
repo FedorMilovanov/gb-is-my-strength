@@ -8,7 +8,6 @@
 const fs = require('fs');
 const path = require('path');
 const { mixedScriptHtml, assertMixedScriptContract } = require('./lib/mixed-script-tokens');
-assertMixedScriptContract();
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const { buildAuditProSourceCorpus, routeToRootHtml } = require('./lib/audit-pro-source-corpus');
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -18,6 +17,9 @@ function argValue(name, fallback) {
   return idx >= 0 ? (process.argv[idx + 1] || fallback) : fallback;
 }
 const ROOT = path.resolve(REPO_ROOT, argValue('--root', '.'));
+// The retained-source gate intentionally runs without installed packages.
+// Real HTML parser fixtures are mandatory in the built-publication gate.
+assertMixedScriptContract({ html: ROOT !== REPO_ROOT });
 const issues = [];
 function walk(dir, out = []) {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {

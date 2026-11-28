@@ -42,18 +42,19 @@ function mixedScriptHtml(html) {
   return [...results.values()];
 }
 
-function assertMixedScriptContract() {
+function assertMixedScriptContract({ html = false } = {}) {
   const bad = ['Чекy', 'hе', 'academическую', 'хюперентюнхáней', 'тe\u0301ст'];
   for (const token of bad) assert.deepEqual(mixedScriptTokens(token), [token]);
   const good = ['Чеку', 'he', 'академическую', 'хюперентюнха\u0301ней',
     'PDF-архив, 3D-карта, John Gill, ὑπερεντυγχάνει, שָׁמִיר',
     'https://example.test/Чекy'];
   for (const text of good) assert.deepEqual(mixedScriptTokens(text), []);
-  const html = '<!doctype html><meta name="description" content="Чекy"><script>const s="Чекy"</script>' +
+  if (!html) return;
+  const fixture = '<!doctype html><meta name="description" content="Чекy"><script>const s="Чекy"</script>' +
     '<p>h&#1077;</p><svg><text>Чекy</text></svg><img alt="Чекy" src="/Чекy.png">' +
     '<button aria-label="hе">PDF-архив</button><code>Чекy</code>' +
     '<a href="/Чекy">Чеку</a><p>хюперентюнха́ней</p>';
-  assert.deepEqual(mixedScriptHtml(html), [
+  assert.deepEqual(mixedScriptHtml(fixture), [
     { surface: 'meta:description', token: 'Чекy' },
     { surface: 'text', token: 'hе' },
     { surface: 'text', token: 'Чекy' },
