@@ -19,6 +19,7 @@ const LOT_PUBLICATION_BROWSER_GUARD = path.join(__dirname, 'lot-publication-brow
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_RESUME_BROWSER_GUARD = path.join(__dirname, 'homepage-resume-browser-contract.mjs');
 const SERIES_QUIZ_SOURCE_HANDOFF_GUARD = path.join(__dirname, 'series-quiz-source-handoff-browser-contract.mjs');
+const PAGEFIND_SEARCH_HANDOFF_GUARD = path.join(__dirname, 'w121-search-contract.mjs');
 const CHROME_LABEL_FOCUS_GUARD = path.join(__dirname, 'chrome-label-focus-traversal-contract.mjs');
 const HOME_AMBIENT_CLS_GUARD = path.join(__dirname, 'home-ambient-cls-contract.mjs');
 const NAGORNAYA_JUSTIFICATION_GUARD = path.join(__dirname, 'nagornaya-justification-contract.mjs');
@@ -170,6 +171,24 @@ function runSeriesQuizSourceHandoffGuard(baseUrl) {
   return runNodeScript(SERIES_QUIZ_SOURCE_HANDOFF_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runPagefindSearchHandoffGuard(baseUrl) {
+  if (!fs.existsSync(PAGEFIND_SEARCH_HANDOFF_GUARD)) {
+    throw new Error(`Pagefind search handoff guard is missing at ${PAGEFIND_SEARCH_HANDOFF_GUARD}`);
+  }
+  // W121 tests native mobile and canonical ARGON desktop from the same
+  // static build. Preserve the separate audit endpoints and real desktop gate.
+  const pilotBase = String(process.env.AUDIT_W57_BASE || '').trim().replace(/\/$/, '');
+  if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(pilotBase)) {
+    console.error('W121 requires AUDIT_W57_BASE=http://127.0.0.1:<canonical static Reader audit port>');
+    return Promise.resolve(1);
+  }
+  console.log(`W121 native mobile: ${baseUrl}; canonical ARGON desktop: ${pilotBase}`);
+  return runNodeScript(PAGEFIND_SEARCH_HANDOFF_GUARD, [], {
+    AUDIT_BASE: baseUrl,
+    AUDIT_W57_BASE: pilotBase
+  });
+}
+
 function runChromeLabelFocusGuard(baseUrl) {
   if (!fs.existsSync(CHROME_LABEL_FOCUS_GUARD)) {
     throw new Error(`Chrome-label focus traversal guard is missing at ${CHROME_LABEL_FOCUS_GUARD}`);
@@ -286,6 +305,10 @@ async function runInteractiveContracts(baseUrl) {
   if (printPreflightCode !== 0) return printPreflightCode;
   const printBrowserCode = await runNodeScript(READER_MOBILE_PRINT_LOCK_GUARD, [], { AUDIT_BASE: baseUrl });
   if (printBrowserCode !== 0) return printBrowserCode;
+  // Run the dedicated Pagefind handoff proof before the broad legacy audit so
+  // unrelated site-contract failures cannot suppress W123 browser evidence.
+  const pagefindHandoffCode = await runPagefindSearchHandoffGuard(baseUrl);
+  if (pagefindHandoffCode !== 0) return pagefindHandoffCode;
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
   const resumeCode = await runHomepageResumeBrowserGuard(baseUrl);

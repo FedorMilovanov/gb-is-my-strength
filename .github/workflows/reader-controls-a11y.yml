@@ -6,6 +6,8 @@ on:
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-controls-a11y.js"
+      - "src/runtime/reader-search-handoff.js"
+      - "scripts/reader-search-handoff-unit-contract.mjs"
       - "src/components/article-pilots/_shared/ReaderRail.astro"
       - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
@@ -28,11 +30,58 @@ on:
       - "css/floating-cluster.css"
       - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
+      - "src/components/article-pilots/gill-context/**"
+      - "src/components/article-pilots/gill-series/GillEditorialAtlas.astro"
+      - "src/components/article-pilots/gill-series/gillSeriesData.ts"
+      - "src/components/article-pilots/gill-part1/GillPart1SectionQuizTail.astro"
+      - "src/components/article-pilots/gill-part2/GillPart2ArticleBody.astro"
+      - "src/components/article-pilots/gill-part3/GillPart3ArticleBody.astro"
+      - "src/components/article-pilots/gill-part4/GillPart4ArticleBody.astro"
+      - "src/components/article-pilots/gill-spravochnik/GillSpravochnikSectionQuizTail.astro"
+      - "src/styles/reader-responsive-tables.css"
+      - "css/highlights-runtime.css"
+      - "js/highlights.js"
+      - "js/reader-library-ranges.js"
+      - "scripts/reader-structured-content-browser-contract.mjs"
+      - "scripts/reader-gill-wholepage-browser-contract.mjs"
+      - "scripts/reader-library-short-viewport-browser-contract.mjs"
+      - "scripts/reader-library-tag-integrity-contract.mjs"
+      - "js/reader-library-v3.js"
+      - "js/reader-library-research-core.js"
+      - "js/reader-library-navigation.js"
+      - "js/reader-library-storage.js"
+      - "js/reader-library-presenter.js"
+      - "js/reader-library-record-transactions.js"
+      - "js/reader-library-selection.js"
+      - "js/reader-library-dock.js"
+      - "scripts/reader-library-browser-test.cjs"
+      - "research/reader-w57-pilot/assets/**"
+      - "research/reader-w57-pilot/MANIFEST.json"
+      - "scripts/lib/reader-desktop-contract.js"
+      - "scripts/lib/reader-desktop-delivery.js"
+      - "src/runtime/article-tooltips.js"
+      - "src/runtime/reader-export.css"
+      - "js/site-utils.js"
+      - "js/reader-state.js"
+      - "js/reader-preferences-head.js"
+      - "scripts/reader-library-v3-browser-test.cjs"
+      - "scripts/reader-library-v3-progress-test.cjs"
+      - "scripts/reader-library-dist-coverage.cjs"
+      - "scripts/cache-bust-assets.js"
+      - "sw.js"
+      - "src/lib/asset-version.js"
+      - "scripts/reader-w57-annotations-regression-test.mjs"
+      - "scripts/reader-w57-two-tab-browser-contract.mjs"
+      - "src/lib/reader-semantic-snapshot.mjs"
+      - "scripts/reader-semantic-snapshot-contract.mjs"
+      - "scripts/reader-universal-semantic-readiness.mjs"
   push:
     branches: [main]
     paths:
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/runtime/reader-controls-a11y.js"
+      - "src/runtime/reader-search-handoff.js"
+      - "scripts/reader-search-handoff-unit-contract.mjs"
       - "src/components/article-pilots/_shared/ReaderRail.astro"
       - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
@@ -55,6 +104,51 @@ on:
       - "css/floating-cluster.css"
       - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
+      - "src/components/article-pilots/gill-context/**"
+      - "src/components/article-pilots/gill-series/GillEditorialAtlas.astro"
+      - "src/components/article-pilots/gill-series/gillSeriesData.ts"
+      - "src/components/article-pilots/gill-part1/GillPart1SectionQuizTail.astro"
+      - "src/components/article-pilots/gill-part2/GillPart2ArticleBody.astro"
+      - "src/components/article-pilots/gill-part3/GillPart3ArticleBody.astro"
+      - "src/components/article-pilots/gill-part4/GillPart4ArticleBody.astro"
+      - "src/components/article-pilots/gill-spravochnik/GillSpravochnikSectionQuizTail.astro"
+      - "src/styles/reader-responsive-tables.css"
+      - "css/highlights-runtime.css"
+      - "js/highlights.js"
+      - "js/reader-library-ranges.js"
+      - "scripts/reader-structured-content-browser-contract.mjs"
+      - "scripts/reader-gill-wholepage-browser-contract.mjs"
+      - "scripts/reader-library-short-viewport-browser-contract.mjs"
+      - "scripts/reader-library-tag-integrity-contract.mjs"
+      - "js/reader-library-v3.js"
+      - "js/reader-library-research-core.js"
+      - "js/reader-library-navigation.js"
+      - "js/reader-library-storage.js"
+      - "js/reader-library-presenter.js"
+      - "js/reader-library-record-transactions.js"
+      - "js/reader-library-selection.js"
+      - "js/reader-library-dock.js"
+      - "scripts/reader-library-browser-test.cjs"
+      - "research/reader-w57-pilot/assets/**"
+      - "research/reader-w57-pilot/MANIFEST.json"
+      - "scripts/lib/reader-desktop-contract.js"
+      - "scripts/lib/reader-desktop-delivery.js"
+      - "src/runtime/article-tooltips.js"
+      - "src/runtime/reader-export.css"
+      - "js/site-utils.js"
+      - "js/reader-state.js"
+      - "js/reader-preferences-head.js"
+      - "scripts/reader-library-v3-browser-test.cjs"
+      - "scripts/reader-library-v3-progress-test.cjs"
+      - "scripts/reader-library-dist-coverage.cjs"
+      - "scripts/cache-bust-assets.js"
+      - "sw.js"
+      - "src/lib/asset-version.js"
+      - "scripts/reader-w57-annotations-regression-test.mjs"
+      - "scripts/reader-w57-two-tab-browser-contract.mjs"
+      - "src/lib/reader-semantic-snapshot.mjs"
+      - "scripts/reader-semantic-snapshot-contract.mjs"
+      - "scripts/reader-universal-semantic-readiness.mjs"
 
 permissions:
   contents: read
@@ -67,7 +161,7 @@ jobs:
   browser-contract:
     name: Chromium + Firefox + WebKit Reader controls and real-asset contracts
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - name: Checkout exact tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -87,17 +181,40 @@ jobs:
           cache: npm
 
       - name: Install exact dependencies and browsers
+        id: reader_dependencies
         run: |
           npm ci
           npx playwright install --with-deps chromium webkit firefox
 
       - name: Syntax and source boundary
+        id: reader_source
         run: |
           node --check src/runtime/reader-controls-a11y.js
+          node --check src/runtime/reader-search-handoff.js
+          node scripts/reader-search-handoff-unit-contract.mjs
           node --check scripts/reader-controls-a11y-browser-contract.mjs
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
           node --check scripts/reader-library-premium-browser-contract.cjs
+          node --check scripts/reader-structured-content-browser-contract.mjs
+          node --check scripts/reader-gill-wholepage-browser-contract.mjs
+          node --check scripts/reader-library-short-viewport-browser-contract.mjs
+          node --check scripts/reader-library-tag-integrity-contract.mjs
+          node --check js/highlights.js
+          node --check js/reader-library-ranges.js
+          node --check js/reader-library-storage.js
+          node --check js/reader-library-research-core.js
+          node --check js/reader-library-navigation.js
+          node --check scripts/reader-library-v3-progress-test.cjs
+          node --check scripts/reader-library-dist-coverage.cjs
+          node --check scripts/reader-library-v3-browser-test.cjs
+          node scripts/reader-library-tag-integrity-contract.mjs
+          node --check scripts/reader-w57-annotations-regression-test.mjs
+          node --check scripts/reader-w57-two-tab-browser-contract.mjs
+          node scripts/reader-w57-annotations-regression-test.mjs
+          node --check src/lib/reader-semantic-snapshot.mjs
+          node --check scripts/reader-semantic-snapshot-contract.mjs
+          node scripts/reader-semantic-snapshot-contract.mjs
           node --check scripts/shared-play-and-series-number-browser-contract.cjs
           node --check scripts/reader-mobile-canonical-browser-contract.cjs
           node --check src/runtime/reader-tts-defaults.js
@@ -111,19 +228,63 @@ jobs:
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
+      # Source fixture does not depend on dist. Run it before the build so
+      # a build timeout cannot suppress this independent lifecycle witness.
+      - name: Run exact-head Library source browser integration
+        if: ${{ !cancelled() && steps.reader_dependencies.outcome == 'success' }}
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            node scripts/reader-library-browser-test.cjs
+          } 2>&1 | tee reports/reader-library-browser-test.log
+
+      - name: Run exact-head reading progress and lazy boundary contract
+        if: ${{ !cancelled() && steps.reader_dependencies.outcome == 'success' }}
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            node scripts/reader-library-v3-progress-test.cjs
+          } 2>&1 | tee reports/reader-library-v3-progress-test.log
+
       - name: Build production-like dist
+        id: reader_build
+        if: ${{ !cancelled() && steps.reader_source.outcome == 'success' }}
         run: |
           mkdir -p reports
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/reader-controls-a11y-build.log
 
+      - name: Verify exact-head Reader publication and module revisions
+        if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            node scripts/reader-library-dist-coverage.cjs
+          } 2>&1 | tee reports/reader-library-dist-coverage.log
+
+      - name: Run exact-head Gill whole-page and atlas contracts
+        if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          node scripts/reader-gill-wholepage-browser-contract.mjs 2>&1 | tee reports/reader-gill-wholepage-browser-contract.log
+
       - name: Run permanent browser contracts
+        if: ${{ !cancelled() && steps.reader_build.outcome == 'success' }}
         run: |
           set -o pipefail
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-a11y-browser-contract.mjs 2>&1 | tee reports/reader-controls-a11y-browser-contract.log
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/reader-controls-residual-browser-contract.log
           SOURCE_SHA="$(git rev-parse HEAD)" node scripts/reader-speedrail-ssr-focus-browser-test.mjs 2>&1 | tee reports/reader-speedrail-ssr-focus.log
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
+          node scripts/reader-library-v3-browser-test.cjs 2>&1 | tee reports/reader-library-v3-browser-test.log
+          READER_STRUCTURED_SHOTS=reports/reader-structured-shots node scripts/reader-structured-content-browser-contract.mjs 2>&1 | tee reports/reader-structured-content-browser-contract.log
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-w57-two-tab-browser-contract.mjs 2>&1 | tee reports/reader-w57-two-tab-browser-contract.log
+          node scripts/reader-library-short-viewport-browser-contract.mjs 2>&1 | tee reports/reader-library-short-viewport-browser-contract.log
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
           node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
           node scripts/reader-speed-persistence-browser-contract.mjs 2>&1 | tee reports/reader-speed-persistence-browser-contract.log
@@ -147,6 +308,11 @@ jobs:
             reports/reader-speedrail-ssr-focus.log
             reports/reader-speedrail-ssr-focus/**
             reports/reader-library-premium-browser-contract.log
+            reports/reader-library-browser-test.log
+            reports/reader-library-v3-browser-test.log
+            reports/reader-library-v3-progress-test.log
+            reports/reader-library-dist-coverage.log
+            reports/reader-library-v3/**
             reports/shared-play-and-series-number-browser-contract.log
             reports/reader-mobile-canonical-browser-contract.log
             reports/reader-speed-persistence-browser-contract.log
@@ -156,5 +322,13 @@ jobs:
             reports/baptisty-archival-media/**
             reports/reader-p1-menu-*.png
             reports/reader-library-premium/*.png
+            reports/reader-structured-content-browser-contract.log
+            reports/reader-structured-shots/*.jpg
+            reports/reader-gill-wholepage-browser-contract.log
+            reports/reader-gill-wholepage/**
+            reports/reader-w57-two-tab-browser-contract.log
+            reports/reader-w57-two-tab/**
+            reports/reader-library-short-viewport-browser-contract.log
+            reports/reader-library-short/**/*
           if-no-files-found: warn
           retention-days: 14

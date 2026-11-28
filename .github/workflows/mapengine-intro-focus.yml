@@ -1,5 +1,7 @@
 # Permanent browser proof for V08-MAPENGINE-INTRO-FOCUS.
-# Refreshed after rebasing onto current main with the terminal Krajne schema repair.
+# Chromium and WebKit run from the immutable, version-matched upstream Playwright image.
+# Avoid per-run apt downloads: they timed out twice before any browser assertions.
+# Image's tag and digest correspond to Playwright 1.62.1 on Ubuntu Noble.
 name: MapEngine Intro Focus Contract
 
 on:
@@ -35,6 +37,8 @@ jobs:
     # WebKit + Playwright dependencies need a supported, deterministic LTS.
     # ubuntu-latest selected Ubuntu resolute and apt exhausted the 12m gate.
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
     timeout-minutes: 30
     steps:
       - name: Checkout exact source
@@ -52,8 +56,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chromium and WebKit
-        run: timeout 12m npx playwright install --with-deps chromium webkit
+      - name: Verify pinned Playwright version and preinstalled Chromium/WebKit
+        run: |
+          node -e "const fs=require('node:fs');const pw=require('playwright');const v=require('playwright/package.json').version;if(v!=='1.62.1')throw Error('Playwright version mismatch: '+v);for(const [name,b] of [['chromium',pw.chromium],['webkit',pw.webkit]]){const p=b.executablePath();if(!fs.existsSync(p))throw Error('Missing preinstalled '+name+' browser: '+p);console.log('Verified '+name+' '+p)}"
+
+      - name: Trust only this checked-out repository inside the job container
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          test "$(git rev-parse --show-toplevel)" = "$GITHUB_WORKSPACE"
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like

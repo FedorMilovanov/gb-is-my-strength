@@ -1,0 +1,972 @@
+#!/usr/bin/env node
+// Browser QA of exact W57 opt-in pilot. No live site writes.
+import assert from 'node:assert/strict';
+import {spawn,execFileSync} from 'node:child_process';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {setTimeout as delay} from 'node:timers/promises';
+import {chromium,webkit} from 'playwright';
+
+const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const require=createRequire(import.meta.url);
+const OUT=resolve(ROOT,'reports/reader-w57-visual');
+const BASE='http://127.0.0.1:19061';
+const TESTED_SHA=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
+const REPORT={sha:TESTED_SHA,environmentSha:process.env.GITHUB_SHA||null,scenes:[],findings:[],failures:[]};
+let server,chrome,safari;
+await mkdir(OUT,{recursive:true});
+async function snap(page,name){
+ const buf=await page.screenshot({path:resolve(OUT,name+'.jpg'),type:'jpeg',quality:48,animations:'disabled'});
+ console.log('W57_IMAGE_BEGIN::'+name+'::'+buf.toString('base64')+'::W57_IMAGE_END');
+}
+// Authored identity; a generated search ordinal is not a stable fixture.
+const SALTERS_PARAGRAPH='article.article-body > h3#sec-trinity + p.reveal';
+async function saltersParagraph(page){
+ const block=page.locator(SALTERS_PARAGRAPH);
+ await block.waitFor({state:'visible',timeout:15000});
+ assert.equal(await block.count(),1,'unique authored Salters paragraph');
+ const text=await block.innerText();
+ assert.match(text,/Солтерс-Холле/);
+ assert.match(text,/обсуждали/);
+ return block;
+}
+// The failing document may already have navigated back to Classic. Retain
+// its real delivery failure, not just the final document's empty globals.
+function observeDesktopDelivery(page){
+ const started=Date.now(),trace={fallbackReasons:[],events:[]};
+ const record=(event,data)=>{
+  if(trace.events.length===120)trace.events.shift();
+  trace.events.push({ms:Date.now()-started,event,...data});
+ };
+ const desktopAsset=url=>url.startsWith(BASE+'/reader-desktop/');
+ page.on('console',message=>{
+  if(message.type()==='error'&&message.text().startsWith('Reader desktop:')){
+   trace.fallbackReasons.push(message.text().slice(0,700));
+   record('fallback',{message:message.text().slice(0,700)});
+  }
+ });
+ page.on('request',request=>{if(desktopAsset(request.url()))record('request',{url:request.url()});});
+ page.on('response',response=>{
+  if(desktopAsset(response.url())||(response.url().startsWith(BASE+'/')&&response.status()>=400))
+   record('response',{url:response.url(),status:response.status()});
+ });
+ page.on('requestfinished',request=>{if(desktopAsset(request.url()))record('finished',{url:request.url()});});
+ page.on('requestfailed',request=>{
+  if(request.url().startsWith(BASE+'/'))record('failed',{url:request.url(),error:request.failure()?.errorText});
+ });
+ page.on('framenavigated',frame=>{if(frame===page.mainFrame())record('navigation',{url:frame.url()});});
+ return trace;
+}
+async function scene(browser,name,path,width,height){
+ const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,
+  hasTouch:width<600,isMobile:width<600,locale:'ru-RU',reducedMotion:'reduce'});
+ const page=await context.newPage(),errors=[],delivery=observeDesktopDelivery(page);
+ page.on('pageerror',e=>errors.push(String(e).slice(0,350)));
+ let response;
+ try{response=await page.goto(BASE+path,{waitUntil:'domcontentloaded',timeout:45000});}
+ catch(error){await context.close().catch(()=>{});error.readerDelivery=delivery;throw error;}
+ const pilotExpected=width>=1121;
+ let readinessError=null;
+ try{
+  await page.waitForFunction(({desktop})=>{
+   const visible=selector=>!!document.querySelector(selector)?.getClientRects().length;
+   // A fallback navigation can expose its new URL before the new DOM exists.
+   // It remains a failed desktop admission; wait for its actual document.
+   if(desktop)return !!document.body&&document.readyState!=='loading'&&
+    ((document.body.classList.contains('np-w57-ready')&&
+    window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true)||
+    new URL(location.href).searchParams.get('reader-pilot')==='0');
+   return document.readyState==='complete'&&visible('#mobPartTocBtn')&&visible('#mobSettingsBtn')&&
+    visible('.reader-mobile-play')&&visible('#mobSpdBadge');
+  },{desktop:pilotExpected},{timeout:15000});
+ }catch(error){readinessError=String(error).slice(0,500);}
+ let state;
+ try{state=await page.evaluate(()=>({
+  ready:!!document.body?.classList.contains('np-w57-ready'),
+  annotated:!!window.__NP_W57_ANNOTATIONS__?.ready,
+  modelReady:window.__NP_UNIVERSAL_PREVIEW__?.ready===true,
+  width:document.documentElement.scrollWidth,viewport:innerWidth,
+  folded:!!document.body?.classList.contains('np-u-hide-right'),
+  noteCards:document.querySelectorAll('#npW57NotesDetails').length,
+  researchCards:document.querySelectorAll('#npUResearch details').length,
+  title:document.querySelector('main h1')?.textContent?.trim().slice(0,100)||'',
+  w57RuntimeScripts:[...document.scripts].filter(s=>/\/reader-desktop\/(?:reader_w57|reader_universal_preview)\.js/.test(s.src)).length,
+  nativeToc:!!document.querySelector('#mobPartTocBtn')?.getClientRects().length,
+  nativeSettings:!!document.querySelector('#mobSettingsBtn')?.getClientRects().length,
+  nativePlay:!!document.querySelector('.reader-mobile-play')?.getClientRects().length,
+  nativeSpeed:!!document.querySelector('#mobSpdBadge')?.getClientRects().length
+ }));}catch(error){await context.close().catch(()=>{});error.readerDelivery=delivery;throw error;}
+ const item={name,path,width,height,response:response?.status(),actualUrl:page.url(),readinessError,state,errors};REPORT.scenes.push(item);
+ if(readinessError||response?.status()!==200||
+    (pilotExpected&&(!state.ready||!state.annotated||!state.modelReady||state.noteCards!==1||state.w57RuntimeScripts<2))||
+    (!pilotExpected&&(state.ready||state.annotated||state.noteCards!==0||
+       state.w57RuntimeScripts!==0||!state.nativeToc||!state.nativeSettings||
+       !state.nativePlay||!state.nativeSpeed))){
+   item.delivery=delivery;
+   REPORT.failures.push({name,reason:pilotExpected?'desktop W57 missing or incomplete':'native Reader boundary violated',item});
+ }
+ return{context,page,item};
+}
+// Canonical ReaderState drives the W57 visual section in both real engines.
+// Probe the leading edge of actual interior article sections, then reverse
+// direction; at the old 30% viewport threshold these assertions were red.
+async function sectionFollowChecks(browser,name){
+ // Gill II has TWO authored primary chapters; test both, including real
+ // subordinate H3 targets. Hermeneutics has six authored major groups;
+ // use that existing article for the original interior-group regression.
+ const fixtures=[
+  {suffix:'gill',route:'/articles/dzhon-gill-chast-2-uchenyi/',width:1280,
+   groups:['part-theology','part-controversy'],first:'sec-hebrew',last:'sec-systematics',
+   firstGroup:'part-theology',lastGroup:'part-controversy'},
+  {suffix:'herm',route:'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',width:1440,
+   groups:['sec-definitions','sec-explanation','sec-assessment','sec-consequences','sec-sufficiency','sec-conclusion'],
+   first:'sec-explanation',last:'sec-sufficiency',firstGroup:'sec-explanation',lastGroup:'sec-sufficiency'}
+ ];
+ for(const fixture of fixtures){
+ await safe(name+'-'+fixture.suffix,async()=>{
+ const s=await scene(browser,name+'-'+fixture.suffix,fixture.route+'?reader-pilot=1&paper=space&panel=open',fixture.width,900);
+ const {page,item}=s;
+ try{
+  await page.waitForFunction(()=>window.ReaderState?.getSnapshot()&&window.__NP_UNIVERSAL_PREVIEW__?.ready);
+  const actual=await page.evaluate(()=>window.__NP_UNIVERSAL_PREVIEW__.groups.map(g=>g.id));
+  assert.deepEqual(actual,fixture.groups,'major groups must match authored source exactly');
+  if(fixture.suffix==='herm')assert.ok(actual.slice(1,-1).length>=2,'expected multiple interior visual groups');
+  const {first,last,firstGroup,lastGroup}=fixture;
+  const scrollToSection=async id=>{
+   const y=await page.evaluate(id=>{
+    const el=document.getElementById(id);
+    const article=document.querySelector('article.article-body');
+    if(!el||!article?.contains(el)||!/^H[23]$/.test(el.tagName))throw Error('missing authored section '+id);
+    const y=el.getBoundingClientRect().top+scrollY-window.ReaderState.getReadingLine()+15;
+    window.scrollTo({top:y,behavior:'instant'});
+    return y;
+   },id);
+   await page.waitForFunction(({id,y})=>{
+    const state=window.ReaderState.getSnapshot();
+    return state?.sectionId===id&&Math.abs(scrollY-y)<3;
+   },{id,y},{timeout:10000});
+  };
+  const active=()=>page.locator('#npUOutline .np-u-major-link[aria-current="location"]');
+  const verifyGroup=async id=>{
+   const expected=fixture.groups.indexOf(id);
+   assert.ok(expected>=0);
+   await page.waitForFunction(({id,index})=>{
+    const link=document.querySelector('#npUOutline .np-u-major-link[aria-current="location"]');
+    const group=window.__NP_UNIVERSAL_PREVIEW__.groups[index];
+    // W55 moved history/library into the follow row and hid its duplicate
+    // chapter label. The visible thought-module summary now owns the numeral.
+    const legacy=document.querySelector('#npUFollowChapter');
+    const summary=document.querySelector('#npUSectionHost [data-np-u-module="section"] > details > summary');
+    return link?.dataset.npUGoto===id&&link.getClientRects().length>0&&
+     legacy?.hidden&&legacy.textContent==='Раздел '+group.roman&&
+     summary?.getClientRects().length>0&&
+     summary.textContent.replace(/\s+/g,' ').includes(group.roman+' / '+window.__NP_UNIVERSAL_PREVIEW__.groups.length);
+   },{id,index:expected},{timeout:5000});
+   assert.equal(await active().count(),1);
+   assert.equal(await active().getAttribute('data-np-u-goto'),id);
+  };
+  const follows=async(id,group)=>{await scrollToSection(id);await verifyGroup(group);};
+  await follows(first,firstGroup);await follows(last,lastGroup);await follows(first,firstGroup);
+  await page.locator('#npUFollowToggle').click();
+  await scrollToSection(last);
+  await verifyGroup(firstGroup);
+  assert.equal(await active().getAttribute('data-np-u-goto'),firstGroup,'manual research pin must survive canonical scroll');
+  await page.locator('#npUFollowToggle').click();
+  await verifyGroup(lastGroup);
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+  await page.waitForFunction(()=>window.ReaderState.getSnapshot()?.phase==='before-content');
+  await verifyGroup(fixture.groups[0]);
+  assert.deepEqual(item.errors,[]);
+  item.sectionFollow={forward:true,reverse:true,pin:true,resume:true,returnToIntro:true,authoredGroups:actual};
+ }finally{await s.context.close()}
+ });
+ }
+}
+async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000),...(e.readerDelivery?{delivery:e.readerDelivery}:{})})}}
+// Mobile and the 1120px boundary use the actual native Reader, never W57 DOM.
+async function nativeChecks(sample) {
+ const {page,item}=sample;
+ const state=await page.evaluate(()=>{
+  const bar=document.querySelector('.mobile-top-bar');
+  const play=document.querySelector('.reader-mobile-play');
+  const r=bar?.getBoundingClientRect(),p=play?.getBoundingClientRect();
+  return {barHeight:r?.height,playWidth:p?.width,playHeight:p?.height,
+   overflow:document.documentElement.scrollWidth-innerWidth,
+   pilot:document.body.classList.contains('np-w57-ready'),
+   w57Scripts:[...document.scripts].some(s=>/\/reader-desktop\/reader_w57\.js/.test(s.src))};
+ });
+ assert.equal(state.pilot,false,'W57 mounted on native mobile/tablet');
+ assert.equal(state.w57Scripts,false,'W57 JavaScript leaked below 1121px');
+ if(item.width<=768) assert.ok(state.barHeight>=58&&state.barHeight<=60,'native mobile reading bar geometry drift');
+ else assert.ok(state.barHeight>=44&&state.barHeight<=46,'native tablet header geometry drift');
+ assert.ok(state.playWidth>=38&&state.playHeight>=38,'native Play touch geometry shrank');
+ assert.ok(state.overflow<=1,'native mobile horizontal overflow');
+ item.native=state;
+ await page.locator('#mobPartTocBtn').click();
+ await page.locator('#partTocOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
+ assert.ok(await page.locator('#gbrTocTab').isVisible(),'native TOC tab hidden');
+ await page.keyboard.press('Escape');
+ await page.locator('#partTocOverlay[aria-hidden="true"]').waitFor({state:'hidden',timeout:5000});
+ // Preserve the old research interaction coverage on the actual native owner.
+ const researchTrigger=page.locator('.mobile-top-bar [data-gill-marginalia-open]');
+ assert.equal(await researchTrigger.count(),1,'native research opener ownership drift');
+ await researchTrigger.click();
+ await page.locator('#partTocOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
+ const researchTab=page.locator('#gbrMarginaliaTab[aria-selected="true"]');
+ await researchTab.waitFor({state:'visible',timeout:5000});
+ assert.ok(await page.locator('#gbrMarginalia').isVisible(),'native research content hidden');
+ assert.equal(await page.locator('#gbs2PartToc').evaluate(el=>el.hidden&&el.inert),true,'inactive TOC remains interactive');
+ assert.ok(await page.locator('#gbrMarginaliaContent .gbr-marginalia-group').count()>0,'native research data missing');
+ await researchTab.focus();
+ await page.keyboard.press('ArrowLeft');
+ await page.locator('#gbrTocTab[aria-selected="true"]').waitFor({state:'visible',timeout:5000});
+ assert.equal(await page.locator('#gbrMarginalia').evaluate(el=>el.hidden&&el.inert),true,'inactive research remains interactive');
+ assert.equal(await page.locator('#gbrTocTab').evaluate(el=>document.activeElement===el),true,'native keyboard tab focus lost');
+ await page.keyboard.press('Escape');
+ await page.locator('#partTocOverlay[aria-hidden="true"]').waitFor({state:'hidden',timeout:5000});
+ item.native.researchRoundTrip=true;
+ await page.locator('#mobSettingsBtn').click();
+ await page.locator('#gillSettingsOverlay[aria-hidden="false"]').waitFor({state:'visible',timeout:5000});
+ assert.ok(await page.locator('#gillSettingsOverlay .type-choice').count()>=2,'native font controls missing');
+ const value=page.locator('#gillFontScaleValue');
+ assert.equal(await value.innerText(),Math.round(await page.evaluate(()=>GBReaderPreferences.get().fontScale)*100)+'%');
+ const reset=page.locator('#gillSettingsReset');
+ assert.equal(await reset.evaluate(el=>getComputedStyle(el).textDecorationLine),'none');
+ assert.ok((await reset.boundingBox()).height>=44,'native reset tap target shrank');
+
+ await page.keyboard.press('Escape');
+ // Test an actual exposed portion of the clickable rate badge, not its
+ // aria-hidden child span whose centre can sit beneath the painted Play disc.
+ const badgePoint=await page.locator('#mobSpdBadge').evaluate(el=>{
+  const r=el.getBoundingClientRect();
+  for(let iy=1;iy<=4;iy++)for(let ix=1;ix<=4;ix++){
+   const x=r.left+r.width*ix/5,y=r.top+r.height*iy/5;
+   if(el.contains(document.elementFromPoint(x,y)))return{x,y};
+  }
+  return null;
+ });
+ assert.ok(badgePoint,'speed badge has no independently hittable visible point');
+ item.native.badgePoint=badgePoint;
+ await page.mouse.click(badgePoint.x,badgePoint.y);
+ await page.locator('#mobSpdBadge[aria-expanded="true"]').waitFor({state:'visible',timeout:4000});
+ await page.keyboard.press('Escape');
+ const playHit=await page.locator('.reader-mobile-play').evaluate(el=>{
+  const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+  return el.contains(document.elementFromPoint(x,y));
+ });
+ assert.equal(playHit,true,'visible Play triangle no longer owns its centre');
+ assert.ok(await page.locator('.reader-mobile-play').isVisible(),'Play disappeared after native checks');
+}
+async function selectText(page){
+ // A real reader scrolls in the article, not in the adjacent research rail.
+ // Select only visible prose, never an offscreen paragraph or hidden card.
+ const eligible=async()=>await page.evaluate(()=>{
+  const article=document.querySelector('main.np-u-reader-main article.article-body');
+  if(!article)return false;
+  return [...article.querySelectorAll('p')].some(p=>{
+   const r=p.getBoundingClientRect();
+   return (p.textContent||'').trim().length>70&&r.width>100&&
+    r.top>75&&r.bottom<innerHeight-70&&
+    !p.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure,[hidden],[inert]');
+  });
+ });
+ let found=await eligible();
+ for(let n=0;!found&&n<10;n++){
+  await page.mouse.move(675,500);
+  await page.mouse.wheel(0,360);
+  await page.waitForTimeout(180);
+  found=await eligible();
+ }
+ if(!found){
+  const state=await page.evaluate(()=>({scrollY,screen:innerHeight,
+   bodyOverflow:getComputedStyle(document.body).overflow,
+   rootOverflow:getComputedStyle(document.documentElement).overflow}));
+  throw new Error('No visible eligible Reader source paragraph after user scroll: '+JSON.stringify(state));
+ }
+ return await page.evaluate(()=>{
+  const article=document.querySelector('main.np-u-reader-main article.article-body');
+  const p=[...article.querySelectorAll('p')].find(x=>{
+   const r=x.getBoundingClientRect();
+   return x.textContent.trim().length>70&&r.width>100&&
+    r.top>75&&r.bottom<innerHeight-70&&
+    !x.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure,[hidden],[inert]');
+  });
+  if(!p)return null;
+  const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);let n;
+  while((n=w.nextNode())&&n.nodeValue.trim().length<26){}
+  if(!n)return null;
+  const r=document.createRange();r.setStart(n,2);r.setEnd(n,Math.min(42,n.length));
+  const s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+  document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+  const rect=r.getBoundingClientRect();
+  return r.toString();
+ });
+}
+try{
+ server=spawn('python3',['-u','research/reader-w57-pilot/preview.py'],{
+  cwd:ROOT,env:{...process.env,READER_W57_PORT:'19061',READER_W57_DIST:resolve(ROOT,'dist')},
+  stdio:['ignore','pipe','pipe']});
+ server.stderr.on('data',x=>console.error('PY_W57 '+String(x).slice(0,500)));
+ let started=false;
+ for(let i=0;i<80;i++){try{let r=await fetch(BASE+'/articles/');if(r.ok){started=true;break}}catch{}await delay(250)}
+ assert.ok(started,'W57 preview.py failed to listen');
+ // The route registry owns reading eligibility. Test actual HTTP responses,
+ // not a string for a script which is only inserted by the bootstrap.
+ const desktopContract=require('./lib/reader-desktop-contract').buildDesktopReaderContract();
+ const eligible=desktopContract.routes.map(route=>({route}));
+ const hardPaths=desktopContract.routes.filter(route=>route.startsWith('/hard-texts/'));
+ assert.equal(hardPaths.length,7,'hard-texts reading coverage drift');
+ const manifest={files:[...desktopContract.styles,...desktopContract.scripts]};
+ const prefix='/reader-desktop/';
+ let bootstrapUrl;
+ for(const {route} of eligible){
+  const response=await fetch(BASE+route);
+  assert.equal(response.status,200,route);
+  const html=await response.text();
+  for(const file of manifest.files.filter(f=>f.name.endsWith('.css'))){
+   assert.ok(html.includes(prefix+file.name+'?v='+file.sha256),route+' missing revised '+file.name);
+  }
+  const found=html.match(/\/reader-desktop\/bootstrap\.js\?v=[a-f0-9]{64}/)?.[0];
+  assert.ok(found,route+' missing revisioned bootstrap');
+  if(bootstrapUrl)assert.equal(found,bootstrapUrl);else bootstrapUrl=found;
+  const native=await fetch(BASE+route+'?reader-pilot=0');
+  assert.equal(native.status,200,route+' native comparison');
+  assert.equal(await native.text(),html,route+' comparison must serve identical static bytes');
+ }
+ for(const path of ['/hard-texts/','/hard-texts/genesis-6/','/articles/','/baptisty-rossii/','/nagornaya/seriya/','/nagornaya/chast-1/','/updates/','/journal/dossiers/g3/']){
+  const response=await fetch(BASE+path+'?reader-pilot=1');
+  assert.equal(response.status,200,path);
+  assert.ok(!(await response.text()).includes(prefix),'Excluded route must not load pilot: '+path);
+ }
+ const bootstrapResponse=await fetch(BASE+bootstrapUrl);
+ assert.equal(bootstrapResponse.status,200);
+ const bootstrap=await bootstrapResponse.text();
+ assert.equal(createHash('sha256').update(bootstrap).digest('hex'),new URL(BASE+bootstrapUrl).searchParams.get('v'));
+ for(const file of manifest.files){
+  const url=prefix+file.name+'?v='+file.sha256;
+  if(file.name.endsWith('.js'))assert.ok(bootstrap.includes(url),'Missing revised '+file.name);
+  const response=await fetch(BASE+url);
+  assert.equal(response.status,200,url);
+  assert.equal(createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex'),file.sha256,url);
+ }
+ REPORT.routeEligibility={eligible:eligible.length,hard:hardPaths.length,manifestAssets:manifest.files.length};
+ chrome=await chromium.launch({headless:true});
+ for(const engine of [chrome,await webkit.launch({headless:true})]){
+  try{
+   // The native Grok rail can be docked by ARGON on this registered route.
+   // Prove both owners have an operative settings control; do not substitute
+   // native comparison results for the default ARGON acceptance.
+   for(const width of [1200,1440])for(const native of [false,true]){
+    const ctx=await engine.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
+    try{
+     await ctx.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,route=>route.fulfill({status:200,body:''}));
+     const page=await ctx.newPage(),errors=[];
+     page.on('pageerror',error=>errors.push(String(error)));
+     await page.goto(BASE+'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'+(native?'?reader-pilot=0':''),{waitUntil:'domcontentloaded'});
+     await page.waitForFunction(()=>!!window.ReaderState&&
+       (document.body.classList.contains('np-w57-ready')||new URL(location.href).searchParams.get('reader-pilot')==='0'),null,{timeout:15000});
+     const state=await page.evaluate(()=>({argon:document.body.classList.contains('np-w57-ready'),
+      demo:document.querySelectorAll('#npUniversalDemo').length,
+      nativeTrigger:!!document.getElementById('hrailSettingsBtn')?.getClientRects().length,
+      overflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth)}));
+     assert.deepEqual(state,{argon:!native,demo:native?0:1,nativeTrigger:native,overflow:0});
+     await page.locator(native?'#hrailSettingsBtn:visible':'[aria-controls="npUFontPanel"]:visible').first().click();
+     const settings=page.locator(native?'#hmSettings':'#npUFontPanel');
+     await settings.waitFor({state:'visible'});await page.keyboard.press('Escape');await settings.waitFor({state:'hidden'});
+     assert.deepEqual(errors,[]);
+     REPORT.scenes.push({name:'hermenevtika-owner-'+(native?'native':'argon'),engine:engine.browserType().name(),width,state,settingsOpenClose:true});
+    }finally{await ctx.close()}
+   }
+   // Real network failure must never leave a partially reparented ARGON page.
+   for(const fault of ['css','js','timeout']){
+    const ctx=await engine.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+    try{
+     // Match the W121 isolation of third-party analytics; keep all Reader errors fatal.
+     await ctx.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,route=>route.fulfill({status:200,body:''}));
+     const path='/articles/dzhon-gill-chast-1-chelovek/';
+     const file=fault==='css'?'reader_w57.css':'reader_w57.js';
+     let requests=0, navigations=0;
+     await ctx.route(url=>url.pathname==='/reader-desktop/'+file,async route=>{
+      requests++;
+      if(fault==='timeout'){await delay(14000);await route.abort().catch(()=>{});}
+      else await route.fulfill({status:503,body:''});
+     });
+     const page=await ctx.newPage(),errors=[];
+     page.on('pageerror',error=>errors.push(String(error)));
+     page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});
+     const target=BASE+path+'?reader-pilot=1&paper=space&panel=open#top';
+     await page.goto(target,{waitUntil:'domcontentloaded'});
+     await page.waitForURL(url=>url.searchParams.get('reader-pilot')==='0',{timeout:22000,waitUntil:'domcontentloaded'});
+     const state=await page.evaluate(()=>({ready:document.body.classList.contains('np-w57-ready'),
+      partial:document.body.classList.contains('np-u-preview')||!!document.querySelector('#npUResearch'),
+      active:[...document.querySelectorAll('link[data-gb-reader-desktop-css]')].some(l=>matchMedia(l.media).matches),
+      runtime:[...document.scripts].some(s=>s.src.includes('/reader-desktop/reader_')),
+      native:!!window.ReaderState?.getSnapshot,overflow:document.documentElement.scrollWidth-innerWidth}));
+     const url=new URL(page.url());
+     assert.equal(url.pathname,path);assert.equal(url.hash,'#top');assert.equal(url.searchParams.get('paper'),'space');assert.equal(url.searchParams.get('panel'),'open');
+     assert.deepEqual(state,{ready:false,partial:false,active:false,runtime:false,native:true,overflow:0});
+     await page.waitForTimeout(500);
+     assert.equal(navigations,2,'exactly one Classic replacement, no loop');
+     assert.deepEqual(errors,[],'no Reader page errors');
+     assert.ok(requests>=1,'fault must actually intercept a required resource');
+     REPORT.scenes.push({name:'desktop-fallback-'+fault,engine:engine.browserType().name(),state,requests,navigations});
+    }finally{await ctx.close()}
+   }
+   for(const [width,search,javaScriptEnabled] of [[1440,'?reader-pilot=0',true],[1440,'',false],[1120,'',true]]){
+    const ctx=await engine.newContext({viewport:{width,height:900},javaScriptEnabled});
+    try{
+     const page=await ctx.newPage();await page.goto(BASE+eligible[0].route+search,{waitUntil:'load'});
+     const state=await page.evaluate(()=>({ready:document.body.classList.contains('np-w57-ready'),active:[...document.querySelectorAll('link[data-gb-reader-desktop-css]')].some(l=>matchMedia(l.media).matches),runtime:[...document.scripts].some(s=>s.src.includes('/reader-desktop/reader_'))}));
+     assert.deepEqual(state,{ready:false,active:false,runtime:false},'Classic/mobile/no-JS must stay native');
+    }finally{await ctx.close()}
+   }
+  }finally{if(engine!==chrome)await engine.close()}
+ }
+ const d=await scene(chrome,'gill-desktop','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',1440,900);
+ await snap(d.page,'desktop-folded');
+ const readingGeometry=selector=>({
+  viewport:innerWidth,
+  leftRail:[...document.querySelectorAll('.gbs2-world > .gbs-rail,#npUOutline')].filter(el=>{const r=el.getBoundingClientRect(),style=getComputedStyle(el);return r.width>0&&r.right>0&&style.display!=='none'&&style.visibility!=='hidden';}).map(el=>el.getBoundingClientRect().toJSON()),
+  rightRail:document.querySelector('#npUResearch')?.getBoundingClientRect().toJSON(),
+  boxes:Object.fromEntries([
+   ['main',document.querySelector('main.np-u-reader-main')],
+   ['article',document.querySelector('article.article-body')],
+   ['hero',[...document.querySelectorAll('article.article-body img')].find(x=>x.getBoundingClientRect().width>300)],
+   ['prose',document.querySelector(selector)],
+  ].map(([key,el])=>{
+   const r=el?.getBoundingClientRect();
+   return[key,r?{left:+r.left.toFixed(1),right:+r.right.toFixed(1),
+    width:+r.width.toFixed(1),center:+(r.left+r.width/2).toFixed(1)}:null];
+  }))
+ });
+ await safe('desktop-research',async()=>{
+  await saltersParagraph(d.page);
+  d.item.geometryFolded=await d.page.evaluate(readingGeometry,SALTERS_PARAGRAPH);
+  await d.page.locator('#npUEdgeToggle').click();
+  await d.page.locator('#npW57NotesDetails summary').click();
+  d.item.panel=await d.page.evaluate(()=>({
+   open:!document.body.classList.contains('np-u-hide-right'),
+   noteOpen:document.querySelector('#npW57NotesDetails').open,
+   bounds:document.querySelector('#npUResearch').getBoundingClientRect().toJSON()
+  }));
+  assert.ok(d.item.panel.open&&d.item.panel.noteOpen);
+  // Wait for the existing right-panel transform to finish, not a fixed delay.
+  await d.page.waitForFunction(()=>{
+   const r=document.querySelector('#npUResearch')?.getBoundingClientRect();
+   return r&&r.width>0&&Math.abs(r.right-document.documentElement.clientWidth)<=2;
+  },null,{timeout:5000});
+  d.item.geometryOpen=await d.page.evaluate(readingGeometry,SALTERS_PARAGRAPH);
+  const folded=d.item.geometryFolded.boxes.hero,opened=d.item.geometryOpen.boxes.hero;
+  d.item.heroCenterShift=folded&&opened?+(opened.center-folded.center).toFixed(1):null;
+  if(d.item.heroCenterShift!==null&&Math.abs(d.item.heroCenterShift)>24)
+   REPORT.findings.push({severity:'visual-review',problem:'hero moves between folded and open research',
+    deltaPx:d.item.heroCenterShift,folded:d.item.geometryFolded,opened:d.item.geometryOpen});
+  await snap(d.page,'desktop-annotations');
+  // Stable centered reading is a mandatory contract, not merely a review note.
+  for(const geometry of [d.item.geometryFolded,d.item.geometryOpen]){
+   for(const key of ['main','article','hero']){
+    const box=geometry.boxes[key];
+    assert.ok(box&&box.width>0,'missing real '+key+' geometry');
+    assert.ok(Math.abs(box.center-geometry.viewport/2)<=2,key+' must be viewport-centered');
+   }
+   for(const rail of geometry.leftRail)
+    assert.ok(rail.right<=geometry.boxes.main.left+1,'left rail overlaps reading surface');
+  }
+  for(const key of ['main','article','hero']){
+   const a=d.item.geometryFolded.boxes[key],b=d.item.geometryOpen.boxes[key];
+   assert.ok(Math.abs(a.center-b.center)<=2&&Math.abs(a.width-b.width)<=2,
+    key+' shifts or resizes when research opens');
+  }
+  assert.ok(d.item.geometryOpen.rightRail&&
+   d.item.geometryOpen.boxes.main.right<=d.item.geometryOpen.rightRail.left+1,
+   'open research overlaps reading surface');
+ });
+ // W44: a click dispatch does not await a Web Locks mutation.
+  const waitW57Store=async(page,key,expected)=>{
+   await page.waitForFunction(({key,expected})=>{
+    const rows=JSON.parse(localStorage.getItem(key)||'[]');
+    const selected=expected.positional?rows.filter(x=>x.annotation?.version===1):rows;
+    return selected.length===expected.count&&(!expected.text||selected.some(x=>x.text===expected.text))&&
+     (!expected.color||selected.some(x=>x.annotation?.color===expected.color));
+   },{key,expected},{timeout:8000});
+  };
+  await safe('desktop-select-marker-note-edit',async()=>{
+  await d.page.locator('#npW57Palette [data-color="sage"]').click();
+  assert.equal(await d.page.locator('#npW57Palette [data-color="sage"]').getAttribute('aria-pressed'),'true');
+  const selected=await selectText(d.page);await d.page.waitForTimeout(500);
+  d.item.selected=selected;assert.ok(selected?.length>=6,'selection failed');
+  await d.page.waitForTimeout(250);
+  if(!(await d.page.locator('#npW57SelectionToolbar').isVisible())){
+   // An artificial selectionchange is not equivalent to a real mouse
+   // gesture. Try the actual pointer path before blaming the UI.
+   const coords=await d.page.evaluate(()=>{
+    const s=window.getSelection(),r=s?.rangeCount?s.getRangeAt(0):null;
+    if(!r||r.collapsed)return null;
+    const a=r.cloneRange(),z=r.cloneRange();
+    a.setEnd(r.startContainer,r.startOffset+1);
+    z.setStart(r.endContainer,r.endOffset-1);
+    const p=a.getBoundingClientRect(),q=z.getBoundingClientRect();
+    return{start:{x:p.left+1,y:p.top+p.height/2},end:{x:q.right-1,y:q.top+q.height/2}};
+   });
+   if(coords){
+    await d.page.mouse.move(coords.start.x,coords.start.y);
+    await d.page.mouse.down();
+    await d.page.mouse.move(coords.end.x,coords.end.y,{steps:15});
+    await d.page.mouse.up();
+    await d.page.waitForTimeout(350);
+   }
+  }
+  d.item.selectionDiag=await d.page.evaluate(()=>{
+   const s=window.getSelection(),r=s?.rangeCount?s.getRangeAt(0):null;
+   const el=r?.startContainer?.parentElement;
+   const article=document.querySelector('main.np-u-reader-main article.article-body');
+   const popup=document.querySelector('#selection-share-popup');
+   return{selected:s?.toString().slice(0,110),collapsed:s?.isCollapsed,
+    sourceBlock:el?.closest('p,li,blockquote')?.tagName||null,
+    sourceInsideArticle:!!(article&&el&&article.contains(el)),
+    hiddenAncestor:!!el?.closest('[hidden],[inert],[aria-hidden="true"]'),
+    bounds:r?.getBoundingClientRect().toJSON()||null,
+    toolbarHidden:document.querySelector('#npW57SelectionToolbar')?.hidden,
+    nativePopupVisible:!!popup&&popup.getClientRects().length>0&&getComputedStyle(popup).visibility!=='hidden'};
+  });
+  console.log('W57_SELECTION_DIAG '+JSON.stringify(d.item.selectionDiag));
+  assert.ok(await d.page.locator('#npW57SelectionToolbar').isVisible(),'W57 toolbar hidden after native drag');
+  d.item.duplicate=await d.page.evaluate(()=>{
+   const s=document.querySelector('#selection-share-popup');
+   return s?{exists:true,visible:s.getClientRects().length>0&&getComputedStyle(s).visibility!=='hidden'}:{exists:false};
+  });
+  await snap(d.page,'desktop-selection');
+  await d.page.locator('#npW57SelectionToolbar [data-w57-action="marker"]').click();
+  await waitW57Store(d.page,'gb-highlights-v1',{count:1,positional:true,color:'sage'});
+  await d.page.waitForFunction(()=>document.querySelectorAll('#npW57NotesList li[data-id]').length===1,null,{timeout:8000});
+  const first=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1));
+  assert.equal(first.length,1,'highlight save missing');
+  d.item.marker={kind:first[0].annotation.kind,color:first[0].annotation.color,anchor:first[0].annotation.anchor};
+  assert.equal(d.item.marker.color,'sage','highlight palette selection was not preserved');
+  d.item.highlightCss=await d.page.evaluate(()=>({
+   supported:typeof CSS!=='undefined'&&!!CSS.highlights&&typeof Highlight!=='undefined',
+   rendered:typeof CSS!=='undefined'&&!!CSS.highlights?.has('np-w57-marker-sage'),
+   rangeCount:CSS?.highlights?.get('np-w57-marker-sage')?.size||0
+  }));
+  if(d.item.highlightCss.supported)assert.equal(d.item.highlightCss.rendered,true,'marker not attached to CSS Custom Highlight registry');
+  await snap(d.page,'desktop-sage-highlight');
+  const again=await selectText(d.page);assert.ok(again);
+  await d.page.waitForTimeout(350);
+  await d.page.locator('#npW57SelectionToolbar [data-w57-action="note"]').click();
+  await d.page.locator('#npW57NoteText').fill('Первоначальная заметка W57');
+  await d.page.locator('#npW57SaveNote').click();
+  await waitW57Store(d.page,'gb-reader-notes-v1',{count:1,text:'Первоначальная заметка W57'});
+  await d.page.locator('#npW57NoteEditor').waitFor({state:'hidden'});
+  const prev=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
+  assert.equal(prev.length,1);
+  await d.page.locator('#npW57NotesList li[data-id] [data-action="edit"]').first().click();
+  await d.page.locator('#npW57NoteText').fill('Исправленная заметка W57');
+  await d.page.locator('#npW57SaveNote').click();
+  await waitW57Store(d.page,'gb-reader-notes-v1',{count:1,text:'Исправленная заметка W57'});
+  await d.page.locator('#npW57NoteEditor').waitFor({state:'hidden'});
+  await d.page.waitForFunction(()=>document.querySelector('#npW57NotesList li[data-id] .np-w57-note-preview-text')?.textContent==='Исправленная заметка W57',null,{timeout:8000});
+  const next=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
+  assert.equal(next.length,1);assert.equal(next[0].id,prev[0].id);assert.equal(next[0].text,'Исправленная заметка W57');
+  d.item.note={count:next.length,idPreserved:true};
+  const notePreview=d.page.locator('#npW57NotesList li[data-id] .np-w57-note-preview-text').first();
+  assert.equal(await notePreview.textContent(),'Исправленная заметка W57',
+   'edited linked note must be visibly rendered in the panel');
+  assert.equal(await d.page.locator('#npW57NotesList li[data-id] [data-action="edit"]').first().textContent(),
+   'Изменить заметку','edit action must be self-explanatory');
+  await snap(d.page,'desktop-saved-note');
+  await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
+  await d.page.keyboard.press('Escape');
+  const cancelledColor=await d.page.evaluate(()=>
+   JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').find(x=>x.annotation?.version===1)?.annotation?.color);
+  assert.equal(cancelledColor,'sage','Escape must not mutate the highlight color');
+  await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
+  await d.page.locator('#npW57Palette [data-color="lime"]').click();
+  await waitW57Store(d.page,'gb-highlights-v1',{count:1,positional:true,color:'lime'});
+  const recolored=await d.page.evaluate(()=>{
+    const q=JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]');
+    return q.find(x=>x.annotation?.version===1)?.annotation?.color;
+  });
+  d.item.recolor=recolored;
+  assert.equal(recolored,'lime','explicit palette selection must recolor only the saved highlight');
+  await snap(d.page,'desktop-lime-highlight');
+  await d.page.locator('#npW57NotesList li[data-id] [data-action="delete"]').first().click();
+  await waitW57Store(d.page,'gb-highlights-v1',{count:0,positional:true});
+   await d.page.locator('#npW57NotesStatus button').click();
+   await waitW57Store(d.page,'gb-highlights-v1',{count:1,positional:true,color:'lime'});
+  assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
+ });
+ const library='#gb-hl-panel';
+ // Exercise the real visible Analytics opener, not a hidden FAB fallback.
+ await safe('desktop-library-visible-opener',async()=>{
+  const p=d.page,button=p.locator('#npULibraryButton'),dialog=p.locator(library);
+  await button.waitFor({state:'visible'});
+  await p.waitForFunction(()=>!document.getElementById('npULibraryButton')?.disabled&&
+   typeof window.GBHighlights?.open==='function',null,{timeout:10000});
+  assert.equal(await button.getAttribute('aria-haspopup'),'dialog');
+  for(const dismissal of ['escape','button']){
+   await button.click();
+   await dialog.waitFor({state:'visible'});
+   await p.waitForFunction(()=>document.getElementById('npULibraryButton')?.getAttribute('aria-expanded')==='true'&&
+    document.getElementById('npULibraryButton')?.getAttribute('aria-busy')!=='true',null,{timeout:10000});
+   assert.equal(await button.getAttribute('aria-controls'),'gb-hl-panel');
+   assert.equal(await p.locator('#gb-hl-close').evaluate(el=>document.activeElement===el),true,'first real dialog focus');
+   if(dismissal==='escape')await p.keyboard.press('Escape');
+   else await p.locator('#gb-hl-close').click();
+   await dialog.waitFor({state:'hidden'});
+   assert.equal(await button.getAttribute('aria-expanded'),'false');
+   assert.equal(await button.evaluate(el=>document.activeElement===el),true,'return focus to the actual Analytics opener');
+   assert.equal(await button.isVisible(),true,'parent Analytics remains open');
+  }
+  d.item.visibleLibraryOpener={escape:true,closeButton:true,realFocus:true};
+ });
+ const openLibrary=async p=>{
+  await p.bringToFront();
+  if(!await p.locator(library).isVisible()){
+   const inline=p.locator('#npULibraryButton');
+   await (await inline.isVisible()?inline:p.locator('#gb-hl-fab')).click({timeout:5000});
+  }
+  await p.locator(`${library} [data-library-tab=note]`).click();
+ };
+ const editNote=async(p,id,text)=>{
+  await p.locator(`${library} .gb-hl-item[data-id="${id}"] [data-library-action=edit-note]`).click();
+  await p.locator('#gb-hl-note-text').fill(text);
+ };
+ const submitNote=p=>p.locator('#gb-hl-editor [type=submit]').click();
+ const notes=p=>p.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
+ await safe('desktop-library-same-and-cross-tab',async()=>{
+  const p=d.page,other=await d.context.newPage();
+  try{
+   await other.goto(p.url(),{waitUntil:'domcontentloaded'});
+   await other.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
+   await openLibrary(p);
+   await waitW57Store(p,'gb-reader-notes-v1',{count:1,text:'Исправленная заметка W57'});
+   const [record]=await notes(p),text='Исправлено через общую библиотеку';
+   assert.ok(record?.id!=null,'dependent W57 save did not establish the library fixture');
+   await editNote(p,record.id,text);
+   await submitNote(p);
+   for(const page of [p,other])await page.waitForFunction(t=>
+    document.querySelector('#npW57NotesList .np-w57-note-preview-text')?.textContent===t,text,{timeout:4000});
+   await p.locator(`${library} [data-library-tab=quote]`).click();
+   await p.locator(`${library} .gb-hl-item[data-type=quote] [data-library-action=delete]`).click();
+   const expectCount=async count=>{
+    for(const page of [p,other])await page.waitForFunction(n=>{
+     const cards=document.querySelectorAll('#npW57NotesList li[data-id]').length;
+     const counter=document.querySelector('#npW57NotesCount').textContent;
+     const ranges=[...CSS.highlights].filter(([k])=>k.startsWith('np-w57-')).reduce((sum,[,h])=>sum+h.size,0);
+     return cards===n&&counter===String(n)&&ranges===n;
+    },count,{timeout:4000});
+   };
+   await expectCount(0);
+   await p.locator('#gb-hl-status [data-library-action=undo]').click();
+   await expectCount(1);
+  }finally{
+   await other.close();
+   if(await p.locator(library).isVisible())await p.locator('#gb-hl-close').click();
+  }
+ });
+ for(const mode of ['edit','delete','different-note','ordinary'])await safe('library-conflict-'+mode,async()=>{
+  const context=await chrome.newContext({viewport:{width:1440,height:900}});
+  try{
+   const p=await context.newPage(),other=await context.newPage();
+   await p.goto(d.page.url());
+   await p.evaluate(()=>localStorage.setItem('gb-reader-notes-v1',JSON.stringify(['alpha','beta'].map(id=>
+    ({id,text:`Original ${id}`,url:location.origin+location.pathname,savedAt:Date.now()})))));
+   await Promise.all([p.reload(),other.goto(d.page.url())]);
+   await openLibrary(p);
+   await editNote(p,'alpha','Draft A');
+   if(mode!=='ordinary'){
+    await openLibrary(other);
+     if(mode==='delete'){
+      await other.locator(`${library} .gb-hl-item[data-id=alpha] [data-library-action=delete]`).click();
+      await other.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').every(n=>n.id!=='alpha'),null,{timeout:8000});
+      await other.locator('#gb-hl-status [data-library-action=undo]').waitFor({state:'visible'});
+     }else{
+      const target=mode==='edit'?'alpha':'beta';
+      await editNote(other,target,'Commit B');await submitNote(other);
+      await other.waitForFunction(id=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').some(n=>n.id===id&&n.text==='Commit B'),target,{timeout:8000});
+      await other.locator('#gb-hl-editor').waitFor({state:'hidden'});
+     }
+   }
+   const conflict=mode==='edit'||mode==='delete';
+    const before=await p.evaluate(()=>localStorage.getItem('gb-reader-notes-v1'));
+    await p.bringToFront();
+    await submitNote(p);
+    if(conflict){
+     await p.waitForFunction(()=>/Черновик не сохранён/.test(document.querySelector('#gb-hl-status')?.textContent||'')&&document.querySelector('#gb-hl-note-text')?.readOnly===false,null,{timeout:8000});
+     assert.equal(await p.evaluate(()=>localStorage.getItem('gb-reader-notes-v1')),before,'refused commit must preserve exact note bytes');
+    }else{
+     await p.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').some(n=>n.id==='alpha'&&n.text==='Draft A'),null,{timeout:8000});
+     await p.locator('#gb-hl-editor').waitFor({state:'hidden'});
+    }
+    const read=async page=>Object.fromEntries((await notes(page)).map(n=>[n.id,n.text]));
+    const saved=await read(p);
+   assert.equal(await p.locator('#gb-hl-editor').isVisible(),conflict);
+   if(conflict){
+    assert.equal(await p.locator('#gb-hl-note-text').inputValue(),'Draft A');
+    assert.match(await p.locator('#gb-hl-status').textContent(),/Черновик не сохранён/);
+   }
+   assert.equal(saved.alpha,mode==='edit'?'Commit B':mode==='delete'?undefined:'Draft A');
+   assert.equal(saved.beta,mode==='different-note'?'Commit B':'Original beta');
+   await other.reload();
+   assert.deepEqual(await read(other),saved);
+  }finally{await context.close();}
+ });
+ await safe('desktop-glossary-source-integrity',async()=>{
+  // The tested source contains a visible gterm and a large hidden gtip.
+  // Range.toString() includes the hidden tooltip, so the saved quote MUST
+  // instead use the author-visible textual projection.
+  const paragraph=await saltersParagraph(d.page);
+  await paragraph.locator('.gterm[data-term="диссентер"] .gtip').waitFor({state:'attached',timeout:15000});
+  // Let the source scroll settle before selecting. The annotation controller
+  // intentionally dismisses its toolbar on scroll; a selection created in the
+  // same task as scrollIntoView races that queued scroll event on Linux.
+  await paragraph.scrollIntoViewIfNeeded();
+  await d.page.evaluate(async selector=>{
+   document.querySelector(selector).scrollIntoView({block:'center',behavior:'instant'});
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  },SALTERS_PARAGRAPH);
+  await d.page.waitForFunction(selector=>{
+   const r=document.querySelector(selector)?.getBoundingClientRect();
+   return r&&r.top<innerHeight&&r.bottom>0;
+  },SALTERS_PARAGRAPH);
+  const fixture=await d.page.evaluate(selector=>{
+   const block=document.querySelector(selector);
+   if(!block)return{error:'Authored Salters source paragraph missing'};
+   const term=block.querySelector('.gterm[data-term="диссентер"]');
+   if(!term)return{error:'Gill glossary gterm/gtip absent'};
+   const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT),nodes=[];let n;
+   while((n=walker.nextNode()))nodes.push(n);
+   const start=nodes.find(x=>term.contains(x)&&!x.parentElement.closest('.gtip,.tooltip'));
+   const i=nodes.indexOf(start);
+   const end=nodes.slice(i+1).find(x=>x.nodeValue.trim().length>12&&
+    !x.parentElement.closest('.gtip,.btip,.tooltip')&&!term.contains(x));
+   if(!start||!end)return{error:'Visible text nodes around glossary missing'};
+   const range=document.createRange();
+   range.setStart(start,0);
+   range.setEnd(end,Math.min(50,end.nodeValue.length));
+   let expected='';
+   for(const leaf of nodes){
+    if(leaf.parentElement.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]'))continue;
+    if(!range.intersectsNode(leaf))continue;
+    const from=leaf===start?0:0;
+    const to=leaf===end?Math.min(50,leaf.nodeValue.length):leaf.nodeValue.length;
+    expected+=leaf.nodeValue.slice(from,to);
+   }
+   const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+   document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+   document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+   return{expected,raw:range.toString(),bounds:range.getBoundingClientRect().toJSON(),
+    glossary:term.querySelector('.gtip')?.textContent?.slice(0,65)||''};
+  },SALTERS_PARAGRAPH);
+  d.item.glossaryFixture={...fixture,raw:fixture.raw?.slice(0,250)};
+  assert.ok(!fixture.error,fixture.error);
+  assert.ok(fixture.raw.length>fixture.expected.length+20,
+   'fixture must demonstrably include hidden glossary in native Range.toString');
+  assert.ok(fixture.expected.length>=6,'visible authored passage too short');
+  await d.page.locator('#npW57SelectionToolbar').waitFor({state:'visible',timeout:5000});
+  assert.equal(await d.page.locator('#npW57SelectionToolbar').isVisible(),true,
+   'contextual actions should appear on genuine visible glossary-adjacent selection');
+  const before=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
+  await d.page.locator('#npW57SelectionToolbar [data-w57-action="marker"]').click();
+  await d.page.waitForFunction(ids=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .some(x=>!ids.includes(x.id)&&x.annotation?.version===1),before.map(x=>x.id),{timeout:10000});
+  const after=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
+  const record=after.find(x=>!before.some(y=>y.id===x.id)&&x.annotation?.version===1);
+  assert.ok(record,'glossary-adjacent selection must save an independent annotation');
+  assert.equal(record.text,fixture.expected,
+   'saved quote must contain only visible authored text, never glossary tooltip contents');
+  assert.equal(record.annotation.anchor.exact,fixture.expected,'anchor exact must match visible quote');
+  assert.equal(record.annotation.anchor.projection,'reader-visible-v1',
+   'quote must declare visible coordinate mapping');
+  assert.ok(!record.text.includes(fixture.glossary.slice(0,20)),
+   'hidden glossary text leaked into saved quote');
+  d.item.glossary={visibleLength:fixture.expected.length,nativeRangeLength:fixture.raw.length,
+   storedLength:record.text.length,restorableId:record.id};
+  await snap(d.page,'desktop-glossary-visible');
+  await d.page.reload({waitUntil:'domcontentloaded'});
+  await d.page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready===true);
+  // Shell readiness is deliberately earlier than lazy range restoration.
+  // Require the actual saved record's rendered row AND its exact highlight;
+  // a genuinely orphaned record must still fail rather than be retried away.
+  await d.page.waitForFunction(id=>{
+   const row=[...document.querySelectorAll('#npW57NotesList li[data-id]')].find(el=>el.dataset.id===id);
+   const record=JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').find(x=>x.id===id);
+   const group=CSS.highlights?.get('np-w57-'+record?.annotation?.kind+'-'+record?.annotation?.color);
+   return !!row&&!!window.GBReaderAnchors&&!!group&&[...group].some(r=>{
+    const article=window.GBReaderContract?.articleRoot?.(document);
+    const expected=article&&window.GBReaderAnchors.resolve(article,record.annotation.anchor);
+    return !!expected&&window.GBReaderAnchors.sameRange(r,expected);
+   });
+  },record.id,{timeout:10000});
+  const restored=await d.page.evaluate(id=>({
+   saved:JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').some(x=>x.id===id),
+   unresolved:window.__NP_W57_ANNOTATIONS__?.orphanCount?.(),
+   painted:CSS.highlights&&[...CSS.highlights.values()].some(h=>h.size>0)
+  }),record.id);
+  assert.equal(restored.saved,true,'reloading must not discard valid visible quotation');
+  assert.equal(restored.unresolved,0,'visible source range must restore after reload');
+  assert.equal(restored.painted,true,'glossary quote highlight must repaint after reload');
+  d.item.glossary.restored=restored;
+ });
+ await safe('desktop-glossary-first-pointer-click',async()=>{
+  const p=d.page;
+  const paragraph=await saltersParagraph(p);
+  await paragraph.scrollIntoViewIfNeeded();
+  await p.mouse.move(5,5);
+  const points=await paragraph.evaluate(el=>{
+   const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+   const nodes=[];
+   while(walker.nextNode())if(!walker.currentNode.parentElement.closest('.gtip,.btip'))nodes.push(walker.currentNode);
+   return [['Солтерс-Холле',false],['обсуждали',true]].map(([text,end])=>{
+    const n=nodes.find(leaf=>leaf.nodeValue.includes(text));
+    const i=n.nodeValue.indexOf(text)+(end?text.length-1:0);
+    const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+1);
+    const box=r.getBoundingClientRect();
+    return [end?box.right-.1:box.left+.1,box.y+box.height/2];
+   });
+  });
+  await p.mouse.move(...points[0]);await p.mouse.down();
+  await p.mouse.move(...points[1],{steps:26});await p.mouse.up();
+  const marker=p.locator('#npW57SelectionToolbar [data-w57-action=marker]');
+  await marker.waitFor();
+  const point=await marker.evaluate((el,selector)=>{
+   const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
+   const selection=getSelection(),block=document.querySelector(selector);
+   if(!selection?.rangeCount||!block)throw Error('Missing real pointer selection');
+   const range=selection.getRangeAt(0);
+   if(!block.contains(range.startContainer)||!block.contains(range.endContainer))
+    throw Error('Pointer selection escaped authored paragraph');
+   const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
+   let text='',leaf;
+   while((leaf=walker.nextNode())){
+    if(leaf.parentElement.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]')||
+      !range.intersectsNode(leaf))continue;
+    const from=leaf===range.startContainer?range.startOffset:0;
+    const to=leaf===range.endContainer?range.endOffset:leaf.nodeValue.length;
+    text+=leaf.nodeValue.slice(from,to);
+   }
+   return {x,y,hit:el.contains(document.elementFromPoint(x,y)),text,raw:selection.toString()};
+  },SALTERS_PARAGRAPH);
+  assert.match(point.text,/Солтерс-Холле/);
+  assert.match(point.text,/Диссентеры/);
+  assert.match(point.text,/обсуждали/);
+  assert.equal(point.hit,true,'tooltip must not cover the marker action after real drag');
+  const before=await p.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').map(q=>q.id));
+  await p.mouse.click(point.x,point.y);
+  await p.waitForFunction(({ids,text})=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .some(q=>!ids.includes(q.id)&&q.text===text&&q.annotation?.kind==='marker'&&
+    q.annotation.anchor?.exact===text&&q.annotation.anchor?.projection==='reader-visible-v1'),
+   {ids:before,text:point.text},{timeout:10000});
+  const saved=await p.evaluate(({ids,text})=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .filter(q=>!ids.includes(q.id)&&q.text===text&&q.annotation?.kind==='marker'),
+   {ids:before,text:point.text});
+  assert.equal(saved.length,1,'first direct click must save the actual visible selection exactly once');
+  d.item.firstPointer={raw:point.raw,visible:point.text,id:saved[0].id};
+ });
+ await safe('desktop-dark',async()=>{
+  await d.page.evaluate(()=>window.GBReaderPreferences?.setTheme?.('dark',{source:'w57-qa'}));
+  await d.page.waitForTimeout(250);
+  await snap(d.page,'desktop-dark');
+ });
+ await d.context.close();
+ const m=await scene(chrome,'gill-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
+ await nativeChecks(m);
+ await snap(m.page,'mobile-native-controls');
+ await m.context.close();
+ // Review layout at the actual user-facing breakpoints, not one 1440px image.
+ for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
+  [1120,800,'native-1120'],[1121,800,'pilot-1121'],[1280,800,'desktop-1280'],[1366,768,'desktop-1366'],[1440,900,'desktop-1440'],[1920,1080,'desktop-1920']]){
+  const extra=await scene(chrome,name,
+   '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
+  extra.item.geometry=await extra.page.evaluate(()=>{
+   const main=document.querySelector('main.np-u-reader-main'),rect=main?.getBoundingClientRect();
+   return {overflow:document.documentElement.scrollWidth>innerWidth+1,
+    center:rect?Math.round(rect.left+rect.width/2):null,viewportCenter:innerWidth/2,
+    mainWidth:rect?.width||0,visibleResearch:!!document.querySelector('#npUResearch')?.getClientRects().length};
+  });
+  if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
+  await snap(extra.page,name);
+  if(width>=1280){
+   await safe(name+'-settings',async()=>{
+    const p=extra.page;
+    const native=p.locator('#railSettingsBtn');
+    const trigger=await native.isVisible()?native:p.locator('#npUOutline .np-u-type-open');
+    await trigger.click();
+    const panel=p.locator('#npUFontPanel');
+    assert.equal(await panel.isVisible(),true);
+    assert.equal(await p.locator('#gillSettingsOverlay').getAttribute('aria-hidden'),'true');
+    assert.equal(await trigger.getAttribute('aria-controls'),'npUFontPanel');
+    assert.equal(await trigger.getAttribute('aria-expanded'),'true');
+    const [r,h]=await Promise.all([panel.boundingBox(),p.locator('main h1').first().boundingBox()]);
+    assert.ok(r.x+r.width<=h.x||r.y+r.height<=h.y||h.y+h.height<=r.y,'settings overlap H1');
+    const range=panel.locator('[data-np-u-scale-range]');
+    const scaleValue=panel.locator('[data-np-u-scale-value]');
+    await range.focus();
+    await range.press('Home');
+    for(let percent=85;percent<=125;percent+=5){
+     assert.equal(await scaleValue.innerText(),percent+'%');
+     assert.equal(Math.round(await p.evaluate(()=>GBReaderPreferences.get().fontScale)*100),percent);
+     if(percent<125)await range.press('ArrowRight');
+    }
+    assert.equal(await panel.locator('[data-np-u-scale-step="1"]').getAttribute('aria-disabled'),'true');
+    await panel.locator('[data-np-u-scale-step="-1"]').click();
+    assert.equal(await scaleValue.innerText(),'120%');
+    await panel.locator('.np-w57-sample summary').click();
+    assert.equal(await panel.locator('.np-w57-sample').evaluate(el=>el.open),true);
+    await panel.locator('.np-w57-sample summary').click();
+    const reset=panel.locator('[data-np-u-type-reset]');
+    assert.equal(await reset.evaluate(el=>getComputedStyle(el).textDecorationLine),'none');
+    await reset.click();
+    assert.equal(await scaleValue.innerText(),'100%');
+    await panel.locator('[data-np-u-type-theme=sepia]').click();
+    assert.equal(await p.evaluate(()=>window.GBReaderPreferences.get().theme),'sepia');
+    await panel.locator('[data-np-u-type-font=cormorant]').click();
+    assert.match(await (await saltersParagraph(p)).evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
+    await snap(p,name+'-settings');
+    await p.keyboard.press('Escape');
+    assert.equal(await panel.isHidden(),true);
+    assert.equal(await trigger.evaluate(e=>e===document.activeElement),true);
+   });
+  }
+  if(width<1121) await nativeChecks(extra);
+  await extra.context.close();
+ }
+ const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
+ await snap(alt.page,'other-article');await alt.context.close();
+ safari=await webkit.launch({headless:true});
+ for(const [engine,browser] of [['chromium',chrome],['webkit',safari]]){
+  for(const path of hardPaths){
+   await safe(engine+'-hard-texts-'+path,async()=>{
+    const s=await scene(browser,engine+'-hard-texts-'+path,path,1440,900);
+    try{
+     assert.equal(s.item.state.ready,true);
+     assert.equal(await s.page.locator('#npUResearch').count(),1);
+     assert.ok(s.item.state.width<=s.item.state.viewport+1,'horizontal overflow');
+     const folded=await s.page.evaluate(()=>document.body.classList.contains('np-u-hide-right'));
+     await s.page.locator('#npUEdgeToggle').click();
+     await s.page.waitForFunction(f=>document.body.classList.contains('np-u-hide-right')!==f,folded);
+     await s.page.locator('#npUEdgeToggle').click();
+     await s.page.waitForFunction(f=>document.body.classList.contains('np-u-hide-right')===f,folded);
+     assert.deepEqual(s.item.errors,[]);
+    }finally{await s.context.close()}
+   });
+  }
+ }
+ await safe('chromium-section-follow',()=>sectionFollowChecks(chrome,'chromium-section-follow'));
+ await safe('webkit-section-follow',()=>sectionFollowChecks(safari,'webkit-section-follow'));
+ const w=await scene(safari,'webkit-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
+ await nativeChecks(w);
+ await snap(w.page,'webkit-mobile');await w.context.close();
+}catch(e){REPORT.failures.push({name:'bootstrap',error:String(e).slice(0,1400)})}
+finally{
+ await writeFile(resolve(OUT,'report.json'),JSON.stringify(REPORT,null,2));
+ console.log('W57_AUDIT_REPORT '+JSON.stringify(REPORT));
+ await Promise.allSettled([chrome?.close(),safari?.close()]);
+ server?.kill('SIGTERM');
+}
+if(REPORT.failures.length){console.error('W57_BROWSING_FAILED '+REPORT.failures.length);process.exitCode=1}
+else console.log('W57_BROWSING_ALL_PASS');

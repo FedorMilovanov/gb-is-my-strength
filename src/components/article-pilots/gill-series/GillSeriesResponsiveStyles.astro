@@ -105,6 +105,322 @@
     }
   }
 
+
+  /*
+   * Gill editorial geometry (2026-11-19).
+   * One canonical responsive owner: avoid patching compiled floating-cluster.css,
+   * preserve the fixed rail, native TTS and the original SVG controls.
+   */
+  @media (min-width: 85em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] > .page-wrap {
+      /* True viewport centre, unless the real fixed rail needs 24px clearance.
+         Rail is 22vw on intermediate desktop widths and caps near 325px. */
+      margin-left: max(
+        calc((100vw - var(--gb-measure)) / 2),
+        calc(min(22vw, 325px) + 24px)
+      );
+    }
+  }
+
+
+  /* The native mobile chrome remains active until 85em.
+     On 640–1359px the full-width menu otherwise becomes a huge empty pill. */
+  @media (min-width: 40em) and (max-width: 84.999em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .mobile-top-slot .reader-mobile-menu-trigger {
+      max-width: 280px;
+      margin-inline: auto;
+    }
+  }
+
+  /* Normal tablet/landscape (not only very short windows): show the title
+     inside the first screen while retaining the historic editorial hero. */
+  @media (min-width: 40em) and (max-width: 84.999em) and (orientation: landscape) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs2-hero {
+      height: min(38dvh, 320px);
+      aspect-ratio: auto;
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs2-hero img {
+      height: 100%;
+      max-height: none;
+    }
+  }
+
+  /* Touch target for current chapter across all phone and small-tablet widths.
+     The <=960px reference lock styled the row but allowed 37px real hitboxes
+     at 390/640/768px; retain the existing SVGs and fixed bar height. */
+  @media (max-width: 60em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section {
+      min-height: 44px;
+    }
+  }
+
+  /*
+   * Gill's historical <=960px bar reference lock does not reach the native
+   * mobile chrome at widths 961–1359px. Without a scoped bridge the current
+   * chapter is a grey browser-default 18px button in a 78px bar.
+   * Restore its semantic hierarchy; preserve the owner's edge-to-edge bar,
+   * existing icons, action handlers, progress ring and 44px action targets.
+   */
+  @media (min-width: 60.0625em) and (max-width: 84.999em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+      min-height: 64px;
+      padding: 8px 16px;
+      gap: 8px;
+      align-items: center;
+      border-radius: 0;
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .bar-progress.dual-progress {
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section {
+      appearance: none;
+      box-sizing: border-box;
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 3px;
+      margin: 0;
+      padding: 4px 10px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--gill-mobile-bar-ink, #241b15);
+      text-align: left;
+      cursor: pointer;
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section__label {
+      display: block;
+      font-family: var(--gb-font-sans, system-ui, sans-serif);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      color: var(--gill-mobile-bar-muted, #74695a);
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section__main {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      max-width: 100%;
+      overflow: hidden;
+      white-space: normal;
+      overflow-wrap: break-word;
+      font-family: var(--gb-font-serif, Georgia, serif);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: inherit;
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .reader-mobile-action-cluster {
+      margin-left: auto;
+      gap: 4px;
+    }
+    /* At 961–1359px a legacy global bar rule uses !important with a
+       blue-black fill. Override that single known owner to match the Gill
+       warm dark-paper palette, rather than weakening all existing rules. */
+    html.dark body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+      background: rgba(25, 23, 21, .96) !important;
+    }
+    html.dark body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section {
+      color: #efe9dc;
+    }
+    html.dark body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section__label {
+      color: #bfb2a3;
+    }
+  }
+
+  @media (max-width: 63.999em) and (orientation: landscape) and (max-height: 500px) {
+    body[data-gbs2-series="dzhon-gill"]
+      .mobile-top-slot .reader-mobile-menu-trigger {
+      /* The TOC stays a button, not a 559px empty pill. */
+      max-width: 220px;
+      margin-inline: auto;
+    }
+
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs2-hero {
+      /* Preserve the original illustration, show the heading on first screen. */
+      height: clamp(116px, 34dvh, 144px);
+      aspect-ratio: auto;
+    }
+
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs2-hero img {
+      height: 100%;
+      max-height: none;
+    }
+
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+      min-height: 54px;
+      height: 54px;
+      padding-block: 3px;
+    }
+  }
+
+  /* The rail Play control is 32px, its peers are 40–44px. Keep SVGs
+     untouched; make the five desktop action centres land every 48px. */
+  @media (min-width: 85em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs-theme-corner {
+      gap: 8px;
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs-theme-corner .gb-ember-wrap {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+    }
+  }
+
+  /* Gill desktop rail/library: the five floating glyphs are centred 5vw
+     from the right edge plus half of their 40px slot. The 44px Library FAB
+     used a global right:14px, shifting 52–80px off-axis on large screens.
+     Preserve the original book SVG, its frame, and the docked mobile owner. */
+  @media (min-width: 85em) {
+    body[data-gbs2-series="dzhon-gill"]
+      #gb-hl-fab:not(.gb-hl-fab--docked) {
+      right: calc(5vw - 2px);
+    }
+  }
+
+  /* Warm dark-paper scale: paper, rail and floating actions share one family.
+     Restrict to Gill; do not recolour independent article/series engines. */
+  html.dark body[data-gbs2-series="dzhon-gill"] {
+    --gb-gill-paper: #141312;
+    --gb-gill-rail: #1c1916;
+    --gb-gill-float: #191715;
+    background: var(--gb-gill-paper);
+  }
+
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16],
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] .page-wrap {
+    background: var(--gb-gill-paper);
+  }
+
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] > .gbs-rail {
+    background: var(--gb-gill-rail);
+  }
+
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] .mobile-top-bar,
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+    background: rgba(25, 23, 21, .96);
+  }
+
+  /* Keep only the life-year range inseparable, not the full article title. */
+  body[data-gbs2-series="dzhon-gill"]
+    [data-gill-v16] .gill-life-years {
+    white-space: nowrap;
+  }
+
+  /* A consistent readable micro-type scale, without squeezing the left rail. */
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-pn {
+    font-size: 10.5px;
+    letter-spacing: .07em;
+  }
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-ps,
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-rprogress small,
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-current-label,
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-toch span:first-child {
+    font-size: 11px;
+  }
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-current-label {
+    letter-spacing: .11em;
+  }
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-toch span:first-child {
+    letter-spacing: .07em;
+  }
+
+  @media (max-width: 84.999em) {
+    /* Speed is a secondary setting: keep its full native 44px hitbox,
+       soften only the painted badge so TOC/reading stay visually primary. */
+    body[data-gbs2-series="dzhon-gill"] .reader-mobile-speed-badge {
+      color: var(--reader-speed-wine, #7a2e2e);
+    }
+    body[data-gbs2-series="dzhon-gill"] .reader-mobile-speed-badge::before {
+      background: color-mix(
+        in srgb,
+        var(--reader-speed-wine, #7a2e2e) 12%,
+        var(--color-surface, #fdfcf9)
+      );
+      border-color: color-mix(
+        in srgb,
+        var(--reader-speed-wine, #7a2e2e) 35%,
+        transparent
+      );
+      box-shadow: none;
+    }
+  }
+
+  /* W107: the reading progress/section/action bar is NOT an auto-height
+     text container. The two-line current H2/H3 title used to grow 62px
+     into 69–72px (including WebKit), moving every fixed affordance.
+     Reserve the existing maximum two-line geometry for *all* headings.
+     Keep the previously approved compact 320–360px and <=500px-high
+     landscape designs untouched; extra safe-area is still respected. */
+  @media screen and (min-width:361px) and (max-width:84.999em) and (min-height:501px) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+      height:calc(72px + env(safe-area-inset-bottom,0px)) !important;
+      min-height:calc(72px + env(safe-area-inset-bottom,0px)) !important;
+      box-sizing:border-box !important;
+    }
+    /* The section hitbox itself was also growing from 44px to 50–54px.
+       Give the approved two-line label a stable 54px slot: this fixes the
+       *internal* vertical jump, not merely the outer bar rectangle. */
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section {
+      height:54px !important;
+      min-height:54px !important;
+      max-height:54px !important;
+      box-sizing:border-box !important;
+      padding-block:4px !important;
+    }
+  }
+
+  /* On short landscape windows the approved bar is only 56px high:
+     keep its section target at a constant, comfortably tappable 50px
+     instead of allowing a long title to expand from 44px to 54px. */
+  @media screen and (min-width:361px) and (max-width:84.999em) and (max-height:500px) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section {
+      height:50px !important;
+      min-height:50px !important;
+      max-height:50px !important;
+      box-sizing:border-box !important;
+      padding-block:2px !important;
+    }
+  }
+
   @media print {
     /* Terminal series navigation is reader chrome, not authored paper content.
        Keep the rule in the compiled global SeriesReader stylesheet so it stays

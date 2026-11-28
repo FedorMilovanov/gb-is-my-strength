@@ -24,6 +24,11 @@ on:
       - "scripts/reader-projection-source-contract.mjs"
       - "scripts/reader-projection-browser-contract.mjs"
       - "scripts/reader-projection-tooltip-handoff-contract.mjs"
+      - "scripts/scripture-tooltip-projection-browser-test.mjs"
+      - "scripts/lib/reader-scripture-owner-browser.mjs"
+      - "src/lib/public-synodal-reference.mjs"
+      - "research/reader-w57-pilot/MANIFEST.json"
+      - "research/reader-w57-pilot/assets/**"
       - ".github/workflows/reader-projection.yml"
   push:
     branches: [main]
@@ -49,6 +54,11 @@ on:
       - "scripts/reader-projection-source-contract.mjs"
       - "scripts/reader-projection-browser-contract.mjs"
       - "scripts/reader-projection-tooltip-handoff-contract.mjs"
+      - "scripts/scripture-tooltip-projection-browser-test.mjs"
+      - "scripts/lib/reader-scripture-owner-browser.mjs"
+      - "src/lib/public-synodal-reference.mjs"
+      - "research/reader-w57-pilot/MANIFEST.json"
+      - "research/reader-w57-pilot/assets/**"
       - ".github/workflows/reader-projection.yml"
 
 permissions:
@@ -93,6 +103,7 @@ jobs:
           node --check scripts/reader-projection-source-contract.mjs
           node --check scripts/reader-projection-browser-contract.mjs
           node --check scripts/reader-projection-tooltip-handoff-contract.mjs
+          node --check scripts/scripture-tooltip-projection-browser-test.mjs
           set -o pipefail
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-projection-source-contract.mjs 2>&1 | tee reports/reader-projection-source-contract.log
 
@@ -106,6 +117,11 @@ jobs:
           set -o pipefail
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-projection-browser-contract.mjs 2>&1 | tee reports/reader-projection-browser-contract.log
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-projection-tooltip-handoff-contract.mjs 2>&1 | tee reports/reader-projection-tooltip-handoff-contract.log
+
+      - name: Prove rights-safe Classic and ARGON Scripture projection
+        run: |
+          set -o pipefail
+          node scripts/scripture-tooltip-projection-browser-test.mjs --dist 2>&1 | tee reports/scripture-tooltip-projection-browser-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -121,6 +137,7 @@ jobs:
             reports/reader-projection-browser-contract.json
             reports/reader-projection-browser-contract.md
             reports/reader-projection-tooltip-handoff-contract.log
+            reports/scripture-tooltip-projection-browser-contract.log
             reports/reader-projection-tooltip-handoff-contract.json
             reports/reader-projection-tooltip-handoff-contract.md
             reports/reader-projection-*.png

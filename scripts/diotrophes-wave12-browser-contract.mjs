@@ -19,14 +19,13 @@ const EXPECTED_SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
   'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
-  'https://www.thejourney.org/about/our-story-new',
 ].sort();
+const HISTORICAL_JOURNEY_URL = 'https://www.thejourney.org/about/our-story-new';
 const STALE_READER_LINKS = [
   'https://www.thejourney.org/our-story',
   'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
 ];
 const CANONICAL_BASE_READER_LINKS = [
-  'https://www.thejourney.org/about/our-story-new',
   'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
 ];
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2' };
@@ -503,8 +502,16 @@ async function inspect(browserType, engine, profile) {
       page.on('pageerror', (error) => pageErrors.push(error.message));
       await page.route(/mc\.yandex|gospod-bog\.ru/, (request) => request.abort());
       const response = await page.goto(base + ROUTE, { waitUntil: javaScriptEnabled ? 'networkidle' : 'domcontentloaded' });
+      if (!javaScriptEnabled) {
+        // DOMContentLoaded may precede the final stylesheet/font layout in WebKit.
+        // Wait for actual static resources, never for the H1 assertion itself.
+        await page.waitForLoadState('load');
+        await page.evaluate(async () => {
+          if (document.fonts?.ready) await document.fonts.ready;
+        });
+      }
       record(engine, `${profile.id}-${mode}`, 'http-200', response?.status() === 200, `status=${response?.status()}`);
-      const state = await page.evaluate(({ staleReaderLinks, canonicalBaseReaderLinks }) => {
+      const state = await page.evaluate(({ staleReaderLinks, canonicalBaseReaderLinks, historicalJourneyUrl }) => {
         const bodyText = document.body.innerText;
         const baseLinks = [...document.querySelectorAll('#sources a[href^="https://"]')].map((node) => node.href);
         const supplementLinks = [...document.querySelectorAll('#faithful-witness-sources a[href^="https://"]')].map((node) => node.href);
@@ -554,7 +561,31 @@ async function inspect(browserType, engine, profile) {
             return rightScore - leftScore;
           })
           .slice(0, 12);
+        const articleTitle = document.querySelector('article.article-body .article-header h1');
+        const titleRect = articleTitle?.getBoundingClientRect();
+        const methodologicalNotice = document.querySelector('#wave12-publication-heading');
+        const firstFoldTitle = {
+          titleCount: document.querySelectorAll('article.article-body h1').length,
+          titleTop: titleRect ? Math.round(titleRect.top) : null,
+          titleBottom: titleRect ? Math.round(titleRect.bottom) : null,
+          viewportHeight: window.innerHeight,
+          fullyInFirstViewport: Boolean(titleRect && titleRect.top >= 0 && titleRect.bottom <= window.innerHeight),
+          noticeCount: document.querySelectorAll('#wave12-publication-heading').length,
+          noticeInMainArticle: Boolean(methodologicalNotice?.closest('main article.article-body')),
+          noticeAfterTitle: Boolean(articleTitle && methodologicalNotice &&
+            (articleTitle.compareDocumentPosition(methodologicalNotice) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        };
         return {
+          firstFoldTitle,
+          readerRailCover: document.querySelector('.gbs2-current')?.getAttribute('style') || '',
+          socialPreview: {
+            ogImage: document.querySelector('meta[property="og:image"]')?.content || '',
+            twitterImage: document.querySelector('meta[name="twitter:image"]')?.content || '',
+            ogAlt: document.querySelector('meta[property="og:image:alt"]')?.content || '',
+            twitterAlt: document.querySelector('meta[name="twitter:image:alt"]')?.content || '',
+            width: document.querySelector('meta[property="og:image:width"]')?.content || '',
+            height: document.querySelector('meta[property="og:image:height"]')?.content || '',
+          },
           title: document.title,
           antiKicker: document.querySelector('article.article-body .article-header .anti-kicker')?.textContent?.trim() || '',
           h1: document.querySelector('h1')?.textContent?.trim() || '',
@@ -568,6 +599,12 @@ async function inspect(browserType, engine, profile) {
             total: allReaderLinks.length,
           },
           readerLinks: new Set(allReaderLinks).size,
+          historicalJourney: {
+            baseDisabled: Boolean(document.querySelector('#sources [data-locator-status="unavailable-404-2026-11-23"][data-historical-href="' + historicalJourneyUrl + '"]')),
+            supplementDisabled: Boolean(document.querySelector('#faithful-witness-sources [data-locator-status="unavailable-404-2026-11-23"][data-historical-href="' + historicalJourneyUrl + '"]')),
+            baseClickable: baseLinks.includes(historicalJourneyUrl),
+            supplementClickable: supplementLinks.includes(historicalJourneyUrl),
+          },
           duplicateReaderLinks,
           staleReaderLinksPresent: staleReaderLinks.filter((href) => allReaderLinks.includes(href)),
           canonicalBaseReaderLinkCounts: Object.fromEntries(
@@ -581,10 +618,44 @@ async function inspect(browserType, engine, profile) {
           canonical: document.querySelector('link[rel="canonical"]')?.href || '',
           robots: document.querySelector('meta[name="robots"]')?.content || '',
         };
-      }, { staleReaderLinks: STALE_READER_LINKS, canonicalBaseReaderLinks: CANONICAL_BASE_READER_LINKS });
+      }, { staleReaderLinks: STALE_READER_LINKS, canonicalBaseReaderLinks: CANONICAL_BASE_READER_LINKS, historicalJourneyUrl: HISTORICAL_JOURNEY_URL });
       record(engine, `${profile.id}-${mode}`, 'single-main', state.mainCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'single-article', state.articleCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'title-first-fold',
+        state.firstFoldTitle.titleCount === 1 &&
+          state.firstFoldTitle.fullyInFirstViewport &&
+          state.firstFoldTitle.noticeCount === 1 &&
+          state.firstFoldTitle.noticeInMainArticle &&
+          state.firstFoldTitle.noticeAfterTitle,
+        JSON.stringify(state.firstFoldTitle),
+      );
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'dossier-social-preview',
+        state.socialPreview.ogImage === 'https://gospod-bog.ru/images/pastor-series/og-diotrefy-nashego-vremeni.webp' &&
+          state.socialPreview.twitterImage === state.socialPreview.ogImage &&
+          state.socialPreview.width === '1200' &&
+          state.socialPreview.height === '630' &&
+          state.socialPreview.ogAlt === state.socialPreview.twitterAlt &&
+          /зеркал/i.test(state.socialPreview.ogAlt) &&
+          existsSync(join(DIST, 'images', 'pastor-series', 'og-diotrefy-nashego-vremeni.webp')),
+        JSON.stringify(state.socialPreview),
+      );
+      record(
+        engine,
+        `${profile.id}-${mode}`,
+        'dossier-reader-rail-cover',
+        state.readerRailCover.includes('url(') &&
+          state.readerRailCover.includes('/images/pastor-series/og-diotrefy-nashego-vremeni.webp') &&
+          !state.readerRailCover.includes('og-20-antisovetov-pastoru.webp') &&
+          existsSync(join(DIST, 'images', 'pastor-series', 'og-diotrefy-nashego-vremeni.webp')),
+        state.readerRailCover,
+      );
       record(engine, `${profile.id}-${mode}`, 'reader-header-no-internal-wave', state.antiKicker === 'Историко-богословское исследование', JSON.stringify({ heading: state.antiKicker }));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'authority-marker', state.sourceAuthority === '148', JSON.stringify(state));
@@ -592,10 +663,12 @@ async function inspect(browserType, engine, profile) {
         engine,
         `${profile.id}-${mode}`,
         'reader-link-sections',
-        state.readerLinkSections.base === 40 && state.readerLinkSections.supplement === 33 && state.readerLinkSections.total === 73,
+        state.readerLinkSections.base === 39 &&
+          state.readerLinkSections.supplement === (state.historicalJourney.supplementDisabled ? 32 : 33) &&
+          state.readerLinkSections.total === (state.historicalJourney.supplementDisabled ? 71 : 72),
         JSON.stringify(state.readerLinkSections),
       );
-      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === 69, `unique=${state.readerLinks}`);
+      record(engine, `${profile.id}-${mode}`, 'reader-link-uniqueness', state.readerLinks === (state.historicalJourney.supplementDisabled ? 68 : 69), `unique=${state.readerLinks}`);
       record(
         engine,
         `${profile.id}-${mode}`,
@@ -608,10 +681,14 @@ async function inspect(browserType, engine, profile) {
         `${profile.id}-${mode}`,
         'reader-link-migration-receipt',
         state.staleReaderLinksPresent.length === 0 &&
+          state.historicalJourney.baseDisabled &&
+          !state.historicalJourney.baseClickable &&
+          (!state.historicalJourney.supplementDisabled || !state.historicalJourney.supplementClickable) &&
           CANONICAL_BASE_READER_LINKS.every((href) => state.canonicalBaseReaderLinkCounts[href] === 1),
         JSON.stringify({
           stale: state.staleReaderLinksPresent,
           canonicalBaseCounts: state.canonicalBaseReaderLinkCounts,
+          historicalJourney: state.historicalJourney,
         }),
       );
       record(engine, `${profile.id}-${mode}`, 'faithful-sections', state.hasFaithful && state.hasResponses, JSON.stringify(state));
@@ -658,16 +735,22 @@ try {
     await page.pdf({ path:pdfPath, format:'A4', printBackground:true, margin:{ top:'12mm', right:'10mm', bottom:'12mm', left:'10mm' } });
     const bytes = statSync(pdfPath).size;
     record('chromium', 'print-a4', 'pdf-size', bytes > 150_000, `bytes=${bytes}`);
-    if (existsSync('/usr/bin/pdfinfo') && existsSync('/usr/bin/pdftotext')) {
-      const info = execFileSync('/usr/bin/pdfinfo', [pdfPath], { encoding:'utf8' });
+    // Resolve Poppler on PATH on both Linux and Windows. Explicit overrides allow
+    // a portable toolchain without changing the machine-wide PATH.
+    // Never skip the page-count or first/last-text assertions when tools are absent.
+    const pdfinfoBinary = process.env.PDFINFO_BIN?.trim() || (process.platform === 'win32' ? 'pdfinfo.exe' : 'pdfinfo');
+    const pdftotextBinary = process.env.PDFTOTEXT_BIN?.trim() || (process.platform === 'win32' ? 'pdftotext.exe' : 'pdftotext');
+    try {
+      const info = execFileSync(pdfinfoBinary, [pdfPath], { encoding:'utf8', windowsHide:true });
       const pages = Number(info.match(/^Pages:\s+(\d+)/m)?.[1] || 0);
       const textPath = join(OUT, 'diotrophes-wave12.txt');
-      execFileSync('/usr/bin/pdftotext', [pdfPath, textPath]);
+      execFileSync(pdftotextBinary, ['-enc', 'UTF-8', pdfPath, textPath], { windowsHide:true });
       const pdfText = readFileSync(textPath, 'utf8');
       record('chromium', 'print-a4', 'page-count', pages >= 8 && pages <= 120, `pages=${pages}`);
       record('chromium', 'print-a4', 'first-and-last-content', pdfText.includes('Диотрефы нашего времени') && pdfText.includes('Практическая лестница различения'), `pages=${pages}`);
-    } else {
-      record('chromium', 'print-a4', 'poppler-present', false, 'pdfinfo/pdftotext missing');
+    } catch (error) {
+      record('chromium', 'print-a4', 'pdf-extraction', false,
+        `pdfinfo=${pdfinfoBinary}, pdftotext=${pdftotextBinary}: ${error.message || error}`);
     }
   } finally {
     await browser.close();

@@ -17,6 +17,13 @@ const routes = [
   { id: 'krajne', path: '/articles/krajne-li-isporcheno-serdce/' },
 ];
 const viewports = [{ width: 390, height: 844 }, { width: 1366, height: 900 }];
+const faqRoutes = [
+  { path: '/articles/20-antisovetov-pastoru/', count: 7 },
+  { path: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/', count: 3 },
+  { path: '/articles/kod-da-vinchi/', count: 8 },
+  { path: '/articles/krajne-li-isporcheno-serdce/', count: 3 },
+];
+const faqOnly = process.argv.includes('--faq-only');
 
 function contentType(filePath) {
   return {
@@ -82,6 +89,128 @@ async function exerciseFaq(page, label) {
   });
   assert.equal(restored.expanded, firstTransition.before, `${label}: FAQ second click did not restore state`);
   assert.equal(restored.itemOpen, restored.expanded === 'true', `${label}: FAQ restored visual/open state diverges from aria-expanded`);
+}
+
+// The real built route must keep all answer text readable if the native
+// owner is unavailable, but keep the normal interactive controls collapsed.
+async function exerciseFaqProgressive(browser, browserName, baseUrl, route, viewport, mode) {
+  const context = await browser.newContext({
+    viewport, javaScriptEnabled: mode !== 'no-js', reducedMotion: 'reduce', serviceWorkers: 'block',
+  });
+  const label = [browserName, route.path, viewport.width, mode].join(' ');
+  let blocked = 0;
+  try {
+    await context.route('**/*', request => {
+      const url = new URL(request.request().url());
+      if (url.origin !== baseUrl) return request.abort('blockedbyclient');
+      if (mode === 'bundle-blocked' && /\/_astro\/ReaderActionsRuntime\.astro_astro_type_script_/.test(url.pathname)) {
+        blocked += 1;
+        return request.abort('failed');
+      }
+      return request.continue();
+    });
+    const page = await context.newPage();
+    const response = await page.goto(baseUrl + route.path, { waitUntil: 'load' });
+    assert.ok(response?.ok(), label + ': route failed');
+    if (route.path === '/articles/kod-da-vinchi/') {
+      const preloads = await page.locator('head noscript[data-gb-faq-font-preloads] link[rel=preload][as=font]').evaluateAll(nodes => nodes.map(link => ({ href: new URL(link.href).pathname, type: link.type, crossOrigin: link.crossOrigin })));
+      assert.equal(preloads.length, mode === 'no-js' ? 9 : 0, label + ': static font preload isolation');
+      assert.equal(new Set(preloads.map(link => link.href)).size, preloads.length, label + ': duplicate static font preload');
+      assert.ok(preloads.every(link => link.type === 'font/woff2' && link.crossOrigin === 'anonymous' && /^\/fonts\/(Lora|SourceSans3)\/[^/]+\.woff2$/.test(link.href)), label + ': invalid static font preload');
+    }
+    if (mode === 'normal') await page.waitForFunction(() => document.documentElement.dataset.gbArticleFaqReady === '1');
+    if (mode === 'bundle-blocked') assert.ok(blocked > 0, label + ': did not block actual native entry');
+    const buttons = page.locator('.faq-accordion__q');
+    assert.equal(await buttons.count(), route.count, label + ': FAQ count drift');
+    const states = await buttons.evaluateAll(nodes => nodes.map(q => {
+      const b = document.getElementById(q.getAttribute('aria-controls'));
+      const inner = b?.querySelector('.faq-accordion__body-inner');
+      return { marker: q.hasAttribute('data-gb-faq-static'), disabled: q.disabled,
+        expanded: q.getAttribute('aria-expanded'), owner: q.dataset.gbFaqOwner || null,
+        inert: b?.inert, height: b?.getBoundingClientRect().height,
+        content: inner?.getBoundingClientRect().height, scroll: inner?.scrollHeight };
+    }));
+    for (const state of states) {
+      if (mode === 'normal') {
+        assert.equal(state.owner, 'native-v1', label + ': missing native owner');
+        assert.equal(state.disabled, false); assert.equal(state.expanded, 'false');
+        assert.equal(state.inert, true); assert.ok(state.height <= 1, label + ': closed answer visible');
+      } else {
+        assert.ok(state.scroll > 0 && state.height >= state.scroll - 2, label + ': fallback answer clipped');
+        assert.equal(state.owner, null); assert.equal(state.disabled, true);
+        assert.equal(state.expanded, 'true'); assert.equal(state.inert, false);
+        assert.ok(state.scroll > 0 && state.height >= state.scroll - 2 && state.content >= state.scroll - 2,
+          label + ': fallback answer clipped: ' + JSON.stringify(state));
+      }
+      assert.equal(state.marker, true, label + ': missing progressive server marker');
+    }
+    if (mode === 'normal') {
+      const button = buttons.first();
+      const id = await button.getAttribute('aria-controls');
+      await button.click();
+      await page.waitForFunction(id => {
+        const b = document.getElementById(id);
+        const inner = b.querySelector('.faq-accordion__body-inner');
+        return !b.inert && b.getBoundingClientRect().height >= inner.scrollHeight - 2;
+      }, id);
+      assert.equal(await button.getAttribute('aria-expanded'), 'true');
+      await button.focus();
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(id => {
+        const b = document.getElementById(id);
+        return b.inert && b.getBoundingClientRect().height <= 1;
+      }, id);
+      assert.equal(await button.getAttribute('aria-expanded'), 'false');
+      assert.equal(await button.evaluate(q => document.activeElement === q), true, label + ': keyboard focus lost');
+    }
+    // Real answer IDs are also public Scripture-index destinations. A valid
+    // URL alone is insufficient if the native owner hides the answer.
+    const ids = await buttons.evaluateAll(nodes => nodes.map(q => q.getAttribute('aria-controls')));
+    const coldId = ids.at(-1), nextId = ids.at(-2);
+    assert.ok(coldId && nextId, label + ': fragment fixture IDs missing');
+    const fragmentState = id => page.evaluate(id => {
+      const body = document.getElementById(id);
+      const q = document.getElementById(body.getAttribute('aria-labelledby'));
+      const inner = body.querySelector('.faq-accordion__body-inner');
+      const r = body.getBoundingClientRect();
+      return { expanded: q.getAttribute('aria-expanded'), inert: body.inert,
+        height: r.height, content: inner.scrollHeight, top: r.top, bottom: r.bottom,
+        viewport: innerHeight, hash: location.hash, focus: document.activeElement?.id || null };
+    }, id);
+    const assertFragment = async id => {
+      // Poll the real rendered answer, not an injected open state.
+      let s;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        s = await fragmentState(id);
+        if (s.expanded === 'true' && !s.inert && s.content > 0 &&
+            s.height >= s.content - 2 && s.top >= -2 && s.top < s.viewport - 24) break;
+        await page.waitForTimeout(100);
+      }
+      assert.equal(s.hash, '#' + id, label + ': wrong answer fragment');
+      assert.ok(s.expanded === 'true' && !s.inert && s.content > 0 &&
+        s.height >= s.content - 2 && s.top >= -2 && s.top < s.viewport - 24,
+        label + ': fragment answer hidden or out of view: ' + JSON.stringify(s));
+      return s;
+    };
+    await page.goto(baseUrl + route.path + '?faq-fragment=1#' + encodeURIComponent(coldId), { waitUntil: 'load' });
+    if (mode === 'normal') await page.waitForFunction(() => document.documentElement.dataset.gbArticleFaqReady === '1');
+    const cold = await assertFragment(coldId);
+    if (mode === 'normal') {
+      const opened = await page.locator('.faq-accordion__q[aria-expanded="true"]').evaluateAll(nodes => nodes.map(q => q.getAttribute('aria-controls')));
+      assert.deepEqual(opened, [coldId], label + ': cold fragment opened unrelated answers');
+    }
+    await page.evaluate(id => { location.hash = id; }, nextId);
+    const changed = await assertFragment(nextId);
+    if (mode === 'normal') {
+      const q = page.locator('.faq-accordion__q[aria-controls="' + nextId + '"]');
+      await q.click();
+      await page.waitForFunction(id => document.getElementById(id).inert, nextId);
+      await page.evaluate(() => { location.hash = '#nonexistent-faq-fragment'; });
+      await page.waitForTimeout(150);
+      assert.equal(await q.getAttribute('aria-expanded'), 'false', label + ': unrelated fragment reopened a manually closed answer');
+    }
+    return { browser: browserName, route: route.path, viewport, mode, answers: states.length, blocked, fragments: { cold, changed } };
+  } finally { await context.close(); }
 }
 
 async function waitForPageMotionToSettle(page, label) {
@@ -532,7 +661,7 @@ async function main() {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   assert.ok(fs.existsSync(DIST), 'dist missing; build production-like output first');
   const server = await startServer();
-  const results = [];
+  const results = [], faqResults = [];
   try {
     for (const browserName of browserNames) {
       const browserType = BROWSERS[browserName];
@@ -540,9 +669,12 @@ async function main() {
       const browser = await browserType.launch({ headless: true });
       try {
         for (const viewport of viewports) {
-          for (const route of routes) results.push(await runCase(browser, browserName, server.baseUrl, route, viewport));
+          for (const route of faqRoutes) for (const mode of ['no-js', 'bundle-blocked', 'normal']) {
+            faqResults.push(await exerciseFaqProgressive(browser, browserName, server.baseUrl, route, viewport, mode));
+          }
+          if (!faqOnly) for (const route of routes) results.push(await runCase(browser, browserName, server.baseUrl, route, viewport));
         }
-        if (browserName === 'chromium') {
+        if (!faqOnly && browserName === 'chromium') {
           results.push(await runCase(
             browser,
             browserName,
@@ -560,7 +692,8 @@ async function main() {
     await server.close();
   }
 
-  const report = { schemaVersion: 1, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results };
+  console.log('Progressive FAQ cases: ' + faqResults.length + ' PASS');
+  const report = { schemaVersion: 1, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results, faqResults };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);
   console.log(`Article capability browser contract: PASS (${results.length} cases, including bounded hanging-clipboard fallback)`);
 }

@@ -71,6 +71,17 @@ const { controls } = Astro.props;
         for(const action of actions){
           const original=rail.querySelector<HTMLElement>(action.selector);
           if(!original)continue;
+          if(original.matches('[data-action="print"]')){
+            const api=(window as any).GBReaderActions?.export;
+            if(api){
+              for(const command of api.commands){
+                const option=api.makeOption(command,(id:string)=>{close(true);api.invoke(id,'rail-more')});
+                option.classList.add('reader-rail-more-option');
+                popup.appendChild(option);
+              }
+            }
+            continue;
+          }
           const option=document.createElement('button');
           option.type='button';
           option.className='reader-rail-more-option';

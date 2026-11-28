@@ -1,0 +1,153 @@
+{
+  "sha": "02c984111c6c45358da7aad435294baa84c5153e",
+  "base": "http://127.0.0.1:19228",
+  "scenarios": [
+    {
+      "id": "A-change-change-W57",
+      "aSaved": "Правка вкладки A — сохраняется первой",
+      "bDraft": "Правка вкладки B — из устаревшей версии",
+      "storeAfter": [
+        "Правка вкладки A — сохраняется первой"
+      ],
+      "bMessage": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.",
+      "bEditorVisible": true,
+      "bDraftKept": "Правка вкладки B — из устаревшей версии",
+      "lostText": false,
+      "verdict": "B REFUSED (no silent overwrite)"
+    },
+    {
+      "id": "B-delete-change",
+      "storeAfterDelete": 0,
+      "storeAfterStaleSave": [],
+      "quoteLinkAfter": "note-w107-fixture",
+      "aMessage": "Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.",
+      "aEditorVisible": true,
+      "aDraftKept": "Черновик вкладки A для удаляемой заметки",
+      "verdict": "A REFUSED (no resurrection)"
+    },
+    {
+      "id": "B-after-reload",
+      "a": 0,
+      "b": 0
+    },
+    {
+      "id": "C-change-change-reverse",
+      "storeAfter": [
+        "Правка W57 — сохраняется первой"
+      ],
+      "libMessage": "Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.",
+      "editorStillOpen": true,
+      "draftKept": "Правка Product Library — из устаревшей версии",
+      "overwrote": false,
+      "verdict": "PRODUCT REFUSED (no silent overwrite)"
+    }
+  ],
+  "checks": [
+    {
+      "name": "fixture: canonical anchor captured with visible geometry",
+      "ok": true,
+      "detail": "textLength=55"
+    },
+    {
+      "name": "A: both W57 tabs opened the identical source text",
+      "ok": true,
+      "detail": "A=\"Исходная заметка — версия 1 (обе вкладки читают её)\" B=\"Исходная заметка — версия 1 (обе вкладки читают её)\""
+    },
+    {
+      "name": "A: A persisted its edit",
+      "ok": true,
+      "detail": "\"Правка вкладки A — сохраняется первой\""
+    },
+    {
+      "name": "A: stale B must not overwrite A",
+      "ok": true,
+      "detail": "[\"Правка вкладки A — сохраняется первой\"]"
+    },
+    {
+      "name": "A: B keeps its draft on screen",
+      "ok": true,
+      "detail": "vis=true draft=\"Правка вкладки B — из устаревшей версии\""
+    },
+    {
+      "name": "A: after reload both tabs read the same store",
+      "ok": true,
+      "detail": "[\"Правка вкладки A — сохраняется первой\"] vs [\"Правка вкладки A — сохраняется первой\"]"
+    },
+    {
+      "name": "A: after reload A's text is the only surviving version",
+      "ok": true,
+      "detail": "[\"Правка вкладки A — сохраняется первой\"]"
+    },
+    {
+      "name": "B: tab B read the same source version",
+      "ok": true,
+      "detail": "\"Исходная заметка — версия 1 (обе вкладки читают её)\""
+    },
+    {
+      "name": "B: real Product delete removed the note",
+      "ok": true,
+      "detail": "count=0"
+    },
+    {
+      "name": "B: stale A must not resurrect the deleted note",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "B: stale A must not rewrite the quote link",
+      "ok": true,
+      "detail": "annotation.noteId=note-w107-fixture"
+    },
+    {
+      "name": "B: A keeps its draft on screen",
+      "ok": true,
+      "detail": "vis=true draft=\"Черновик вкладки A для удаляемой заметки\""
+    },
+    {
+      "name": "B: after reload the deleted note did not self-restore (A)",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "B: after reload the deleted note did not self-restore (B)",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "C: Product and W57 opened the identical source text",
+      "ok": true,
+      "detail": "W57=\"Исходная заметка — версия 1 (обе вкладки читают её)\" Product=\"Исходная заметка — версия 1 (обе вкладки читают её)\""
+    },
+    {
+      "name": "C: W57 persisted its edit",
+      "ok": true,
+      "detail": "\"Правка W57 — сохраняется первой\""
+    },
+    {
+      "name": "C: stale Product save must not overwrite W57",
+      "ok": true,
+      "detail": "[\"Правка W57 — сохраняется первой\"]"
+    },
+    {
+      "name": "C: Product keeps its draft on screen",
+      "ok": true,
+      "detail": "open=true status=\"Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.\""
+    },
+    {
+      "name": "C: after reload W57 text is the only surviving version",
+      "ok": true,
+      "detail": "[\"Правка W57 — сохраняется первой\"]"
+    }
+  ],
+  "pageErrors": [],
+  "fixture": {
+    "textLength": 55,
+    "quoteText": "ия о Джоне Гилле объединяет историческое введение, четы"
+  },
+  "summary": {
+    "total": 19,
+    "passed": 19,
+    "failed": [],
+    "pageErrors": []
+  }
+}

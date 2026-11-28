@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
 import ReaderIntegratedRailToggle from '@/components/article-pilots/_shared/ReaderIntegratedRailToggle.astro';
@@ -192,7 +193,7 @@ const landingToc = [
         <p class="article-byline reveal">
           <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
           <span class="article-byline__sep">·</span>
-          <time datetime="2026-06-13">13 июня 2026</time>
+          <time datetime="2026-06-13" data-editorial-slot="published">13 июня 2026</time>
         </p>
       </header>
 
@@ -267,8 +268,8 @@ const landingToc = [
   </div>
 </div>
 
-<button class="gbs2-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet"><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Книга</span></button>
-<div class="gbs2-sheet" id="gbs2Sheet" aria-hidden="true">
+<button class="gbs2-bbar" id="gbs2Bbar" type="button" aria-haspopup="dialog" aria-controls="gbs2Sheet" aria-expanded="false"><b id="gbs2MobPct">0%</b><span id="gbs2MobSec">Книга</span></button>
+<div class="gbs2-sheet" id="gbs2Sheet" aria-hidden="true" data-gbs2-owner="floating-cluster" inert>
   <div class="gbs2-sheet-backdrop" data-gbs2-close></div>
   <section class="gbs2-sheet-panel" role="dialog" aria-modal="true" aria-label={`Книга ${BAPTIST_BOOK_META.title}`}>
     <div class="gbs2-sheet-grab" aria-hidden="true"></div>
@@ -309,11 +310,11 @@ const landingToc = [
   </section>
 </div>
 
-<script is:inline defer src="../js/site-utils.js?v=e80f1dfb"></script>
-<script is:inline defer src="../js/scroll-perf.js?v=454d6f7b"></script>
-<script is:inline defer src="../js/site.js?v=9fa8818a"></script>
-<script is:inline defer src="../js/glossary.js?v=c7f8b6e9"></script>
-<script is:inline defer src="../js/sw-register.js?v=921dd6a2"></script>
+<script is:inline defer src={assetUrl('js/site-utils.js')}></script>
+<script is:inline defer src={assetUrl('js/scroll-perf.js')}></script>
+<script is:inline defer src={assetUrl('js/site.js')}></script>
+<script is:inline defer src={assetUrl('js/glossary.js')}></script>
+<script is:inline defer src={assetUrl('js/sw-register.js')}></script>
 
-<script is:inline defer src="../js/highlights.js?v=e3e21e86"></script>
-<script is:inline defer src="../js/enhancements.js?v=15476429"></script>
+<script is:inline defer src={assetUrl('js/highlights.js')}></script>
+<script is:inline defer src={assetUrl('js/enhancements.js')}></script>

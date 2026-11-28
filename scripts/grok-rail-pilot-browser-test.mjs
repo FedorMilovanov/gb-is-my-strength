@@ -7,6 +7,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
@@ -95,7 +96,7 @@ try {
         const errors = [];
         page.on('pageerror',e => errors.push(e.message));
         try {
-          await page.goto(origin + ROUTE, {waitUntil:'domcontentloaded'});
+          await gotoNativeReader(page,origin + ROUTE, {waitUntil:'domcontentloaded'});
           await page.waitForTimeout(500);
           if (flagOff) {
             const fallback = await page.evaluate(() => {
@@ -187,6 +188,18 @@ try {
           } else {
             check(name,viewport.id,'existing right cluster retained',snapshot.right);
             check(name,viewport.id,'disclosure initialized',snapshot.ready);
+            // The canonical Library button is mounted by a lazy Product module.
+            // A fixed 500ms post-DOMContentLoaded wait can observe the button
+            // still in <body> in WebKit even though it docks correctly a frame
+            // later. Wait for the actual DOM ownership with a finite bound;
+            // a permanently undocked button still fails this test.
+            await page.waitForFunction(() => {
+              const rail = document.querySelector('.hrail--grok');
+              const host = rail?.querySelector('.hrail-bottom');
+              const library = document.querySelector('#gb-hl-fab');
+              return !!host && !!library && library.parentElement === host
+                && library.classList.contains('gb-hl-fab--docked');
+            }, null, { timeout: 7000 });
             const integrated=await page.evaluate(()=>{
               const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect(),style=getComputedStyle(rail);
               const library=document.querySelector('#gb-hl-fab');
@@ -652,12 +665,12 @@ try {
               await isolateAnalytics(fresh);
               fresh.on('pageerror',e => errors.push(e.message));
               try {
-                await fresh.goto(origin+ROUTE+deepHref,{waitUntil:'domcontentloaded'});
+                await gotoNativeReader(fresh,origin+ROUTE+deepHref,{waitUntil:'domcontentloaded'});
                 await fresh.waitForFunction(h=>{const r=document.getElementById(h.slice(1))?.getBoundingClientRect();return r&&r.top>=-5&&r.top<innerHeight-25;},deepHref,{timeout:8000});
                 const directRect = await fresh.locator('#'+deepHref.slice(1)).evaluate(el=>el.getBoundingClientRect().toJSON());
                 check(name,viewport.id,'direct H3 permalink is visible',
                   directRect.top>=-5 && directRect.top < viewport.height-25,directRect);
-                await fresh.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+                await gotoNativeReader(fresh,origin+ROUTE,{waitUntil:'domcontentloaded'});
                 await fresh.bringToFront();
                 const rapid = fresh.locator('.grok-row--branch > .grok-entry [data-grok-toggle]').first();
                 for(let n=0;n<7;n++){await rapid.evaluate(button => button.click());await fresh.waitForTimeout(25);}

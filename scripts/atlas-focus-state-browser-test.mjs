@@ -185,7 +185,14 @@ async function runCase(browserName, browserType, baseUrl, width) {
   const context = await browser.newContext({ viewport: { width, height: HEIGHT } });
   const page = await context.newPage();
   const errors = [];
+  const lifecycle = [];
+  const recordLifecycle = (event) => lifecycle.push({ event, at: new Date().toISOString() });
   page.on('pageerror', (error) => errors.push(String(error?.stack || error)));
+  page.on('crash', () => recordLifecycle('page-crash'));
+  page.on('close', () => recordLifecycle('page-close'));
+  context.on('close', () => recordLifecycle('context-close'));
+  browser.on('disconnected', () => recordLifecycle('browser-disconnected'));
+  let primaryFailure = null;
   const compact = width <= 980;
   const result = { browser: browserName, width, compact, steps: {} };
 
@@ -359,9 +366,32 @@ async function runCase(browserName, browserType, baseUrl, width) {
     assert.deepEqual(errors, [], `${browserName}/${width}: uncaught page errors`);
     result.errors = errors;
     return result;
+  } catch (error) {
+    primaryFailure = error instanceof Error ? error : new Error(String(error));
+    primaryFailure.atlasCase = {
+      browser: browserName, width, compact,
+      browserConnected: browser.isConnected(),
+      pageClosed: page.isClosed(),
+      lifecycle: lifecycle.slice(),
+      completedSteps: Object.keys(result.steps),
+      pageErrors: errors.slice(),
+    };
+    throw primaryFailure;
   } finally {
-    await context.close();
-    await browser.close();
+    // Never replace the original browser failure with a teardown error.
+    try {
+      await context.close();
+    } catch (error) {
+      if (!primaryFailure) throw error;
+      primaryFailure.atlasCase.contextCleanupError = String(error);
+    } finally {
+      try {
+        await browser.close();
+      } catch (error) {
+        if (!primaryFailure) throw error;
+        primaryFailure.atlasCase.browserCleanupError = String(error);
+      }
+    }
   }
 }
 
@@ -372,7 +402,19 @@ async function main() {
   const results = [];
   try {
     for (const [browserName, browserType] of Object.entries(SELECTED_BROWSERS)) {
-      for (const width of WIDTHS) results.push(await runCase(browserName, browserType, server.baseUrl, width));
+      for (const width of WIDTHS) {
+        console.log(`Atlas focus-state: START ${browserName}/${width}`);
+        try {
+          results.push(await runCase(browserName, browserType, server.baseUrl, width));
+        } catch (error) {
+          const failure = error instanceof Error ? error : new Error(String(error));
+          failure.atlasCase ??= { browser: browserName, width };
+          failure.atlasCompletedCases = results.map(({ browser, width }) => ({ browser, width }));
+          console.error('Atlas focus-state failure context:', JSON.stringify(failure.atlasCase));
+          throw failure;
+        }
+        console.log(`Atlas focus-state: PASS ${browserName}/${width}`);
+      }
     }
   } finally {
     await server.close();
@@ -383,7 +425,7 @@ async function main() {
     conclusion: 'success',
     sha: process.env.SOURCE_SHA || '',
     route: ROUTE,
-    browsers: Object.keys(BROWSERS),
+    browsers: Object.keys(SELECTED_BROWSERS),
     widths: WIDTHS,
     cases: results.length,
     results,
@@ -399,6 +441,8 @@ main().catch((error) => {
     conclusion: 'failure',
     sha: process.env.SOURCE_SHA || '',
     error: String(error?.stack || error),
+    failedCase: error?.atlasCase || null,
+    completedCases: error?.atlasCompletedCases || [],
   }, null, 2)}\n`);
   console.error(error);
   process.exitCode = 1;

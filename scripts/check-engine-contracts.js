@@ -178,6 +178,7 @@ check('Reader mobile: one semantic speed-choice component for series and standal
 // retired. Assert the current shared ReaderMobilePlayGroup/ReaderSpeedOptions
 // ownership and keep the real cross-browser hit/contrast witness mandatory.
 const sharedPlayGroup = read('src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro');
+const sharedSpeedBadge = read('src/components/article-pilots/_shared/ReaderMobileSpeedBadge.astro');
 const sharedSpeedSlot = read('src/components/article-pilots/_shared/speedSlot.ts');
 const readerA11yOwner = read('src/runtime/reader-controls-a11y.js');
 const mobilePlaySmoke = read('scripts/gill-v16-mobile-play-smoke.js');
@@ -186,8 +187,9 @@ check('Series mobile: shared Play/rate slot, 44px hit targets and cross-browser 
   gillMobileBar.includes('<ReaderMobilePlayGroup engine="series" slot="top-playback" />')
     && gillMobileBar.includes("'data-reader-mobile-speed': true")
     && gillMobileBar.includes('<ReaderSpeedOptions id="mobileSpeedrail"')
-    && sharedPlayGroup.includes("series?'mobile-spdbadge'")
-    && sharedPlayGroup.includes("series?'mobileSpeedrail'")
+    && sharedPlayGroup.includes('<ReaderMobileSpeedBadge engine={engine} />')
+    && sharedSpeedBadge.includes("series ? 'mobile-spdbadge' : 'hm-spdbadge'")
+    && sharedSpeedBadge.includes("series ? 'mobileSpeedrail' : 'hmSpeedrail'")
     && sharedPlayGroup.includes('reader-mobile-play')
     && sharedSpeedSlot.includes("topbar.classList.add('speed-open')")
     && sharedSpeedSlot.includes("rail.inert = false")

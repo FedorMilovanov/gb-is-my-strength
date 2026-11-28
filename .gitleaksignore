@@ -6,3 +6,7 @@
 # ajaxPageState.theme_token is an inline page AJAX theme CSRF parameter, not a Product API credential.
 # The raw HTML file is no longer present in main; suppress ONLY this exact history fingerprint.
 3c3166b00fd6934d90dd9c833193fa64d5c35f72:baptisty-rossii/research/raw-sources/istmat-1919-decree-raw.html:generic-api-key:34
+
+# False-positive localStorage migration flag in W57 pilot (not API key).
+# Historical single-fingerprint exclusion; full-history scanner remains on.
+f2593f2d9cc3c22d301548f0350cebc9a40221d8:research/reader-w57-pilot/assets/reader_w57.js:generic-api-key:31

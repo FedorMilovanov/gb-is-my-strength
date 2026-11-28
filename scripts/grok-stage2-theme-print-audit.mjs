@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium, firefox, webkit } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const sourceSha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 if (process.env.SOURCE_SHA) assert.equal(sourceSha,process.env.SOURCE_SHA,'Theme audit must use the exact tested head');
@@ -43,7 +44,7 @@ try{
    const page=await browser.newPage({viewport:{width:1440,height:900}});
    const errors=[];
    page.on('pageerror',err=>errors.push(err.message));
-   await page.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+   await gotoNativeReader(page,origin+ROUTE,{waitUntil:'domcontentloaded'});
    await page.waitForSelector('.hrail--grok.grok-ready');
    check(engine,'reader settings trigger',await page.locator('#hrailSettingsBtn').count()===1);
    await page.locator('#hrailSettingsBtn').click();

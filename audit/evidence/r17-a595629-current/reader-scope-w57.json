@@ -1,0 +1,311 @@
+{
+  "state": "working-tree source (positional resolver and mobile arrow target fixes) captured before commit; served from rebuilt dist",
+  "origin": "Reader W57 preview.py, opt-in ?reader-pilot=1",
+  "cases": [
+    {
+      "width": 390,
+      "metrics": {
+        "width": 390,
+        "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+        "bodyClasses": [
+          "gbs-world",
+          "gb-cluster-series-active",
+          "gb-cluster-single-active"
+        ],
+        "demo": false,
+        "w57": null,
+        "w57Surfaces": 0,
+        "w57Resources": [
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_preview.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_argon_first.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_refinement.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_consolidation.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_w51.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57.css",
+          "http://127.0.0.1:19063/__reader_w57__/preview-bootstrap.js"
+        ],
+        "finishStylesheet": false,
+        "finishResource": [],
+        "gillChrome": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "gillChromeDisplay": "contents",
+        "researchTrigger": {
+          "x": 101,
+          "y": 7,
+          "w": 140.5,
+          "h": 44
+        },
+        "researchTriggerDisplay": "flex",
+        "partOverlay": {
+          "display": "none",
+          "open": false,
+          "sheetBackground": "rgb(251, 249, 245)",
+          "sheetColor": "rgb(26, 24, 22)",
+          "sheetRadius": "22px 22px 0px 0px",
+          "tabFont": "Inter, system-ui, sans-serif",
+          "quoteFont": null
+        },
+        "desktopW57": {
+          "outlineBg": null,
+          "outlineColor": null,
+          "outlineFont": null,
+          "researchBg": null,
+          "researchColor": null,
+          "researchFont": null,
+          "outline": null,
+          "research": null
+        }
+      },
+      "errors": [],
+      "failed": []
+    },
+    {
+      "width": 1120,
+      "metrics": {
+        "width": 1120,
+        "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+        "bodyClasses": [
+          "gbs-world",
+          "gb-cluster-series-active",
+          "gb-cluster-single-active"
+        ],
+        "demo": false,
+        "w57": null,
+        "w57Surfaces": 0,
+        "w57Resources": [
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_preview.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_argon_first.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_refinement.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_consolidation.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_w51.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57.css",
+          "http://127.0.0.1:19063/__reader_w57__/preview-bootstrap.js"
+        ],
+        "finishStylesheet": false,
+        "finishResource": [],
+        "gillChrome": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "gillChromeDisplay": "contents",
+        "researchTrigger": {
+          "x": 397,
+          "y": 0,
+          "w": 280,
+          "h": 44
+        },
+        "researchTriggerDisplay": "flex",
+        "partOverlay": {
+          "display": "none",
+          "open": false,
+          "sheetBackground": "rgb(251, 249, 245)",
+          "sheetColor": "rgb(26, 24, 22)",
+          "sheetRadius": "22px 22px 14px 14px",
+          "tabFont": "Inter, system-ui, sans-serif",
+          "quoteFont": null
+        },
+        "desktopW57": {
+          "outlineBg": null,
+          "outlineColor": null,
+          "outlineFont": null,
+          "researchBg": null,
+          "researchColor": null,
+          "researchFont": null,
+          "outline": null,
+          "research": null
+        }
+      },
+      "errors": [],
+      "failed": []
+    },
+    {
+      "width": 1121,
+      "metrics": {
+        "width": 1121,
+        "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+        "bodyClasses": [
+          "gbs-world",
+          "gb-cluster-series-active",
+          "gb-cluster-single-active",
+          "np-u-w40-space",
+          "np-u-argon-shell",
+          "np-u-preview",
+          "np-u-legacy-chrome-docked",
+          "np-u-native-product-actions",
+          "np-u-native-series-rail",
+          "np-u-inline-header-actions",
+          "np-u-w55-context-actions",
+          "np-w57-ready"
+        ],
+        "demo": true,
+        "w57": {
+          "ready": true,
+          "version": "57",
+          "canonicalPrefs": true,
+          "annotations": true
+        },
+        "w57Surfaces": 29,
+        "w57Resources": [
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_preview.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_argon_first.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_refinement.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_consolidation.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_w51.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57.css",
+          "http://127.0.0.1:19063/__reader_w57__/preview-bootstrap.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_contract.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_refinement.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_preview.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_consolidation.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57_annotations.js"
+        ],
+        "finishStylesheet": false,
+        "finishResource": [],
+        "gillChrome": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "gillChromeDisplay": "none",
+        "researchTrigger": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "researchTriggerDisplay": "flex",
+        "partOverlay": {
+          "display": "none",
+          "open": false,
+          "sheetBackground": "rgb(251, 249, 245)",
+          "sheetColor": "rgb(26, 24, 22)",
+          "sheetRadius": "22px 22px 14px 14px",
+          "tabFont": "Inter, system-ui, sans-serif",
+          "quoteFont": null
+        },
+        "desktopW57": {
+          "outlineBg": "rgb(244, 242, 237)",
+          "outlineColor": "rgb(26, 26, 26)",
+          "outlineFont": "\"Source Sans 3\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+          "researchBg": "rgb(244, 242, 237)",
+          "researchColor": "rgb(26, 26, 26)",
+          "researchFont": "\"Source Sans 3\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+          "outline": {
+            "x": 0,
+            "y": 0,
+            "w": 207,
+            "h": 900
+          },
+          "research": {
+            "x": 816,
+            "y": 0,
+            "w": 305,
+            "h": 900
+          }
+        }
+      },
+      "errors": [],
+      "failed": []
+    },
+    {
+      "width": 1440,
+      "metrics": {
+        "width": 1440,
+        "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+        "bodyClasses": [
+          "gbs-world",
+          "gb-cluster-series-active",
+          "gb-cluster-single-active",
+          "np-u-w40-space",
+          "np-u-argon-shell",
+          "np-u-preview",
+          "np-u-legacy-chrome-docked",
+          "np-u-native-product-actions",
+          "np-u-native-series-rail",
+          "np-u-inline-header-actions",
+          "np-u-w55-context-actions",
+          "np-w57-ready"
+        ],
+        "demo": true,
+        "w57": {
+          "ready": true,
+          "version": "57",
+          "canonicalPrefs": true,
+          "annotations": true
+        },
+        "w57Surfaces": 29,
+        "w57Resources": [
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_preview.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_argon_first.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_refinement.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_w51.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_consolidation.css",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57.css",
+          "http://127.0.0.1:19063/__reader_w57__/preview-bootstrap.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_contract.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_universal_preview.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_refinement.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_editorial_consolidation.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57.js",
+          "http://127.0.0.1:19063/__reader_w57__/reader_w57_annotations.js"
+        ],
+        "finishStylesheet": false,
+        "finishResource": [],
+        "gillChrome": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "gillChromeDisplay": "none",
+        "researchTrigger": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "researchTriggerDisplay": "flex",
+        "partOverlay": {
+          "display": "none",
+          "open": false,
+          "sheetBackground": "rgb(251, 249, 245)",
+          "sheetColor": "rgb(26, 24, 22)",
+          "sheetRadius": "18px",
+          "tabFont": "Inter, system-ui, sans-serif",
+          "quoteFont": null
+        },
+        "desktopW57": {
+          "outlineBg": "rgb(244, 242, 237)",
+          "outlineColor": "rgb(26, 26, 26)",
+          "outlineFont": "\"Source Sans 3\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+          "researchBg": "rgb(244, 242, 237)",
+          "researchColor": "rgb(26, 26, 26)",
+          "researchFont": "\"Source Sans 3\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+          "outline": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          },
+          "research": {
+            "x": 1080,
+            "y": 0,
+            "w": 360,
+            "h": 900
+          }
+        }
+      },
+      "errors": [],
+      "failed": []
+    }
+  ],
+  "baseHead": "a595629f15a2324205cbb9b1c2cb2cc936814214"
+}

@@ -1,4 +1,4 @@
-/* Unified reader library: GBFavoriteStore remains the owner of favorites. */
+/* Library; GBFavoriteStore owns favorites. */
 (function () {
   'use strict';
   if (window.GBHighlights && window.GBHighlights.libraryVersion === 2) return;
@@ -9,40 +9,59 @@
   const LIMIT_QUOTES = 200;
   const LIMIT_NOTES = 500;
   const BATCH_SIZE = 30;
-  const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
   const bookSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-2.5-2-5.5-2.5-9-1.5v14c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v-14c-3.5-1-6.5-.5-9 1.5Z"/><path d="M12 6v14"/></svg>';
   const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
-  const closeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>';
-  const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
-
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
+  let rangeRuntime, rangeLoad, GBReaderAnchors;
+  // Lazy range owner, synchronous once loaded.
+  function ensureRanges() {
+    if (rangeRuntime) return Promise.resolve(rangeRuntime);
+    return rangeLoad ||= import('/js/reader-library-ranges.js?v=9d01527f')
+      .then(m=>{
+        const runtime=m.createRangeRuntime({normalizeText,quotes,gbHighlightPath,gbHighlightKey,MARK_COLORS,cancelScheduledPaint,rememberShareText});
+        GBReaderAnchors=runtime.GBReaderAnchors;
+        rangeRuntime=runtime;
+        window.GBReaderAnchors=GBReaderAnchors;
+        return runtime;
+      }).catch(error=>{rangeLoad=null;throw error});
+  }
+
   function gbHighlightPath(item) {
     const raw = String(item && item.url || '');
     try { return new URL(raw, location.origin).pathname.replace(/\/+$/, '') || '/'; }
     catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
   }
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
-  function gbHighlightKey(item) {
-    const text = gbHighlightText(item);
-    return text ? gbHighlightPath(item) + '\n' + text : '';
+  function gbContextKey(x) {
+    const before = normalizeText(x && x.before).toLocaleLowerCase();
+    const after = normalizeText(x && x.after).toLocaleLowerCase();
+    return (!before && !after) ? '' : before + '\u0001' + after;
+  }
+  function gbHighlightKey(x) {
+    const t=gbHighlightText(x), a=x?.annotation?.version===1&&x.annotation.anchor;
+    if (!t) return '';
+    if (a && Number.isInteger(a.start) && Number.isInteger(a.end) && typeof a.exact === 'string') {
+      return gbHighlightPath(x)+'\nrange-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]);
+    }
+    /* Marks include position; other items keep page/text identity. */
+    const positional = (x && (x.kind === 'marker' || x.color)) ? gbContextKey(x) : '';
+    return gbHighlightPath(x)+'\n'+t+(positional?'\nctx:'+positional:'');
   }
   function gbDedupeHighlights(items) {
-    const seen = new Set();
-    const result = [];
-    (Array.isArray(items) ? items : []).forEach((item, index) => {
-      const key = gbHighlightKey(item) || '__invalid__:' + (item && item.id || index);
-      if (seen.has(key)) return;
-      seen.add(key);
-      result.push(item);
+    const seen=new Set();
+    return (Array.isArray(items)?items:[]).filter((item,index)=>{
+      const key=gbHighlightKey(item)||'__invalid__:'+(item?.id||index);
+      if(seen.has(key))return false;
+      seen.add(key);return true;
     });
-    return result;
   }
-  function gbAddHighlight(items, item) {
-    const existing = gbDedupeHighlights(items);
-    const key = gbHighlightKey(item);
-    return key && !existing.some((entry) => gbHighlightKey(entry) === key)
-      ? [item].concat(existing).slice(0, LIMIT_QUOTES) : existing;
+  function gbAddHighlight(items,item) {
+    const unique=items,key=gbHighlightKey(item);
+    return key&&unique.length<LIMIT_QUOTES&&!unique.some(x=>gbHighlightKey(x)===key)
+      ?[item,...unique]:unique;
   }
+  const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
+
   function read(key) {
     try {
       const value = JSON.parse(localStorage.getItem(key) || '[]');
@@ -51,20 +70,72 @@
     } catch {}
     return [];
   }
-  function write(key, items) {
-    try { localStorage.setItem(key, JSON.stringify(items)); return true; }
-    catch { return false; }
+  function libraryFailure(reason, current = []) {
+    return {ok:false,conflict:reason==='conflict',reason,current};
+  }
+  // Guard load and lock separately.
+  let clearIntent = 0;
+  const receiptIntents = new WeakMap(), restoringReceipts = new WeakSet();
+
+  async function storageCall(method,...args) {
+    const intent = clearIntent;
+    try {
+      if(window.GBLibraryStorage?.version!==1)
+        await import('/js/reader-library-storage.js?v=c6707892');
+      if (intent !== clearIntent) return libraryFailure('storage-changed');
+      const owner=window.GBLibraryStorage;
+      if(owner?.version!==1||typeof owner[method]!=='function')return libraryFailure('lock-unavailable');
+      const result = await owner[method](...args);
+      if (result.ok && intent !== clearIntent) return libraryFailure('storage-changed');
+      if (result.ok && result.receipt && typeof result.receipt === 'object') receiptIntents.set(result.receipt,intent);
+      return result;
+    } catch { return libraryFailure('lock-unavailable'); }
+  }
+  function mutateLibrary(keys,prepare) {return storageCall('mutateLibrary',keys,prepare);}
+  function snapshotRaw() {return storageCall('snapshotRaw');}
+  function restoreRaw(raw,shouldContinue) {return storageCall('restoreRaw',raw,shouldContinue);}
+  // Undo rejects newer records; copy is explicit.
+  let recordTransactions, recordTransactionsLoad;
+  async function transactionCall(method,...args) {
+    const intent = clearIntent;
+    const receipt = method === 'restoreDeleted' ? args[0] : null;
+    if (method === 'restoreDeleted') {
+      if (receiptIntents.get(receipt) !== intent) return libraryFailure('storage-changed');
+      if (restoringReceipts.has(receipt)) return libraryFailure('restore-pending');
+      restoringReceipts.add(receipt);
+    }
+    try {
+      if(!recordTransactions) {
+        recordTransactionsLoad ||= import('/js/reader-library-record-transactions.js?v=ecb28bb6')
+          .then(m=>m.createRecordTransactions({mutateLibrary,libraryFailure,gbHighlightKey,NOTES_KEY,QUOTES_KEY,LIMIT_NOTES,LIMIT_QUOTES}))
+          .catch(error=>{recordTransactionsLoad=null;throw error});
+        recordTransactions=await recordTransactionsLoad;
+      }
+      if (intent !== clearIntent) return libraryFailure('storage-changed');
+      const result = await recordTransactions[method](...args);
+      if (receipt && result.ok) receiptIntents.delete(receipt);
+      return result.ok && intent !== clearIntent ? libraryFailure('storage-changed') : result;
+    } catch { return libraryFailure('lock-unavailable'); }
+    finally { if (receipt) restoringReceipts.delete(receipt); }
+  }
+  function restoreDeleted(receipt, copyId = null) {
+    return transactionCall('restoreDeleted',receipt,copyId);
+  }
+  // Preserve invalid backup rows; never render or edit.
+  function visibleRecord(row) {
+    return row && typeof row==='object' && !Array.isArray(row) &&
+      typeof row.text==='string' &&
+      ((typeof row.id==='string' && row.id.length>0) || Number.isSafeInteger(row.id));
   }
   function quotes() {
-    const existing = read(QUOTES_KEY);
-    const compact = gbDedupeHighlights(existing);
-    if (existing.length !== compact.length) write(QUOTES_KEY, compact);
-    return compact;
+    return read(QUOTES_KEY).filter(visibleRecord);
   }
-  function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
+  function notes() { return read(NOTES_KEY).filter(visibleRecord); }
   function favorites() {
     const store = window.GBFavoriteStore;
-    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) : read(FAVORITES_KEY);
+    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) :
+      read(FAVORITES_KEY).filter(x=>x && typeof x==='object' && !Array.isArray(x) &&
+        typeof (x.path||x.url)==='string' && Boolean(x.path||x.url) && Boolean(localUrl(x.path||x.url)));
   }
   function localUrl(value) {
     try {
@@ -74,61 +145,49 @@
     return '';
   }
   function all() {
-    const q = quotes().map((x) => ({ id: String(x.id), type: 'quote', text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
-    const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const q = quotes().map((x) => ({
+      id: String(x.id),
+      type: 'quote', recordSnapshot: JSON.stringify(x),
+      /* Preserve marker color/type. */
+      kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
+      color: MARK_COLORS.includes(String(x.color || x.annotation?.color || '')) ? String(x.color || x.annotation?.color) : '',
+      text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
+      title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0,
+    }));
+    const n = notes().map((x) => ({ id: String(x.id), type: 'note', recordSnapshot: JSON.stringify(x), text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
   }
-  function currentTitle() { return normalizeText(document.title.replace(/\s*[·—|].*$/, '')) || 'Статья'; }
-  function fragment(text) {
-    const words = normalizeText(text).split(/\s+/);
-    return words.length <= 14 ? 'text=' + encodeURIComponent(text)
-      : 'text=' + encodeURIComponent(words.slice(0, 6).join(' ')) + ',' + encodeURIComponent(words.slice(-6).join(' '));
+  function rememberShareText() {
+    const selection=window.getSelection?.();
+    if(!selection||selection.isCollapsed||!selection.rangeCount)return null;
+    const text=normalizeText(selection.toString());
+    if(text.length<8)return null;
+    window.__ssLastText__=text;
+    window.__ssLastTextUrl__=location.href;
+    return {selection,text};
   }
-  let lastSelection = { text: '', anchor: '', url: '' };
   function rememberSelection() {
-    const selection = window.getSelection && window.getSelection();
-    if (!selection || selection.isCollapsed) return;
-    const text = normalizeText(selection.toString());
-    if (text.length < 8) return;
-    let anchor = '';
-    try {
-      const root = document.querySelector('article,main,[data-pagefind-body]') || document.body;
-      for (let e = selection.getRangeAt(0).commonAncestorContainer; e && e !== root.parentElement; e = e.parentElement) {
-        if (e.nodeType === 1 && e.id) { anchor = e.id; break; }
-      }
-    } catch {}
-    const { before, after } = contextFromSelection(selection, text);
-    lastSelection = { text, anchor, url: location.href, before, after };
-    window.__ssLastText__ = text;
-    window.__ssLastTextUrl__ = location.href;
+    if (rangeRuntime) rangeRuntime.rememberSelection();
+    else rememberShareText();
   }
-  function selection() {
-    rememberSelection();
-    return lastSelection.url === location.href ? lastSelection : { text: '', anchor: '', url: '' };
-  }
-  function sourceUrl(selected) {
-    return location.origin + location.pathname + '#' +
-      (selected.anchor ? encodeURIComponent(selected.anchor) : '') + ':~:' + fragment(selected.text);
-  }
-  function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
 
-
-  let overlay, panel, list, fab, titleCount, search, sourceSelect, status, editor, textArea;
-  let tab = 'all', filter = 'all', searchTerm = '', shown = BATCH_SIZE, opener = null;
-  let expanded = new Set(), draft = null, pendingUndo = null;
-  let presenter = null, presenterPromise = null, research = null;
+  let overlay, fab, view, opener = null, editorController = null;
+  let presenter = null, presenterPromise = null;
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=cef6e2a5')
-        .then(async (module) => {
+      presenterPromise = Promise.all([
+        import('/js/reader-library-presenter.js?v=3df72e8a'),
+        import('/js/reader-library-v3.js?v=ec2d1d76'),
+        ensureRanges(),
+      ]).then(([module,researchModule,{currentTitle,uid}]) => {
+          if (!view) {
+            view = module.createLibraryView({penSvg,uid,currentTitle,transactionCall,restoreDeleted,NOTES_KEY,all,quotes,GBReaderAnchors,statusMessage,close,hideToast,hide,sync,normalizeText,BATCH_SIZE,createResearch:researchModule.createLibraryResearch,isOpen});
+            ({overlay,editorController}=view);
+            fab.setAttribute('aria-controls','gb-hl-panel');
+          }
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
-          if (!research) research = researchModule.createLibraryResearch({
-            overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
-            renderItem: module.renderItem,
-          });
           return module;
         })
         .catch((error) => { presenterPromise = null; throw error; });
@@ -138,17 +197,9 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=56e14002';
+  stylesheet.href = '/css/highlights-runtime.css?v=634b5ba8';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
-  function button(action, label, text) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.dataset.libraryAction = action;
-    b.setAttribute('aria-label', label);
-    b.textContent = text;
-    return b;
-  }
   function element(tag, cls, value) {
     const node = document.createElement(tag);
     if (cls) node.className = cls;
@@ -156,84 +207,55 @@
     return node;
   }
   function isOpen() { return Boolean(overlay && overlay.classList.contains('is-open')); }
-  function statusMessage(message, error) {
-    if (!status) return;
-    status.replaceChildren(element('span', '', message));
-    status.classList.add('is-visible');
-    status.classList.toggle('is-error', Boolean(error));
-    clearTimeout(statusMessage.timer);
-    statusMessage.timer = setTimeout(() => { if (!pendingUndo) status.classList.remove('is-visible'); }, 5000);
+  /* Closed-Library toast and Undo. */
+  function hideToast() {
+    const el = document.getElementById('gb-hl-toast');
+    if (el) el.dataset.open = 'false';
+  }
+  function toast(message, action) {
+    if (!document.body) return;
+    let el = document.getElementById('gb-hl-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'gb-hl-toast';
+      el.dataset.open = 'false';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.replaceChildren(element('span', 'gb-hl-toast-text', message));
+    if (action && action.label && typeof action.run === 'function') {
+      const b = element('button', 'gb-hl-toast-action', action.label);
+      b.type = 'button';
+      b.addEventListener('click', () => { hideToast(); action.run(); });
+      el.appendChild(b);
+    }
+    el.dataset.open = 'true';
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(hideToast, 6000);
+  }
+  function statusMessage(message,error) {
+    if (editorController && isOpen()) return editorController.statusMessage(message,error);
+    if (error) toast(message,null);
   }
   function create() {
-    if (!document.body || document.getElementById('gb-hl-backdrop')) return;
-    overlay = document.createElement('div');
-    overlay.id = 'gb-hl-backdrop';
-    overlay.setAttribute('aria-hidden', 'true');
-    overlay.setAttribute('inert', '');
-    overlay.innerHTML = [
-      '<section id="gb-hl-panel" role="dialog" aria-modal="true" aria-labelledby="gb-hl-title" tabindex="-1">',
-      '<div id="gb-hl-handle" aria-hidden="true"></div>',
-      '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ <span id="gb-hl-count"></span></span>',
-      '<h2 id="gb-hl-title">Моя библиотека</h2></div>',
-      '<button type="button" id="gb-hl-export" aria-label="Экспорт библиотеки в Markdown">↓ Markdown</button>',
-      '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
-      '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',
-      '<button type="button" data-library-tab="all" aria-pressed="true">Все</button>',
-      '<button type="button" data-library-tab="source" aria-pressed="false">Источники</button>',
-      '<button type="button" data-library-tab="quote" aria-pressed="false">Цитаты</button>',
-      '<button type="button" data-library-tab="note" aria-pressed="false">Заметки</button>',
-      '<button type="button" data-library-tab="favorite" aria-pressed="false">Статьи</button></nav>',
-      '<div id="gb-hl-tools"><label id="gb-hl-searchwrap">' + searchSvg,
-      '<input id="gb-hl-search" type="search" placeholder="Найти в сохранениях…" aria-label="Поиск по сохранениям" autocomplete="off"></label>',
-      '<select id="gb-hl-source" aria-label="Фильтр по исходной статье"><option value="all">Все статьи</option></select></div>',
-      '<div id="gb-hl-list" tabindex="0" aria-label="Сохранённые материалы"></div>',
-      '<div id="gb-hl-status" role="status" aria-live="polite"></div>',
-      '<form id="gb-hl-editor" hidden><label for="gb-hl-note-text">Личная заметка</label>',
-      '<div id="gb-hl-note-context"></div><textarea id="gb-hl-note-text" rows="4" maxlength="16000" placeholder="Что вы хотите запомнить?"></textarea>',
-      '<div class="gb-hl-editor-actions"><button type="button" id="gb-hl-note-cancel">Отмена</button>',
-      '<button type="submit">Сохранить заметку</button></div></form>',
-      '<footer id="gb-hl-foot"><button type="button" id="gb-hl-new-note">' + penSvg + ' Новая заметка</button></footer>',
-      '</section>',
-    ].join('');
-    document.body.append(overlay);
-    panel = overlay.querySelector('#gb-hl-panel');
-    list = overlay.querySelector('#gb-hl-list');
-    titleCount = overlay.querySelector('#gb-hl-count');
-    search = overlay.querySelector('#gb-hl-search');
-    sourceSelect = overlay.querySelector('#gb-hl-source');
-    status = overlay.querySelector('#gb-hl-status');
-    editor = overlay.querySelector('#gb-hl-editor');
-    textArea = overlay.querySelector('#gb-hl-note-text');
+    if (!document.body || fab || document.getElementById('gb-hl-fab')) return;
     fab = document.createElement('button');
     fab.id = 'gb-hl-fab';
     fab.type = 'button';
     fab.setAttribute('aria-label', 'Моя библиотека');
     fab.setAttribute('aria-haspopup', 'dialog');
-    fab.setAttribute('aria-controls', 'gb-hl-panel');
     fab.setAttribute('aria-expanded', 'false');
     fab.innerHTML = bookSvg + '<span id="gb-hl-fab-count" aria-hidden="true"></span>';
     document.body.append(fab);
     fab.classList.add('visible');
     fab.addEventListener('click', () => open(fab));
-    overlay.querySelector('#gb-hl-close').addEventListener('click', close);
-    overlay.querySelector('#gb-hl-export').addEventListener('click', () => presenter.exportMarkdown(all(), statusMessage));
-    overlay.querySelector('#gb-hl-new-note').addEventListener('click', () => showEditor());
-    overlay.querySelector('#gb-hl-note-cancel').addEventListener('click', hideEditor);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-    overlay.querySelector('#gb-hl-tabs').addEventListener('click', (e) => {
-      const b = e.target.closest('[data-library-tab]');
-      if (!b) return;
-      tab = b.dataset.libraryTab; shown = BATCH_SIZE; render();
-    });
-    search.addEventListener('input', () => { searchTerm = normalizeText(search.value).toLocaleLowerCase(); shown = BATCH_SIZE; render(); });
-    sourceSelect.addEventListener('change', () => { filter = sourceSelect.value; shown = BATCH_SIZE; render(); });
-    list.addEventListener('click', listClick);
-    editor.addEventListener('submit', saveNote);
     document.addEventListener('keydown', keydown);
+    document.addEventListener('focusin', pendingFocusChanged);
+    document.addEventListener('pointerdown', pendingPointerChanged, true);
     window.addEventListener('gb:favorites-changed', sync);
     window.addEventListener('gb:favorite-store-ready', sync);
-    window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
-    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); });
+    document.addEventListener('astro:page-load', () => { dock(); warmReading(); sync(); attachSelection(); schedulePaint(); });
     document.addEventListener('gb:mobile-fallback-ready', dock);
     window.addEventListener('resize', dock, { passive: true });
     attachSelection();
@@ -241,228 +263,272 @@
     sync();
   }
   function keydown(e) {
-    if (!isOpen()) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      if (!editor.hidden) hideEditor();
-      else if (!research?.handleEscape()) close();
+    if (!isOpen()) {
+      if (opening && e.key === 'Escape') {
+        if (!ownsPendingFocus()) cancelPending(false);
+        else { e.preventDefault(); close(); }
+      }
+      return;
     }
-    else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
+    view.keydown(e);
   }
-  function open(trigger) {
-    if (!overlay) create();
-    if (!overlay) return Promise.resolve(false);
+  let opening = null, openGeneration = 0, pendingTrigger = null;
+  let pendingReturn = null, focusReturn = null, pendingInitialFocus = null;
+  function ownsPendingFocus() {
+    const active = document.activeElement;
+    return !active || active === document.body || active === pendingInitialFocus ||
+      active === pendingTrigger || pendingTrigger?.contains?.(active) || active === pendingReturn ||
+      !active.isConnected || !active.getClientRects?.().length ||
+      !!active.closest?.('[hidden],[inert],[aria-hidden="true"]');
+  }
+  function cancelPending(restore) {
+    if (!opening) return;
+    const target = pendingReturn;
+    ++openGeneration;
+    opening = null;
+    clearOpenBusy();
+    if (restore) restoreReadingFocus(target);
+  }
+  function pendingFocusChanged() {
+    if (opening && !isOpen() && !ownsPendingFocus()) cancelPending(false);
+  }
+  function pendingPointerChanged(event) {
+    // WebKit clicks need not move focus.
+    if (!opening || isOpen()) return;
+    if (pendingTrigger !== document.body && pendingTrigger !== document.documentElement &&
+        pendingTrigger?.contains?.(event.target)) return;
+    cancelPending(false);
+  }
+  function restoreReadingFocus(preferred) {
+    const candidates = [preferred, fab, document.getElementById('npULibraryButton'), document.querySelector('article.article-body h1, article h1, main h1')];
+    for (const target of candidates) {
+      if (!target?.isConnected || target.disabled || !target.focus || !target.getClientRects().length ||
+          target.closest('[hidden],[inert],[aria-hidden="true"]') || getComputedStyle(target).visibility !== 'visible') continue;
+      const temporary = target.tabIndex < 0 && !target.hasAttribute('tabindex');
+      if (temporary) target.setAttribute('tabindex','-1');
+      target.focus({preventScroll:true});
+      if (document.activeElement === target) {
+        if (temporary) target.addEventListener('blur', () => target.removeAttribute('tabindex'), {once:true});
+        return;
+      }
+      if (temporary) target.removeAttribute('tabindex');
+    }
+  }
+  function clearOpenBusy() {
+    fab?.removeAttribute('aria-busy');
+    pendingTrigger?.removeAttribute?.('aria-busy');
+    pendingTrigger = null;
+    pendingReturn = null;
+    pendingInitialFocus = null;
+  }
+  function open(trigger, returnTarget = null) {
+    if (!fab) create();
+    if (!fab) return Promise.resolve(false);
     if (isOpen()) return Promise.resolve(true);
-    opener = trigger || document.activeElement;
-    tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
-    search.value = '';
-    list.replaceChildren(element('div', 'gb-hl-empty', 'Открываем библиотеку…'));
-    overlay.removeAttribute('inert');
-    overlay.classList.add('is-open');
-    overlay.setAttribute('aria-hidden', 'false');
-    fab.setAttribute('aria-expanded', 'true');
-    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
-    else document.body.classList.add('no-scroll');
-    overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
-    return loadPresenter().then(() => {
-      if (isOpen()) render();
-      return isOpen();
+    if (opening) cancelPending(false);
+    const generation = ++openGeneration;
+    const activeTrigger = trigger || document.activeElement;
+    const activeReturn = returnTarget || activeTrigger;
+    pendingTrigger = activeTrigger;
+    pendingReturn = activeReturn;
+    pendingInitialFocus = document.activeElement;
+    fab.setAttribute('aria-busy','true');
+    if (activeTrigger !== fab) activeTrigger?.setAttribute?.('aria-busy','true');
+    const task = loadPresenter().then(() => {
+      if (generation !== openGeneration) return false;
+      if (!ownsPendingFocus()) { cancelPending(false); return false; }
+      opener = activeTrigger;
+      focusReturn = activeReturn;
+      view.activate(fab,opener);
+      return true;
     }).catch(() => {
-      if (isOpen()) list.replaceChildren(element('div', 'gb-hl-empty',
-        'Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.'));
+      if (generation === openGeneration) {
+        if (isOpen()) close();
+        else if (ownsPendingFocus()) restoreReadingFocus(activeReturn);
+        else { cancelPending(false); return false; }
+        toast('Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.', null);
+      }
       return false;
+    }).finally(() => {
+      if (opening === task) { opening = null; clearOpenBusy(); }
     });
+    opening = task;
+    return task;
   }
   function close() {
+    if (opening) cancelPending(!isOpen() && ownsPendingFocus());
     if (!isOpen()) return;
-    hideEditor(false);
-    clearUndo();
-    research?.resetMenu();
-    overlay.classList.remove('is-open');
-    overlay.setAttribute('aria-hidden', 'true');
-    overlay.setAttribute('inert', '');
-    fab.setAttribute('aria-expanded', 'false');
-    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
-    else document.body.classList.remove('no-scroll');
-    if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true });
+    view.deactivate(fab,opener);
+    restoreReadingFocus(focusReturn);
     opener = null;
+    focusReturn = null;
   }
-  function sync() { if (fab) { fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = all().length === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + all().length); } if (isOpen()) render(); }
-  let dockImpl, dockLoad, contextFromSelection = () => ({ before: '', after: '' });
+  function sync() { if (fab) { const count=quotes().length+notes().length+favorites().length; fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = count === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + count); } if (isOpen()) render(); }
+  let dockImpl, dockLoad, shouldWarmReading, warmReadingPromise, earlyReading;
+  function anchorAtScroll() {
+    const headings = [...document.querySelectorAll('article h2[id],article h3[id],main [data-pagefind-body] h2[id],main [data-pagefind-body] h3[id]')];
+    const cutoff = Math.max(90, Math.min(window.innerHeight * .35, 250));
+    for (let i = headings.length - 1; i >= 0; i--) {
+      if (headings[i].getBoundingClientRect().top <= cutoff) return headings[i].id;
+    }
+    return '';
+  }
+  function readingViewport() {
+    const maxScroll = Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    return {anchor:anchorAtScroll(),ratio:Math.min(1,Math.max(0,window.scrollY/maxScroll)),updatedAt:Date.now()};
+  }
+  function captureEarly() {
+    try { if (!isOpen()) earlyReading=[localStorage.getItem('gb-library-reading-v1'),scrollY,location.pathname]; } catch {}
+  }
+  function stageNavigation(intent) {
+    const key='gb-library-progress-navigation-v1';
+    let prior;
+    try { prior=JSON.parse(sessionStorage.getItem(key)); } catch {}
+    const queue=Array.isArray(prior)?prior:prior?[prior]:[];
+    sessionStorage.setItem(key,JSON.stringify(queue.length?[...queue,intent]:intent));
+  }
+  function leaveEarly() {
+    try {
+      const key=gbHighlightPath({url:location.pathname});
+      const expected=JSON.parse(earlyReading?.[0]||'{}')?.[key];
+      if (!isOpen() && earlyReading?.[1]===scrollY && earlyReading[2]===location.pathname && expected?.state==='reading')
+        stageNavigation({key,expected,progress:readingViewport()});
+    } catch {}
+    earlyReading=null;
+  }
+  let watchingEarly=false;
+  const watchEarly=on=>{
+    if(watchingEarly===on)return;
+    watchingEarly=on;
+    const action=on?'addEventListener':'removeEventListener';
+    window[action]('scroll',captureEarly,{passive:true});
+    window[action]('pagehide',leaveEarly);
+    if(!on)earlyReading=null;
+  };
+  watchEarly(true);
+  function warmReading() {
+    if (warmReadingPromise || !shouldWarmReading?.()) return;
+    watchEarly(true);
+    warmReadingPromise = import('/js/reader-library-research-core.js?v=cf9c70ad')
+      .then(research=>{const early=earlyReading;watchEarly(false);return research.warmReadingProgress({isOpen,earlyReading:early,exitForResume:resume=>{close();requestAnimationFrame(()=>requestAnimationFrame(resume));}});})
+      .catch(()=>{warmReadingPromise=null;leaveEarly();watchEarly(false);});
+  }
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
-    dockLoad ||= import('/js/reader-library-dock.js?v=b550fdd1')
-      .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter(); })
-      .catch(() => { dockLoad = null; });
+    watchEarly(true);
+    dockLoad ||= import('/js/reader-library-dock.js?v=215fecef')
+      .then(m => { dockImpl = m.dockLibraryFab; dockImpl(fab); shouldWarmReading=m.shouldWarmReading; warmReading(); if(!warmReadingPromise)watchEarly(false); })
+      .catch(()=>{dockLoad=null;leaveEarly();watchEarly(false);});
   }
-  function render() {
-    if (!list || !presenter) return;
-    filter = presenter.renderList({
-      list, items: all(), titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
+  function render() { view?.render(); }
+  function showEditor(...args) { return editorController?.showEditor(...args); }
+
+  function textIndex(scope) { return rangeRuntime?.textIndex(scope); }
+  function locate(index,item) { return rangeRuntime?.locate(index,item)||null; }
+  function paintMarks() {
+    cancelScheduledPaint();
+    if (rangeRuntime) return rangeRuntime.paintMarks();
+    const supported=Boolean(window.CSS&&CSS.highlights);
+    if (supported) {
+      const here=gbHighlightPath({url:location.href});
+      const needed=quotes().some(item=>gbHighlightPath(item)===here&&MARK_COLORS.includes(String(item.color||item.annotation?.color||'')));
+      if (needed) {
+        ensureRanges().then(schedulePaint).catch(()=>{});
+        return {supported,painted:0,placed:new Set(),pending:true};
+      }
+      for(const color of MARK_COLORS) CSS.highlights.delete('gb-hl-'+color);
+    }
+    return {supported,painted:0,placed:new Set()};
+  }
+
+  // Coalesce repaint; immediate paint consumes it.
+  let paintFrame = null;
+  function cancelScheduledPaint() {
+    if (paintFrame !== null) cancelAnimationFrame(paintFrame);
+    paintFrame = null;
+  }
+  function schedulePaint() {
+    if (paintFrame !== null) return;
+    paintFrame = requestAnimationFrame(() => {
+      paintFrame = null;
+      paintMarks();
     });
   }
-  function listClick(e) {
-    const b = e.target.closest('[data-library-action]');
-    if (!b) return;
-    const action = b.dataset.libraryAction;
-    if (action === 'more') { shown += BATCH_SIZE; render(); return; }
-    if (action === 'clear-filters') { searchTerm = ''; search.value = ''; filter = 'all'; research?.resetFilters(); shown = BATCH_SIZE; render(); return; }
-    const card = b.closest('.gb-hl-item');
-    if (!card) return;
-    const item = all().find((x) => x.id === card.dataset.id && x.type === card.dataset.type);
-    if (!item) return;
-    if (action === 'expand') {
-      const key = item.type + ':' + item.id, full = !expanded.has(key);
-      if (full) expanded.add(key); else expanded.delete(key);
-      card.querySelector('.gb-hl-quote').classList.toggle('is-collapsed', !full);
-      b.setAttribute('aria-expanded', String(full));
-      b.textContent = full ? 'Свернуть' : 'Читать полностью';
+  window.addEventListener('gb:library-committed', e => {
+    if (!e?.detail || e.detail.key === QUOTES_KEY) schedulePaint();
+  });
+  function onLibraryStorage(e) {
+    if (e.storageArea !== localStorage) return;
+    const cleared = e.key === null;
+    if (cleared) {
+      clearIntent++;
+      // Revoke Undo, retain draft.
+      editorController?.clearUndo();
+      clearTimeout(toast.timer);
+      hideToast();
+      document.getElementById('gb-hl-toast')?.replaceChildren();
     }
-    if (action === 'delete') deleteItem(item);
-    if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
-    if (action === 'edit-note') showEditor(null, item);
-    if (action === 'note-for-quote') showEditor({ quoteText: item.text, title: item.title, url: item.url });
-    if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
+    if (e.key === 'gb-library-reading-v1') warmReading();
+    if (cleared || e.key === QUOTES_KEY) schedulePaint();
+    if (cleared || [QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync();
   }
-  function showEditor(context = null, editing = null) {
-    draft = { context, editing };
-    editor.hidden = false;
-    panel.classList.add('is-editing');
-    textArea.value = editing ? editing.text : '';
-    overlay.querySelector('#gb-hl-note-context').textContent = context && context.quoteText
-      ? 'К цитате: «' + context.quoteText.slice(0, 180) + '»'
-      : editing && editing.quoteText ? 'К цитате: «' + editing.quoteText.slice(0, 180) + '»'
-      : 'Мысли во время чтения';
-    textArea.focus({ preventScroll: true });
-  }
-  function hideEditor(focus = true) {
-    if (!editor) return;
-    editor.hidden = true; draft = null;
-    panel.classList.remove('is-editing');
-    if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
-  }
-  function saveNote(e) {
-    e.preventDefault();
-    const text = textArea.value.trim();
-    if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
-    const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
-    if (!editing && old.length >= LIMIT_NOTES) {
-      statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
-      return;
-    }
-    const next = editing
-      ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
-      : [{
-          id: uid('note'), text, quoteText: context && context.quoteText || '',
-          articleTitle: context && context.title || currentTitle(),
-          url: context && context.url || location.origin + location.pathname,
-          savedAt: Date.now(),
-        }].concat(old);
-    if (!write(NOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить заметку. Проверьте доступное место в браузере.', true); return;
-    }
-    hideEditor(false);
-    tab = 'note'; filter = 'all'; shown = BATCH_SIZE;
-    render(); sync();
-    statusMessage(editing ? 'Заметка обновлена.' : 'Заметка сохранена.');
-  }
-  function clearUndo() {
-    if (pendingUndo) clearTimeout(pendingUndo.timer);
-    pendingUndo = null;
-    if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }
-  }
-  function deleteItem(item) {
-    const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
-    const old = item.type === 'note' ? notes() : quotes();
-    const index = old.findIndex((x) => String(x.id) === item.id);
-    if (index < 0) return;
-    if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
-      statusMessage('Не удалось удалить запись.', true); return;
-    }
-    clearUndo();
-    pendingUndo = { key, entry: old[index], index };
-    render(); sync();
-    const undoButton = button('undo', 'Отменить удаление', 'Отменить');
-    status.replaceChildren(element('span', '', 'Запись удалена'), undoButton);
-    status.classList.add('is-visible');
-    undoButton.addEventListener('click', () => {
-      if (!pendingUndo) return;
-      const u = pendingUndo, items = read(u.key);
-      items.splice(Math.min(u.index, items.length), 0, u.entry);
-      if (!write(u.key, items)) { statusMessage('Не удалось восстановить запись.', true); return; }
-      clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
-    });
-    pendingUndo.timer = setTimeout(clearUndo, 6000);
-  }
-  function saveSelectedQuote() {
-    const selected = selection();
-    if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
-    const old = quotes(), record = {
-      id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
-      url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
-    };
-    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
-      statusMessage('Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
-      return false;
-    }
-    const next = gbAddHighlight(old, record);
-    if (next.length === old.length && next.every((x, i) => x === old[i])) {
-      statusMessage('Такая цитата уже сохранена.'); return true;
-    }
-    if (!write(QUOTES_KEY, next)) {
-      statusMessage('Не удалось сохранить цитату. Хранилище недоступно или заполнено.', true);
-      return false;
-    }
-    sync(); statusMessage('Цитата сохранена вместе с источником.');
-    return true;
-  }
-  function bindSelectionButton(id, label, icon, handler, popup) {
-    if (popup.querySelector('#' + id)) return;
-    const b = document.createElement('button');
-    b.id = id; b.type = 'button';
-    b.setAttribute('aria-label', label);
-    b.innerHTML = icon + '<span>' + (id === 'ss-save' ? 'Сохранить' : 'Заметка') + '</span>';
-    popup.append(b);
-    b.addEventListener('click', handler);
+  window.addEventListener('storage', onLibraryStorage);
+  window.addEventListener('resize', schedulePaint, {passive:true});
+  document.addEventListener('toggle', e => {
+    if (e.target instanceof HTMLDetailsElement && e.target.matches('details.mq-translation-flip')) schedulePaint();
+  }, true);
+
+  // Live selection; lazy native/ARGON arbiter.
+  let selectionController, selectionLoad;
+  function hide() { selectionController?.hide(); }
+  function hasSelection() {
+    const sel = window.getSelection?.();
+    return !!(sel && !sel.isCollapsed && sel.rangeCount && normalizeText(sel.toString()).length >= 8);
   }
   function attachSelection() {
-    const popup = document.getElementById('selection-share-popup');
-    if (!popup || popup.querySelector('#ss-save')) return;
-    popup.append(element('span', 'ss-sep'));
-    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, () => {
-      if (saveSelectedQuote()) {
-        const label = popup.querySelector('#ss-save span');
-        if (label) label.textContent = 'Сохранено';
-        popup.classList.add('gb-hl-selection-saved');
-        setTimeout(() => {
-          if (label && label.isConnected) label.textContent = 'Сохранить';
-          popup.classList.remove('gb-hl-selection-saved', 'ss-visible');
-          popup.setAttribute('aria-hidden', 'true');
-        }, 660);
-      }
-    }, popup);
-    bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
-      const s = selection();
-      const context = s.text.length >= 8
-        ? { quoteText: s.text, url: sourceUrl(s), title: currentTitle() } : null;
-      popup.classList.remove('ss-visible');
-      popup.setAttribute('aria-hidden', 'true');
-      open(document.getElementById('ss-note')).then((opened) => { if (opened) showEditor(context); });
-    }, popup);
+    if (selectionController) { selectionController.attachSelection(); return; }
+    if (!hasSelection()) return;
+    Promise.all([loadSelectionController(),ensureRanges()]).then(([module,{selection,currentTitle,uid}]) => {
+      if (!module || selectionController || !hasSelection()) return;
+      rememberSelection();
+      const controller = module.createSelectionController({MARK_COLORS,penSvg,rememberSelection,selection,open,showEditor,hideToast,element,uid,currentTitle,normalizeText,transactionCall,gbHighlightKey,gbAddHighlight,gbHighlightPath,gbHighlightText,gbContextKey,GBReaderAnchors,locate,textIndex,paintMarks,sync,statusMessage,toast,quotes});
+      controller.attachSelection();
+      selectionController = controller;
+      controller.placeSelectionBar();
+    }).catch(() => { /* failed mount is retried on the next selection */ });
   }
-  document.addEventListener('mouseup', () => setTimeout(rememberSelection, 25));
-  document.addEventListener('touchend', () => setTimeout(rememberSelection, 60), { passive: true });
-  document.addEventListener('selectionchange', rememberSelection);
+  function loadSelectionController() {
+    return selectionLoad ||= import('/js/reader-library-selection.js?v=b301d44f')
+      .catch(() => { selectionLoad = null; return null; });
+  }
+  // Prewarm touch/pen, not keyboard/drag.
+  document.addEventListener('pointerdown', e => {
+    if (['touch','pen'].includes(e.pointerType) && e.target.closest?.('article, main [data-pagefind-body], .article-body')) loadSelectionController();
+  }, {passive:true});
+  const captureSelection = () => { rememberSelection(); attachSelection(); };
+  document.addEventListener('mouseup', () => setTimeout(captureSelection, 25));
+  document.addEventListener('touchend', () => setTimeout(captureSelection, 60), { passive: true });
+  document.addEventListener('selectionchange', captureSelection);
   document.addEventListener('click', (e) => {
     if (e.target.closest('#selection-share-popup')) attachSelection();
   });
 
   const api = Object.freeze({
-    libraryVersion: 2, open, close, getAll: quotes,
-    getNotes: notes, getLibrary: all,
+    libraryVersion: 2, open, close, getAll: quotes, mutateLibrary, restoreDeleted, snapshotRaw, restoreRaw,
+    getNotes: notes, getLibrary: all, readingViewport, stageNavigation,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
+    /* Range painter diagnostics. */
+    ensureRanges, paintMarks,
+    resolveRange: (item, scope) => {
+      if (!rangeRuntime) return null;
+      const article=scope || document.querySelector('article.article-body') || document.querySelector('article');
+      if(!article)return null;
+      return item?.annotation?.version===1
+        ? GBReaderAnchors.resolve(article,item.annotation.anchor)
+        : locate(textIndex(article),item);
+    },
   });
   window.GBHighlights = api;
   window.GBReaderLibrary = api;
@@ -471,6 +537,7 @@
     create();
     setTimeout(attachSelection, 500);
     setTimeout(dock, 1200);
+    setTimeout(schedulePaint, 900);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();

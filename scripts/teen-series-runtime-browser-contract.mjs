@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { assertArgonScriptureActivation } from './lib/reader-scripture-owner-browser.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -190,7 +191,7 @@ try {
   {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await context.newPage();
-    await page.goto(base + ROUTES[0][0], { waitUntil: 'networkidle', timeout: 40_000 });
+    await page.goto(base + ROUTES[0][0] + '?reader-pilot=0', { waitUntil: 'networkidle', timeout: 40_000 });
     const trigger = page.locator('.bref[data-ref]').first();
     await trigger.focus();
     const tip = page.locator('.btip.is-open').last();
@@ -204,6 +205,114 @@ try {
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
     await context.close();
+  }
+
+  // Preserve the original desktop Classic focus test, and independently
+  // require default ARGON to render the actual authored passage on activation.
+  {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, serviceWorkers: 'block' });
+    try {
+      const page = await context.newPage();
+      await page.goto(base + ROUTES[0][0], { waitUntil: 'networkidle', timeout: 40_000 });
+      const citation = page.locator('article .bref[data-ref]').first();
+      await assertArgonScriptureActivation(page, citation);
+      await page.locator('#npUEdgeToggle').click();
+      await assertArgonScriptureActivation(page, citation, { key: 'Space' });
+      await page.locator('#npUEdgeToggle').click();
+      await assertArgonScriptureActivation(page, page.locator('article .bref[data-ref]').nth(1), { keyboard: false });
+      console.log('PASS default ARGON scripture keyboard and pointer activation');
+      // The parents article's first citation sits deep in the article. Its
+      // scroll-state publication may arrive after keyboard activation.
+      // Also force a real passive section change while the picker has focus.
+      const parents = await context.newPage();
+      await parents.setViewportSize({ width: 1440, height: 900 });
+      await parents.goto(base + ROUTES[1][0], { waitUntil: 'networkidle', timeout: 40_000 });
+      await assertArgonScriptureActivation(parents, parents.locator('article .bref[data-ref]').first());
+      await parents.waitForFunction(() => window.ReaderState.getSnapshot()?.phase === 'active-section' &&
+        document.getElementById('npUFollowChapter')?.textContent !== 'Раздел ' + window.__NP_UNIVERSAL_PREVIEW__.groups[0].roman,
+        null, { timeout: 10000 });
+      const selected = await parents.evaluate(() => {
+        const pick = document.getElementById('npUScripturePick');
+        window.__teenStudyPicker = pick;
+        const ref = pick.value;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return ref;
+      });
+      await parents.waitForFunction(() => window.ReaderState.getSnapshot()?.phase === 'before-content' &&
+        document.getElementById('npUFollowChapter')?.textContent === 'Раздел ' + window.__NP_UNIVERSAL_PREVIEW__.groups[0].roman,
+        null, { timeout: 10000 });
+      assert.deepEqual(await parents.evaluate(() => {
+        const pick = document.getElementById('npUScripturePick');
+        return { sameNode: pick === window.__teenStudyPicker, focused: pick === document.activeElement, ref: pick.value };
+      }), { sameNode: true, focused: true, ref: selected }, 'passive section change preserves the live focused scripture instrument');
+      await parents.locator('#npUFollowToggle').focus();
+      await parents.waitForFunction(() => document.getElementById('npUScripturePick') !== window.__teenStudyPicker &&
+        document.activeElement?.id === 'npUFollowToggle', null, { timeout: 5000 });
+      assert.equal(await parents.locator('#npUScripturePick').count(), 1, 'deferred section projection replaces only the released instrument');
+      console.log('PASS scripture live focus continuity and deferred section refresh');
+      // Choose an actual narrow section rather than racing the automatic
+      // article-wide fallback after focus restoration at the introduction.
+      const fixture = await parents.evaluate(() => {
+        const citations = [...document.querySelectorAll('article button.bref[data-ref]')];
+        const groups = window.__NP_UNIVERSAL_PREVIEW__.groups;
+        const refs = groups.map((g, i) => {
+          const start = document.getElementById(g.id);
+          const end = groups[i + 1] && document.getElementById(groups[i + 1].id);
+          return citations.filter(el => start &&
+            (start.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+            (!end || !(end.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)));
+        });
+        for (let i = 0; i < refs.length; i++) {
+          if (!refs[i].length) continue;
+          const held = [...new Set(refs[i].map(el => el.dataset.ref))];
+          const outside = refs.slice(1).flat().find(el => !held.includes(el.dataset.ref));
+          if (outside) return { group: groups[i].id, held, outsideIndex: citations.indexOf(outside) };
+        }
+        return null;
+      });
+      assert.ok(fixture, 'fixture must offer a narrow source group and an outside reference');
+      const follow = parents.locator('#npUFollowToggle');
+      await parents.evaluate(group => {
+        document.getElementById(group).scrollIntoView({ block: 'start', behavior: 'instant' });
+        window.scrollBy(0, 120);
+      }, fixture.group);
+      await parents.waitForFunction(held => {
+        const pick = document.getElementById('npUScripturePick');
+        return pick && JSON.stringify([...pick.options].map(o => o.value)) === JSON.stringify(held);
+      }, fixture.held, { timeout: 10000 });
+      await follow.click();
+      assert.equal(await follow.getAttribute('aria-pressed'), 'false', 'manual research selection');
+      const pin = parents.locator('[data-np-u-pin="scripture"]');
+      await pin.click();
+      assert.equal(await pin.getAttribute('aria-pressed'), 'true');
+      const chosen = await assertArgonScriptureActivation(parents,
+        parents.locator('article button.bref[data-ref]').nth(fixture.outsideIndex), { key: 'Space' });
+      await follow.click();
+      assert.equal(await follow.getAttribute('aria-pressed'), 'true', 'resume automatic follow with the pinned passage');
+      await parents.waitForFunction(() => window.ReaderState.getSnapshot()?.phase === 'active-section' &&
+        document.getElementById('npUFollowChapter')?.textContent !== 'Раздел ' + window.__NP_UNIVERSAL_PREVIEW__.groups[0].roman,
+        null, { timeout: 10000 });
+      assert.equal(await pin.getAttribute('aria-pressed'), 'true', 'explicit source selection preserves pin');
+      await parents.locator('#npUFollowToggle').focus();
+      const prior = await parents.evaluate(() => {
+        window.__pinnedStudy = document.getElementById('npUScripturePick');
+        const section = document.getElementById('npUFollowChapter').textContent;
+        window.scrollTo({top: 0, behavior:'instant'});
+        return section;
+      });
+      await parents.waitForFunction(prior =>
+        window.ReaderState.getSnapshot()?.phase === 'before-content' &&
+        document.getElementById('npUFollowChapter')?.textContent !== prior, prior, { timeout: 10000 });
+      assert.deepEqual(await parents.evaluate(() => {
+        const p = document.getElementById('npUScripturePick');
+        return { same: p === window.__pinnedStudy, ref: p.value, pinned: document.querySelector('[data-np-u-pin="scripture"]').getAttribute('aria-pressed'),
+          open: p.closest('details').open };
+      }), { same: true, ref: chosen.reference, pinned: 'true', open: true }, 'passive section change preserves new pinned reference and open instrument');
+      await pin.click();
+      assert.equal(await pin.getAttribute('aria-pressed'), 'false', 'explicit unpin resumes current projection');
+      await parents.close();
+      console.log('PASS explicit Scripture activation while pinned, passive retention and unpin');
+    } finally { await context.close(); }
   }
 
   {

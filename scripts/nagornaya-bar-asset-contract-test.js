@@ -37,9 +37,18 @@ function readLegacyRoute(route) {
 function assertAssetContract(label, source = read(label)) {
   const escaped = ASSET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const refs = [...source.matchAll(new RegExp(`(?:\\.\\.\\/)*${escaped}\\?v=([a-f0-9]{8})`, 'g'))];
-  assert.strictEqual(refs.length, 1, `${label}: expected exactly one canonical ${ASSET} reference`);
-  assert.strictEqual(refs[0][1], expectedHash, `${label}: stale ${ASSET} revision`);
-  assert(!source.includes(`${ASSET}?v=1`), `${label}: legacy v=1 must never return`);
+  if (label === RUNTIME_COMPONENT) {
+    assert.strictEqual(source.split("assetUrl('js/nagornaya-bar-extras.js')").length - 1, 1,
+      label + ': expected one assetUrl owner');
+    assert.strictEqual(refs.length, 0, label + ': no literal revision alongside canonical owner');
+    assert(read('src/lib/asset-version.js').includes("'js/nagornaya-bar-extras.js': '" + expectedHash + "'"),
+      label + ': registry revision must match asset bytes');
+  } else {
+    assert.strictEqual(refs.length, 1, label + ': expected one retained reference');
+    // Reference-only legacy HTML is intentionally not rewritten by cache-bust.
+    assert.strictEqual(refs[0][1], '3c7e0bdd', label + ': protected reference revision changed');
+  }
+  assert(!source.includes(ASSET + '?v=1'), label + ': legacy v=1 must never return');
 
   const mobile = source.indexOf('nagornaya-mobile-toc.js');
   const bar = source.indexOf('nagornaya-bar-extras.js');

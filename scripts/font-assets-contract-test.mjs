@@ -374,6 +374,65 @@ check('exact source swaps directory and preserves support', async () => withFixt
   assert.equal(verifyFontAssets({ root, scanReferences: false }).result, 'PASS');
 }));
 
+function addOflFixture(root, state) {
+  const licensePath = 'fonts/Fixture/OFL.txt';
+  const bytes = fs.readFileSync(new URL('../fonts/Literata/OFL.txt', import.meta.url));
+  fs.writeFileSync(path.join(root, licensePath), bytes);
+  const entry = {
+    path: licensePath, kind: 'ofl-license', role: 'font-license', family: 'Fixture Serif',
+    spdx: 'OFL-1.1', bytes: bytes.length, sha256: sha256(bytes),
+    sourceUrl: 'https://raw.githubusercontent.com/google/fonts/main/ofl/fixture/OFL.txt',
+    observedUpstreamSha256: sha256(bytes),
+  };
+  state.supportManifest.supportAssets.push(entry);
+  state.supportManifest.supportAssets.sort((a,b) => a.path.localeCompare(b.path));
+  return { licensePath, bytes, entry };
+}
+
+check('OFL support is pinned and preserved by exact generator', async () => withFixture(async (root) => {
+  const font = makeWoff2(25);
+  const state = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2', font]]);
+  const {licensePath, bytes} = addOflFixture(root, state);
+  assert.equal(verifyFontAssets({root, ...state}).result, 'PASS');
+  const result = await generateFontAssets({root, ...state, write:true, fetchImpl:async()=>response(font)});
+  assert.equal(result.result, 'WRITE_PASS');
+  assert.deepEqual(fs.readFileSync(path.join(root,licensePath)), bytes);
+}));
+
+check('OFL content cannot be arbitrary text even with matching hash', async () => withFixture(async (root) => {
+  const state = writeFixture(root, [['fonts/Fixture/fixture-latin-400.woff2',makeWoff2(26)]]);
+  const {licensePath,entry} = addOflFixture(root,state);
+  const bytes = Buffer.from('not a license');
+  fs.writeFileSync(path.join(root,licensePath),bytes);
+  entry.bytes=bytes.length;entry.sha256=sha256(bytes);
+  assert.throws(()=>verifyFontAssets({root,...state}),/copyright notice missing/);
+}));
+
+check('OFL changed legal wording fails even when the file hash is repinned', async () => withFixture(async (root) => {
+  const state=writeFixture(root,[['fonts/Fixture/fixture-latin-400.woff2',makeWoff2(29)]]);
+  const {licensePath,entry,bytes}=addOflFixture(root,state);
+  const original=bytes.toString('utf8');
+  const changed=Buffer.from(original.replace('may be sold by itself','may be sold freely by itself'),'utf8');
+  assert.notDeepEqual(changed,bytes);
+  fs.writeFileSync(path.join(root,licensePath),changed);
+  entry.bytes=changed.length;entry.sha256=sha256(changed);
+  assert.throws(()=>verifyFontAssets({root,...state}),/OFL legal wording mismatch/);
+}));
+
+check('OFL kind cannot admit unrelated support paths', async () => withFixture(async (root) => {
+  const state=writeFixture(root,[['fonts/Fixture/fixture-latin-400.woff2',makeWoff2(27)]]);
+  const {entry}=addOflFixture(root,state);
+  entry.path='fonts/Fixture/other.css';
+  assert.throws(()=>validateSupportManifestObject(state.supportManifest),/support kind\/path mismatch/);
+}));
+
+check('OFL source must match declared family directory', async () => withFixture(async (root) => {
+  const state=writeFixture(root,[['fonts/Fixture/fixture-latin-400.woff2',makeWoff2(28)]]);
+  const {entry}=addOflFixture(root,state);
+  entry.sourceUrl='https://example.org/OFL.txt';
+  assert.throws(()=>validateSupportManifestObject(state.supportManifest),/license source mismatch/);
+}));
+
 check('production verifier has no network path', async () => {
   const source = fs.readFileSync(new URL('./verify-font-assets.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /node:https|node:http|\bfetch\s*\(/);

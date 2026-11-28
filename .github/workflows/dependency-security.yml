@@ -8,6 +8,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/npm-security-contract.mjs'
+      - 'scripts/npm-security-contract-test.mjs'
+      - 'data/security-advisory-dispositions.json'
   push:
     branches: [main]
     paths:
@@ -15,6 +17,11 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/npm-security-contract.mjs'
+      - 'scripts/npm-security-contract-test.mjs'
+      - 'data/security-advisory-dispositions.json'
+  # Weekly sweep: new advisories appear between PRs; dispositions expire on their own dates.
+  schedule:
+    - cron: '45 4 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -54,6 +61,9 @@ jobs:
           set -e
           echo "npm audit exit: $status"
           test -s reports/npm-security/npm-audit.json
+
+      - name: Test dependency security contract
+        run: node scripts/npm-security-contract-test.mjs
 
       - name: Enforce dependency security contract
         run: node scripts/npm-security-contract.mjs reports/npm-security/npm-audit.json

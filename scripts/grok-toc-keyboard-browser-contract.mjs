@@ -7,6 +7,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
@@ -78,7 +79,7 @@ try {
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         try {
-          await page.goto(origin + route, {waitUntil:'domcontentloaded'});
+          await gotoNativeReader(page,origin + route, {waitUntil:'domcontentloaded'});
           await page.waitForFunction(() => document.querySelector('.hrail--grok.grok-ready #hrailToc'));
           const rows = page.locator('#hrailToc li.grok-row');
           const all = await getState(page);

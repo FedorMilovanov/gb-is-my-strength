@@ -2,7 +2,7 @@
 
 /* TODO: gill-v16 | gbs2-baptisty | gbs2-hard-texts | astro-series */
 /* Gill v16 required: data-gill-v16, .gbs-rail, .gbs-rail-card.is-current, .mobile-bottom-bar, #mobPartTocBtn, #seriesTocOverlay, #partTocOverlay */
-/* REMOVE .gbs2-timeline requirement from Gill v16 — prevents false-red */
+/* Gill uses the canonical editorial atlas, not the legacy timeline. */
 
 /**
  * Interactive regression audit for runtime-only bugs that static HTML checks miss.
@@ -26,6 +26,7 @@ const SERIES_URLS = [
   '/articles/dzhon-gill-istoricheskiy-kontekst/',
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/dzhon-gill-chast-2-uchenyi/',
+  '/articles/dzhon-gill-chast-4-ekzeget/',
   '/articles/dzhon-gill-chast-3-nasledie/',
   '/articles/dzhon-gill-spravochnik/',
   '/articles/krajne-li-isporcheno-serdce/',
@@ -238,6 +239,13 @@ async function checkSeries(browser) {
         gbsCurrent: !!document.querySelector('.gbs2-part[aria-current="page"], .gbs2-part--current, .gbs-rail-card[aria-current="page"], .gbs-rail-card.is-current, .gbs2-current[aria-current="page"]'),
         gbsNext: !!document.querySelector('.gbs2-next, .gbs-rail-card[href]:not([aria-current="page"]):not(.is-current)'),
         gbsTimeline: !!document.querySelector('.gbs2-timeline'),
+        gillAtlas: {
+          count: document.querySelectorAll('.gill-atlas').length,
+          links: [...document.querySelectorAll('.gill-atlas .atlas-node')].map(a => ({
+            href: a.getAttribute('href'), current: a.getAttribute('aria-current'),
+            width: a.getBoundingClientRect().width, height: a.getBoundingClientRect().height,
+          })),
+        },
         gbsV16: !!document.querySelector('[data-gill-v16], .mobile-bottom-bar, #seriesTocOverlay, #partTocOverlay'),
         astroArticle: !!document.querySelector('.astro-article'),
         astroSeriesNav: !!document.querySelector('.astro-series-nav'),
@@ -251,9 +259,21 @@ async function checkSeries(browser) {
       if (!state.gbsRail || !state.gbsRailVisible) push('gbs-rail-not-visible', url, state);
       if (!state.gbsCurrent) push('gbs-no-current-part', url, state);
       if (!state.gbsNext) push('gbs-next-nav-missing', url, state);
-      // Hard-texts GBS pages intentionally use the compact rail without the
-      // chronological timeline used by Gill/Baptisty series.
-      if (!state.gbsTimeline && state.gbsSeries !== 'hard-texts') push('gbs-timeline-missing', url, state);
+      // Gill's authored atlas replaced the timeline; require its actual
+      // ordered six-route graph and one truthful, visible current marker.
+      if (state.gbsSeries === 'dzhon-gill') {
+        const expected = SERIES_URLS.filter(route => route.startsWith('/articles/dzhon-gill-'));
+        const atlas = state.gillAtlas;
+        const current = atlas.links.filter(link => link.current === 'page');
+        if (atlas.count !== 1 || state.gbsTimeline ||
+            JSON.stringify(atlas.links.map(link => link.href)) !== JSON.stringify(expected) ||
+            current.length !== 1 || current[0].href !== url ||
+            atlas.links.some(link => link.width <= 0 || link.height <= 0)) {
+          push('gill-atlas-contract', url, atlas);
+        }
+      } else if (!state.gbsTimeline && state.gbsSeries !== 'hard-texts') {
+        push('gbs-timeline-missing', url, state);
+      }
     } else {
       if (!state.astroArticle) push('astro-series-article-missing', url, state);
       if (!state.astroSeriesNav) push('astro-series-nav-missing', url, state);
@@ -336,16 +356,66 @@ async function checkSeries(browser) {
 async function checkQuiz(browser) {
   for (const url of QUIZ_URLS) {
     const page = await openPage(browser, url, { width: 1100, height: 800 });
-    const cfg = await page.evaluate(() => ({
-      placeholder: !!document.getElementById('quizPlaceholder'),
-      launch: !!document.getElementById('quizLaunch'),
-      questions: window.SITE_CONFIG && window.SITE_CONFIG.quiz && Array.isArray(window.SITE_CONFIG.quiz.questions)
-        ? window.SITE_CONFIG.quiz.questions.length
-        : 0,
-    }));
-    if (cfg.questions > 0 && !cfg.placeholder) push('quiz-missing-placeholder', url, cfg);
-    if (cfg.questions > 0 && !cfg.launch) push('quiz-missing-launch', url, cfg);
-    if (cfg.launch) {
+    // W121 migrated only some routes to ONE shared quiz DOM. Do not require
+    // their deleted #quizLaunch, nor silently exempt legacy quiz routes.
+    const cfg = await page.evaluate(() => {
+      const study = document.getElementById('gbAnalyticsStudy');
+      return {
+        placeholder: Boolean(document.getElementById('quizPlaceholder')),
+        legacyLaunch: Boolean(document.getElementById('quizLaunch')),
+        study: Boolean(study && !study.hidden && study.querySelector('summary')),
+        questions: Array.isArray(window.SITE_CONFIG?.quiz?.questions)
+          ? window.SITE_CONFIG.quiz.questions.length : 0,
+      };
+    });
+    if (cfg.questions > 0 && !cfg.placeholder && !cfg.study) push('quiz-missing-placeholder', url, cfg);
+    if (cfg.questions > 0 && !cfg.legacyLaunch && !cfg.study) push('quiz-missing-launch', url, cfg);
+    if (cfg.study) {
+      // The native Analytics and desktop W57 Research share this single
+      // <details> instance. Open the actual rendered summary, answer a
+      // question, inspect explanatory feedback, and verify session retention.
+      const root = page.locator('#gbAnalyticsStudy');
+      await root.locator('summary').click({ timeout: 5000 });
+      const quiz = root.locator('#gbAnalyticsQuiz');
+      const options = quiz.locator('.gb-study-options button');
+      const state = await quiz.evaluate(node => ({
+        question: (node.querySelector('h4')?.textContent || '').trim(),
+        options: node.querySelectorAll('.gb-study-options button').length,
+      }));
+      if (!state.question || state.options < 2) {
+        push('quiz-question-options-not-rendered', url, state);
+      } else {
+        const scan = () => quiz.evaluate(node => {
+          const LITERAL = /<(em|strong|b|i|u|span)\b/i;
+          const elements = [node.querySelector('h4'),...node.querySelectorAll('.gb-study-options button, .gb-study-feedback')];
+          const literal = elements.filter(el => el && LITERAL.test(el.textContent || ''))
+            .map(el => (el.textContent || '').slice(0,80));
+          const qs = window.SITE_CONFIG?.quiz?.questions || [];
+          const wantsRich = qs.some(q => [q?.question,...(q?.options || [])]
+            .some(v => typeof v === 'string' && LITERAL.test(v)));
+          const paintedRich = elements.some(el => el?.querySelector('em,strong,b,i,u,span'));
+          return { literal,wantsRich,paintedRich };
+        });
+        const before = await scan();
+        if (before.literal.length) push('quiz-literal-markup-rendered',url,before.literal);
+        if (await options.first().isDisabled()) {
+          const confidence = quiz.locator('.gb-study-confidence button').first();
+          if (await confidence.count()) await confidence.click({timeout:5000});
+        }
+        await options.first().click({timeout:5000});
+        const feedback = quiz.locator('.gb-study-feedback');
+        if (!(await feedback.count()) || !(await feedback.innerText()).trim()) {
+          push('quiz-explanation-not-rendered',url,null);
+        }
+        const after = await scan();
+        if (after.literal.length) push('quiz-literal-markup-after-answer',url,after.literal);
+        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost',url,after);
+        // A simple accordion close/reopen must not reset the answered state.
+        await root.locator('summary').click({timeout:5000});
+        await root.locator('summary').click({timeout:5000});
+        if (!(await feedback.count())) push('quiz-lost-answer-after-reopen',url,null);
+      }
+    } else if (cfg.legacyLaunch) {
       await page.locator('#quizLaunch').click({ timeout: 5000 });
       await page.waitForTimeout(400);
       const state = await page.evaluate(() => ({
@@ -353,29 +423,28 @@ async function checkQuiz(browser) {
         options: document.querySelectorAll('.quiz-option').length,
       }));
       if (!state.question || state.options < 2) push('quiz-question-options-not-rendered', url, state);
-      /* GBS-QUIZ-LITERAL-MARKUP enforcement: the escape-first allowlist in
-         src/runtime/article-quiz.js must paint data markup as real elements
-         and must never leak literal tags into visible text — before and after
-         answering, on every quiz route, on every run. */
+      /* GBS-QUIZ-LITERAL-MARKUP: legacy articles keep their rich markup
+         regression guard, before and after the first answer. */
       const scan = () => page.evaluate(() => {
         const LITERAL = /<(em|strong|b|i|u|span)\b/i;
         const nodes = [document.querySelector('#quizQuestion'), ...document.querySelectorAll('.quiz-option'),
           ...document.querySelectorAll('.quiz-feedback, .quiz-explanation, .quiz-explanation-full')];
-        const literal = nodes.filter((n) => n && LITERAL.test(n.textContent || '')).map((n) => (n.textContent || '').slice(0, 80));
-        const payload = window.SITE_CONFIG && window.SITE_CONFIG.quiz ? window.SITE_CONFIG.quiz.questions || [] : [];
-        const wantsRich = payload.some((q) => [q && q.question, ...((q && q.options) || [])].some((f) => typeof f === 'string' && LITERAL.test(f)));
-        const paintedRich = nodes.some((n) => n && n.querySelector('em, strong, b, i, u, span'));
-        return { literal, wantsRich, paintedRich };
+        const literal = nodes.filter(n => n && LITERAL.test(n.textContent || '')).map(n => (n.textContent || '').slice(0, 80));
+        const payload = window.SITE_CONFIG?.quiz?.questions || [];
+        const wantsRich = payload.some(q => [q?.question,...(q?.options || [])]
+          .some(f => typeof f === 'string' && LITERAL.test(f)));
+        const paintedRich = nodes.some(n => n?.querySelector('em,strong,b,i,u,span'));
+        return {literal,wantsRich,paintedRich};
       });
       const before = await scan();
-      if (before.literal.length) push('quiz-literal-markup-rendered', url, before.literal);
+      if (before.literal.length) push('quiz-literal-markup-rendered',url,before.literal);
       const firstOption = page.locator('.quiz-option').first();
       if (await firstOption.count()) {
         await firstOption.click({ timeout: 5000 });
         await page.waitForTimeout(400);
         const after = await scan();
-        if (after.literal.length) push('quiz-literal-markup-after-answer', url, after.literal);
-        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost', url, after);
+        if (after.literal.length) push('quiz-literal-markup-after-answer',url,after.literal);
+        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost',url,after);
       }
     }
     stats.quizzes++;
@@ -474,7 +543,7 @@ async function checkGlossary(browser) {
 }
 
 async function checkHermenevtikaFootnotes(browser) {
-  const desktop = await openPage(browser, HERMENEUTIKA_URL, { width: 1280, height: 850 });
+  const desktop = await openPage(browser, HERMENEUTIKA_URL + '?reader-pilot=0', { width: 1280, height: 850 });
   const staticState = await desktop.evaluate((expected) => {
     function numberOf(marker) {
       return Array.from(marker.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE).map((node) => node.textContent || '').join('').replace(/\s+/g, '').trim();
@@ -650,6 +719,13 @@ async function checkHermenevtikaFootnotes(browser) {
   if (!ordinaryState.tipOpen || !ordinaryState.expandedScripture) push('hermenevtika-ordinary-scripture-tooltip-broken', HERMENEUTIKA_URL, ordinaryState);
   await desktop.keyboard.press('Escape');
   await desktop.close();
+  const study = await openPage(browser, HERMENEUTIKA_URL, { width: 1280, height: 850 });
+  try {
+    const { assertArgonScriptureActivation } = await import('./lib/reader-scripture-owner-browser.mjs');
+    await assertArgonScriptureActivation(study, study.locator('article .bref[data-ref]').first());
+  } catch (error) {
+    push('hermenevtika-argon-scripture-study-broken', HERMENEUTIKA_URL, String(error));
+  } finally { await study.close(); }
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const resp = await mobile.goto(BASE + HERMENEUTIKA_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -891,6 +967,14 @@ async function checkSearchShortcuts(browser) {
     }));
     if (!ctrlK.cpOpen || !ctrlK.inputFocused) push('ctrl-k-command-palette-not-open', url, ctrlK);
     if (ctrlK.cpOpen) {
+      const paletteState = await page.evaluate(() => ({
+        palettes: document.querySelectorAll('.cp-backdrop').length,
+        openPalettes: document.querySelectorAll('.cp-backdrop.is-open').length,
+        runtimeScripts: [...document.scripts].filter(script => /\/js\/search\.js(?:\?|$)/.test(script.src)).length,
+      }));
+      if (paletteState.palettes !== 1 || paletteState.openPalettes !== 1 || paletteState.runtimeScripts !== 1) {
+        push('command-palette-duplicate-runtime', url, paletteState);
+      }
       await page.keyboard.type('Гилл');
       // Pagefind fetch/index hydration on production-like dist can take >450ms
       // under CI load; wait long enough to avoid false negatives while still
@@ -900,8 +984,12 @@ async function checkSearchShortcuts(browser) {
       if (results.items < 1) push('command-palette-no-results-for-gill', url, results);
       await page.keyboard.press('Escape');
       await page.waitForTimeout(150);
-      const closed = await page.evaluate(() => !document.querySelector('.cp-backdrop.is-open'));
-      if (!closed) push('command-palette-escape-did-not-close', url, null);
+      const closed = await page.evaluate(() => ({
+        openPalettes: document.querySelectorAll('.cp-backdrop.is-open').length,
+        overlayOwners: window.OverlayRuntime?.snapshot?.() || [],
+        focusedTag: document.activeElement?.tagName || null,
+      }));
+      if (closed.openPalettes !== 0) push('command-palette-escape-did-not-close', url, closed);
     }
     stats.search++;
     await page.close();

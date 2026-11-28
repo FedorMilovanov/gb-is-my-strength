@@ -215,25 +215,85 @@ function projectTimeTag(tag, value) {
 
 function projectVisibleDateline(html, record) {
   let updated = html;
+  // Slot identity is explicit: data-editorial-slot="modified|published" is
+  // canonical; the .article-updated/.article-byline CSS classes remain only
+  // as a legacy fallback for pages outside the approved registry. Approved
+  // routes are enforced through assertExplicitDatelineSlots at projection.
+  const slotModifiedContainerRe = /<(?<tag>p|div)\b(?<attrs>[^>]*\bdata-editorial-slot=["']modified["'][^>]*)>(?<body>[\s\S]*?)<\/\k<tag>>/i;
+  const slotModifiedContainer = updated.match(slotModifiedContainerRe);
+  if (slotModifiedContainer && record.editorialModifiedAt) {
+    const nextBody = slotModifiedContainer.groups.body.replace(/<time\b(?![^>]*\bdata-editorial-slot=)[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
+    updated = updated.replace(slotModifiedContainer[0], `<${slotModifiedContainer.groups.tag}${slotModifiedContainer.groups.attrs}>${nextBody}</${slotModifiedContainer.groups.tag}>`);
+  }
+
   const updatedContainerRe = /<(?<tag>p|div)\b(?<attrs>[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*)>(?<body>[\s\S]*?)<\/\k<tag>>/i;
   const updatedContainer = updated.match(updatedContainerRe);
   if (updatedContainer && record.editorialModifiedAt) {
-    const nextBody = updatedContainer.groups.body.replace(/<time\b[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
+    const nextBody = updatedContainer.groups.body.replace(/<time\b(?![^>]*\bdata-editorial-slot=)[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
     updated = updated.replace(updatedContainer[0], `<${updatedContainer.groups.tag}${updatedContainer.groups.attrs}>${nextBody}</${updatedContainer.groups.tag}>`);
   }
 
-  const updatedTimeRe = /<time\b[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*>/i;
+  const slotModifiedTimeRe = /<time\b[^>]*\bdata-editorial-slot=["']modified["'][^>]*>/i;
+  if (record.editorialModifiedAt) {
+    updated = updated.replace(slotModifiedTimeRe, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
+  }
+
+  const updatedTimeRe = /<time\b(?![^>]*\bdata-editorial-slot=)[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*>/i;
   if (record.editorialModifiedAt) {
     updated = updated.replace(updatedTimeRe, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
+  }
+
+  const slotPublishedTimeRe = /<time\b[^>]*\bdata-editorial-slot=["']published["'][^>]*>/i;
+  if (record.editorialPublishedAt) {
+    updated = updated.replace(slotPublishedTimeRe, (tag) => projectTimeTag(tag, record.editorialPublishedAt));
   }
 
   const bylineRe = /<(?<tag>p|div)\b(?<attrs>[^>]*\bclass=["'][^"']*\barticle-byline\b[^"']*["'][^>]*)>(?<body>[\s\S]*?)<\/\k<tag>>/i;
   const byline = updated.match(bylineRe);
   if (byline && record.editorialPublishedAt) {
-    const nextBody = byline.groups.body.replace(/<time\b[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialPublishedAt));
+    // The legacy fallback must not reach into nested containers that carry
+    // their own explicit slot (e.g. a modified-date div inside the byline).
+    // Note the byline body match may stop at the nested container's own
+    // closing tag, so the mask runs to the container close OR end of body.
+    const maskedBody = byline.groups.body.replace(
+      /<(p|div)\b[^>]*\bdata-editorial-slot=["']modified["'][^>]*>[\s\S]*?(?:<\/\1>|$)/gi,
+      (container) => container.replace(/<time\b/gi, '<gb-masked-time')
+    );
+    const nextBody = maskedBody
+      .replace(/<time\b(?![^>]*\bdata-editorial-slot=)[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialPublishedAt))
+      .replace(/<gb-masked-time/g, '<time');
     updated = updated.replace(byline[0], `<${byline.groups.tag}${byline.groups.attrs}>${nextBody}</${byline.groups.tag}>`);
   }
   return updated;
+}
+
+/*
+ * Explicit slot identity guard (SYS-EDITORIAL-DATELINE-SLOT-SEMANTICS).
+ * On approved registry routes every visible dateline element must declare
+ * data-editorial-slot; deriving the slot from a presentational CSS class is
+ * rejected because a class rename would silently drop date projection.
+ */
+function findImplicitDatelineSlots(html) {
+  const violations = [];
+  for (const match of String(html).matchAll(/<(?:time|p|div)\b[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*>/gi)) {
+    if (!/\bdata-editorial-slot=/i.test(match[0])) {
+      violations.push(`article-updated element without data-editorial-slot: ${match[0].slice(0, 120)}`);
+    }
+  }
+  for (const match of String(html).matchAll(/<(?:p|div)\b[^>]*\bclass=["'][^"']*\barticle-byline\b[^"']*["'][^>]*>([\s\S]*?)(?:<\/p>|<\/div>)/gi)) {
+    const timeTag = match[1].match(/<time\b[^>]*>/i);
+    if (timeTag && !/\bdata-editorial-slot=/i.test(timeTag[0])) {
+      violations.push(`article-byline time without data-editorial-slot: ${timeTag[0].slice(0, 120)}`);
+    }
+  }
+  return violations;
+}
+
+function assertExplicitDatelineSlots(html, route) {
+  const violations = findImplicitDatelineSlots(html);
+  if (violations.length) {
+    throw new Error(`${route}: visible dateline lacks explicit slot identity:\n- ${violations.join('\n- ')}`);
+  }
 }
 
 function projectPagefindDates(html, route, record) {
@@ -431,6 +491,7 @@ function projectRegistryToDist(options = {}) {
     const file = routeToDistFile(distRoot, route);
     if (!fs.existsSync(file)) throw new Error(`${route}: dist HTML missing: ${file}`);
     const current = fs.readFileSync(file, 'utf8');
+    assertExplicitDatelineSlots(current, route);
     const projected = projectHtml(current, route, record);
     report.htmlMatched += 1;
     if (writeIfChanged(file, projected, dryRun)) report.htmlChanged += 1;
@@ -472,6 +533,8 @@ module.exports = {
   projectMeta,
   projectJsonLd,
   projectVisibleDateline,
+  findImplicitDatelineSlots,
+  assertExplicitDatelineSlots,
   projectPagefindDates,
   projectHtml,
   projectSearchManifest,

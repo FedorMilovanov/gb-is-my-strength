@@ -22,6 +22,14 @@ const fixture={
  f:[{path:'/articles/kod-da-vinchi/',title:'Код да Винчи — исследование',description:'Избранный материал для чтения',addedAt:1781250000000}]
 };
 const checks=[];
+// Saving a note is now a serialized (async) commit: the assertion is unchanged,
+// but the contract must wait for the commit instead of assuming a sync write.
+const storeLength=(page)=>page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').length);
+const waitStore=async(page,expected)=>{
+  await page.waitForFunction((n)=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').length===n,
+    expected,{timeout:5000}).catch(()=>{});
+  return storeLength(page);
+};
 async function check(engine,driver,width,height,base,advanced){
  const browser=await driver.launch();
  const ctx=await browser.newContext({viewport:{width,height},serviceWorkers:'block',acceptDownloads:true,locale:'ru-RU'});
@@ -70,21 +78,40 @@ async function check(engine,driver,width,height,base,advanced){
   await page.locator('[data-library-tab="favorite"]').click();
   assert.equal(await page.locator('[data-library-action="remove-favorite"]').count(),1,'favorite remove action');
   assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'favorite seeded');
+  const originalFavoriteBytes=await page.evaluate(()=>localStorage.getItem('gb-favorites'));
   await page.evaluate(()=>{
     window.__originalFavoriteWrite=Storage.prototype.setItem;
+    window.__favoriteWriteFailures=0;
     Storage.prototype.setItem=function(key,value){
-      if(key==='gb-favorites')throw new DOMException('Storage full','QuotaExceededError');
+      if(key==='gb-favorites'){
+        window.__favoriteWriteFailures++;
+        throw new DOMException('Storage full','QuotaExceededError');
+      }
       return window.__originalFavoriteWrite.call(this,key,value);
     };
   });
+  try {
+    await page.locator('[data-library-action="remove-favorite"]').click();
+    // The shared storage lock is asynchronous. Observe both an actual failed
+    // write and the resulting error UI before removing the injected failure.
+    await page.waitForFunction(()=>window.__favoriteWriteFailures>0 &&
+      document.getElementById('gb-hl-status')?.classList.contains('is-error'),null,{timeout:5000});
+    assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'failed write preserves favorite');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('gb-favorites')),originalFavoriteBytes,'failed write preserves exact storage bytes');
+    assert.equal(await page.locator('.gb-hl-item').count(),1,'failed write preserves rendered favorite');
+    assert.equal(await page.locator('#gb-hl-status').evaluate(el=>el.classList.contains('is-error')),true,'failed write shows error');
+  } finally {
+    await page.evaluate(()=>{Storage.prototype.setItem=window.__originalFavoriteWrite;delete window.__originalFavoriteWrite;delete window.__favoriteWriteFailures});
+  }
   await page.locator('[data-library-action="remove-favorite"]').click();
-  assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'failed write preserves favorite');
-  assert.equal(await page.locator('#gb-hl-status').evaluate(el=>el.classList.contains('is-error')),true,'failed write shows error');
-  await page.evaluate(()=>{Storage.prototype.setItem=window.__originalFavoriteWrite;delete window.__originalFavoriteWrite});
-  await page.locator('[data-library-action="remove-favorite"]').click();
+  await page.waitForFunction(()=>!window.GBFavoriteStore.has('/articles/kod-da-vinchi/') &&
+    document.querySelectorAll('.gb-hl-item').length===0 &&
+    !!document.querySelector('#gb-hl-status [data-library-action="undo-favorite"]'),null,{timeout:5000});
   assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),false,'favorite removed from canonical store');
   assert.equal(await page.locator('.gb-hl-item').count(),0,'favorite removed from list');
   await page.locator('#gb-hl-status [data-library-action="undo-favorite"]').click();
+  await page.waitForFunction(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/') &&
+    document.querySelectorAll('.gb-hl-item').length===1,null,{timeout:5000});
   assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'favorite undo restored');
   assert.equal(await page.locator('.gb-hl-item').count(),1,'favorite restored in list');
   await page.locator('[data-library-tab="quote"]').click();
@@ -127,24 +154,29 @@ async function check(engine,driver,width,height,base,advanced){
   if(engine==='chromium')await page.screenshot({path:path.join(out,engine+'-'+width+'-editor.png'),animations:'disabled'});
   await page.locator('#gb-hl-note-text').fill('Новая локальная заметка для регрессионного теста');
   await page.locator('#gb-hl-editor button[type=submit]').click();
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'new note storage');
+  assert.equal(await waitStore(page,2),2,'new note storage');
   assert.equal(await page.locator('[data-library-tab="note"]').getAttribute('aria-pressed'),'true','save opens notes tab');
   const first=page.locator('.gb-hl-item').first();
   await first.locator('[data-library-action="edit-note"]').click();
   await page.locator('#gb-hl-note-text').fill('Отредактированная локальная заметка');
   await page.locator('#gb-hl-editor button[type=submit]').click();
+  await page.waitForFunction(()=>document.querySelector('#gb-hl-list').innerText.includes('Отредактированная локальная заметка'),null,{timeout:5000}).catch(()=>{});
   assert((await page.locator('#gb-hl-list').innerText()).includes('Отредактированная локальная заметка'),'edited note visible');
   await page.locator('.gb-hl-item').first().locator('[data-library-action="delete"]').click();
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),1,'delete note');
+  assert.equal(await waitStore(page,1),1,'delete note');
   await page.locator('#gb-hl-status [data-library-action="undo"]').click();
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'undo restores note');
+  assert.equal(await waitStore(page,2),2,'undo restores note');
   const download=page.waitForEvent('download');
   await page.locator('#gb-hl-export').click();
   const file=await download;
   assert(file.suggestedFilename().endsWith('.md'),'Markdown export file extension');
   await page.evaluate(()=>document.documentElement.classList.add('dark'));
   const darkBg=await page.locator('#gb-hl-panel').evaluate(el=>getComputedStyle(el).backgroundColor);
-  assert.equal(darkBg,'rgb(33, 27, 27)','dark library paper');
+  // W59 Classic mobile deliberately uses cooler graphite #17191D,
+  // while the desktop Product Library retains historical #211B1B.
+  // Assert the proper design contract at each viewport; do not roll back CSS.
+  assert.equal(darkBg,width<768?'rgb(23, 25, 29)':'rgb(33, 27, 27)',
+    width<768?'dark mobile Classic library paper':'dark desktop library paper');
   if(engine==='chromium'&&advanced)await page.screenshot({path:path.join(out,engine+'-'+width+'-night.png'),animations:'disabled'});
   await page.evaluate(()=>{document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-reader-theme','sepia')});
   const sepiaBg=await page.locator('#gb-hl-panel').evaluate(el=>getComputedStyle(el).backgroundColor);

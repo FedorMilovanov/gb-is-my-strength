@@ -1,0 +1,783 @@
+/* Opt-in same system on various real content types. Local preview only.
+   Visual DNA: original Argon; editorial folio, wine ink, warm paper.
+   No duplicate TTS, search or theme controls. */
+body.np-u-preview{
+ --np-u-paper:#fcf8f2;--np-u-deep:#f5eee6;--np-u-white:#fffdfa;
+ --np-u-ink:#2d211e;--np-u-muted:#807068;--np-u-rule:rgba(123,87,65,.16);
+ --np-u-red:#773b3b;--np-u-red-soft:#f0e4df;
+ --np-u-left:255px;--np-u-right:335px;
+}
+body.np-u-preview main.np-u-reader-main{
+ box-sizing:border-box!important;
+ width:calc(100% - var(--np-u-left) - var(--np-u-right) - 44px)!important;
+ max-width:900px!important;
+ margin:0 calc(var(--np-u-right) + 22px) 0 calc(var(--np-u-left) + 22px)!important;
+ padding-left:0!important;padding-right:0!important;
+}
+body.np-u-preview main.np-u-reader-main > article{max-width:100%!important}
+#npUniversalDemo{--u-shadow:0 15px 48px -30px rgba(30,13,8,.29);font-family:'Source Sans 3',system-ui,sans-serif;color:var(--np-u-ink)}
+#npUniversalDemo button,#npUniversalDemo a,#npUniversalDemo summary{-webkit-tap-highlight-color:transparent}
+#npUniversalDemo button{font-family:inherit;cursor:pointer}
+#npUniversalDemo button:focus-visible,#npUniversalDemo a:focus-visible,#npUniversalDemo summary:focus-visible{
+ outline:2px solid var(--np-u-red);outline-offset:2px;
+}
+#npUniversalDemo .np-u-left,#npUniversalDemo .np-u-right{
+ position:fixed;z-index:890;top:13px;bottom:13px;
+ box-sizing:border-box;display:flex;flex-direction:column;
+ background:var(--np-u-paper);color:var(--np-u-ink);
+ border:1px solid var(--np-u-rule);border-radius:14px;
+ box-shadow:var(--u-shadow);overflow:hidden;
+}
+#npUniversalDemo .np-u-left{left:11px;width:calc(var(--np-u-left) - 13px)}
+#npUniversalDemo .np-u-right{right:11px;width:calc(var(--np-u-right) - 13px)}
+#npUniversalDemo .np-u-left-head{
+ display:flex;align-items:center;gap:11px;
+ min-height:67px;padding:11px 13px;
+ border-bottom:1px solid var(--np-u-rule);
+ background:linear-gradient(150deg,var(--np-u-white),var(--np-u-paper));
+}
+#npUniversalDemo .np-u-monogram{
+ display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:11px;
+ background:#71383a;color:#fffaf1;font:700 13px/1 Georgia,serif;letter-spacing:-.07em;
+}
+#npUniversalDemo .np-u-left-title{display:grid;gap:4px;flex:1;min-width:0}
+#npUniversalDemo .np-u-eyebrow{
+ color:var(--np-u-red);font:750 9px/1.2 'Source Sans 3',system-ui,sans-serif;
+ text-transform:uppercase;letter-spacing:.16em;
+}
+#npUniversalDemo .np-u-left-title strong{
+ font:650 20px/1 'Cormorant Garamond',Georgia,serif;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#npUniversalDemo .np-u-fold,
+#npUniversalDemo #npUCloseRight{
+ width:35px;height:35px;min-width:35px;flex:none;display:grid;place-items:center;
+ border:1px solid var(--np-u-rule);border-radius:9px;background:var(--np-u-white);
+ color:var(--np-u-red);
+}
+#npUniversalDemo .np-u-fold:hover,#npUniversalDemo #npUCloseRight:hover{
+ background:var(--np-u-red-soft);border-color:rgba(119,59,59,.27);
+}
+#npUniversalDemo .np-u-fold svg,#npUniversalDemo #npUCloseRight svg{
+ width:21px;height:21px;
+}
+#npUniversalDemo .np-u-left-full{min-height:0;flex:1;overflow-y:auto;scrollbar-width:thin;padding:16px 11px 10px}
+#npUniversalDemo .np-u-paper-title{
+ color:var(--np-u-ink);font:650 24px/1.07 'Cormorant Garamond',Georgia,serif;
+ padding:0 6px;
+}
+#npUniversalDemo .np-u-rail-stat{
+ margin:8px 6px 16px;color:var(--np-u-muted);font-size:10px;
+}
+#npUniversalDemo .np-u-nav{display:grid;gap:5px}
+#npUniversalDemo .np-u-group{
+ border:1px solid transparent;border-radius:9px;padding:8px 7px;
+}
+#npUniversalDemo .np-u-group.is-current{
+ border-color:rgba(119,59,59,.17);background:var(--np-u-red-soft);
+}
+#npUniversalDemo .np-u-major{display:grid;grid-template-columns:31px 1fr;gap:8px;align-items:start}
+#npUniversalDemo .np-u-numeral{
+ display:grid;place-items:center;width:31px;height:30px;border:1px solid rgba(119,59,59,.14);
+ background:var(--np-u-white);color:var(--np-u-red);border-radius:8px;
+ font:750 10px/1 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-major-link{
+ display:block;color:var(--np-u-ink);text-decoration:none;
+ font:650 12px/1.36 'Source Sans 3',system-ui,sans-serif;padding-top:3px;
+ overflow-wrap:anywhere;
+}
+#npUniversalDemo .np-u-major-link:hover{color:var(--np-u-red)}
+#npUniversalDemo .np-u-sub{padding:3px 0 0 40px}
+#npUniversalDemo .np-u-sub summary{
+ cursor:pointer;list-style:none;color:var(--np-u-muted);
+ font:600 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-sub summary::-webkit-details-marker{display:none}
+#npUniversalDemo .np-u-sub summary span{padding-left:4px}
+#npUniversalDemo .np-u-sub[open] summary span{display:inline-block;transform:rotate(180deg)}
+#npUniversalDemo .np-u-children{
+ display:grid;gap:2px;margin-top:6px;padding-left:9px;border-left:1px solid var(--np-u-rule);
+}
+#npUniversalDemo .np-u-child{
+ color:var(--np-u-muted);text-decoration:none;font:500 10.5px/1.46 'Source Sans 3',system-ui,sans-serif;
+ padding:5px 0;overflow-wrap:anywhere;
+}
+#npUniversalDemo .np-u-child:hover{color:var(--np-u-red)}
+#npUniversalDemo .np-u-child.np-u-h2{font-weight:700}
+#npUniversalDemo .np-u-appendices{margin:15px 7px 0;border-top:1px solid var(--np-u-rule);padding-top:11px}
+#npUniversalDemo .np-u-appendices summary{
+ color:var(--np-u-muted);font:700 10px/1.3 'Source Sans 3',system-ui,sans-serif;cursor:pointer;
+}
+#npUniversalDemo .np-u-appendices > div{display:grid;gap:8px;padding:10px 0}
+#npUniversalDemo .np-u-appendices a{color:var(--np-u-red);font-size:11px;text-decoration:none}
+#npUniversalDemo .np-u-left-foot{
+ min-height:48px;display:flex;justify-content:space-between;align-items:center;gap:6px;
+ padding:9px 14px;border-top:1px solid var(--np-u-rule);
+ font:650 10px/1.3 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-muted);
+}
+#npUniversalDemo .np-u-foot-mark{font-weight:800;color:var(--np-u-red)}
+#npUniversalDemo .np-u-rail-spine{display:none}
+#npUniversalDemo .np-u-right-head{
+ min-height:84px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:16px 14px;border-bottom:0;
+ background:linear-gradient(145deg,var(--np-u-white),var(--np-u-deep));
+}
+#npUniversalDemo .np-u-right-head > div{display:grid;gap:6px;min-width:0}
+#npUniversalDemo .np-u-right-head strong{
+ font:650 24px/1.06 'Cormorant Garamond',Georgia,serif;
+}
+#npUniversalDemo .np-u-right-scroll{min-height:0;min-width:0;flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;scrollbar-width:thin}
+#npUniversalDemo .np-u-window{
+ margin-bottom:9px;border:1px solid var(--np-u-rule);border-radius:9px;
+ background:var(--np-u-white);overflow:hidden;
+}
+#npUniversalDemo .np-u-window>summary{
+ min-height:42px;display:flex;align-items:center;gap:7px;padding:9px 12px;
+ cursor:pointer;list-style:none;background:linear-gradient(180deg,var(--np-u-white),var(--np-u-paper));
+}
+#npUniversalDemo .np-u-window>summary::-webkit-details-marker{display:none}
+#npUniversalDemo .np-u-window>summary strong{
+ flex:1;min-width:0;font-size:10px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;
+}
+#npUniversalDemo .np-u-window-glyph{color:var(--np-u-red);font-size:16px}
+#npUniversalDemo .np-u-window-meta{color:var(--np-u-muted);font-size:9px;font-weight:650}
+#npUniversalDemo .np-u-window-chevron{color:var(--np-u-muted);font-size:14px;transition:transform .2s}
+#npUniversalDemo .np-u-window[open] .np-u-window-chevron{transform:rotate(180deg)}
+#npUniversalDemo .np-u-window[open]>summary{border-bottom:1px solid var(--np-u-rule)}
+#npUniversalDemo .np-u-window-body{padding:14px}
+#npUniversalDemo .np-u-window:not([open]) .np-u-window-body{display:none}
+#npUniversalDemo .np-u-section-kicker{
+ color:var(--np-u-red);font:750 9px/1.3 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.13em;text-transform:uppercase;
+}
+#npUniversalDemo .np-u-window-body h3{
+ margin:6px 0 12px;font:650 27px/1.05 'Cormorant Garamond',Georgia,serif;
+}
+#npUniversalDemo .np-u-source-heading{
+ margin:0 0 10px;font:700 10px/1.3 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);letter-spacing:.04em;
+}
+#npUniversalDemo .np-u-quotation{
+ margin:0 0 11px;border-left:2px solid #c3a27d;padding:3px 0 3px 11px;
+ font:400 12.4px/1.73 'Lora',Georgia,serif;color:#5d4c42;
+}
+#npUniversalDemo .np-u-source-extra{
+ border:1px solid var(--np-u-rule);border-radius:8px;padding:8px;background:var(--np-u-paper);
+}
+#npUniversalDemo .np-u-source-extra summary{cursor:pointer;color:var(--np-u-red);font-size:10px}
+#npUniversalDemo .np-u-source-extra blockquote{
+ margin:9px 0 0;font:400 11.5px/1.7 'Lora',Georgia,serif;color:var(--np-u-muted);
+}
+#npUniversalDemo .np-u-metrics{
+ display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;
+}
+#npUniversalDemo .np-u-metrics span{
+ border:1px solid var(--np-u-rule);border-radius:6px;padding:5px 7px;
+ color:var(--np-u-muted);font:650 9px/1.2 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-verse-chips{display:flex;flex-wrap:wrap;gap:6px}
+#npUniversalDemo .np-u-verse-chip{
+ padding:8px 9px;border:1px solid var(--np-u-rule);border-radius:7px;
+ color:var(--np-u-red);background:var(--np-u-paper);font:700 10px/1.2 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-verse-chip:hover{background:var(--np-u-red-soft)}
+#npUniversalDemo .np-u-context-links{display:grid;gap:4px}
+#npUniversalDemo .np-u-context-links a,#npUniversalDemo .np-u-context-links button{
+ color:var(--np-u-ink);text-align:left;background:transparent;border:0;
+ border-bottom:1px solid var(--np-u-rule);padding:8px 0;text-decoration:none;
+ font:550 11px/1.4 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-context-links a:hover,#npUniversalDemo .np-u-context-links button:hover{
+ color:var(--np-u-red);
+}
+#npUniversalDemo .np-u-source-note{
+ color:var(--np-u-muted);font:500 10px/1.6 'Source Sans 3',system-ui,sans-serif;
+ padding:12px 6px 20px;
+}
+#npUniversalDemo .np-u-muted{
+ color:var(--np-u-muted);font:500 11px/1.65 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-backdrop{display:none}
+#npUniversalDemo .np-u-mobilebar{display:none}
+body.np-u-preview.np-u-compact{--np-u-left:83px}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left{width:69px}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left-head{
+ display:flex;justify-content:center;align-items:center;padding:10px 5px;
+}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-monogram,
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left-title,
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left-full,
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left-foot{display:none}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-rail-spine{
+ min-height:0;flex:1;position:relative;
+ display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:14px 0 20px;
+}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-spine-line{
+ position:absolute;top:34px;bottom:34px;width:1px;left:50%;
+ background:linear-gradient(180deg,transparent,#d6bbaa 15%,#d6bbaa 85%,transparent);
+}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-spine-item{
+ position:relative;z-index:1;width:36px;min-height:32px;
+ border:1px solid var(--np-u-rule);border-radius:9px;
+ color:var(--np-u-red);background:var(--np-u-white);
+ font:750 11px/1 'Source Sans 3',system-ui,sans-serif;
+}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-spine-item.is-current{
+ background:var(--np-u-red);color:#fff;
+}
+body.np-u-preview.np-u-hide-right{--np-u-right:22px}
+body.np-u-preview.np-u-hide-right #npUniversalDemo .np-u-right{transform:translateX(calc(100% + 25px))}
+@media(min-width:1121px) and (max-width:1350px){
+ body.np-u-preview{--np-u-left:225px;--np-u-right:298px}
+ #npUniversalDemo .np-u-right-head strong{font-size:22px}
+ #npUniversalDemo .np-u-paper-title{font-size:21px}
+}
+@media(max-width:1120px){
+ body.np-u-preview{--np-u-left:0px;--np-u-right:0px}
+ body.np-u-preview main.np-u-reader-main{
+  width:100%!important;max-width:none!important;
+  margin-left:0!important;margin-right:0!important;
+  padding-left:clamp(12px,4vw,28px)!important;
+  padding-right:clamp(12px,4vw,28px)!important;
+ }
+ #npUniversalDemo .np-u-left,#npUniversalDemo .np-u-right{
+  top:0;bottom:0;z-index:19000;
+  width:min(420px,100vw);max-width:100vw;
+  border-radius:0;transition:transform .2s ease;
+ }
+ #npUniversalDemo .np-u-left{left:0;transform:translateX(-102%)}
+ #npUniversalDemo .np-u-right{right:0;transform:translateX(102%)}
+ #npUniversalDemo.np-u-show-left .np-u-left{transform:translateX(0)}
+ #npUniversalDemo.np-u-show-right .np-u-right{transform:translateX(0)}
+ #npUniversalDemo.np-u-show-left .np-u-backdrop,
+ #npUniversalDemo.np-u-show-right .np-u-backdrop{
+  display:block;position:fixed;inset:0;background:rgba(26,17,15,.57);
+  z-index:18990;touch-action:none;
+ }
+ #npUniversalDemo .np-u-mobilebar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  position:fixed;z-index:18000;bottom:0;left:0;right:0;
+  min-height:60px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+  background:var(--np-u-paper);color:var(--np-u-ink);
+  box-shadow:0 -7px 27px -20px rgba(23,13,9,.4);
+  border-top:1px solid var(--np-u-rule);
+ }
+ #npUniversalDemo .np-u-mobilebar button{
+  padding:10px 12px;background:var(--np-u-white);border:1px solid var(--np-u-rule);
+  border-radius:9px;color:var(--np-u-red);font-weight:750;font-size:11px;
+ }
+ #npUniversalDemo .np-u-mobilebar-title{
+  text-align:center;font-size:9px;letter-spacing:.08em;color:var(--np-u-muted);
+ }
+ body.np-u-modal-open{overflow:hidden}
+ body.np-u-preview.np-u-hide-right #npUniversalDemo .np-u-right{transform:translateX(102%)}
+ body.np-u-preview.np-u-hide-right #npUniversalDemo.np-u-show-right .np-u-right{transform:translateX(0)}
+}
+html.dark body.np-u-preview{
+ --np-u-paper:#21191a;--np-u-deep:#291f20;--np-u-white:#281f20;
+ --np-u-ink:#eeddd2;--np-u-muted:#b59f94;--np-u-rule:rgba(228,194,175,.17);
+ --np-u-red:#e1a08b;--np-u-red-soft:#3e2729;
+}
+/* The original numbered folio blocks belong only to the non-ARGON pilot.
+   ARGON uses unboxed roman numerals, also in dark mode. */
+html.dark #npUniversalDemo:not(.np-u-argon) .np-u-numeral{
+ background:var(--np-u-deep);color:var(--np-u-red);
+}
+html.dark #npUniversalDemo .np-u-quotation{color:#ddc6b9;border-color:#ad8061}
+html.dark #npUniversalDemo .np-u-monogram{background:#875152}
+@media(prefers-reduced-motion:reduce){
+ #npUniversalDemo *{transition:none!important;scroll-behavior:auto!important}
+}
+/* Integration bridge: legacy "gbs2-world" has a 304px own rail and a 784px
+   .page-wrap. Re-layout its ACTUAL reading surface; do not squeeze its main
+   by adding margins inside that narrow wrapper. */
+/* ARGON owns the desktop rails beyond 1120px. Hide Product's legacy
+   mobile reading bar here as well (it otherwise overlaps the article footer
+   at 1121-1199px despite both ARGON panels being visible). */
+@media(min-width:1121px){
+ body.np-u-preview > .mobile-chrome {display:none!important}
+ body.np-u-preview .gbs2-world {
+   display:block!important;
+   grid-template-columns:none!important;
+   grid-auto-columns:auto!important;
+ }
+ body.np-u-preview .gbs2-world > .gbs-rail,
+ body.np-u-preview .gbs2-world > .gbs-theme-corner,
+ body.np-u-preview .gbs2-world > .mobile-chrome {
+   display:none!important;
+ }
+ body.np-u-preview .gbs2-world > .page-wrap {
+   box-sizing:border-box!important;
+   width:calc(100vw - var(--np-u-left) - var(--np-u-right) - 44px)!important;
+   min-width:0!important;max-width:none!important;
+   margin-left:calc(var(--np-u-left) + 22px)!important;
+   margin-right:0!important;
+   padding-left:0!important;
+   padding-right:0!important;
+ }
+ body.np-u-preview .gbs2-world .page-wrap > main.np-u-reader-main {
+   display:block!important;
+   box-sizing:border-box!important;
+   width:100%!important;max-width:100%!important;
+   margin:0!important;padding:0!important;
+ }
+ body.np-u-preview .gbs2-world article[data-reader-projection] {
+   width:100%!important;max-width:100%!important;
+ }
+}
+@media(max-width:1120px){
+ body.np-u-preview .gbs2-world{
+   display:block!important;grid-template-columns:none!important;
+ }
+ body.np-u-preview .gbs2-world > .gbs-rail,
+ body.np-u-preview .gbs2-world > .gbs-theme-corner,
+ body.np-u-preview .gbs2-world > .mobile-chrome{
+   display:none!important;
+ }
+ body.np-u-preview .gbs2-world > .page-wrap{
+   box-sizing:border-box!important;
+   width:100%!important;max-width:100%!important;
+   margin:0!important;
+   padding:24px clamp(14px,4vw,24px) 100px!important;
+ }
+ body.np-u-preview .gbs2-world .page-wrap > main.np-u-reader-main{
+   width:100%!important;max-width:100%!important;
+   margin:0!important;padding:0!important;
+ }
+}
+
+
+/* A hidden research region has no layout and cannot expose its inner
+   cards as a 24px-wide strip. The permanent 48px tool edge stays separate. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-hide-right #npUniversalDemo #npUResearch{
+  display:none!important;
+ }
+}
+/* Figure audit surfaces actual figcaptions/alt texts only; no empty image UI. */
+#npUniversalDemo .np-u-figure-list{display:grid;gap:8px}
+#npUniversalDemo .np-u-figure-row{
+ display:grid;gap:4px;border:1px solid var(--np-u-rule);border-radius:8px;
+ background:var(--np-u-paper);padding:9px 10px;
+}
+#npUniversalDemo .np-u-figure-row b{
+ color:var(--np-u-red);font:750 9.5px/1.2 'Source Sans 3',system-ui,sans-serif;
+ text-transform:uppercase;letter-spacing:.05em;
+}
+#npUniversalDemo .np-u-figure-row span{
+ font:450 11px/1.5 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-ink);
+ overflow-wrap:anywhere;
+}
+
+/* Keep tablet reading lines comfortable after the mobile drawer threshold
+   expands from 850px to 1120px. */
+@media(max-width:1120px){
+ body.np-u-preview main.np-u-reader-main{
+   width:100%!important;max-width:840px!important;
+   margin-left:auto!important;margin-right:auto!important;
+ }
+ body.np-u-preview .gbs2-world .page-wrap > main.np-u-reader-main{
+   width:100%!important;max-width:840px!important;
+   margin-left:auto!important;margin-right:auto!important;
+ }
+}
+/* Native bookmarks/highlights control: same Product element, visually docked.
+   No second button; avoid the floating black disc over Argon right windows. */
+body.np-u-preview #npUniversalDemo #gb-hl-fab.np-u-library-native{
+ position:relative!important;inset:auto!important;
+ top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+ transform:none!important;translate:none!important;margin:0!important;
+ display:inline-grid!important;place-items:center!important;flex:0 0 34px!important;
+ width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
+ border:1px solid var(--np-u-rule)!important;
+ border-radius:9px!important;
+ box-shadow:none!important;
+ background:var(--np-u-white)!important;color:var(--np-u-red)!important;
+ opacity:1!important;
+}
+body.np-u-preview #npUniversalDemo #gb-hl-fab.np-u-library-native:hover{
+ border-color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+}
+body.np-u-preview #npUniversalDemo #gb-hl-fab.np-u-library-native svg{
+ width:18px!important;height:18px!important;stroke:currentColor!important;
+}
+body.np-u-preview #npUniversalDemo #gb-hl-fab.np-u-library-native #gb-hl-fab-count{
+ top:4px;right:4px;width:6px;height:6px;box-shadow:none;
+}
+body.np-u-preview #npUniversalDemo .np-u-left-foot > span:first-child{display:none}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left .np-u-left-foot{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ min-height:52px;flex:0 0 52px;padding:7px 3px;
+}
+body.np-u-preview.np-u-compact #npUniversalDemo .np-u-left-foot > span{display:none!important}
+@media(max-width:1120px){
+ body.np-u-preview #npUniversalDemo .np-u-mobilebar-title{
+  display:flex;flex:1;min-width:44px;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;font-size:8px;line-height:1.1;
+ }
+ body.np-u-preview #npUniversalDemo #gb-hl-fab.np-u-library-native{
+  flex:0 0 29px!important;width:29px!important;height:29px!important;
+  min-width:29px!important;min-height:29px!important;border-radius:8px!important;
+ }
+}
+/* Reader layout owner for legacy direct body > .page-wrap pages, e.g.
+   the illustrated "Код да Винчи" article. Normal legacy wrapper is only
+   832px; nesting the 3-col margins inside it crushes main to 150px.
+   Resolve at the wrapper like the existing gbs2-world bridge, not per article. */
+@media(min-width:1121px){
+ body.np-u-preview > .page-wrap{
+  display:block!important;box-sizing:border-box!important;
+  width:calc(100vw - var(--np-u-left) - var(--np-u-right) - 44px)!important;
+  min-width:0!important;max-width:none!important;
+  margin-left:calc(var(--np-u-left) + 22px)!important;
+  margin-right:0!important;padding-left:0!important;padding-right:0!important;
+ }
+ body.np-u-preview > .page-wrap > main.np-u-reader-main{
+  box-sizing:border-box!important;
+  display:block!important;width:100%!important;max-width:100%!important;
+  margin:0!important;padding:0!important;
+ }
+}
+@media(max-width:1120px){
+ body.np-u-preview > .page-wrap{
+  display:block!important;box-sizing:border-box!important;
+  width:100%!important;max-width:none!important;
+  margin:0!important;padding:26px clamp(14px,4vw,26px) 110px!important;
+ }
+ body.np-u-preview > .page-wrap > main.np-u-reader-main{
+  box-sizing:border-box!important;display:block!important;
+  width:100%!important;max-width:840px!important;
+  margin-inline:auto!important;padding:0!important;
+ }
+}
+
+/* NP_PRESENTATION_REFINEMENT_V1 */
+
+/* Argon editorial research windows: useful hierarchy, differentiated icons,
+   reachable source notes, and authentic figure previews loaded on expansion. */
+#npUniversalDemo .np-u-window > summary{
+  min-height:43px;gap:9px;padding:9px 12px;
+}
+#npUniversalDemo .np-u-window-glyph{
+ display:grid;place-items:center;width:23px;height:24px;min-width:23px;
+ color:var(--np-u-red);
+}
+#npUniversalDemo .np-u-window-icon{
+ display:block;width:18px;height:18px;flex:none;
+}
+#npUniversalDemo .np-u-window[open]{
+ border-color:color-mix(in srgb,var(--np-u-red) 27%,var(--np-u-rule));
+ box-shadow:0 4px 14px -14px #381e16;
+}
+#npUniversalDemo .np-u-window>summary strong{
+ font-size:10.5px;line-height:1.45;letter-spacing:.045em;
+ white-space:normal;overflow-wrap:anywhere;
+}
+#npUniversalDemo .np-u-window-meta{font-size:9px}
+#npUniversalDemo .np-u-window--scripture .np-u-window-glyph,
+#npUniversalDemo .np-u-window--sources .np-u-window-glyph{color:var(--np-u-red)}
+#npUniversalDemo .np-u-window--figures .np-u-window-glyph{color:var(--np-u-muted)}
+#npUniversalDemo .np-u-window-body h3{
+ font-size:clamp(21px,2vw,26px);line-height:1.12;
+ overflow-wrap:break-word;margin-bottom:13px;
+}
+#npUniversalDemo .np-u-quotation{
+ margin:0 0 12px;padding:3px 0 3px 11px;
+ font-size:12.3px;line-height:1.67;
+}
+#npUniversalDemo .np-u-source-extra{margin-top:7px}
+#npUniversalDemo .np-u-source-extra .np-u-quotation{margin:10px 0 3px}
+#npUniversalDemo .np-u-metrics{margin-top:12px}
+#npUniversalDemo .np-u-jump{
+ display:inline-flex;align-items:center;justify-content:space-between;gap:13px;
+ min-height:33px;max-width:100%;margin-top:13px;padding:7px 10px;
+ background:var(--np-u-paper);border:1px solid var(--np-u-rule);
+ border-radius:7px;color:var(--np-u-red);
+ font:700 10px/1.3 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-jump:hover,
+#npUniversalDemo .np-u-jump:focus-visible{
+ background:var(--np-u-red-soft);
+}
+#npUniversalDemo .np-u-note-list{display:grid;gap:6px}
+#npUniversalDemo .np-u-note-link{
+ display:grid;grid-template-columns:25px minmax(0,1fr);align-items:center;gap:9px;
+ width:100%;min-height:40px;padding:7px 8px;
+ border:1px solid var(--np-u-rule);border-radius:8px;
+ background:var(--np-u-paper);color:var(--np-u-ink);text-align:left;
+ font:550 10.5px/1.45 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-note-link>span:first-child{
+ display:grid;place-items:center;width:25px;height:25px;
+ border:1px solid var(--np-u-rule);border-radius:6px;
+ background:var(--np-u-white);color:var(--np-u-red);
+ font:750 10px/1 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-note-link:hover,
+#npUniversalDemo .np-u-note-link:focus-visible{
+ border-color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+#npUniversalDemo .np-u-figure-list{display:grid;gap:8px}
+#npUniversalDemo .np-u-figure-row{
+ display:grid;grid-template-columns:75px minmax(0,1fr);align-items:start;gap:10px;
+ width:100%;text-align:left;
+ background:var(--np-u-white);
+ padding:9px;border-radius:8px;border:1px solid var(--np-u-rule);
+}
+#npUniversalDemo .np-u-figure-row:hover,
+#npUniversalDemo .np-u-figure-row:focus-visible{
+ border-color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+#npUniversalDemo .np-u-figure-thumb{
+ width:75px;height:63px;min-width:75px;
+ object-fit:contain;object-position:center;
+ background:var(--np-u-paper);border-radius:6px;
+}
+#npUniversalDemo .np-u-figure-copy{display:grid;gap:4px;min-width:0}
+#npUniversalDemo .np-u-figure-copy b{
+ color:var(--np-u-red);font:750 9px/1.3 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.06em;text-transform:uppercase;
+}
+#npUniversalDemo .np-u-figure-copy>span{
+ color:var(--np-u-ink);
+ font:500 10.5px/1.4 'Source Sans 3',system-ui,sans-serif;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;
+ overflow:hidden;overflow-wrap:anywhere;
+}
+#npUniversalDemo .np-u-figure-copy em{
+ font:700 9px/1.2 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-red);font-style:normal;
+}
+@media(max-width:420px){
+ #npUniversalDemo .np-u-window-body{padding:13px}
+ #npUniversalDemo .np-u-window-body h3{font-size:23px}
+ #npUniversalDemo .np-u-figure-row{grid-template-columns:65px minmax(0,1fr);gap:8px}
+ #npUniversalDemo .np-u-figure-thumb{width:65px;min-width:65px;height:55px}
+}
+@media(prefers-reduced-motion:reduce){
+ #npUniversalDemo .np-u-window-chevron{transition:none!important}
+}
+
+/* NP_LEGACY_PRODUCT_CONTROL_DOCK */
+
+/* Bridge the actual native hrail + floating Product tools on pages with both
+   systems. Native nodes keep their event handlers, aria roles and TTS state.
+   No masking without a successfully completed DOM docking operation. */
+body.np-u-preview.np-u-legacy-chrome-docked aside.hrail[data-np-pilot-docked="true"]{
+ display:none!important;
+}
+body.np-u-preview.np-u-legacy-chrome-docked #npUOutline{
+ overflow:visible!important;
+}
+#npUOutline .np-u-native-tools{
+ display:flex;flex-direction:column;flex:0 0 auto;min-height:101px;
+ padding:9px 10px 10px;
+ border-top:1px solid var(--np-u-rule);
+ background:linear-gradient(180deg,var(--np-u-white),var(--np-u-paper));
+}
+#npUOutline .np-u-native-tools-title{
+ margin:0 0 8px; color:var(--np-u-muted);
+ font:750 9px/1.3 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.12em;
+}
+#npUOutline .np-u-native-toolrows{
+ display:grid;grid-template-rows:36px 36px;align-items:center;gap:4px;min-width:0;
+}
+#npUOutline #gbFloatingControls{
+ position:relative!important;
+ inset:auto!important;top:auto!important;left:auto!important;
+ bottom:auto!important;right:auto!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:space-evenly!important;
+ width:100%!important;height:36px!important;min-height:36px!important;
+ padding:0!important;margin:0!important;gap:4px!important;
+ transform:none!important;translate:none!important;
+ border:0!important;background:transparent!important;box-shadow:none!important;
+ overflow:visible!important;z-index:auto!important;
+}
+#npUOutline #gbFloatingControls > button,
+#npUOutline #gbFloatingControls > .gb-ember-playwrap{
+ position:relative!important;inset:auto!important;
+ width:33px!important;height:33px!important;
+ min-width:33px!important;min-height:33px!important;flex:0 0 33px!important;
+ padding:0!important;margin:0!important;
+ display:grid!important;place-items:center!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:8px!important;
+ background:var(--np-u-white)!important;color:var(--np-u-red)!important;
+ box-shadow:none!important;transform:none!important;
+}
+#npUOutline #gbFloatingControls > #gbFcSettings{
+ display:none!important;
+}
+#npUOutline .gb-ember-wrap{
+ display:grid!important;place-items:center!important;
+ width:33px!important;height:33px!important;min-width:33px!important;
+}
+#npUOutline .gb-ember{
+ width:30px!important;height:30px!important;min-width:30px!important;
+ background:transparent!important;box-shadow:none!important;
+}
+#npUOutline #gbFloatingControls .gb-ember-expand{
+ z-index:1500!important;
+}
+#npUOutline .hrail-bottom{
+ position:relative!important;inset:auto!important;
+ display:flex!important;align-items:center!important;justify-content:space-evenly!important;
+ gap:5px!important;width:100%!important;height:36px!important;
+ padding:0!important;margin:0!important;
+ border:0!important;box-shadow:none!important;
+ background:transparent!important;overflow:visible!important;
+}
+#npUOutline .hrail-bottom .hrail-bottom-btn{
+ position:relative!important;inset:auto!important;
+ width:33px!important;height:33px!important;min-width:33px!important;min-height:33px!important;
+ padding:0!important;margin:0!important;
+ display:grid!important;place-items:center!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:8px!important;
+ background:var(--np-u-white)!important;color:var(--np-u-red)!important;
+ box-shadow:none!important;transform:none!important;
+}
+#npUOutline .np-u-native-back{
+ display:grid!important;place-items:center!important;
+ width:33px!important;height:33px!important;min-width:33px!important;
+ padding:0!important;margin:0!important;position:relative!important;inset:auto!important;
+ color:var(--np-u-red)!important;background:var(--np-u-white)!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:9px!important;
+}
+#npUOutline .np-u-native-back svg{
+ width:18px!important;height:18px!important;stroke:currentColor!important;
+}
+#npUOutline .np-u-native-tools button:hover,
+#npUOutline .np-u-native-back:hover{
+ border-color:color-mix(in srgb,var(--np-u-red) 35%,var(--np-u-rule))!important;
+ background:var(--np-u-red-soft)!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUOutline .np-u-native-tools{
+  display:flex!important;position:absolute!important;bottom:55px;left:5px;
+  width:59px;height:52px;min-height:52px;padding:3px!important;
+  align-items:center;justify-content:center;z-index:7;border:0!important;
+  background:var(--np-u-paper)!important;
+ }
+ body.np-u-preview.np-u-compact #npUOutline .np-u-native-tools-title,
+ body.np-u-preview.np-u-compact #npUOutline .hrail-bottom,
+ body.np-u-preview.np-u-compact #npUOutline #gbFloatingControls > button{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUOutline .np-u-native-toolrows{
+  display:flex!important;justify-content:center;align-items:center;
+ }
+ body.np-u-preview.np-u-compact #npUOutline #gbFloatingControls{
+  width:47px!important;height:45px!important;justify-content:center!important;
+ }
+ body.np-u-preview.np-u-compact #npUOutline .gb-ember-playwrap{
+  display:grid!important;width:42px!important;height:42px!important;
+  min-width:42px!important;min-height:42px!important;
+ }
+ body.np-u-preview.np-u-compact #npUOutline .np-u-rail-spine{
+  padding-bottom:88px!important;
+ }
+}
+@media(max-width:1120px){
+ body.np-u-preview.np-u-legacy-chrome-docked .hmbar{
+  display:none!important;
+ }
+ #npUOutline .np-u-native-tools{
+  padding:12px 14px 15px;min-height:108px;
+ }
+}
+@media(max-width:420px){
+ #npUOutline .np-u-native-tools-title{font-size:9px}
+}
+
+/* Native Play remains the Product controller. Only the speed-marker's visual
+   treatment and the original speed-sheet placement change inside this pilot.
+   Place the speed options to the RIGHT of compact Play, never off-screen. */
+body.np-u-preview.np-u-legacy-chrome-docked #npUOutline .gbs-rail-spdbadge{
+ position:absolute!important;
+ top:auto!important;left:auto!important;right:-3px!important;bottom:-4px!important;
+ display:grid!important;place-items:center!important;
+ min-width:19px!important;height:14px!important;padding:1px 2px!important;
+ font:800 8px/1 'Source Sans 3',system-ui,sans-serif!important;
+ color:var(--np-u-red)!important;
+ background:var(--np-u-paper)!important;
+ border:1px solid var(--np-u-rule)!important;
+ border-radius:4px!important;box-shadow:none!important;
+}
+body.np-u-preview.np-u-legacy-chrome-docked #npUOutline .gb-ember-expand{
+ position:absolute!important;inset:auto!important;
+ left:calc(100% + 8px)!important;right:auto!important;
+ top:50%!important;bottom:auto!important;
+ transform:translateY(-50%)!important;
+ max-height:min(370px,85vh)!important;
+ z-index:3000!important;
+}
+@media(prefers-reduced-motion:reduce){
+ body.np-u-preview #npUOutline .gbs-rail-spdbadge{transition:none!important}
+}
+
+/* On touch widths Product changes speed choice from a 52px column to a
+   236px horizontal ribbon. Align its right edge with the original Play
+   inside the open drawer; keep the full set of six native speeds visible. */
+@media(max-width:1120px){
+ body.np-u-preview.np-u-legacy-chrome-docked #npUOutline .gb-ember-expand{
+  position:absolute!important;
+  left:auto!important;right:-20px!important;
+  top:auto!important;bottom:calc(100% + 9px)!important;
+  transform:none!important;
+  max-width:min(236px,calc(100vw - 36px))!important;
+ }
+}
+
+/* NP_RESEARCH_ACTIONS_INLINE */
+
+/* Native Theme/Search are relocated (not copied) from Product into the
+   research panel. Put them in a low-noise editorial toolbar below the header,
+   never in a vertical stack beside the close button. */
+#npUniversalDemo #npUNativeResearchActions{
+ display:grid;grid-template-columns:1fr 1fr;gap:8px;
+ padding:9px 12px 10px;
+ border-bottom:1px solid var(--np-u-rule);
+ background:var(--np-u-paper);
+}
+#npUniversalDemo #npUNativeResearchActions > button{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:8px;position:relative!important;inset:auto!important;transform:none!important;
+ width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;
+ padding:7px 10px!important;margin:0!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:9px!important;
+ background:var(--np-u-white)!important;color:var(--np-u-red)!important;
+ box-shadow:none!important;
+ font:700 11px/1.25 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo #npUNativeResearchActions > button svg{
+ width:17px!important;height:17px!important;flex:0 0 17px;
+}
+#npUniversalDemo #npUNativeResearchActions #gbFcTheme::after{
+ content:'Тема';font:700 11px/1.2 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo #npUNativeResearchActions #gbFcSearch::after{
+ content:'Поиск';font:700 11px/1.2 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo #npUNativeResearchActions > button:hover,
+#npUniversalDemo #npUNativeResearchActions > button:focus-visible{
+ border-color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+}
+#npUniversalDemo #npUNativeResearchActions #gbFcTheme[aria-pressed=true]{
+ background:var(--np-u-deep)!important;
+}
+#npUniversalDemo .np-u-right-head{gap:11px}
+@media(max-width:1120px){
+ #npUniversalDemo #npUNativeResearchActions{padding:11px 14px}
+ #npUniversalDemo #npUNativeResearchActions>button{min-height:42px!important;height:42px!important}
+}
+
+/* The native theme/search buttons now live on the right; this changes
+   the horizontal position of the original Play in the left mobile drawer.
+   Anchor the six-speed ribbon to Play's LEFT edge, not its old right edge. */
+@media(max-width:1120px){
+ body.np-u-preview.np-u-legacy-chrome-docked #npUOutline .gb-ember-expand{
+  left:0!important;right:auto!important;
+ }
+}

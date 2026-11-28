@@ -9,7 +9,7 @@
  *   G-2 anchors  — 0 non-latin (Cyrillic/auto-markdown) heading ids on series pages,
  *                  and every rail/outline anchor (href="#...") resolves to a real id. D-06.
  *   G-3 summary  — >= 1 .summary-card «Коротко» on every series route where it is declared. D-07.
- *   G-4 empty    — no «Конспект появится…» empty-state on series pages with non-empty structure. D-03.
+ *   G-4 empty    — retired Learning/«Конспект» panel absent; native Analytics retained. D-03.
  *   G-5 metadata — effective reviewStatus of all published series routes is "approved"
  *                  (raw storage may keep *-unverified / *-needs-review behind owner review
  *                  decision ledgers; the guard checks the effective state). D-05.
@@ -87,11 +87,17 @@ for (const [part, html] of Object.entries(pages)) {
   if (!/class="[^"]*\bsummary-card\b/.test(html)) fail('G-3', part, 'no .summary-card «Коротко» block');
 }
 
-/* G-4 — learning-sheet «Конспект» tab is populated (no empty-state on structured pages) */
+/* G-4 — Learning/«Конспект» must not survive as a competing Reader sheet.
+   Approved 'Коротко' stays in the article; selected research context, if any,
+   must be sourced and rendered by the existing Analytics panel. */
 for (const [part, html] of Object.entries(pages)) {
-  if (html.includes('Конспект появится')) fail('G-4', part, 'empty-state «Конспект появится…» present on structured page');
-  const cards = (html.match(/class="outline-card"/g) || []).length;
-  if (cards < 1) fail('G-4', part, 'learning-sheet outline has 0 cards (partToc has no level-2 summaries)');
+  if (html.includes('Конспект появится')) fail('G-4', part, 'retired empty summary panel found');
+  if (/id="(?:gillLearningOverlay|mobLearningBtn|panelOutline)"/.test(html))
+    fail('G-4', part, 'retired Learning modal / settings entry / outline tab found');
+  if (/class="outline-card"/.test(html))
+    fail('G-4', part, 'retired competing outline cards found');
+  if (!html.includes('id="gbrMarginalia"'))
+    fail('G-4', part, 'canonical mobile Analytics panel missing');
 }
 
 /* G-7 — quiz block inside the pagefind article root */

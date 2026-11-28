@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
+import { assertArgonScriptureActivation } from './lib/reader-scripture-owner-browser.mjs';
 import { loadBibleRegistry } from '../src/lib/bible-reference-core.mjs';
 import { createPublicSynodalResolver } from '../src/lib/public-synodal-reference.mjs';
 import {
@@ -14,7 +18,34 @@ import {
 const require = createRequire(import.meta.url);
 const { sanitizePublicScriptureIndex } = require('./public-scripture-index.js');
 
-const BASE = process.env.BASE || 'http://127.0.0.1:4179';
+let BASE = process.env.BASE || 'http://127.0.0.1:4179';
+const localDist=process.argv.includes('--dist');
+const DIST=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../dist');
+async function serveDist(){
+  assert(fs.existsSync(path.join(DIST,'data/scripture-search-index.json')),'build production-like dist first');
+  const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json',
+    '.svg':'image/svg+xml','.woff2':'font/woff2','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg'};
+  const server=http.createServer((req,res)=>{
+    try{
+      let file=path.resolve(DIST,'.'+decodeURIComponent(new URL(req.url,'http://127.0.0.1').pathname));
+      if(file!==DIST&&!file.startsWith(DIST+path.sep))throw Error('outside dist');
+      if(fs.statSync(file).isDirectory())file=path.join(file,'index.html');
+      if(!fs.statSync(file).isFile())throw Error('not file');
+      res.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});
+      fs.createReadStream(file).pipe(res);
+    }catch{res.writeHead(404);res.end('not found')}
+  });
+  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve)});
+  BASE='http://127.0.0.1:'+server.address().port;
+  return server;
+}
+async function isolateLocalTelemetry(page){
+  if(localDist){
+    // Local dist proof must not depend on third-party telemetry availability.
+    // Keep every first-party network request and error visible.
+    await page.route(/^https:\/\/(?:mc\.yandex\.(?:ru|com)|mdd\.yandex\.net)\//i,r=>r.fulfill({status:204,body:''}));
+  }
+}
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HELD_REFERENCE = '2 Тимофею 2:14–15';
 const HELD_CORPUS_PATH = '/data/bible/kassian/2timofeyu.json';
@@ -22,7 +53,10 @@ const MISSING_REFERENCE = '__scripture_projection_missing__';
 const STALE_REFERENCE = '__stale_scripture_projection_probe__';
 const GENERIC_FALLBACK = 'Для этой ссылки не найден проверенный текст в Синодальном переводе. Проверьте адрес книги и главы.';
 const TOOLTIP_OWNER = 'article-inline-tooltip';
-const TOOLTIP_VERSION = 20;
+const ownerEpochs=[...fs.readFileSync('src/runtime/article-tooltips.js','utf8').matchAll(/^const VERSION\s*=\s*(\d+)\s*;/gm)];
+assert.equal(ownerEpochs.length,1,'unique canonical tooltip version');
+const TOOLTIP_VERSION=Number(ownerEpochs[0][1]);
+assert(TOOLTIP_VERSION>=20,'canonical owner epoch must not regress');
 const LOCAL_TEST_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const LOCAL_CSP_ICON_URLS = new Set([
   'https://gospod-bog.ru/favicon.ico',
@@ -157,11 +191,16 @@ const expectedPublicHeldReference = sanitizePublicScriptureIndex({
   references: [heldIndexReference],
 }).references[0];
 
-const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
+const server=localDist?await serveDist():null;
+let browser;
+try {
+browser = await chromium.launch({ headless: true });
+const page = await browser.newPage({ viewport: { width: 1366, height: 900 }, serviceWorkers: 'block' });
+await isolateLocalTelemetry(page);
 const pageErrors = [];
 const consoleErrors = [];
 page.on('pageerror', (error) => pageErrors.push(String(error?.message || error)));
+page.on('requestfailed',request=>console.log('REQUEST_FAILED '+JSON.stringify({url:request.url(),error:request.failure()?.errorText})));
 page.on('console', (message) => {
   if (message.type() !== 'error') return;
   const text = message.text();
@@ -171,7 +210,15 @@ page.on('console', (message) => {
   // keep every first-party console error failing.
   const locationUrl = (message.location() || {}).url || '';
   if (/^https?:\/\/mc\.yandex\.(?:ru|com)\//i.test(locationUrl)) return;
-  if (!isExpectedLocalIconCspDiagnostic(text)) consoleErrors.push(text);
+  // Isolate the exact observed third-party certificate failure, only on
+  // loopback. Retain first-party failures with their resource URL.
+  if (LOCAL_TEST_HOSTS.has(new URL(BASE).hostname) &&
+      locationUrl === 'https://mdd.yandex.net/' &&
+      text === 'Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID') {
+    console.log('LOCAL_TELEMETRY_CERT_DIAGNOSTIC '+locationUrl);
+    return;
+  }
+  if (!isExpectedLocalIconCspDiagnostic(text)) consoleErrors.push(JSON.stringify({text,locationUrl}));
 });
 
 try {
@@ -214,7 +261,7 @@ try {
     };
   }, { heldReference: HELD_REFERENCE, heldText: HELD_TEXT, staleReference: STALE_REFERENCE });
 
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
+  assert.ok((await page.goto(`${BASE}${ROUTE}?reader-pilot=0`, { waitUntil: 'domcontentloaded', timeout: 60000 }))?.ok(),'Classic route navigation must succeed');
   await page.waitForFunction(({ owner, version }) => {
     const data = document.documentElement.dataset;
     return window.GBArticleTooltips?.version === version &&
@@ -229,7 +276,7 @@ try {
     frozen: Object.isFrozen(window.SCRIPTURE_DATA),
     scriptureData: Object.fromEntries(Object.entries(window.SCRIPTURE_DATA || {}).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
   }));
-  assert.equal(projectionSnapshot.ownerVersion, TOOLTIP_VERSION, 'canonical article tooltip owner version must remain v20');
+  assert.equal(projectionSnapshot.ownerVersion, TOOLTIP_VERSION, 'canonical article tooltip owner version must match source');
   assert.equal(projectionSnapshot.ownerName, TOOLTIP_OWNER, 'canonical article tooltip owner must remain unchanged');
   assert.equal(projectionSnapshot.frozen, true, 'route-scoped Scripture projection must remain immutable after handoff');
   assert.deepEqual(
@@ -296,7 +343,8 @@ try {
   // Deep-scroll mobile regression: the fixed-body scroll lock must not move
   // the Scripture card outside the visible viewport; second tap, Escape
   // and outside tap must each close one owner without reopening it.
-  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  await isolateLocalTelemetry(mobile);
   try {
     const mobileErrors = [];
     mobile.on('pageerror', (error) => mobileErrors.push(String(error.message || error)));
@@ -341,9 +389,41 @@ try {
     await mobile.close();
   }
 
+  const study = await browser.newPage({ viewport: { width: 1366, height: 900 }, serviceWorkers: 'block' });
+  await isolateLocalTelemetry(study);
+  try {
+    const errors=[];
+    study.on('pageerror',error=>errors.push(String(error)));
+    await study.addInitScript(({ heldReference, heldText, staleReference }) => {
+      window.SCRIPTURE_DATA = { [heldReference]: heldText, [staleReference]: 'stale ungoverned payload' };
+    }, { heldReference: HELD_REFERENCE, heldText: HELD_TEXT, staleReference: STALE_REFERENCE });
+    assert.ok((await study.goto(BASE+ROUTE,{waitUntil:'domcontentloaded',timeout:60000}))?.ok(),'ARGON route navigation must succeed');
+    const trigger=study.locator('.bref[data-ref="'+HELD_REFERENCE+'"]').first();
+    const result=await assertArgonScriptureActivation(study,trigger);
+    assert.equal(result.reference,HELD_REFERENCE);
+    const observed=await study.evaluate(()=>({
+      data:window.SCRIPTURE_DATA,
+      frozen:Object.isFrozen(window.SCRIPTURE_DATA),
+      passage:document.querySelector('[data-np-u-scripture-reading]')?.dataset.npUScriptureText,
+      visible:document.querySelector('.np-u-scripture-quote')?.textContent,
+      native:document.querySelectorAll('body > .btip.gb-floating-tip.is-open').length
+    }));
+    assert.equal(observed.frozen,true);
+    assert.deepEqual(observed.data,EXPECTED_PROJECTION);
+    assert.equal(observed.passage,publicResolver.resolve(HELD_REFERENCE)?.text);
+    assert.equal(observed.visible,observed.passage);
+    assert.notEqual(observed.passage,HELD_TEXT);
+    assert.equal(observed.native,0);
+    assert.deepEqual(errors,[]);
+    console.log('ARGON rights-safe Scripture projection PASS');
+  } finally { await study.close(); }
+
   assert.deepEqual(pageErrors, [], `unexpected page errors: ${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `unexpected console errors: ${consoleErrors.join(' | ')}`);
   console.log(`Scripture rights-safe projection/browser/public-index contract passed for held ${HELD_REFERENCE}`);
 } finally {
-  await browser.close();
+  await page.close();
+}
+} finally {
+  try { await browser?.close(); } finally { if(server)await new Promise(r=>server.close(r)); }
 }

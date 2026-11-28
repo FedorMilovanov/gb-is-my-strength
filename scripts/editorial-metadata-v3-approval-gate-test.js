@@ -4,7 +4,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { projectVisibleDateline, validateDecisionRecord } = require('./lib/editorial-metadata-v3');
+const { projectVisibleDateline, validateDecisionRecord, findImplicitDatelineSlots, assertExplicitDatelineSlots } = require('./lib/editorial-metadata-v3');
 const { metadataSourceForRecord } = require('./lib/editorial-metadata');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -102,5 +102,71 @@ assert.match(
   /<time class="article-updated" datetime="2026-07-05T09:14:15\.000Z">9 мая 2026<\/time>/,
   'direct time.article-updated must project the approved modification instant'
 );
+
+// SYS-EDITORIAL-DATELINE-SLOT-SEMANTICS: explicit slot identity is canonical.
+const slottedDateline = [
+  '<p class="article-byline">',
+  '<time datetime="2026-04-01" data-editorial-slot="published">1 апреля 2026</time>',
+  '<span class="article-byline__updated">Обн. <time class="article-updated" datetime="2026-05-09" data-editorial-slot="modified">9 мая 2026</time></span>',
+  '</p>',
+].join('');
+const projectedSlotted = projectVisibleDateline(slottedDateline, {
+  editorialPublishedAt: '2026-03-31T21:00:00.000Z',
+  editorialModifiedAt: '2026-07-05T09:14:15.000Z',
+});
+assert.match(
+  projectedSlotted,
+  /<time datetime="2026-03-31T21:00:00\.000Z" data-editorial-slot="published">/,
+  'data-editorial-slot="published" must project the approved publication instant and keep the slot'
+);
+assert.match(
+  projectedSlotted,
+  /<time class="article-updated" datetime="2026-07-05T09:14:15\.000Z" data-editorial-slot="modified">/,
+  'data-editorial-slot="modified" must project the approved modification instant and keep the slot'
+);
+assert.equal(findImplicitDatelineSlots(slottedDateline).length, 0, 'slotted dateline must satisfy explicit slot identity');
+assert.doesNotThrow(() => assertExplicitDatelineSlots(slottedDateline, '/fixture/'));
+
+// Negative witness 1: class-only dateline projects via legacy fallback but is
+// rejected by the explicit-slot guard used for approved registry routes.
+assert.equal(projectedDateline.includes('2026-07-05T09:14:15.000Z'), true, 'legacy class fallback must keep projecting');
+assert.ok(findImplicitDatelineSlots(directUpdatedTime).length >= 2, 'class-only dateline must be flagged as implicit');
+assert.throws(
+  () => assertExplicitDatelineSlots(directUpdatedTime, '/fixture/'),
+  /\/fixture\/: visible dateline lacks explicit slot identity/,
+  'class-only dateline on an approved route must fail projection'
+);
+
+// Negative witness 2: the legacy fallback may not clobber an explicit slot
+// when markup order places the modified time before the published time.
+const reorderedDateline = [
+  '<p class="article-byline">',
+  '<span class="article-byline__updated">Обн. <time class="article-updated" datetime="2026-05-09" data-editorial-slot="modified">9 мая 2026</time></span>',
+  '<time datetime="2026-04-01" data-editorial-slot="published">1 апреля 2026</time>',
+  '</p>',
+].join('');
+const projectedReordered = projectVisibleDateline(reorderedDateline, {
+  editorialPublishedAt: '2026-03-31T21:00:00.000Z',
+  editorialModifiedAt: '2026-07-05T09:14:15.000Z',
+});
+assert.match(projectedReordered, /datetime="2026-07-05T09:14:15\.000Z" data-editorial-slot="modified"/, 'modified slot keeps the modification instant');
+assert.match(projectedReordered, /datetime="2026-03-31T21:00:00\.000Z" data-editorial-slot="published"/, 'published slot keeps the publication instant even when it is not the first time in the byline');
+
+// Negative witness 3 (Baptisty nested pattern): the byline fallback may not
+// reach into a nested explicit modified container and clobber its time with
+// the publication instant.
+const nestedDateline = [
+  '<div class="article-byline reveal">',
+  '<span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>',
+  '<time datetime="2026-06-03" data-editorial-slot="published">3 июня 2026</time>',
+  '<div class="article-updated article-byline__updated" data-editorial-slot="modified">Обновлено <time datetime="2026-06-13">13 июня 2026</time></div>',
+  '</div>',
+].join('');
+const projectedNested = projectVisibleDateline(nestedDateline, {
+  editorialPublishedAt: '2026-03-31T21:00:00.000Z',
+  editorialModifiedAt: '2026-07-05T09:14:15.000Z',
+});
+assert.match(projectedNested, /<time datetime="2026-03-31T21:00:00\.000Z" data-editorial-slot="published">/, 'nested: published slot projected');
+assert.match(projectedNested, /Обновлено <time datetime="2026-07-05T09:14:15\.000Z">13 июня 2026/, 'nested: modified time must carry the modification instant, not the publication instant');
 
 console.log('✅ Editorial Metadata v3 projects approved decisions and freezes every unapproved record');

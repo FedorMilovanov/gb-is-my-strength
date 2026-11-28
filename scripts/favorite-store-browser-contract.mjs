@@ -113,7 +113,7 @@ async function articleCase(browser, origin, routeInfo, viewport) {
   check(`${prefix}-07`, 'article-migration', 'breadcrumb presentation is not persisted as category', state.item?.category !== routeInfo.legacySection, state.item);
   check(`${prefix}-08`, 'article-migration', 'canonical section replaces breadcrumb presentation', state.item?.section === (String(state.pageConfig.section || canonicalCategory).trim()), state.item);
   check(`${prefix}-09`, 'article-migration', 'unsafe legacy image is removed', state.item?.image === '', state.item?.image);
-  check(`${prefix}-10`, 'article-migration', 'migrated storage contains only schema-v1 item', state.stored.length === 1 && state.stored[0]?.schemaVersion === 1, state.stored);
+  check(`${prefix}-10`, 'article-migration', 'read-only projection leaves exact legacy record intact', JSON.stringify(state.stored) === JSON.stringify([legacyRecord]), state.stored);
   check(`${prefix}-11`, 'button-sync', 'save surfaces exist', initial.length > 0, initial);
   check(`${prefix}-12`, 'button-sync', 'every surface is pressed after migration', initial.every((button) => button.pressed === 'true' && button.savedClass), initial);
   check(`${prefix}-13`, 'button-sync', 'every saved surface has truthful remove label', initial.every((button) => button.label === 'Убрать из Избранного'), initial);
@@ -204,9 +204,9 @@ async function favoritesPageCase(browser, origin) {
   check('FAV-PAGE-04', 'favorites-page', 'remove delegates to store', await page.locator('.izbrannoe-card').count() === 0, null);
   check('FAV-PAGE-05', 'favorites-page', 'empty state is shown after remove', await page.locator('#izbrannoeEmpty').isVisible(), null);
 
-  await page.evaluate(() => {
-    window.GBFavoriteStore.add({ path: '/articles/one/', routeId: 'one', type: 'article', category: 'Категория', section: 'Категория', title: 'Один', metadataSource: 'test' });
-    window.GBFavoriteStore.add({ path: '/articles/two/', routeId: 'two', type: 'article', category: 'Категория', section: 'Категория', title: 'Два', metadataSource: 'test' });
+  await page.evaluate(async () => {
+    await window.GBFavoriteStore.add({ path: '/articles/one/', routeId: 'one', type: 'article', category: 'Категория', section: 'Категория', title: 'Один', metadataSource: 'test' });
+    await window.GBFavoriteStore.add({ path: '/articles/two/', routeId: 'two', type: 'article', category: 'Категория', section: 'Категория', title: 'Два', metadataSource: 'test' });
   });
   await page.waitForFunction(() => document.querySelectorAll('.izbrannoe-card').length === 2);
   page.once('dialog', (dialog) => dialog.accept());
@@ -218,6 +218,78 @@ async function favoritesPageCase(browser, origin) {
   await context.close();
 }
 
+// Same-origin isolated native witness of the full storage and FavoriteStore
+// modules; independent of the article layout and production build.
+async function storageIntegrityCase(browser, origin) {
+  const context=await browser.newContext();
+  const a=await context.newPage(), b=await context.newPage();
+  const errors=[];
+  for(const page of [a,b])page.on('pageerror',e=>errors.push(e.message));
+  await a.goto(origin+'/izbrannoe/',{waitUntil:'networkidle'});
+  await b.goto(origin+'/izbrannoe/',{waitUntil:'networkidle'});
+  const key='gb-favorites';
+  const envelope={version:1,extra:'keep',items:[
+    {path:'/a/index.html',title:'old',addedAt:10,extra:'a'},
+    {path:'/a/',title:'alias',addedAt:11,extra:'b'},
+    null,{path:'javascript:alert(1)',title:'invalid'}]};
+  await a.evaluate(({key,envelope})=>localStorage.setItem(key,JSON.stringify(envelope)),{key,envelope});
+  await b.reload({waitUntil:'networkidle'});
+  await b.waitForFunction(()=>!!window.GBFavoriteStore);
+  const initial=await b.evaluate(key=>localStorage.getItem(key),key);
+  check('FAV-DATA-01','integrity','startup preserves original envelope and aliases',initial===JSON.stringify(envelope),initial);
+  const results=await Promise.all([
+    a.evaluate(()=>window.GBFavoriteStore.add({path:'/b/',title:'B'})),
+    b.evaluate(()=>window.GBFavoriteStore.add({path:'/c/',title:'C'}))
+  ]);
+  const rawFrom=page=>page.evaluate(key=>localStorage.getItem(key),key);
+  const initialViews=await Promise.all([rawFrom(a),rawFrom(b)]);
+  const complete=(raw)=>{
+    try {
+      const value=JSON.parse(raw);
+      return value.version===envelope.version&&value.extra===envelope.extra&&value.items.length===6&&
+        JSON.stringify(value.items.slice(2))===JSON.stringify(envelope.items)&&
+        value.items.slice(0,2).map(row=>row?.path).sort().join(',')==='/b,/c';
+    } catch { return false; }
+  };
+  // A successful Web Locks mutation can be acknowledged before the other
+  // tab's localStorage cache receives the storage event. No writer is retried.
+  // Require both writes AND exact convergence, then confirm from a fresh tab.
+  const convergence=await Promise.allSettled([a,b].map(page=>page.waitForFunction(
+    ({key,envelope})=>{
+      try {
+        const value=JSON.parse(localStorage.getItem(key));
+        return value.version===envelope.version&&value.extra===envelope.extra&&value.items.length===6&&
+          JSON.stringify(value.items.slice(2))===JSON.stringify(envelope.items)&&
+          value.items.slice(0,2).map(row=>row?.path).sort().join(',')==='/b,/c';
+      } catch {return false;}
+    },{key,envelope},{timeout:3000})));
+  const c=await context.newPage();
+  c.on('pageerror',e=>errors.push(e.message));
+  await c.goto(origin+'/izbrannoe/',{waitUntil:'domcontentloaded'});
+  const beforeViews=await Promise.all([rawFrom(a),rawFrom(b),rawFrom(c)]);
+  let rows=JSON.parse(beforeViews[2]);
+  check('FAV-DATA-02','integrity','queued adds preserve both rows and exact legacy tail',
+    results.every(x=>x.saved&&!x.error)&&convergence.every(x=>x.status==='fulfilled')&&
+    beforeViews.every(raw=>complete(raw)&&raw===beforeViews[2]),
+    {results,initialViews,beforeViews,convergence:convergence.map(x=>x.status)});
+  const conflict=await b.evaluate(()=>window.GBFavoriteStore.remove('/a/'));
+  const afterViews=await Promise.all([rawFrom(a),rawFrom(b),rawFrom(c)]);
+  check('FAV-DATA-03','integrity','ambiguous alias remove refuses unchanged',
+    conflict.error==='conflict'&&afterViews.every((raw,index)=>raw===beforeViews[index]),
+    {conflict,beforeViews,afterViews});
+  await c.close();
+  const removed=await a.evaluate(()=>window.GBFavoriteStore.remove('/b/'));
+  const restored=await b.evaluate(receipt=>window.GBFavoriteStore.restore(receipt),removed.receipt);
+  rows=await a.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
+  check('FAV-DATA-04','integrity','undo restores exact raw record',!removed.error&&!restored.error&&JSON.stringify(rows.items.find(x=>x?.path==='/b'))===JSON.stringify(removed.receipt?.entry),rows);
+  const second=await a.evaluate(()=>window.GBFavoriteStore.remove('/b/'));
+  await b.evaluate(()=>window.GBFavoriteStore.add({path:'/b/',title:'newer'}));
+  const newRaw=await b.evaluate(key=>localStorage.getItem(key),key);
+  const rejected=await a.evaluate(receipt=>window.GBFavoriteStore.restore(receipt),second.receipt);
+  check('FAV-DATA-05','integrity','undo does not overwrite newer favorite',!!rejected.error&&await b.evaluate(key=>localStorage.getItem(key),key)===newRaw,rejected);
+  check('FAV-DATA-06','integrity','no page errors',errors.length===0,errors);
+  await context.close();
+}
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -226,6 +298,7 @@ try {
   }
   await crossTabCase(browser, origin);
   await favoritesPageCase(browser, origin);
+  await storageIntegrityCase(browser, origin);
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));
@@ -244,6 +317,9 @@ fs.writeFileSync(path.join(REPORTS, 'favorite-store-browser-contract.md'), [
   `- Failed: **${summary.failed}**`, '',
   ...checks.map((entry) => `- ${entry.pass ? 'PASS' : 'FAIL'} \`${entry.id}\` — ${entry.description}`), '',
 ].join('\n'));
-for (const entry of checks) console.log(`${entry.pass ? 'PASS' : 'FAIL'} ${entry.id} ${entry.description}`);
+for (const entry of checks) {
+  console.log(`${entry.pass ? 'PASS' : 'FAIL'} ${entry.id} ${entry.description}`);
+  if (!entry.pass && entry.area==='integrity') console.error('FAVORITE_INTEGRITY_EVIDENCE '+JSON.stringify(entry.evidence));
+}
 console.log(JSON.stringify({ sha, cases: summary.cases, checks: summary.checks, passed: summary.passed, failed: summary.failed }));
 if (failed.length) process.exitCode = 1;

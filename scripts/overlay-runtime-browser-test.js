@@ -254,6 +254,58 @@ async function main() {
       backgroundInert: document.getElementById('background').inert,
     })), { size: 0, position: 'relative', backgroundInert: false });
 
+    // W242: collect every focus event, not just the final activeElement.
+    // Real timers and native focus; calls share a task to reproduce the race.
+    const focusCases = ['normal', 'reopen', 'nested', 'manual-inside', 'manual-outside', 'closed', 'destroy-reopen', 'nested-closed', 'repeat'];
+    const focusFailures = [];
+    for (const scenario of focusCases) {
+      const probe = await context.newPage();
+      probe.on('pageerror', error => errors.push(error.message));
+      try {
+        await probe.goto(`http://127.0.0.1:${address.port}/`, {waitUntil:'load'});
+        const result = await probe.evaluate(async scenario => {
+          const runtime = window.OverlayRuntime;
+          const a = document.getElementById('overlayA'), b = document.getElementById('overlayB');
+          const opener = document.getElementById('openA'), outside = document.getElementById('openBRoot');
+          const first = document.getElementById('focusA'), second = document.getElementById('openB'), last = document.getElementById('focusB');
+          opener.focus();
+          const events = [];
+          document.addEventListener('focusin', event => events.push(event.target.id));
+          const openA = target => runtime.open('a', {element:a,opener,focusTarget:target,lockScroll:false,restoreFocus:false});
+          const openB = () => runtime.open('b', {element:b,opener:second,focusTarget:last,lockScroll:false,restoreFocus:false});
+          openA(first);
+          let expected = 'focusA', forbidden = [];
+          if (scenario === 'reopen') {
+            runtime.close('a','programmatic'); openA(second); expected='openB'; forbidden=['focusA'];
+          } else if (scenario === 'nested') {
+            openB(); expected='focusB'; forbidden=['focusA'];
+          } else if (scenario === 'manual-inside') {
+            second.focus(); expected='openB'; forbidden=['focusA'];
+          } else if (scenario === 'manual-outside') {
+            outside.focus(); expected='openBRoot'; forbidden=['focusA'];
+          } else if (scenario === 'closed') {
+            runtime.close('a','programmatic'); expected='openA'; forbidden=['focusA'];
+          } else if (scenario === 'destroy-reopen') {
+            runtime.destroy('a'); openA(second); expected='openB'; forbidden=['focusA'];
+          } else if (scenario === 'nested-closed') {
+            openB(); runtime.close('b','programmatic'); second.focus(); expected='openB'; forbidden=['focusA','focusB'];
+          } else if (scenario === 'repeat') {
+            openA(second); expected='openB'; forbidden=['focusA'];
+          }
+          await new Promise(resolve => setTimeout(resolve, 40));
+          return {active:document.activeElement.id, expected, forbidden, events};
+        },scenario);
+        assert.equal(result.active,result.expected,scenario+' final focus');
+        assert.ok(result.forbidden.every(id=>!result.events.includes(id)),scenario+' stale focus event: '+JSON.stringify(result.events));
+        console.log('PASS',browserName,scenario,'deferred overlay focus');
+      } catch (error) {
+        focusFailures.push(scenario+': '+error.message);
+        console.error('FAIL',browserName,scenario,error.message);
+      } finally { await probe.close(); }
+    }
+    console.log('Deferred overlay focus '+browserName+': '+(focusCases.length-focusFailures.length)+'/'+focusCases.length);
+    assert.deepEqual(focusFailures,[]);
+
     assert.deepEqual(errors, []);
     console.log(`✅ overlay-runtime-browser-test [${browserName}]: forward/reverse nested stack + exact restore + focus + Escape + pagehide + reduced motion`);
   } finally {

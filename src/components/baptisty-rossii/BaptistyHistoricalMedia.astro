@@ -44,6 +44,7 @@ const {
             alt={item.alt}
             width={item.width}
             height={item.height}
+            style={`--baptist-media-intrinsic-width:${item.width}px;--baptist-media-ratio:${item.width / item.height}`}
             loading="lazy"
             decoding="async"
           />
@@ -118,7 +119,7 @@ const {
   }
 
   .baptist-authentic-media--wide .baptist-authentic-media__figure img {
-    max-height: 38rem;
+    --baptist-media-max-height: 38rem;
   }
 
   .baptist-authentic-media__figure {
@@ -139,10 +140,13 @@ const {
 
   .baptist-authentic-media__figure img {
     display: block;
-    width: auto;
+    /* Reserve the same constrained aspect ratio before lazy bytes arrive. */
+    --baptist-media-max-height: 28rem;
+    width: min(100%, var(--baptist-media-intrinsic-width), calc(var(--baptist-media-max-height) * var(--baptist-media-ratio)));
     max-width: 100%;
     height: auto;
-    max-height: 28rem;
+    aspect-ratio: var(--baptist-media-ratio);
+    max-height: var(--baptist-media-max-height);
     margin-inline: auto;
     border-radius: 10px;
     object-fit: contain;
@@ -196,7 +200,7 @@ const {
     }
 
     .baptist-authentic-media__figure img {
-      max-height: min(112vw, 31rem);
+      --baptist-media-max-height: min(112vw, 31rem);
     }
   }
 </style>

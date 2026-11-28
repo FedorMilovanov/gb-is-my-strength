@@ -196,6 +196,9 @@ function buildQuiz(placeholder, config) {
 }
 
 export function initQuizzes(scope = document) {
+  // W121: the unified Analytics study owns article+series quiz on series routes.
+  // Non-series / excluded pages retain this original inline quiz unchanged.
+  if (document.getElementById('gbAnalyticsStudy')) return;
   const root = scope?.querySelectorAll ? scope : document;
   const config = window.SITE_CONFIG?.quiz;
   if (!Array.isArray(config?.questions) || !config.questions.length) return;

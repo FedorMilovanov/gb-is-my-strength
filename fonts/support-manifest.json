@@ -3,6 +3,110 @@
   "policy": "offline-pinned-support",
   "fontFaceOverrides": [
     {
+      "path": "fonts/CormorantGaramond/cormorant-garamond-cyrillic-600-normal.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorant-garamond-cyrillic-700-normal.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorant-garamond-latin-400-normal.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorant-garamond-latin-500-normal.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorant-garamond-latin-600-normal.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorant-garamond-latin-700-normal.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorantgaramond-cyrillic-400.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/CormorantGaramond/cormorantgaramond-cyrillic-500.woff2",
+      "family": "GB Mobile Classic Cormorant"
+    },
+    {
+      "path": "fonts/Inter/inter-cyrillic-400.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-cyrillic-500.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-cyrillic-600.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-latin-400-normal.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-latin-500-normal.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/Inter/inter-latin-600-normal.woff2",
+      "family": "GB Mobile Classic Inter"
+    },
+    {
+      "path": "fonts/JetBrainsMono/jetbrains-mono-cyrillic-500-normal.woff2",
+      "family": "GB Classic Mono"
+    },
+    {
+      "path": "fonts/JetBrainsMono/jetbrains-mono-cyrillic-600-normal.woff2",
+      "family": "GB Classic Mono"
+    },
+    {
+      "path": "fonts/JetBrainsMono/jetbrains-mono-latin-500-normal.woff2",
+      "family": "GB Classic Mono"
+    },
+    {
+      "path": "fonts/JetBrainsMono/jetbrains-mono-latin-600-normal.woff2",
+      "family": "GB Classic Mono"
+    },
+    {
+      "path": "fonts/Literata/literata-cyrillic-400-italic.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-cyrillic-400-normal.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-cyrillic-500-normal.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-cyrillic-600-normal.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-latin-400-italic.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-latin-400-normal.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-latin-500-normal.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
+      "path": "fonts/Literata/literata-latin-600-normal.woff2",
+      "family": "GB Classic Literata"
+    },
+    {
       "path": "fonts/NotoSansGreek/notosansgreek-400.woff2",
       "family": "Noto Sans Greek"
     },
@@ -13,11 +117,55 @@
   ],
   "supportAssets": [
     {
+      "path": "fonts/CormorantGaramond/OFL.txt",
+      "kind": "ofl-license",
+      "role": "font-license",
+      "family": "Cormorant Garamond",
+      "spdx": "OFL-1.1",
+      "bytes": 4504,
+      "sha256": "732f37009943e7f4378cf37113c9bcc4716af002a8583511aa91ed5d37683e73",
+      "sourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/cormorantgaramond/OFL.txt",
+      "observedUpstreamSha256": "60700d351cac4650c51f3f9db318d2a420f8b45052dba2715eb5fec41f0f6956"
+    },
+    {
       "path": "fonts/fonts.css",
       "kind": "css",
       "role": "font-face-registry",
-      "bytes": 6574,
-      "sha256": "acffa8f6fee8cb825395c40dedbff3ddb49766ae50cb79089ccf589530763324"
+      "bytes": 13044,
+      "sha256": "eab1aefee8bb5a241d1f69b4c366b1005a67acaa49bf7fede7f5b7b93390cf55"
+    },
+    {
+      "path": "fonts/Inter/OFL.txt",
+      "kind": "ofl-license",
+      "role": "font-license",
+      "family": "Inter",
+      "spdx": "OFL-1.1",
+      "bytes": 4477,
+      "sha256": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
+      "sourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/OFL.txt",
+      "observedUpstreamSha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57"
+    },
+    {
+      "path": "fonts/JetBrainsMono/OFL.txt",
+      "kind": "ofl-license",
+      "role": "font-license",
+      "family": "JetBrains Mono",
+      "spdx": "OFL-1.1",
+      "bytes": 4524,
+      "sha256": "403581b69dac5cff4079205e01c6b467e56af449ecbd7247693ddb1baafa005b",
+      "sourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/jetbrainsmono/OFL.txt",
+      "observedUpstreamSha256": "b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+    },
+    {
+      "path": "fonts/Literata/OFL.txt",
+      "kind": "ofl-license",
+      "role": "font-license",
+      "family": "Literata",
+      "spdx": "OFL-1.1",
+      "bytes": 4506,
+      "sha256": "9895ebc015226accf416b758ac1ca02a2fb4f83a89d316791ef697c3dc0852aa",
+      "sourceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/literata/OFL.txt",
+      "observedUpstreamSha256": "8742963604cd89dc81437811a850018fc03b2bfad686d7422c8235967c87614e"
     },
     {
       "path": "fonts/NotoSerifGreek/notoserifgreek-400.ttf",

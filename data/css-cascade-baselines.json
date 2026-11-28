@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "description": "Per-root CSS cascade ratchet baselines (SYS-CSS-CASCADE-GOVERNANCE). layeredFloorPct is a ratchet: a change may raise it (improvement) but must never land below it; lowering a floor is a deliberate reviewed edit of this file with a dated note. The !important ceilings stay governed in scripts/css-layer-validator.js PROJECT_LAYER_ROOTS and must equal importantCeiling here. The 80% layered target remains the long-term goal, enforced as information until floors reach it.",
+  "targetLayeredPct": 80,
+  "roots": {
+    "css/site.css": {
+      "layeredFloorPct": 18.0,
+      "importantCeiling": 200,
+      "note": "2026-11-19 baseline: 18.0% layered, 200/200 !important (ceiling fully consumed — any new !important must remove an old one)"
+    },
+    "css/home.css": {
+      "layeredFloorPct": 35.3,
+      "importantCeiling": null,
+      "note": "2026-11-19 baseline: 35.3% layered, 52 !important (no ceiling yet — unlayered pilot root)"
+    },
+    "css/floating-cluster.css": {
+      "layeredFloorPct": 10.1,
+      "importantCeiling": 524,
+      "note": "2026-11-19 baseline: 10.1% layered, 515/524 !important (9 headroom left)"
+    }
+  }
+}

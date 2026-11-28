@@ -93,7 +93,8 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     chips.forEach((chip) => {
       chip.setAttribute('aria-checked', Number(chip.dataset.speed) === rate ? 'true' : 'false');
     });
-    rateTrigger.textContent = fmt(rate);
+    const face = rateTrigger.querySelector('.reader-mobile-speed-chip') || rateTrigger;
+    face.textContent = fmt(rate);
     rateTrigger.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
   }
   syncActive(readRate());
@@ -115,7 +116,13 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
       element.inert = true;
     });
     rail.inert = false;
-    rail.removeAttribute('aria-hidden');
+    // Write the final value synchronously: the layout contract reads
+    // aria-hidden within 80ms of the tap, and the a11y adapter's
+    // MutationObserver → microtask → rAF resync is engine-timing-sensitive
+    // (WebKit at 320px raced it and observed the attribute still absent).
+    // The adapter reads the speed-open class as canonical, so an explicit
+    // 'false' here is compatible with it — it converges to the same value.
+    rail.setAttribute('aria-hidden', 'false');
     rateTrigger.setAttribute('aria-expanded', 'true');
     topbar.classList.add('speed-open');
     const active = (speedrail as HTMLElement).querySelector(sel.chip + '[aria-checked="true"]') as HTMLElement | null;
@@ -160,6 +167,30 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     e.preventDefault(); e.stopPropagation();
     topbar.classList.contains('speed-open') ? close() : open(false);
   }, { signal: lifecycle.signal });
+
+  /* Gill W112: the tiny painted rate echo sits on Play's lower-right arc.
+     W109 rightly made it pointer-transparent to protect Play, but that also
+     made a tap on the visible 1x/1.25x label start/stop audio instead of
+     reopening rates. Redirect ONLY clicks physically on that painted label.
+     Capture on window is required: the legacy cluster dispatch listens on
+     document capture, before a Play-level capture handler can intervene.
+     The separate full-size badge stays the primary accessible rate button;
+     keyboard activation of Play (detail=0) remains Play. */
+  if (topbar.hasAttribute('data-gill-mobile-bar')) {
+    const play = topbar.querySelector<HTMLElement>('.reader-mobile-play');
+    const painted = rateTrigger.querySelector<HTMLElement>('.reader-mobile-speed-chip');
+    if (play && painted) {
+      window.addEventListener('click', (e: MouseEvent) => {
+        if (!e.detail || !play.contains(e.target as Node)) return;
+        const r = painted.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right ||
+            e.clientY < r.top || e.clientY > r.bottom) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        rateTrigger.click();
+      }, { capture: true, signal: lifecycle.signal });
+    }
+  }
 
   chips.forEach((chip) => {
     chip.addEventListener('click', (e: MouseEvent) => {

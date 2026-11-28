@@ -1,5 +1,6 @@
 /** Representative interaction witnesses for A04 shared tooltip projections. */
 import { DESKTOP, MOBILE, INTERACTIVE, configureContext } from './a04-contract.mjs';
+import { assertArgonScriptureActivation } from './reader-scripture-owner-browser.mjs';
 
 export async function inspectRoute(page, surfaces, legacy) {
   return page.evaluate(({ surfaces, legacy, interactiveSelector }) => {
@@ -122,14 +123,14 @@ async function closedState(trigger, surface) {
   }), surface);
 }
 
-async function navigateForWitness(page, base, routes, surface) {
+async function navigateForWitness(page, base, routes, surface, classic = false) {
   for (const route of routes) {
     const pageErrors = [];
     page.removeAllListeners('pageerror');
     page.on('pageerror', (error) => pageErrors.push(String(error).slice(0, 240)));
     let response = null;
     try {
-      response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      response = await page.goto(base + route + (classic ? '?reader-pilot=0' : ''), { waitUntil: 'domcontentloaded', timeout: 20000 });
       await page.waitForTimeout(180);
       const found = await findHitTestableTrigger(page, surface);
       if (found) return { ...found, route, responseStatus: response?.status() ?? null, pageErrors };
@@ -149,7 +150,8 @@ export async function desktopWitness(browser, base, routes, surface) {
     focusContinuity: false, openState: null, closedState: null, error: '',
   };
   try {
-    const witness = await navigateForWitness(page, base, routes, surface);
+    // Native Scripture tooltips and default ARGON have distinct owners.
+    const witness = await navigateForWitness(page, base, routes, surface, surface.id === 'bible-reference');
     if (!witness) throw new Error('no hit-testable owned trigger found');
     Object.assign(result, {
       route: witness.route, triggerIndex: witness.index,
@@ -182,6 +184,33 @@ export async function desktopWitness(browser, base, routes, surface) {
   } finally {
     await context.close();
   }
+  return result;
+}
+
+export async function argonScriptureWitness(browser, base, routes) {
+  const route = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
+  const result = { route, ok: false, keyboard: null, pointer: null, error: '', pageErrors: [] };
+  if (!routes.includes(route)) return { ...result, error: 'ARGON reference route missing from production census' };
+  const context = await browser.newContext({ viewport: DESKTOP, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  await configureContext(context, base);
+  try {
+    for (const keyboard of [true, false]) {
+      const page = await context.newPage();
+      try {
+        page.on('pageerror', error => result.pageErrors.push(String(error)));
+        const response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 20000 });
+        if (response?.status() !== 200) throw new Error('ARGON document status: ' + response?.status());
+        await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+          window.__NP_UNIVERSAL_PREVIEW__?.ready && window.__NP_W57_ANNOTATIONS__?.ready, null, { timeout: 15000 });
+        const trigger = page.locator('article button.bref[data-ref]').first();
+        if (!await trigger.evaluate(el => window.__NP_UNIVERSAL_PREVIEW__.ownsScriptureCitation(el))) throw new Error('ARGON citation owner missing');
+        result[keyboard ? 'keyboard' : 'pointer'] = await assertArgonScriptureActivation(page, trigger, { keyboard });
+      } finally { await page.close(); }
+    }
+    result.ok = result.pageErrors.length === 0;
+  } catch (error) {
+    result.error = String(error?.stack || error);
+  } finally { await context.close(); }
   return result;
 }
 

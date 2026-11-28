@@ -31,6 +31,30 @@
   var destroyed = false;
   var userInteracted = false;
   var imageListeners = [];
+  var scrollLockObserver = null;
+  var pendingScrollLockRelease = false;
+
+  // A fixed-body modal moves the visual article while window.scrollY becomes
+  // zero. Never interpret that transient geometry as the reading position.
+  // Observe the central lock attribute: nested owners retain it until the
+  // FINAL unlock, after SiteUtils has restored the body and scroll offset.
+  function isScrollLocked() {
+    var html = document.documentElement;
+    var body = document.body;
+    return Boolean((html && typeof html.getAttribute === 'function' && html.getAttribute('data-scroll-locked') === '1') ||
+      (body && body.style && body.style.position === 'fixed' &&
+       body.style.overflow === 'hidden'));
+  }
+
+  function onScrollLockMutation() {
+    if (isScrollLocked()) {
+      pendingScrollLockRelease = true;
+      return;
+    }
+    if (!pendingScrollLockRelease) return;
+    pendingScrollLockRelease = false;
+    scheduleMeasure(true);
+  }
 
   function clamp(value, min, max) {
     value = Number(value);
@@ -313,6 +337,13 @@
 
   function measure(forceGeometry) {
     if (destroyed || !root) return null;
+    // Preserve the last truthful section/progress during scroll-lock, resize,
+    // nested overlays and pending autosave. Never emit a modal's artificial
+    // 0% / 100% snapshot. The unlock observer performs a fresh measurement.
+    if (isScrollLocked()) {
+      pendingScrollLockRelease = true;
+      return state ? Object.assign({}, state) : null;
+    }
     if (forceGeometry || !sectionPositions.length) measureGeometry();
     var next = createState();
     emit(next, !!forceGeometry);
@@ -538,8 +569,18 @@
   function onUserInput() { userInteracted = true; }
   function onScroll() { scheduleMeasure(false); }
   function onResize() { scheduleMeasure(true); }
-  function onVisibility() { if (document.visibilityState === 'hidden') saveSnapshot(true); }
-  function onPageHide() { saveSnapshot(true); }
+  function saveLifecycleSnapshot() {
+    if (destroyed || !root) return;
+    // A scroll/resize can occur immediately before pagehide, before the
+    // scheduled frame runs. Flush the same measurement owner; measure()
+    // deliberately preserves the last truthful state while scroll-locked.
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    measure(true);
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = 0; }
+    saveSnapshot(true);
+  }
+  function onVisibility() { if (document.visibilityState === 'hidden') saveLifecycleSnapshot(); }
+  function onPageHide() { saveLifecycleSnapshot(); }
   function onHashChange() { window.setTimeout(function () { scheduleMeasure(true); }, 0); }
 
   function init() {
@@ -549,6 +590,13 @@
     initialized = true;
     headings = resolveHeadings();
     reconnectObservers();
+    pendingScrollLockRelease = isScrollLocked();
+    if (window.MutationObserver && document.documentElement) {
+      scrollLockObserver = new MutationObserver(onScrollLockMutation);
+      scrollLockObserver.observe(document.documentElement, {
+        attributes: true, attributeFilter: ['data-scroll-locked']
+      });
+    }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     window.addEventListener('orientationchange', onResize, { passive: true });
@@ -580,6 +628,10 @@
       window.removeEventListener(eventName, onUserInput);
     });
     disconnectObservers();
+    if (scrollLockObserver) {
+      scrollLockObserver.disconnect();
+      scrollLockObserver = null;
+    }
     listeners = [];
   }
 

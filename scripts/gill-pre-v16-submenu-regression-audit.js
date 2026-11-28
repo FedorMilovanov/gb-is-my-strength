@@ -177,6 +177,123 @@ function staticAudit(){
 
 function serve(root){return new Promise(r=>{const s=http.createServer((q,p)=>{let u=decodeURIComponent((q.url||'/').split('?')[0]);if(u.endsWith('/'))u+='index.html';const f=path.normalize(path.join(root,u));if(!f.startsWith(root)||!fs.existsSync(f)){p.statusCode=404;return p.end('404')}p.setHeader('Content-Type',{'.html':'text/html','.css':'text/css','.js':'application/javascript','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'}[path.extname(f)]||'application/octet-stream');fs.createReadStream(f).pipe(p)});s.listen(0,'127.0.0.1',()=>r(s))})}
 
+// Historical Classic and the shipped default Reader have separate ownership.
+// Never retry default navigation in comparison mode: fallback is a failure.
+function readerOwnership(){
+  const visible=el=>!!(el&&el.getClientRects().length&&el.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}));
+  const count=sel=>[...document.querySelectorAll(sel)].filter(visible).length;
+  return {
+    comparison:new URL(location.href).searchParams.getAll('reader-pilot'),
+    ready:document.body.classList.contains('np-w57-ready'),
+    model:!!window.__NP_UNIVERSAL_PREVIEW__, modelReady:window.__NP_UNIVERSAL_PREVIEW__?.ready===true,
+    annotations:!!window.__NP_W57_ANNOTATIONS__, annotationsReady:window.__NP_W57_ANNOTATIONS__?.ready===true,
+    activeStyles:[...document.querySelectorAll('link[data-gb-reader-desktop-css]')].some(l=>matchMedia(l.media).matches),
+    runtime:[...document.scripts].some(e=>/\/reader-desktop\/reader_/.test(e.src)),
+    top:count('[data-gill-v16] .mobile-top-bar'),bottom:count('[data-gill-v16] .mobile-bottom-bar'),
+    nativeRail:count('[data-gill-v16] .gbs-rail'),outline:count('#npUOutline'),
+    dark:document.documentElement.classList.contains('dark'),
+    overflow:document.documentElement.scrollWidth-innerWidth
+  };
+}
+function isClassicOwner(o,explicit){
+  return (explicit?o.comparison.length===1&&o.comparison[0]==='0':o.comparison.length===0)&&
+    !o.ready&&!o.model&&!o.annotations&&!o.activeStyles&&!o.runtime&&o.outline===0;
+}
+function isDefaultDesktopOwner(o,width){
+  // At >=1360 W57 deliberately retains the native series rail as the
+  // visible navigation owner, while its own outline is hidden.
+  const native=width>=1360;
+  return o.comparison.length===0&&o.ready&&o.modelReady&&o.annotationsReady&&o.activeStyles&&o.runtime&&
+    o.top===0&&o.bottom===0&&o.nativeRail===Number(native)&&o.outline===Number(!native);
+}
+const CURRENT_GILL_ROUTES=['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek',
+  'dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik']
+  .map(slug=>'/articles/'+slug+'/');
+const DEFAULT_WIDTHS=[1120,1121,1280,1360];
+async function auditDefaultReader(browser,base){
+  const assert=require('node:assert/strict'),rows=[];
+  const report=path.join(REPORTS_DIR,'default-reader-boundaries.json');
+  fs.mkdirSync(REPORTS_DIR,{recursive:true});
+  for(const route of CURRENT_GILL_ROUTES)for(const width of DEFAULT_WIDTHS)for(const dark of [false,true]){
+    const row={route,width,dark,errors:[]};rows.push(row);
+    const page=await browser.newPage({viewport:{width,height:800},reducedMotion:'reduce',serviceWorkers:'block'});
+    page.on('pageerror',e=>row.errors.push(e.message));
+    const label=route+' '+width+' '+(dark?'dark':'light')+' default';
+    try{
+      const response=await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:30000});
+      assert.equal(response?.status(),200);
+      if(width>=1121){
+        await page.waitForFunction(()=>document.body.classList.contains('np-w57-ready')&&
+          window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true||
+          new URL(location.href).searchParams.has('reader-pilot'),null,{timeout:15000});
+      }else{
+        await page.locator('#mobPartTocBtn').waitFor({state:'visible',timeout:15000});
+      }
+      await page.waitForFunction(()=>document.readyState==='complete'&&typeof window.GBReaderPreferences?.setTheme==='function',null,{timeout:15000});
+      await page.evaluate(dark=>window.GBReaderPreferences.setTheme(dark?'dark':'light',{source:'gill-boundary-audit'}),dark);
+      await page.waitForFunction(dark=>document.documentElement.classList.contains('dark')===dark,dark,{timeout:5000});
+      await page.evaluate(()=>document.fonts.ready);
+      const state=await page.evaluate(readerOwnership);row.ownership=state;
+      assert.equal(new URL(page.url()).pathname,route,'unexpected route');
+      assert.equal(state.dark,dark,'theme projection');
+      assert.ok(state.overflow<=1,'horizontal overflow');
+      if(width<1121){
+        assert.ok(isClassicOwner(state,false),'native default ownership: '+JSON.stringify(state));
+        assert.deepEqual([state.top,state.bottom,state.nativeRail],[1,1,0],'one native top/bottom owner');
+        await page.locator('#mobPartTocBtn').click();
+        const overlay=page.locator('#partTocOverlay[aria-hidden="false"]');
+        await overlay.waitFor({state:'visible',timeout:5000});
+        assert.equal(await overlay.locator('#gbrTocTab[aria-selected="true"]').count(),1);
+        const targets=await overlay.locator('#gbs2PartToc a[href^="#"]').evaluateAll(links=>links.map(a=>{
+          const href=a.getAttribute('href');return {href,exists:!!document.getElementById(href.slice(1))};
+        }));
+        assert.ok(targets.length>0&&targets.every(t=>t.exists),'native TOC current-route targets');
+        row.targets=targets;
+        await page.keyboard.press('Escape');
+        await page.locator('#partTocOverlay[aria-hidden="true"]').waitFor({state:'hidden',timeout:5000});
+      }else{
+        assert.ok(isDefaultDesktopOwner(state,width),'default desktop ownership: '+JSON.stringify(state));
+        const native=width>=1360;
+        const ownerSelector=native?'[data-gill-v16] .gbs-rail':'#npUOutline';
+        const linkSelector=native?'.gbs2-toc a[href^="#"]':'.np-u-major-link[data-np-u-goto]';
+        const outline=page.locator(ownerSelector);
+        await outline.waitFor({state:'visible',timeout:5000});
+        const links=outline.locator(linkSelector);
+        const targets=await links.evaluateAll((links,native)=>links.map(a=>{
+          const href=a.getAttribute('href'),id=native?href.slice(1):a.dataset.npUGoto;
+          return {id,href,exists:!!id&&!!document.getElementById(id),
+            eligible:!native||!a.closest('li.gbs2-sub')};
+        }),native);
+        assert.ok(targets.length>0&&targets.every(t=>t.exists&&t.href==='#'+t.id),'desktop TOC target integrity');
+        assert.equal(new Set(targets.map(t=>t.id)).size,targets.length,'distinct desktop targets');
+        const eligible=targets.map((t,index)=>({...t,index})).filter(t=>t.eligible);
+        assert.ok(eligible.length>0,'no major chapter link');
+        const {index,id}=eligible[eligible.length>1?1:0];
+        await links.nth(index).click();
+        await page.waitForFunction(({id,ownerSelector,linkSelector})=>{
+          const active=document.querySelector(ownerSelector)?.querySelectorAll(linkSelector+'[aria-current="location"]');
+          const rect=document.getElementById(id)?.getBoundingClientRect();
+          return decodeURIComponent(location.hash.slice(1))===id&&active?.length===1&&active[0].getAttribute('href')==='#'+id&&
+            !!rect&&rect.bottom>0&&rect.top<innerHeight;
+        },{id,ownerSelector,linkSelector},{timeout:8000});
+        row.targets=targets;row.activated=id;
+      }
+      assert.deepEqual(row.errors,[],'uncaught page errors');
+      row.pass=true;ok(label+' ownership and real TOC interaction');
+    }catch(e){
+      row.pass=false;row.failure=String(e.message);bad(label+' '+row.failure);
+    }finally{
+      row.url=page.url();await page.close();
+      fs.writeFileSync(report,JSON.stringify({expected:CURRENT_GILL_ROUTES.length*DEFAULT_WIDTHS.length*2,
+        completed:rows.length,rows},null,2));
+    }
+  }
+  const expected=CURRENT_GILL_ROUTES.length*DEFAULT_WIDTHS.length*2;
+  if(rows.length!==expected||new Set(rows.map(r=>[r.route,r.width,r.dark].join('|'))).size!==expected)
+    bad('default Gill boundary inventory incomplete');
+  else ok('default Gill boundary inventory '+expected+'/'+expected);
+}
+
 async function browserAudit(){
   const {chromium}=require('playwright');
   const server=await serve(DIST), base=`http://127.0.0.1:${server.address().port}`;
@@ -187,7 +304,10 @@ async function browserAudit(){
       for(const vp of VIEWPORTS){
         const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
         const errs=[]; page.on('pageerror',e=>errs.push(e.message));
-        await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:30000});
+        const response=await page.goto(base+route+'?reader-pilot=0',{waitUntil:'domcontentloaded',timeout:30000});
+        const ownership=await page.evaluate(readerOwnership);
+        if(response?.status()===200&&isClassicOwner(ownership,true))ok(route+' '+vp.name+' explicit Classic owner');
+        else bad(route+' '+vp.name+' invalid Classic owner '+JSON.stringify(ownership));
         await page.locator('[data-gill-v16] .gbs-rail').waitFor({state:'attached',timeout:30000});
         await page.locator('[data-gill-v16] .gbs2-tocscroll').waitFor({state:'attached',timeout:30000});
         await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';});
@@ -386,6 +506,7 @@ async function browserAudit(){
         await page.close();
       }
     }
+    await auditDefaultReader(browser,base);
   } finally { await browser.close(); server.close(); }
 }
 
