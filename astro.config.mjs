@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
+import sitemapPolicy from './scripts/astro-sitemap-policy.cjs';
 
 export default defineConfig({
   site: 'https://gospod-bog.ru',
@@ -10,7 +11,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: (page) => !page.includes('/izbrannoe'), // personal/localStorage page — noindex, not for search engines
+      filter: sitemapPolicy.shouldIncludeSitemapUrl, // same policy as the other sitemap and search surfaces
     }),
     react(),
   ],

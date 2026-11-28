@@ -1,6 +1,7 @@
 'use strict';
 
 const { loadRouteRecords } = require('./effective-route-registry');
+const { routes: routeSearchPolicies } = require('../../data/route-search-policy.json');
 
 const DEFAULT_SITE_URL = 'https://gospod-bog.ru';
 const PUBLIC_ROUTE_STATUS = 'production-dist';
@@ -21,7 +22,12 @@ function routeToUrl(route, siteUrl = DEFAULT_SITE_URL) {
 }
 
 function isIndexableProductionRoute(record) {
-  return record.owner?.status === PUBLIC_ROUTE_STATUS && record.profile?.seo?.indexable !== false;
+  // Page ownership is not publication approval. An explicitly withheld route
+  // must never become a sitemap obligation merely by appearing in src/pages.
+  const policy = routeSearchPolicies[normalizeRoute(record.route)];
+  return record.owner?.status === PUBLIC_ROUTE_STATUS &&
+    record.profile?.seo?.indexable !== false &&
+    policy?.sitemapPolicy !== 'exclude';
 }
 
 function expectedSitemapRoutes(options = {}) {

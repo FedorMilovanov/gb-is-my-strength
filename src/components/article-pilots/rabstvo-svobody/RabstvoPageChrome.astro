@@ -1,0 +1,56 @@
+---
+import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
+import HermenevtikaMobileBar from '@/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro';
+import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
+import { assetUrl } from '@/lib/asset-version';
+
+// Canonical shared single-article controls; no forked reader runtime.
+const title = 'Рабство свободы';
+const toc = [
+  { href: '#korotko', label: "Коротко", level: 2 },
+  { href: '#paradoks', label: "Парадокс свободы", level: 2 },
+  { href: '#sem-svobod', label: "Семь значений свободы", level: 2 },
+  { href: '#dom-rab-syn', label: "Раб, сын и дом", level: 2 },
+  { href: '#rimlyanam-6', label: "Римлянам 6", level: 2 },
+  { href: '#anatomia', label: "Что значит «не могу»", level: 2 },
+  { href: '#erasmus-luther', label: "Эразм и Лютер", level: 2 },
+  { href: '#lozhnaya-svoboda', label: "Свобода без истины", level: 2 },
+  { href: '#semya', label: "Семья и свобода", level: 2 },
+  { href: '#eliy', label: "Илий", level: 3 },
+  { href: '#adoniya', label: "Адония", level: 3 },
+  { href: '#wesley', label: "Уэсли", level: 3 },
+  { href: '#pritchi', label: "Притчи", level: 3 },
+  { href: '#granicy', label: "Границы власти", level: 3 },
+  { href: '#tesnota', label: "Теснота и наказание", level: 3 },
+  { href: '#bunt', label: "Бунт", level: 3 },
+  { href: '#dva-syna', label: "Двое сыновей", level: 3 },
+  { href: '#razreshenie', label: "Освобождение", level: 2 },
+  { href: '#istochniki', label: "Источники", level: 2 },
+  { href: '#chitayte-takzhe', label: "Читайте также", level: 2 },
+];
+---
+<div class="rabstvo-cluster-scope">
+  <FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
+</div>
+<style is:global>
+  @media (max-width: 1199px) {
+    .rabstvo-cluster-scope { display: none !important; }
+  }
+</style>
+<ReaderRail
+  eyebrow="Библиотека · Богословие"
+  title={title}
+  backHref="../../"
+  toc={toc}
+  palette="ink-gold"
+/>
+<HermenevtikaMobileBar
+  title={title}
+  backHref="../../"
+  readingMinutes={43}
+  toc={toc}
+  palette="ink-gold"
+/>
+<ReaderSettings />
+<script is:inline defer src={assetUrl('js/highlights.js')}></script>

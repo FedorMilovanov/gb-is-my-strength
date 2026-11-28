@@ -5,12 +5,22 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { mergeObservedRecord, observeRoute } = require('./lib/editorial-metadata');
+const { mergeObservedRecord, observeRoute, eligibleRecords } = require('./lib/editorial-metadata');
 const {
   validateRegistryV3,
   projectHtml,
   projectRegistryToDist,
 } = require('./lib/editorial-metadata-v3');
+
+// Publication dates are frozen only for public articles; noindex drafts do
+// not become eligible simply because Astro can render them in a PR preview.
+const declaredPolicies = require('../data/route-search-policy.json').routes;
+const eligibleRouteSet = new Set(eligibleRecords().map((record) => record.route));
+for (const [route, policy] of Object.entries(declaredPolicies)) {
+  if (policy.indexPolicy === 'noindex') {
+    assert.ok(!eligibleRouteSet.has(route), route + ': noindex route cannot receive public editorial date projections');
+  }
+}
 
 const previous = Object.freeze({
   route: '/articles/example/',

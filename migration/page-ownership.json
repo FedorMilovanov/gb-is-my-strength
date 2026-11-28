@@ -207,6 +207,12 @@
       "risk": 2,
       "status": "production-dist"
     },
+    "/articles/rabstvo-svobody/": {
+      "owner": "astro",
+      "source": "src/pages/articles/rabstvo-svobody/index.astro",
+      "risk": 2,
+      "status": "production-dist"
+    },
     "/articles/religioznoe-serdce/": {
       "owner": "astro",
       "source": "src/pages/articles/religioznoe-serdce/index.astro",
