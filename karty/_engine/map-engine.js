@@ -1055,26 +1055,31 @@ const MapEngine = (function() {
 .me-sci-source{font-size:8px;color:rgba(232,200,121,.65);border:1px solid rgba(232,200,121,.16);border-radius:999px;padding:1px 6px;background:rgba(232,200,121,.04)}
 
 /* Governed archaeology projection */
-.map-arch-projection{margin-top:18px;padding:14px 0 4px;border-top:1px solid rgba(232,200,121,.2)}
-.map-arch-projection__eyebrow{display:flex;align-items:center;gap:7px;color:var(--me-accent,#e8c879);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.map-arch-projection{--map-arch-badge-size:11px;--map-arch-secondary-size:12px;--map-arch-link-size:13px;--map-arch-claim-size:14px;margin-top:18px;padding:14px 0 4px;border-top:1px solid rgba(232,200,121,.2)}
+.map-arch-projection__eyebrow{display:flex;align-items:center;gap:7px;color:var(--me-accent,#e8c879);font-size:var(--map-arch-badge-size);line-height:1.45;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .map-arch-projection__eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 10px rgba(232,200,121,.55)}
 .map-arch-projection__title{margin:7px 0 2px;color:var(--me-text,#e9e4d6);font-family:Georgia,serif;font-size:16px}
-.map-arch-projection__note{color:var(--me-muted,#9aa2ae);font-size:10px;line-height:1.5}
+.me-content .map-arch-projection__note{color:var(--me-muted,#9aa2ae);font-size:var(--map-arch-secondary-size);line-height:1.55}
 .map-arch-card{padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}
 .map-arch-card:first-of-type{margin-top:8px}
 .map-arch-card__badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
-.map-arch-badge{padding:2px 7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;color:var(--me-muted,#9aa2ae);font-size:8px;line-height:1.4}
+.map-arch-badge{padding:2px 7px;border:1px solid var(--me-border,rgba(255,255,255,.14));border-radius:999px;color:var(--me-muted,#9aa2ae);font-size:var(--map-arch-badge-size);line-height:1.45;overflow-wrap:anywhere;max-width:100%;box-sizing:border-box}
 .map-arch-badge--accepted-context,.map-arch-badge--primary-identification,.map-arch-badge--high,.map-arch-badge--supporting{border-color:rgba(74,222,128,.28);color:rgba(134,239,172,.92)}
 .map-arch-badge--project-interpretation,.map-arch-badge--interpretation,.map-arch-badge--methodological-guardrail{border-color:rgba(232,200,121,.3);color:var(--me-accent,#e8c879)}
 .map-arch-badge--candidate,.map-arch-badge--disputed{border-color:rgba(250,204,21,.3);color:rgba(253,224,71,.9)}
 .map-arch-badge--rejected,.map-arch-badge--negative,.map-arch-badge--retracted{border-color:rgba(248,113,113,.3);color:rgba(252,165,165,.94)}
-.map-arch-card__statement{color:var(--me-text,#e9e4d6);font-size:12px;line-height:1.55}
-.map-arch-card__limitations{margin-top:6px;color:var(--me-muted,#9aa2ae);font-size:10px;line-height:1.5}
+.me-map[data-map-theme="light"] :is(.map-arch-badge--accepted-context,.map-arch-badge--primary-identification,.map-arch-badge--high,.map-arch-badge--supporting){color:#21643b;border-color:#759a7c}
+.me-map[data-map-theme="light"] :is(.map-arch-badge--candidate,.map-arch-badge--disputed){color:#775000;border-color:#ac8b4e}
+.me-map[data-map-theme="light"] :is(.map-arch-badge--rejected,.map-arch-badge--negative,.map-arch-badge--retracted){color:#9e3030;border-color:#c78d87}
+.map-arch-card__statement{color:var(--me-text,#e9e4d6);font-size:var(--map-arch-claim-size);line-height:1.55;overflow-wrap:anywhere}
+.map-arch-card__limitations{margin-top:6px;color:var(--me-muted,#9aa2ae);font-size:var(--map-arch-secondary-size);line-height:1.55;overflow-wrap:anywhere}
 .map-arch-sources{display:grid;gap:7px;margin-top:9px}
 .map-arch-source{display:block;padding-left:9px;border-left:2px solid rgba(232,200,121,.22)}
-.map-arch-source__link{color:var(--me-accent,#e8c879);font-size:10px;line-height:1.4;text-decoration:none}
-.map-arch-source__link:hover{text-decoration:underline}
-.map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:9px;line-height:1.4;overflow-wrap:anywhere}
+.map-arch-source__link{color:var(--me-accent,#e8c879);font-size:var(--map-arch-link-size);line-height:1.5;text-decoration:none;overflow-wrap:anywhere}
+a.map-arch-source__link{text-decoration:underline;text-underline-offset:.15em}
+a.map-arch-source__link:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:2px}
+span.map-arch-source__link{color:var(--me-text,#e9e4d6)}
+.map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:var(--map-arch-secondary-size);line-height:1.5;overflow-wrap:anywhere}
 .map-arch-source__id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:color-mix(in srgb,var(--me-muted,#9aa2ae) 80%,transparent)}
 
 /* Life timeline */
@@ -3821,7 +3826,9 @@ container.appendChild(panel);
 
     // Intro screen: one shared special-overlay lifecycle owns underlay inerting,
     // focus entry, Escape/background/button dismissal and post-dismissal focus.
-    if (opts.showIntro !== false) {
+    // A resolved initial place already owns the first meaningful view. Never
+    // create an intro above the asynchronously opened place panel.
+    if (opts.showIntro !== false && !initialPlaceId) {
       const intro = document.createElement('div');
       intro.className = 'me-intro';
       intro.innerHTML = `
