@@ -1,40 +1,110 @@
 ---
 /**
- * HardTextsSeriesMapSection.astro — four-chapter book map + series CTA.
- *
- * The map follows the active book-shaped series config rather than the retired
- * three-part pilot model. The book-start CTA is derived from data/series.json,
- * so "Начать книгу" cannot silently skip the canonical first published item.
+ * Canonical book directory: prologue, chapter groups (Глава I — Глава IV),
+ * and reference endpaper. Labels, order, routes and minutes are projections
+ * of the existing reader config, not a second inventory.
  */
-import seriesData from '../../../data/series.json';
+import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/hardTextsSeriesConfig';
 
-const hardTextsSeries = seriesData['hard-texts'];
-const firstPublished = hardTextsSeries.parts.find((part) => part.status === 'published');
-if (!firstPublished) throw new Error('hard-texts: no published book-start item in data/series.json');
-
-const baseUrl = hardTextsSeries.baseUrl || '/articles/';
-const startHref = `${baseUrl}${firstPublished.slug}/`;
-const startLabel = firstPublished.n === 0 ? 'Пролог' : `Часть ${firstPublished.n}`;
-const startCover = `../images/og-${firstPublished.slug}-600w.webp`;
+const { items, pages } = HARD_TEXTS_SERIES;
+const articles = items.filter(item => item.tier !== 'chapter');
+const chapters = items.filter(item => item.tier === 'chapter').map(chapter => ({
+  ...chapter,
+  articles: articles.filter(article => article.parent === chapter.id),
+}));
+const start = articles[0];
+const end = articles.at(-1);
+if (!start || !end || start.mark.kind !== 'label' || end.mark.kind !== 'label') {
+  throw new Error('hard-texts: book endpapers missing');
+}
+const ordered = [start, ...chapters.flatMap(chapter => chapter.articles), end];
+if (ordered.length !== articles.length || ordered.some((item, i) => item.id !== articles[i].id)) {
+  throw new Error('hard-texts: landing chapter projection diverges from canonical reading order');
+}
+const total = articles.reduce((sum, item) => sum + pages[item.id].readingProgressPartMin, 0);
 ---
-<section class="h-section h-reveal gbs2-scope" style="padding-top:0;" aria-label="Карта книги о человеческом сердце">
-  <section aria-label="Карта книги по главам" class="gbs2-timeline">
-    <div class="gbs2-tl-head"><span>Карта книги</span><span>Диагноз → жизнь Духом</span></div>
-    <div class="gbs2-tl-track" style="grid-template-columns:repeat(4,minmax(90px,1fr));">
-      <span aria-hidden="true" class="gbs2-tl-line"></span>
-      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава I</span>Диагноз сердца</div>
-      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава II</span>Сердце на войне</div>
-      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава III</span>Перелом и перемена</div>
-      <div class="gbs2-tl-item"><span class="gbs2-tl-dot"></span><span class="gbs2-tl-era">Глава IV</span>Жизнь Духом</div>
-    </div>
-  </section>
-
-  <nav aria-label="Начать чтение книги" class="gbs2-next" style="margin-top:clamp(20px,3vw,32px);">
-    <a class="gbs2-next-card" href={startHref}>
-      <span class="gbs2-next-cover" style={`background-image:url('${startCover}')`}></span>
-      <span><span class="gbs2-next-eyebrow">Начать книгу · {startLabel} · ~{firstPublished.readingTime} мин</span>
-      <span class="gbs2-next-title">{firstPublished.title}</span>
-      <span class="gbs2-next-desc">Начните с первого опубликованного материала книги и продолжайте по каноническому порядку серии.</span></span>
-    </a>
+<section class="h-section heart-directory" aria-labelledby="heart-directory-title">
+  <header class="heart-directory__header">
+    <p class="heart-directory__kicker">Оглавление</p>
+    <h2 id="heart-directory-title">Карта книги</h2>
+    <p class="heart-directory__meta">{chapters.length} главы · {articles.length} материала · {Math.floor(total / 60)} ч {total % 60} мин</p>
+  </header>
+  <nav aria-label="Оглавление книги">
+    <ol class="heart-directory__list" role="list">
+      <li>
+        <a class="heart-directory__endpaper heart-directory__start" href={start.href} data-heart-page={start.id}>
+          <span class="heart-directory__endpaper-text">
+            <span class="heart-directory__eyebrow">Начать книгу · Пролог</span>
+            <span class="heart-directory__title">{start.title}</span>
+            <span class="heart-directory__time">{start.readingTime}</span>
+          </span>
+          <span class="heart-directory__arrow" aria-hidden="true">→</span>
+        </a>
+      </li>
+      {chapters.map(chapter => (
+        <li>
+          <details class="heart-directory__chapter">
+            <summary>
+              <span class="heart-directory__roman" aria-hidden="true">{chapter.mark.value}</span>
+              <span class="heart-directory__chapter-text">
+                <span class="heart-directory__title">{chapter.title}</span>
+                <span class="heart-directory__time">{chapter.readingTime}</span>
+              </span>
+              <span class="heart-directory__toggle" aria-hidden="true"></span>
+            </summary>
+            <ol class="heart-directory__articles" role="list">
+              {chapter.articles.map(article => (
+                <li>
+                  <a href={article.href} data-heart-page={article.id}>
+                    <span class="heart-directory__number" aria-hidden="true">{article.mark.value}.</span>
+                    <span class="heart-directory__article-text">
+                      <span>{article.title}</span>
+                      <span class="heart-directory__time">{article.readingTime}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </details>
+        </li>
+      ))}
+      <li>
+        <a class="heart-directory__endpaper" href={end.href} data-heart-page={end.id}>
+          <span class="heart-directory__endpaper-text">
+            <span class="heart-directory__eyebrow">Справочный раздел</span>
+            <span class="heart-directory__title">{end.title}</span>
+            <span class="heart-directory__time">{end.readingTime}</span>
+          </span>
+          <span class="heart-directory__arrow" aria-hidden="true">→</span>
+        </a>
+      </li>
+    </ol>
   </nav>
 </section>
+
+<style>
+  .heart-directory{padding-top:0;padding-bottom:clamp(24px,4vw,48px);color:var(--color-text)}
+  .heart-directory__header{border-top:2px solid var(--color-accent);padding:1.25rem 0 1rem}
+  .heart-directory__header h2{font:600 clamp(1.6rem,3vw,2.15rem)/1.25 var(--h-font-display,Georgia,serif);margin:.35rem 0;color:var(--color-text)}
+  .heart-directory__kicker,.heart-directory__eyebrow{font-size:.8rem;line-height:1.5;letter-spacing:.04em;font-weight:600;color:var(--color-accent-strong);margin:0}
+  .heart-directory__meta,.heart-directory__time{font-size:.85rem;line-height:1.5;color:var(--color-text-muted);margin:0}
+  .heart-directory__list,.heart-directory__articles{list-style:none;padding:0;margin:0}
+  .heart-directory__list>li{margin:0;border-bottom:1px solid var(--color-border)}
+  .heart-directory__endpaper,.heart-directory__chapter summary{display:flex;align-items:center;gap:.9rem;min-height:64px;padding:.9rem .65rem;color:var(--color-text);text-decoration:none}
+  .heart-directory__start{border:1px solid var(--color-border);border-left:3px solid var(--color-accent);border-radius:4px;background:var(--color-surface-2)}
+  .heart-directory__endpaper-text,.heart-directory__chapter-text,.heart-directory__article-text{display:flex;flex-direction:column;gap:.25rem;min-width:0;flex:1;overflow-wrap:anywhere}
+  .heart-directory__title{font:600 clamp(1.05rem,2vw,1.25rem)/1.4 var(--h-font-display,Georgia,serif);color:var(--color-text)}
+  .heart-directory__chapter summary{cursor:pointer;list-style:none}
+  .heart-directory__chapter summary::-webkit-details-marker{display:none}
+  .heart-directory__roman{flex:0 0 2.4rem;display:grid;place-items:center;min-height:2.4rem;border:1px solid var(--color-border);border-radius:3px;color:var(--color-accent-strong);font:600 1.05rem/1.3 Georgia,serif}
+  .heart-directory__arrow,.heart-directory__toggle{flex:0 0 1rem;text-align:center;color:var(--color-accent-strong);font-size:1.05rem}
+  .heart-directory__toggle::before{content:"+"}
+  .heart-directory__chapter[open] .heart-directory__toggle::before{content:"−"}
+  .heart-directory__articles{border-left:1px solid var(--color-border);margin:0 0 1rem 1.8rem;padding-left:1rem}
+  .heart-directory__articles li+li{border-top:1px solid var(--color-border)}
+  .heart-directory__articles a{display:flex;gap:.65rem;align-items:flex-start;min-height:44px;padding:.65rem .3rem;color:var(--color-text);text-decoration:none;font-size:.96rem;line-height:1.5}
+  .heart-directory__number{color:var(--color-accent-strong);font-size:.9rem}
+  .heart-directory a:hover,.heart-directory summary:hover{background:var(--color-surface-2)}
+  .heart-directory a:focus-visible,.heart-directory summary:focus-visible{outline:2px solid var(--color-accent-strong);outline-offset:2px;border-radius:3px}
+  @media(max-width:480px){.heart-directory__endpaper,.heart-directory__chapter summary{gap:.6rem;padding:.8rem .35rem}.heart-directory__roman{flex-basis:2rem;min-height:2rem}.heart-directory__articles{margin-left:.9rem;padding-left:.6rem}}
+</style>
