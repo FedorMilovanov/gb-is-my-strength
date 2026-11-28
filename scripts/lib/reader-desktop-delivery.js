@@ -79,12 +79,42 @@ function createDesktopDelivery(contract) {
   // The original links are inert until every required CSS resource is ready.
   // A failed script may already have reparented controls: only a fresh Classic
   // document is a safe rollback, not an attempt to undo another runtime's DOM.
+  // Preserve a cold FAQ fragment through the desktop shell's one-time reflow.
+  // Never compete with a reader who has already interacted with the document.
+  var coldHash = window.location.hash;
+  var fragmentIntent = new AbortController();
+  var fragmentCancelled = false;
+  function cancelFragment(event) {
+    if (event && !event.isTrusted) return;
+    fragmentCancelled = true;
+    fragmentIntent.abort();
+  }
+  if (coldHash) {
+    ['wheel','touchstart','pointerdown','keydown','hashchange','pagehide'].forEach(function(type){
+      window.addEventListener(type,cancelFragment,{capture:true,passive:true,signal:fragmentIntent.signal});
+    });
+  }
+  function settleColdFragment() {
+    fragmentIntent.abort();
+    if (fragmentCancelled || !coldHash || window.location.hash !== coldHash || inPrint()) return;
+    var navigation = performance.getEntriesByType('navigation')[0];
+    if (navigation && navigation.type !== 'navigate') return;
+    var target;
+    try { target = document.getElementById(decodeURIComponent(coldHash.slice(1))); } catch (_) { return; }
+    if (!target || !target.closest('.faq-accordion__body') || target.closest('[inert],[hidden]')) return;
+    var rect = target.getBoundingClientRect();
+    if (rect.height > 0 && (rect.top < 0 || rect.top >= window.innerHeight - 24)) {
+      target.scrollIntoView({block:'start',inline:'nearest',behavior:'instant'});
+    }
+  }
+
   var stopped = false, started = false, cssReady = false, domReady = document.readyState !== 'loading';
   var deadline = setTimeout(function(){ fallback('mount timeout'); }, 12000);
   var poll;
   function fallback(reason) {
     if (stopped) return;
     stopped = true;
+    fragmentIntent.abort();
     clearTimeout(deadline);
     clearTimeout(poll);
     nativeStyles();
@@ -106,6 +136,7 @@ function createDesktopDelivery(contract) {
       stopped = true;
       clearTimeout(deadline);
       window.removeEventListener('error',assetError);
+      if (coldHash) requestAnimationFrame(settleColdFragment);
       return;
     }
     poll = setTimeout(ready,50);

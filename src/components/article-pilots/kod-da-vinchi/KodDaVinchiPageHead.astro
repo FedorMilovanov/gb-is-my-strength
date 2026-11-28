@@ -303,6 +303,19 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <link as="image" fetchpriority="high" href="../../images/hero-kod-da-vinchi.jpg" rel="preload">
 <link rel="preload" as="style" href={assetUrl('fonts/fonts.css')}>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+<!-- Without script, WebKit can change native FAQ fragment geometry while these already-used faces settle.
+     Preload them only in the static reading fallback; leave normal Reader font scheduling intact. -->
+<noscript data-gb-faq-font-preloads>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-latin-400.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-latin-600.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-latin-400i.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-600.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400i.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-latin-400.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-400.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-500.woff2" crossorigin>
+</noscript>
 <link rel="stylesheet" href={assetUrl('fonts/fonts.css')}>
 <!-- Shared styles -->
 <link href={assetUrl('css/site.css')} rel="stylesheet">

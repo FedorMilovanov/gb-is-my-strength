@@ -35,25 +35,26 @@ try {
   assert.throws(()=>delivery.materializeAssets(rejected,source),/asset drift/);
   assert.equal(existsSync(rejected),false,'all bytes must be checked before any copy');
   const expected = contract.scripts.map(a=>`${PREFIX}${a.name}?v=${a.sha256}`);
-  function run({width=1121,search='',hasState=true,ready='loading',missingCss=-1,missingJs=-1,stallJs=-1,notReady=false,manualLoad=false}={}) {
+  function run({width=1121,search='',hasState=true,ready='loading',missingCss=-1,missingJs=-1,stallJs=-1,notReady=false,manualLoad=false,hash='',navigation='navigate',targetTop=1500,targetHidden=false}={}) {
     const links=plan.links.map((l,i)=>({...l,sheet:i===missingCss?null:{},events:{},addEventListener(type,fn){this.events[type]=fn;}}));
     const scripts=[],listeners={},errors=[],timers=new Map(),redirects=[];
     const makeMedia=(matches)=>({matches,change:null,addEventListener(type,fn){assert.equal(type,'change');this.change=fn;},
       set(value){this.matches=value;this.change?.({matches:value});}});
     const media=makeMedia(width>=1121),printMedia=makeMedia(false),screenMedia=makeMedia(true);
-    let reloads=0,nextTimer=0,nextFrame=0,prepared=false;
+    let reloads=0,nextTimer=0,nextFrame=0,prepared=false,fragmentScrolls=0;
     const frames=new Map();
-    const window={innerWidth:width,innerHeight:900,location:{search,href:'https://example.test/articles/fixture/'+search+'#paragraph',reload(){reloads++;},replace(href){redirects.push(href);}},
+    const window={innerWidth:width,innerHeight:900,location:{search,hash,href:'https://example.test/articles/fixture/'+search+'#paragraph',reload(){reloads++;},replace(href){redirects.push(href);}},
       matchMedia(q){if(q===MEDIA)return media;if(q==='print')return printMedia;if(q==='screen')return screenMedia;throw Error('unexpected media '+q);},
       addEventListener(type,fn){listeners[type]=fn;},removeEventListener(type){delete listeners[type];}};
-    const document={documentElement:{hasAttribute(name){assert.equal(name,'data-gb-print-prepared');return prepared;}},
+    const target={closest(s){return s==='.faq-accordion__body'?this:targetHidden?this:null;},getBoundingClientRect(){return {height:100,top:targetTop};},scrollIntoView(){fragmentScrolls++;}};
+    const document={getElementById(id){return id==='faq-a'?target:null;},documentElement:{hasAttribute(name){assert.equal(name,'data-gb-print-prepared');return prepared;}},
       readyState:ready,querySelectorAll(){return links;},addEventListener(type,fn){listeners[type]=fn;},createElement(tag){assert.equal(tag,'script');return{};},
       body:{classList:{contains(){return !notReady&&scripts.length===6;}},appendChild(script){
         const index=scripts.length;scripts.push(script);
         if(index===missingJs)script.onerror();
         else if(index!==stallJs&&!manualLoad){if(index===5&&!notReady){window.__NP_UNIVERSAL_PREVIEW__={ready:true};window.__NP_W57_ANNOTATIONS__={ready:true};}script.onload();}
       }}};
-    const ctx=vm.createContext({window,document,URL,URLSearchParams,console:{error(s){errors.push(s);}},
+    const ctx=vm.createContext({window,document,URL,URLSearchParams,AbortController,performance:{getEntriesByType(){return [{type:navigation}]}},console:{error(s){errors.push(s);}},
       setTimeout(fn,ms){const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout(id){timers.delete(id);},
       requestAnimationFrame(fn){const id=++nextFrame;frames.set(id,fn);return id;},cancelAnimationFrame(id){frames.delete(id);}});
     const state=()=>{if(hasState)window.ReaderState={subscribe(){},getSnapshot(){}};};
@@ -64,12 +65,23 @@ try {
     vm.runInContext(plan.bootstrap.code,ctx);
     return {links,scripts,before,listeners,media,printMedia,screenMedia,errors,redirects,timers,reloads:()=>reloads,
       completeScript(index){assert.equal(scripts.length,index+1);if(index===5&&!notReady){window.__NP_UNIVERSAL_PREVIEW__={ready:true};window.__NP_W57_ANNOTATIONS__={ready:true};}scripts[index].onload();},
-      prepared(value){prepared=value;},
+      fragmentScrolls:()=>fragmentScrolls,changeHash(value){window.location.hash=value;listeners.hashchange?.({isTrusted:true});},prepared(value){prepared=value;},
       resize(value,height=900){window.innerWidth=value;window.innerHeight=height;listeners.resize?.();},
       flush(){for(const [id,fn] of [...frames]){frames.delete(id);fn();}},
       timeout(){const timer=[...timers.values()].find(t=>t.ms===12000);assert.ok(timer);timer.fn();}};
   }
   let d=run(); assert.ok(d.links.every(l=>l.media===MEDIA)); assert.equal(d.before,0);assert.deepEqual(d.scripts.map(s=>s.src),expected);assert.ok(d.scripts.every(s=>s.async===true));assert.equal(d.timers.size,0);
+  const fragment=run({hash:'#faq-a'});fragment.flush();assert.equal(fragment.fragmentScrolls(),1);
+  for(const options of [{hash:'#other'},{hash:'#faq-a',targetTop:144},{hash:'#faq-a',targetHidden:true},{hash:'#faq-a',navigation:'back_forward'},{hash:'#faq-a',navigation:'reload'},{hash:'#faq-a',width:390}]){
+    const trial=run(options);trial.flush();assert.equal(trial.fragmentScrolls(),0,JSON.stringify(options));
+  }
+  for(const type of ['wheel','touchstart','pointerdown','keydown','hashchange','pagehide']){
+    const trial=run({hash:'#faq-a',manualLoad:true});
+    trial.listeners[type]({isTrusted:true});
+    for(let i=0;i<6;i++)trial.completeScript(i);
+    trial.flush();assert.equal(trial.fragmentScrolls(),0,type);
+  }
+  const changed=run({hash:'#faq-a'});changed.changeHash('#other');changed.flush();assert.equal(changed.fragmentScrolls(),0);
   const serial=run({manualLoad:true});
   for(let i=0;i<6;i++){assert.deepEqual(serial.scripts.map(s=>s.src),expected.slice(0,i+1));serial.completeScript(i);}
   assert.equal(serial.timers.size,0);assert.equal(serial.redirects.length,0);
