@@ -1,0 +1,181 @@
+/* W50 — quiet reading geometry. Full-width imagery stays outside article. */
+@media(min-width:1360px){
+ body.np-u-preview.np-u-w40-space .gbs2-world>.page-wrap>main.np-u-reader-main>article.article-body,
+ body.np-u-preview.np-u-w40-space .gbs2-world>.page-wrap>main.np-u-reader-main>.article-header,
+ body.np-u-preview.np-u-w40-space .gbs2-world>.page-wrap>main.np-u-reader-main>header.article-header{
+  box-sizing:border-box!important;width:min(100%,760px)!important;
+  max-width:760px!important;margin-left:auto!important;margin-right:auto!important;
+ }
+}
+/* Secondary module actions appear on intent, not by default.
+   Keyboard focus and pinned states stay visible. */
+@media(min-width:1121px) and (hover:hover) and (pointer:fine){
+ body.np-u-preview #npUResearch .np-u-research-module>button.np-u-module-pin,
+ body.np-u-preview #npUResearch .np-u-research-module>button.np-u-module-focus{
+  opacity:.08!important;transition:opacity .16s ease
+ }
+ body.np-u-preview #npUResearch .np-u-research-module:is(:hover,:focus-within)>button:is(.np-u-module-pin,.np-u-module-focus),
+ body.np-u-preview #npUResearch .np-u-research-module>button:is(.np-u-module-pin,.np-u-module-focus):focus-visible,
+ body.np-u-preview #npUResearch .np-u-research-module>button.np-u-module-pin[aria-pressed="true"],
+ body.np-u-preview #npUResearch .np-u-research-module>button.np-u-module-focus[aria-pressed="true"]{
+  opacity:1!important
+ }
+}
+
+
+/* W53 preserved: the broad book-body constraint applies across every
+   native article family, not only Product .gbs2-world/.page-wrap pages. */
+@media(min-width:1360px){
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>article.article-body,
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>header.article-header{
+  box-sizing:border-box!important;
+  width:min(100%,760px)!important;max-width:760px!important;
+  margin-left:auto!important;margin-right:auto!important;
+ }
+}
+/* W53 preserved: small touchscreen modules retain discoverable pin/focus. */
+@media(max-width:1120px){
+ body.np-u-preview #npUResearch .np-u-research-module>button:is(.np-u-module-pin,.np-u-module-focus){
+  opacity:.48!important;
+ }
+ body.np-u-preview #npUResearch .np-u-research-module>button:is(.np-u-module-pin,.np-u-module-focus):is(:focus,:focus-visible),
+ body.np-u-preview #npUResearch .np-u-research-module>button:is(.np-u-module-pin,.np-u-module-focus)[aria-pressed="true"]{
+  opacity:1!important;
+ }
+}
+
+/* W55: history and library inhabit the existing follow-status row.
+   Two native actions, no cloned listeners and no additional header row. */
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-research-follow{
+ display:flex!important;align-items:center!important;
+ justify-content:space-between!important;gap:4px!important;
+ min-height:31px!important;max-height:35px!important;
+ padding-left:12px!important;padding-right:12px!important;
+ box-sizing:border-box!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch #npUFollowChapter[hidden]{
+ display:none!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-actions{
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ gap:3px!important;min-width:0!important;margin-left:auto!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-actions
+ > :is(#npUHistoryButton,#npULibraryButton){
+ box-sizing:border-box!important;display:inline-flex!important;
+ position:static!important;inset:auto!important;z-index:auto!important;
+ flex:0 0 auto!important;width:auto!important;min-width:0!important;
+ max-width:none!important;height:30px!important;min-height:30px!important;
+ padding:4px 5px!important;margin:0!important;gap:4px!important;
+ align-items:center!important;justify-content:center!important;
+ border:0!important;border-radius:4px!important;
+ background:transparent!important;box-shadow:none!important;
+ color:var(--np-u-muted,#70675d)!important;
+ font:500 11px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+ cursor:pointer!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-actions
+ > :is(#npUHistoryButton,#npULibraryButton):is(:hover,:focus-visible){
+ color:var(--np-u-ink,#251f1a)!important;background:rgba(128,101,71,.085)!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-actions
+ > :is(#npUHistoryButton,#npULibraryButton):focus-visible{
+ outline:2px solid #9f7152!important;outline-offset:0!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-action > svg{
+ display:block!important;position:static!important;inset:auto!important;
+ box-sizing:border-box!important;width:14px!important;height:14px!important;
+ min-width:14px!important;max-width:14px!important;flex:0 0 14px!important;
+ margin:0!important;transform:none!important;stroke-width:1.7!important;
+}
+body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-word{
+ display:inline!important;white-space:nowrap!important;
+ font:inherit!important;color:inherit!important;
+}
+@media(max-width:359px){
+ body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-action > svg{display:none!important}
+ body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-actions{gap:0!important}
+ body.np-u-preview #npUniversalDemo #npUResearch .np-u-context-actions
+ > :is(#npUHistoryButton,#npULibraryButton){padding:4px 3px!important;font-size:10.5px!important}
+}
+/* W50: actual comparison evidence stays accessible, but not as a 2000px
+   mandatory detour in a narrative chapter. No source data is removed. */
+body.np-u-preview main.np-u-reader-main .np-u-evidence-disclosure{
+ display:block;box-sizing:border-box;max-width:100%;min-width:0;
+ margin:23px 0 30px;padding:0;background:transparent!important;
+ border:0!important;border-block:1px solid var(--np-u-rule,#ddd7d0)!important;
+ border-radius:0!important;box-shadow:none!important;
+}
+body.np-u-preview main.np-u-reader-main .np-u-evidence-disclosure>summary{
+ display:flex;align-items:center;gap:12px;min-height:52px;
+ padding:11px 0;cursor:pointer;list-style:none;
+ color:var(--np-u-ink,#29241f);
+ font:600 13px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body.np-u-preview main.np-u-reader-main .np-u-evidence-disclosure>summary::-webkit-details-marker{display:none}
+body.np-u-preview .np-u-evidence-disclosure__count{
+ margin-left:auto;color:var(--np-u-muted,#71695f);white-space:nowrap;
+ font:400 11px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body.np-u-preview .np-u-evidence-disclosure>summary>span:last-child{
+ display:inline-grid;place-items:center;font-size:20px;font-weight:400;
+ transform:rotate(90deg);transition:transform .16s ease;
+}
+body.np-u-preview .np-u-evidence-disclosure[open]>summary>span:last-child{transform:rotate(-90deg)}
+body.np-u-preview .np-u-evidence-disclosure>summary:focus-visible{
+ outline:2px solid var(--np-u-red,#905138);outline-offset:2px;border-radius:3px
+}
+body.np-u-preview .np-u-evidence-scroll{
+ overflow-x:auto;overflow-y:visible;overscroll-behavior-x:contain;
+ max-width:100%;min-width:0;padding:8px 0 14px;
+ scrollbar-width:thin;
+}
+body.np-u-preview .np-u-evidence-scroll:focus-visible{
+ outline:2px solid var(--np-u-red,#905138);outline-offset:2px;
+}
+body.np-u-preview .np-u-evidence-scroll>table.manuscript-table{
+ max-width:none!important;width:100%!important;
+ margin:0!important;box-sizing:border-box!important;
+}
+@media(max-width:620px){
+ body.np-u-preview .np-u-evidence-scroll>table.manuscript-table{
+  min-width:700px!important;table-layout:fixed!important;
+  display:table!important;
+ }
+ body.np-u-preview .np-u-evidence-scroll>table.manuscript-table :is(thead,tbody){
+  display:table-row-group!important;
+ }
+ body.np-u-preview .np-u-evidence-scroll>table.manuscript-table thead{display:table-header-group!important}
+ body.np-u-preview .np-u-evidence-scroll>table.manuscript-table tr{display:table-row!important}
+ body.np-u-preview .np-u-evidence-scroll>table.manuscript-table :is(th,td){
+  display:table-cell!important;min-width:0!important;vertical-align:top!important;
+  padding:9px 12px!important;
+  font:400 12px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  overflow-wrap:break-word!important;
+ }
+ body.np-u-preview .np-u-evidence-scroll>table.manuscript-table th{
+  font-weight:650!important;
+ }
+}
+
+
+body.np-u-preview .np-u-evidence-mobile-hint{display:none}
+@media(max-width:620px){
+ body.np-u-preview .np-u-evidence-mobile-hint{
+  display:block;position:sticky;left:0;padding:1px 0 8px;
+  color:var(--np-u-muted,#71695f);
+  font:400 11px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+ }
+}
+
+/* W55 history dropdown lives below the context row, not over its own trigger. */
+@media(min-width:1121px){
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUHistoryDrawer{
+  top:109px!important;right:12px!important;
+ }
+}
+@media(max-width:1120px){
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUHistoryDrawer{
+  top:97px!important;right:12px!important;
+ }
+}

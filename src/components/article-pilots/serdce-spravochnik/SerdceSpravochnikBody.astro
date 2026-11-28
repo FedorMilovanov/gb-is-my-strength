@@ -2,11 +2,13 @@
 import HeartSeriesNext from '@/components/article-pilots/_shared/HeartSeriesNext.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/hardTextsSeriesConfig';
+// A single opt-in card presentation owner for two prose comparisons below.
+import '../../../styles/reader-responsive-tables.css';
 ---
 
 <SeriesReaderChrome pageId="spravochnik" config={HARD_TEXTS_SERIES}>
 <main class="article-main" id="main-content">
-<article data-pagefind-body>
+<article data-pagefind-body data-responsive-prose-owner="heart-guide">
 <span data-pagefind-meta="author" hidden>Автор-редактор: Фёдор Милованов</span>
 <span data-pagefind-meta="readTime" hidden>23</span>
 <span data-pagefind-meta="category" hidden>Богословие</span>
@@ -76,7 +78,7 @@ import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/ha
 <p>Значения сверены поиском по лексиконам (HALOT, BDB, BDAG, LSJ); полный текст изданий по печатным томам не сверялся.</p>
 <h2 id="sostoyaniya">IV. Четыре состояния сердца и четыре свободы воли</h2>
 <p>Карта из старого богословия (Томас Бостон, <em>Human Nature in Its Fourfold State</em>; Августин — о воле): где сердце и куда идёт.</p>
-<table><thead><tr><th>Состояние</th><th>Воля (по Августину)</th><th>Сердце</th></tr></thead><tbody><tr><td><strong>Невинность</strong> (Адам до падения)</td><td><em>posse peccare / posse non peccare</em> — мог грешить и мог не грешить</td><td>свобода была, но хрупкая, её можно потерять</td></tr><tr><td><strong>Природа</strong> (падшее)</td><td><em>non posse non peccare</em> — не мог не грешить</td><td>воля в рабстве, сердце «крайне испорчено» (Иер. 17:9)</td></tr><tr><td><strong>Благодать</strong> (возрождённое)</td><td><em>posse non peccare</em> — может не грешить</td><td>новое сердце, но с остаточной плотью; здесь идёт вся война</td></tr><tr><td><strong>Слава</strong> (прославленное)</td><td><em>non posse peccare</em> — не может грешить</td><td>сердце свободно окончательно и навсегда</td></tr></tbody></table>
+<table data-responsive-layout="stacked-prose" data-key-type="prose" aria-label="Четыре состояния сердца и свободы воли"><thead><tr><th scope="col">Состояние</th><th scope="col">Воля (по Августину)</th><th scope="col">Сердце</th></tr></thead><tbody><tr><td data-label="Состояние"><strong>Невинность</strong> (Адам до падения)</td><td data-label="Воля (по Августину)"><em>posse peccare / posse non peccare</em> — мог грешить и мог не грешить</td><td data-label="Сердце">свобода была, но хрупкая, её можно потерять</td></tr><tr><td data-label="Состояние"><strong>Природа</strong> (падшее)</td><td data-label="Воля (по Августину)"><em>non posse non peccare</em> — не мог не грешить</td><td data-label="Сердце">воля в рабстве, сердце «крайне испорчено» (Иер. 17:9)</td></tr><tr><td data-label="Состояние"><strong>Благодать</strong> (возрождённое)</td><td data-label="Воля (по Августину)"><em>posse non peccare</em> — может не грешить</td><td data-label="Сердце">новое сердце, но с остаточной плотью; здесь идёт вся война</td></tr><tr><td data-label="Состояние"><strong>Слава</strong> (прославленное)</td><td data-label="Воля (по Августину)"><em>non posse peccare</em> — не может грешить</td><td data-label="Сердце">сердце свободно окончательно и навсегда</td></tr></tbody></table>
 <p>Восходящая линия: последнее состояние <em>выше</em> первого. Адам мог пасть — прославленный уже не сможет.</p>
 <h2 id="setki">V. Диагностические сетки</h2>
 <p>Не для суда над ближним, а чтобы испытать <em>своё</em> сердце (Пс. 138:23).</p>
@@ -95,7 +97,7 @@ import { HARD_TEXTS_SERIES } from '@/components/article-pilots/_shared/series/ha
 </ul>
 <p>Даже слабый отклик на Бога, которого камень дать не может, — уже свидетельство, что камень изъят.</p>
 <p><strong>Чувство святое или подделка — один корень проверяется целью:</strong></p>
-<table><thead><tr><th>Чувство</th><th>Святое</th><th>Подделка</th></tr></thead><tbody><tr><td>Любовь</td><td>к Богу и в Боге</td><td>к миру (1 Ин. 2:15)</td></tr><tr><td>Страх</td><td>благоговейный (Мф. 10:28)</td><td>рабский, идольский (Прит. 29:25)</td></tr><tr><td>Надежда</td><td>на Бога (Иер. 17:7)</td><td>на плоть (Иер. 17:5)</td></tr><tr><td>Радость</td><td>во Христе (1 Пет. 1:8)</td><td>мимолётное впечатление (Лк. 8:13)</td></tr><tr><td>Печаль</td><td>ради Бога, к покаянию (2 Кор. 7:10)</td><td>мирская, к смерти</td></tr></tbody></table>
+<table data-responsive-layout="stacked-prose" data-key-type="prose" aria-label="Чувство святое или подделка"><thead><tr><th scope="col">Чувство</th><th scope="col">Святое</th><th scope="col">Подделка</th></tr></thead><tbody><tr><td data-label="Чувство">Любовь</td><td data-label="Святое">к Богу и в Боге</td><td data-label="Подделка">к миру (1 Ин. 2:15)</td></tr><tr><td data-label="Чувство">Страх</td><td data-label="Святое">благоговейный (Мф. 10:28)</td><td data-label="Подделка">рабский, идольский (Прит. 29:25)</td></tr><tr><td data-label="Чувство">Надежда</td><td data-label="Святое">на Бога (Иер. 17:7)</td><td data-label="Подделка">на плоть (Иер. 17:5)</td></tr><tr><td data-label="Чувство">Радость</td><td data-label="Святое">во Христе (1 Пет. 1:8)</td><td data-label="Подделка">мимолётное впечатление (Лк. 8:13)</td></tr><tr><td data-label="Чувство">Печаль</td><td data-label="Святое">ради Бога, к покаянию (2 Кор. 7:10)</td><td data-label="Подделка">мирская, к смерти</td></tr></tbody></table>
 <p><strong>Ограждения (против перекосов):</strong></p>
 <ul>
 <li><em>против фатализма</em> — «сердце испорчено» не значит «меняться бесполезно»: есть новое сердце и Дух;</li>

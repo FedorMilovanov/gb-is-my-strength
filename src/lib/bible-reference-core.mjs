@@ -129,6 +129,40 @@ export function parseBibleReference(input, registry) {
   };
 }
 
+/**
+ * Strict explicit cross-chapter reference, e.g. 1 Ин. 1:5–2:2.
+ * Keeps the existing same-chapter parser contract unchanged. Syntax validity
+ * does not imply a verse exists: the publication resolver checks both bounds.
+ */
+export function parseBibleReferenceSpan(input, registry) {
+  const basic = parseBibleReference(input, registry);
+  if (basic.ok) return {
+    ...basic, kind: basic.wholeChapter ? 'chapter' : basic.end ? 'verse-range' : 'verse',
+    endChapter: null, endVerse: null,
+  };
+  const original = String(input || '').trim();
+  const normalized = original
+    .replace(/[\u00a0\u202f]/g, ' ')
+    .replace(/[‐‑‒–—−]/g, '-')
+    .replace(/\s*:\s*/g, ':')
+    .replace(/(\d)\s*-\s*(\d)/g, '$1-$2')
+    .replace(/\s+/g, ' ').trim();
+  const match = normalized.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})-(\d{1,3}):(\d{1,3})$/u);
+  if (!match) return basic;
+  const start = parseBibleReference(match[1] + ' ' + match[2] + ':' + match[3], registry);
+  const end = parseBibleReference(match[1] + ' ' + match[4] + ':' + match[5], registry);
+  if (!start.ok || !end.ok || start.bookId !== end.bookId
+      || end.chapter < start.chapter
+      || (end.chapter === start.chapter && Number(end.start) < Number(start.start))) {
+    return { ok: false, original, reason: 'invalid cross-chapter reference' };
+  }
+  return {
+    ...start, original,
+    key: normalizeVerseKey(match[2] + ':' + match[3] + '-' + match[4] + ':' + match[5]),
+    kind: 'cross-chapter', endChapter: end.chapter, endVerse: Number(end.start),
+  };
+}
+
 export function normalizeBibleRecord(value, bookMeta = {}, key = '') {
   const record = typeof value === 'string'
     ? { text: value }

@@ -12,7 +12,7 @@ const html=[
 '<meta name="viewport" content="width=device-width,initial-scale=1">',
 '<title>Размышления о благодати · Господь Бог — Сила Моя</title>',
 '<style>body{margin:0;background:#f9f4ed;color:#332726;font:18px/1.6 Georgia,serif}',
-'article{max-width:650px;margin:44px auto;padding:25px;} article p{line-height:1.9}',
+'article{max-width:650px;margin:44px auto;padding:25px;} article h1{overflow-wrap:anywhere} article p{line-height:1.9}',
 '.hmbar{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:end;align-items:center;gap:4px;height:54px;background:#291b20;color:#f8d5c6}',
 '.hmbar button{min-width:44px;height:44px;border:0;background:none;color:inherit}',
 '@media(min-width:1200px){.hmbar{display:none}}</style>',
@@ -22,7 +22,7 @@ const html=[
 '<p>Нужно прочитать весь контекст, прежде чем сделать вывод. Сохранённые цитаты помогают возвращаться к изученному.</p>',
 '<p style="min-height:900px">Продолжение статьи для проверки положения прокрутки.</p>',
 '</article></main><div class="hmbar"><button id="hmShareBtn">Поделиться</button></div>',
-'<script src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script>',
+'<script type="module" src="/src/runtime/favorite-store.js"></script><script src="/js/highlights.js"></script>',
 '</body></html>'].join('');
 const serve=http.createServer((req,res)=>{
  let url=new URL(req.url,'http://localhost');
@@ -59,6 +59,14 @@ async function test(engine,driver,width,height,base){
  try{
  await page.goto(base+route,{waitUntil:'domcontentloaded'});
  await page.locator('#gb-hl-fab').waitFor();
+ if(width<1200)await page.locator('.hmbar #gb-hl-fab.gb-hl-fab--docked').waitFor({state:'attached',timeout:10000});
+ const captureGeometry=()=>page.evaluate(()=>{
+   const root=document.documentElement,body=document.body;
+   const measure=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {tag:e.tagName,id:e.id,cl:typeof e.className==='string'?e.className.slice(0,130):'',x:r.x,right:r.right,width:r.width,scroll:e.scrollWidth,client:e.clientWidth,box:s.boxSizing,pos:s.position,overflow:s.overflowX,min:s.minWidth,padding:s.paddingInline,display:s.display}};
+   return {viewport:innerWidth,visual:window.visualViewport?.width,doc:root.scrollWidth,root:measure(root),body:measure(body),font:document.fonts.status,
+     offenders:[...body.querySelectorAll('*')].filter(e=>e.getClientRects().length).map(measure).filter(e=>e.right>innerWidth+1||e.x< -1||e.scroll>e.client+1).slice(0,60)};
+ });
+ const beforeOpen=await captureGeometry();
  await page.locator('#gb-hl-fab').click();
  await page.locator('.gb-hl-item').first().waitFor({timeout:15000});
  await page.waitForFunction(()=>{const p=document.getElementById('gb-hl-panel');return p&&getComputedStyle(p).opacity==='1'&&!p.getAnimations().some(a=>a.playState==='running')},{timeout:8000});
@@ -72,6 +80,13 @@ async function test(engine,driver,width,height,base){
    return {doc:document.documentElement.scrollWidth,viewport:innerWidth,x:panel.x,right:panel.right,y:panel.y,bottom:panel.bottom,viewportHeight:innerHeight,
      tabs:[...document.querySelectorAll('#gb-hl-tabs button')].map(x=>x.getBoundingClientRect().height)};
  });
+ if(!(geometry.doc<=width+1 && geometry.x>=-1 && geometry.right<=width+1)){
+   const evidence={engine,width,height,beforeOpen,afterOpen:await captureGeometry(),geometry};
+   console.error('LIBRARY_GEOMETRY_FAILURE '+JSON.stringify(evidence));
+   fs.writeFileSync(path.join(reports,engine+'-'+width+'-geometry-failure.json'),JSON.stringify(evidence,null,2));
+   await page.screenshot({path:path.join(reports,engine+'-'+width+'-geometry-failure.png'),animations:'disabled'});
+ }
+ assert(beforeOpen.doc<=width+1,'Fixture page must not overflow before opening Library: '+JSON.stringify(beforeOpen));
  assert(geometry.doc<=width+1 && geometry.x>=-1 && geometry.right<=width+1,JSON.stringify(geometry));
  assert(geometry.tabs.every(x=>x>=43.5),'all tabs accessible');
  if(width>=768)assert(geometry.y>10 && geometry.bottom<height-10,'desktop not centered');
@@ -90,6 +105,7 @@ async function test(engine,driver,width,height,base){
  await action('edit-tag').first().click();
  await page.locator('#gb-hl-tag-input').fill('Герменевтика');
  await action('save-tag').click();
+ await page.locator('#gb-hl-tag-editor').waitFor({state:'hidden'});
  assert.equal(await page.locator('.gb-hl-tag').filter({hasText:'Герменевтика'}).count(),1);
  await action('topic').filter({hasText:'Герменевтика'}).click();
  assert.equal(await page.locator('.gb-hl-item').count(),1,'topic filter');
@@ -117,6 +133,7 @@ async function test(engine,driver,width,height,base){
  addition.data.favorites.push({path:'/articles/third/',title:'Новое исследование',addedAt:1781100000000});
  await page.locator('#gb-hl-json-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(addition))});
  await action('confirm-import').click();
+ await page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
  const result=await page.evaluate(()=>({
   quotes:JSON.parse(localStorage.getItem('gb-highlights-v1')).length,
   notes:JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length,
@@ -125,9 +142,11 @@ async function test(engine,driver,width,height,base){
  assert.deepEqual(result,{quotes:3,notes:2,favorite:true},'merge import');
  await page.locator('#gb-hl-json-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(addition))});
  await action('confirm-import').click();
+ await page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'repeat import idempotent');
  const malicious={...backup,version:123};
  await page.locator('#gb-hl-json-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(malicious))});
+ await page.waitForFunction(()=>document.querySelector('#gb-hl-status')?.classList.contains('is-visible'));
  assert.equal(await page.locator('#gb-hl-import-confirm').isVisible(),false,'bad backup rejected');
  const failed=structuredClone(addition);
  failed.data.quotes.push({id:'qfail',text:'Эта цитата не должна сохраниться',articleTitle:'Проверка',url:'/articles/fail/',savedAt:1781100000000});
@@ -138,26 +157,32 @@ async function test(engine,driver,width,height,base){
   Storage.prototype.setItem=function(k,v){if(k==='gb-reader-notes-v1')throw new DOMException('blocked','QuotaExceededError');return window.__save.call(this,k,v)};
  });
  await action('confirm-import').click();
+ await page.waitForFunction(()=>!document.querySelector('[data-research-action=confirm-import]').disabled);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')).length),3,'quotes rolled back');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length),2,'untouched notes retained');
  await page.evaluate(()=>{Storage.prototype.setItem=window.__save;delete window.__save});
  // Return to the normal library, then exercise explicit reading states.
  await action('manage').click();
  await action('start-current').click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='reading');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'reading');
  assert.equal(await action('resume').count(),1,'continue only active reading');
  await action('finish-current').click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='finished');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'finished');
  assert.equal(await action('resume').count(),0,'finished disappears from continue');
  await action('manage').click();
  await action('start-reading').first().click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='reading');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'reading','explicit restore in menu');
  await action('manage').click();
  await action('dismiss-current').click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/articles/test-reader-v3']?.state==='dismissed');
  assert.equal((await state()).reading['/articles/test-reader-v3'].state,'dismissed');
  assert.equal(await action('resume').count(),0,'dismissed disappears');
  assert.equal(await page.locator('.gb-hl-daily').count(),1,'daily quote');
  await action('hide-today').click();
+ await page.locator('.gb-hl-daily').waitFor({state:'hidden'});
  assert.equal(await page.locator('.gb-hl-daily').count(),0,'hidden today');
  await page.locator('#gb-hl-close').click();
  assert.equal(await page.locator('#gb-hl-backdrop').getAttribute('aria-hidden'),'true');
@@ -171,8 +196,57 @@ async function test(engine,driver,width,height,base){
  console.log('PASS '+engine+' '+width+'x'+height+' V3 backup/tag/context/search/reading/daily/mobile');
  }finally{await context.close();await browser.close();}
 }
+async function recoveryCase(engine,driver,base) {
+ const browser=await driver.launch(),errors=[];
+ const keys=['gb-highlights-v1','gb-reader-notes-v1','gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
+ const blank=Object.fromEntries(keys.map(k=>[k,null])),raw={...blank};
+ raw[keys[0]]='[ {"id":"Q","text":"old quote","url":"/a"}, null ]';
+ raw[keys[1]]=JSON.stringify([{id:42,text:'legacy',extra:{a:1}},{id:'dup',text:'A'},{id:'dup',text:'B'}]);
+ raw[keys[2]]=JSON.stringify({version:1,extra:'keep',items:[{path:'/a/index.html',title:'old',extra:'a'},null,{path:'/a/',title:'alias',extra:'b'}]});
+ raw[keys[3]]=JSON.stringify({'note:42':[' raw ',' raw ']});
+ try {
+  async function open(seed) {
+   const context=await browser.newContext({viewport:{width:390,height:844},acceptDownloads:true,serviceWorkers:'block'});
+   await context.addInitScript(seed=>{for(const [k,v] of Object.entries(seed))if(v!==null)localStorage.setItem(k,v)},seed);
+   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+   await page.goto(base+route);
+   await page.locator('#gb-hl-fab').click();await page.locator('#gb-hl-manage').click();
+   return {context,page};
+  }
+  const snapshot=p=>p.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),keys);
+  const download=async p=>{
+   const [dl]=await Promise.all([p.waitForEvent('download'),p.locator('[data-research-action=export-recovery]').click()]);
+   assert.equal(dl.suggestedFilename(),'gb-library-recovery.json');
+   return JSON.parse(fs.readFileSync(await dl.path(),'utf8'));
+  };
+  const send=async(p,archive)=>{
+   await p.locator('#gb-hl-json-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(archive))});
+   await p.locator('#gb-hl-import-confirm').waitFor({state:'visible'});
+   await p.locator('[data-research-action=confirm-import]').click();
+  };
+  const done=p=>p.waitForFunction(()=>!document.querySelector('[data-research-action=confirm-import]').disabled);
+  const a=await open(raw),archive=await download(a.page);
+  assert.deepEqual(archive.raw,raw);assert.deepEqual(await snapshot(a.page),raw);
+  const b=await open({});await send(b.page,archive);await b.page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
+  assert.deepEqual(await snapshot(b.page),raw);
+  await send(b.page,archive);await b.page.locator('#gb-hl-import-confirm').waitFor({state:'hidden'});
+  assert.deepEqual(await snapshot(b.page),raw);
+  const c=await open({[keys[1]]:JSON.stringify([{id:'newer',text:'newer'}])}),before=await snapshot(c.page);
+  await send(c.page,archive);await done(c.page);
+  assert.equal(await c.page.locator('#gb-hl-import-confirm').isVisible(),true);assert.deepEqual(await snapshot(c.page),before);
+  const broken=await open({[keys[0]]:'{bad'}),badArchive=await download(broken.page);
+  assert.equal(badArchive.raw[keys[0]],'{bad');
+  const d=await open({});await send(d.page,badArchive);await done(d.page);
+  assert.deepEqual(await snapshot(d.page),blank);
+  assert.deepEqual(errors,[]);
+  for(const x of [a,b,c,broken,d])await x.context.close();
+  console.log('PASS '+engine+' exact archive recovery UI, legacy bytes and refusal');
+ } finally { await browser.close(); }
+}
 (async()=>{await new Promise(r=>serve.listen(0,'127.0.0.1',r));
 try{const base='http://127.0.0.1:'+serve.address().port;
-for(const [name,driver] of [['chromium',chromium],['webkit',webkit]])
+for(const [name,driver] of [['chromium',chromium],['webkit',webkit]]) {
  for(const [w,h] of [[320,640],[390,844],[768,900],[1440,900]])await test(name,driver,w,h,base);
-console.log('READER LIBRARY V3: 8/8 PASS');}finally{serve.close();}})().catch(e=>{console.error(e);process.exitCode=1;serve.close()});
+ await recoveryCase(name,driver,base);
+}
+console.log('READER LIBRARY V3: 8/8 PASS + 2/2 EXACT RECOVERY PASS');}finally{serve.close();}})().catch(e=>{console.error(e);process.exitCode=1;serve.close()});

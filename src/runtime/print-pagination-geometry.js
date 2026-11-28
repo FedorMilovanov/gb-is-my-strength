@@ -205,6 +205,11 @@
 
   function prepareForPrint() {
     if (!originalPrepare) return null;
+    if (!inPrintMedia()) {
+      clearGeometry();
+      lastReport = null;
+      return null;
+    }
     if (preparedForPrint && lastReport) return lastReport;
     const report = originalPrepare();
     attachGeometry(report, stabilize(report));
@@ -216,6 +221,20 @@
     if (lifecycleBound) return;
     lifecycleBound = true;
     window.addEventListener('beforeprint', () => { prepareForPrint(); });
+    // beforeprint may run before the print viewport exists. Recompute after
+    // the semantic owner's print-media listener has classified actual paper.
+    try {
+      const media = window.matchMedia('print');
+      const onChange = (event) => {
+        if (event.matches) prepareForPrint();
+        else {
+          clearGeometry();
+          lastReport = null;
+        }
+      };
+      if (media.addEventListener) media.addEventListener('change', onChange);
+      else if (media.addListener) media.addListener(onChange);
+    } catch (_) {}
     window.addEventListener('afterprint', () => {
       clearGeometry();
       lastReport = null;

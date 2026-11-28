@@ -1,0 +1,91 @@
+{
+  "head": "a595629f15a2324205cbb9b1c2cb2cc936814214",
+  "engine": "Chromium local build",
+  "cases": 2,
+  "reports": [
+    {
+      "width": 320,
+      "hidden": {
+        "captured": "Господь благ",
+        "expected": "Господь благ",
+        "anchorStart": 7,
+        "anchorEnd": 19,
+        "blockHash": true,
+        "resolved": true,
+        "rangeStart": "left"
+      },
+      "repeated": {
+        "captured": "Бог благ",
+        "anchorStart": 29,
+        "anchorBlockId": "repeat-source",
+        "initialResolve": true,
+        "initialRangeStart": 29,
+        "shiftedResolve": false,
+        "shiftedCandidatesExpected": 2
+      },
+      "uniqueRelocation": {
+        "captured": "Христос силён",
+        "blockId": "unique-source",
+        "index": 3,
+        "relocatedResolve": true,
+        "rangeText": "Христос силён"
+      },
+      "changedContext": {
+        "captured": "Бог благ",
+        "start": 7,
+        "updatedText": "Измено Бог благ конец.",
+        "resolved": true,
+        "resolvedBlock": "repeat-source",
+        "rangeStart": 7
+      },
+      "ambiguous": {
+        "resolved": false
+      },
+      "crossBlock": {
+        "captured": null
+      }
+    },
+    {
+      "width": 390,
+      "hidden": {
+        "captured": "Господь благ",
+        "expected": "Господь благ",
+        "anchorStart": 7,
+        "anchorEnd": 19,
+        "blockHash": true,
+        "resolved": true,
+        "rangeStart": "left"
+      },
+      "repeated": {
+        "captured": "Бог благ",
+        "anchorStart": 29,
+        "anchorBlockId": "repeat-source",
+        "initialResolve": true,
+        "initialRangeStart": 29,
+        "shiftedResolve": false,
+        "shiftedCandidatesExpected": 2
+      },
+      "uniqueRelocation": {
+        "captured": "Христос силён",
+        "blockId": "unique-source",
+        "index": 3,
+        "relocatedResolve": true,
+        "rangeText": "Христос силён"
+      },
+      "changedContext": {
+        "captured": "Бог благ",
+        "start": 7,
+        "updatedText": "Измено Бог благ конец.",
+        "resolved": true,
+        "resolvedBlock": "repeat-source",
+        "rangeStart": 7
+      },
+      "ambiguous": {
+        "resolved": false
+      },
+      "crossBlock": {
+        "captured": null
+      }
+    }
+  ]
+}

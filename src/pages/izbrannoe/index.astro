@@ -61,8 +61,8 @@ const jsonLd = {
       schemaVersion: number;
       list(): FavoriteRecord[];
       normalizePath(value: unknown): string | null;
-      remove(path: string, options?: { source?: string }): unknown;
-      clear(options?: { source?: string }): unknown;
+      remove(path: string, options?: { source?: string }): Promise<{error?: string|null}>;
+      clear(options?: { source?: string }): Promise<{error?: string|null}>;
       subscribe(listener: () => void): unknown;
     };
 
@@ -191,15 +191,21 @@ const jsonLd = {
       const store = favoriteWindow.GBFavoriteStore;
       if (!store || !grid || !clearBtn) return;
       store.subscribe(render);
-      grid.addEventListener('click', (event) => {
+      grid.addEventListener('click', async (event) => {
         const target = event.target;
         const removeButton = target instanceof Element ? target.closest('.izbrannoe-card__remove') : null;
         if (!removeButton) return;
-        store.remove(removeButton.getAttribute('data-path') || '', { source: 'favorites-page' });
+        if(!(removeButton instanceof HTMLButtonElement)||removeButton.disabled)return;
+        removeButton.disabled=true;
+        try {
+          const result=await store.remove(removeButton.getAttribute('data-path') || '', { source: 'favorites-page' });
+          if(result?.error) alert('Не удалось убрать статью. Данные изменились или хранилище недоступно.');
+        } finally { removeButton.disabled=false; }
       });
-      clearBtn.addEventListener('click', () => {
+      clearBtn.addEventListener('click', async () => {
         if (!confirm('Удалить все статьи из избранного?')) return;
-        store.clear({ source: 'favorites-page' });
+        const result=await store.clear({ source: 'favorites-page' });
+        if(result?.error) alert('Не удалось очистить избранное. Данные изменились или хранилище недоступно.');
       });
       render();
     }

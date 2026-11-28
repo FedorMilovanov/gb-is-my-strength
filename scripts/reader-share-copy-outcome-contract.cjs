@@ -33,6 +33,10 @@ function makeFixture(testCase) {
     documentElement: { dataset: {} },
     body: { appendChild(node) { attached.push(node); return node; } },
     addEventListener() {},
+    querySelectorAll(selector) {
+      assert.equal(selector, '[data-action="print"]', 'export initialization in share-only fixture');
+      return [];
+    },
     querySelector(selector) { return selector === '.gb-fc-toast' ? toast : null; },
     execCommand(command) {
       assert.equal(command, 'copy', 'only legacy copy is allowed');
@@ -123,7 +127,7 @@ function makeFixture(testCase) {
     URL,
   };
   vm.runInNewContext(RUNTIME, context, { filename: 'src/runtime/reader-actions.js', timeout: 2000 });
-  assert.equal(window.GBReaderActions?.version, 1, 'reader runtime installed');
+  assert.equal(window.GBReaderActions?.version, 2, 'reader runtime installed');
   return { document, window, attached, errors, counters, toast: () => toast };
 }
 

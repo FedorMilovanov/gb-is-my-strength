@@ -1,0 +1,66 @@
+{
+  "source": "W57 preserved reading geometry and unified Analytics migration — 2026-11-23",
+  "files": [
+    {
+      "name": "reader_universal_preview.css",
+      "sha256": "2ad26d4a715a5093b014febd33afc510ed048c3888ac35b1276f0624770b384b",
+      "bytes": 35758
+    },
+    {
+      "name": "reader_argon_first.css",
+      "sha256": "f28b95c6531b4ba88b49f09cff27875bb07e9b06eeb59d38e3fa94b1a0a48747",
+      "bytes": 149362
+    },
+    {
+      "name": "reader_editorial_refinement.css",
+      "sha256": "b682ad4d79904bdb769fb8e5dbf424e23b810b1ce6d74a2bd1f45e6df2a0b714",
+      "bytes": 10529
+    },
+    {
+      "name": "reader_editorial_consolidation.css",
+      "sha256": "9e974d877ffe0a7f752c7d4f81617e5bd1e97048b51c84e526ae3edf505942a3",
+      "bytes": 8935
+    },
+    {
+      "name": "reader_editorial_w51.css",
+      "sha256": "a6ce7ddfd96add2b6abb9b3a7a0388d8048937d65f115430bb18fbd4bba8c80d",
+      "bytes": 22516
+    },
+    {
+      "name": "reader_w57.css",
+      "sha256": "44591c53f194a567f78735a68d8be1bfd2eaf7155c065e113d43c7e2e57198c4",
+      "bytes": 39130
+    },
+    {
+      "name": "reader_universal_contract.js",
+      "sha256": "3c378ae7eccd0c90b3288d5b1acf021b608f39dbf36bf6af60aefe068cda22e0",
+      "bytes": 9790
+    },
+    {
+      "name": "reader_universal_preview.js",
+      "sha256": "2a4776594bb285972625366a1152b4210ca11807e43d06ebad414a02d06f5073",
+      "bytes": 155620
+    },
+    {
+      "name": "reader_editorial_refinement.js",
+      "sha256": "86b39353bda06734907214fae6bb5a09265409999ac50cd8cb6f7616ba5d72ed",
+      "bytes": 8115
+    },
+    {
+      "name": "reader_editorial_consolidation.js",
+      "sha256": "dfaaebb73eca2c32aff09f3bf5b4e8a497e3f491fd209ae2ca3ccf9d707b68ec",
+      "bytes": 2317
+    },
+    {
+      "name": "reader_w57.js",
+      "sha256": "2adbaf3ae9abb1ef55c35634ce417fab9f6bff06550afa156cf4d76fc17ef7bb",
+      "bytes": 4836
+    },
+    {
+      "name": "reader_w57_annotations.js",
+      "sha256": "24beacc679129b091235eb37153217bbdb554f1df6c6fd6e3d78b37bac10df9d",
+      "bytes": 34935
+    }
+  ],
+  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD. W121 removes old Learning UI declarations; no authored content, approved geometry or notes storage changed. W268 reconciles the cumulative candidate preview and lazy annotation owner hashes; not visual acceptance or production approval."
+}

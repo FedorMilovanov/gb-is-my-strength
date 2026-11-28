@@ -85,6 +85,9 @@ function dictionaryIndex(dictionary) {
 
   for (const [canonical, raw] of Object.entries(dictionary || {})) {
     const entry = raw || {};
+    if (typeof entry.displayTitle !== "string" || !entry.displayTitle.trim() || entry.displayTitle !== entry.displayTitle.trim()) {
+      fail(`data/glossary.json: "${canonical}" has no trimmed nonempty displayTitle`);
+    }
     const nested =
       entry.definition && typeof entry.definition === "object"
         ? entry.definition

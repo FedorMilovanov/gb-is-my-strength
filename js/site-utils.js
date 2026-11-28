@@ -10,7 +10,6 @@
   var emergencyTimer = null;
   var restoring = false;
   var highlightObserver = null;
-  var HIGHLIGHTS_KEY = 'gb-highlights-v1';
   // The native print flow temporarily suspends, never destroys, known
   // OverlayRuntime-owned body locks. Native afterprint restores only owners
   // that are still open, preserving user focus and the screen-side overlay.
@@ -554,6 +553,9 @@
     overlayRestoreGeneration += 1;
     record.open = true;
     record.sequence = ++overlaySequence;
+    var sequence = record.sequence;
+    var generation = overlayRestoreGeneration;
+    var initialFocus = document.activeElement;
     if (record.element) {
       record.element.setAttribute('aria-hidden', 'false');
       record.element.removeAttribute('inert');
@@ -568,7 +570,16 @@
     }
     syncOverlayDiagnostics();
     var target = firstOverlayFocus(record);
-    if (target) setTimeout(function () { if (record.open) overlayFocus(target); }, 0);
+    if (target) setTimeout(function () {
+      // A closed/reopened owner, a newer layer or a deliberate focus change
+      // supersedes the initial focus request, even before its first timer.
+      if (!record.open || record.sequence !== sequence ||
+          generation !== overlayRestoreGeneration || topOverlayRecord() !== record) return;
+      var active = document.activeElement;
+      if (active && active !== initialFocus && active !== document.body &&
+          active !== document.documentElement) return;
+      overlayFocus(target);
+    }, 0);
     return { ownerId: record.ownerId, element: record.element, sequence: record.sequence };
   }
 
@@ -774,7 +785,21 @@
       if (!item || typeof item !== 'object') continue;
       var text = normalizeQuoteText(item.text);
       if (!text) continue;
-      var key = canonicalPage(item.url) + '\n' + text;
+      // Library identity includes the exact source range when present.
+      // Text-only dedupe may destroy legitimate identical excerpts elsewhere.
+      var a = item.annotation && item.annotation.version === 1 && item.annotation.anchor;
+      var range = a && Number.isInteger(a.start) && Number.isInteger(a.end) &&
+        typeof a.exact === 'string';
+      // Цветные пометы различаются ещё и местом в тексте: без этого вторая
+      // помета той же фразы в другом абзаце молча терялась при записи.
+      var positional = (!range && (item.kind === 'marker' || item.color))
+        ? (normalizeQuoteText(item.before) + '\u0001' + normalizeQuoteText(item.after)).toLowerCase()
+        : '';
+      var key = canonicalPage(item.url) + '\n' + (range
+        ? 'range-v1:' + JSON.stringify([
+            a.blockId || '', a.blockIndex == null ? -1 : a.blockIndex,
+            a.start, a.end, a.exact
+          ]) : text + (positional ? '\nctx:' + positional : ''));
       if (seen.has(key)) continue;
       seen.add(key);
       result.push(item);
@@ -782,30 +807,7 @@
     return result;
   }
 
-  function installHighlightStorageGuard() {
-    if (!window.Storage || !Storage.prototype || Storage.prototype.__gbHighlightDedupe) return;
-    var originalSetItem = Storage.prototype.setItem;
-    Object.defineProperty(Storage.prototype, '__gbHighlightDedupe', { value: true });
-    Storage.prototype.setItem = function (key, value) {
-      if (key === HIGHLIGHTS_KEY) {
-        try {
-          var parsed = JSON.parse(String(value));
-          value = JSON.stringify(dedupeHighlights(parsed));
-        } catch (_) {}
-      }
-      return originalSetItem.call(this, key, value);
-    };
-
-    try {
-      var current = localStorage.getItem(HIGHLIGHTS_KEY);
-      if (current) {
-        var parsed = JSON.parse(current);
-        var clean = dedupeHighlights(parsed);
-        if (clean.length !== parsed.length) originalSetItem.call(localStorage, HIGHLIGHTS_KEY, JSON.stringify(clean));
-      }
-    } catch (_) {}
-  }
-
+  // Legacy projections are read-only. The Library owns all writes.
   function syncHighlightDialog(dialog) {
     if (!dialog || dialog.id !== 'gb-hl-backdrop') return;
     var open = dialog.classList.contains('is-open');
@@ -830,7 +832,6 @@
     highlightObserver.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  installHighlightStorageGuard();
   installHighlightAriaGuard();
 
   // A private site.js unlock can remove body styles while a global overlay is

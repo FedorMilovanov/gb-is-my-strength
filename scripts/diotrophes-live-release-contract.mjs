@@ -11,14 +11,13 @@ const EXPECTED_SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
   'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
-  'https://www.thejourney.org/about/our-story-new',
 ].sort();
+const HISTORICAL_JOURNEY_URL = 'https://www.thejourney.org/about/our-story-new';
 const STALE_READER_LINKS = [
   'https://www.thejourney.org/our-story',
   'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
 ];
 const CANONICAL_BASE_READER_LINKS = [
-  'https://www.thejourney.org/about/our-story-new',
   'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
 ];
 const FULL_SHA_RE = /^[a-f0-9]{40}$/;
@@ -249,8 +248,14 @@ function inspectHtml(html, route) {
   assert.match(html, /\bid=(?:"|')faithful-witness-under-pressure(?:"|')/i, 'faithful witness section is missing');
   assert.match(html, /\bid=(?:"|')twenty-faithful-responses(?:"|')/i, 'twenty responses section is missing');
 
-  const baseLinks = externalLinks(extractElementById(html, 'sources'));
-  const supplementLinks = externalLinks(extractElementById(html, 'faithful-witness-sources'));
+  const baseSection = extractElementById(html, 'sources');
+  const supplementSection = extractElementById(html, 'faithful-witness-sources');
+  const baseLinks = externalLinks(baseSection);
+  const supplementLinks = externalLinks(supplementSection);
+  const historicLocatorMarker = 'data-locator-status="unavailable-404-2026-11-23"';
+  const historicalHrefMarker = `data-historical-href="${HISTORICAL_JOURNEY_URL}"`;
+  const baseJourneyDisabled = baseSection.includes(historicLocatorMarker) && baseSection.includes(historicalHrefMarker);
+  const supplementJourneyDisabled = supplementSection.includes(historicLocatorMarker) && supplementSection.includes(historicalHrefMarker);
   const allLinks = [...baseLinks, ...supplementLinks];
   const linkCounts = new Map();
   for (const href of allLinks) linkCounts.set(href, (linkCounts.get(href) || 0) + 1);
@@ -277,10 +282,17 @@ function inspectHtml(html, route) {
     supplement: 1,
     total: 2,
   }));
-  assert.equal(baseLinks.length, 40, `base source occurrence count mismatch: ${baseLinks.length}`);
-  assert.equal(supplementLinks.length, 33, `supplement source occurrence count mismatch: ${supplementLinks.length}`);
-  assert.equal(allLinks.length, 73, `source occurrence total mismatch: ${allLinks.length}`);
-  assert.equal(new Set(allLinks).size, 69, `unique source count mismatch: ${new Set(allLinks).size}`);
+  assert.ok(baseJourneyDisabled, 'historical Journey 404 marker missing from base bibliography');
+  assert.ok(!baseLinks.includes(HISTORICAL_JOURNEY_URL), 'confirmed Journey 404 advertised as a working base link');
+  if (supplementJourneyDisabled) assert.ok(!supplementLinks.includes(HISTORICAL_JOURNEY_URL), 'confirmed Journey 404 advertised as a working supplement link');
+  // Source arrays remain 40+33 entries. Rendered clickable links exclude the
+  // explicit 404 locator in the base, and also in the supplement after #2371.
+  const expectedSupplementLinks = supplementJourneyDisabled ? 32 : 33;
+  const expectedUniqueLinks = supplementJourneyDisabled ? 68 : 69;
+  assert.equal(baseLinks.length, 39, `base source occurrence count mismatch: ${baseLinks.length}`);
+  assert.equal(supplementLinks.length, expectedSupplementLinks, `supplement source occurrence count mismatch: ${supplementLinks.length}`);
+  assert.equal(allLinks.length, 39 + expectedSupplementLinks, `source occurrence total mismatch: ${allLinks.length}`);
+  assert.equal(new Set(allLinks).size, expectedUniqueLinks, `unique source count mismatch: ${new Set(allLinks).size}`);
   assert.deepEqual(duplicateReaderLinks, EXPECTED_SHARED_READER_LINKS, 'shared source overlap mismatch');
   assert.deepEqual(sharedLinks, expectedSharedLinks, 'shared source placement mismatch');
   assert.deepEqual(staleLinks, [], 'stale reader source URL is present');
@@ -305,6 +317,7 @@ function inspectHtml(html, route) {
       shared: sharedLinks,
       stale: staleLinks,
       canonicalBase: canonicalBaseLinks,
+      historicJourney: { baseDisabled: baseJourneyDisabled, supplementDisabled: supplementJourneyDisabled },
     },
     faithfulSections: true,
     draftLeak: false,

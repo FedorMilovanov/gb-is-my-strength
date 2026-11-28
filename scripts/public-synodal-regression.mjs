@@ -54,6 +54,17 @@ for (const [ref, expected] of [
   ['Бытие 1:26–28', 3], ['Иуды 14–15', 2],
   ['Матфея 4:23–5:1', 4], ['Матфея 4:23–5', 51],
 ]) assert.equal(resolver.resolve(ref)?.verses, expected, ref);
+// Cross-chapter reading must end at the explicit verse, never at chapter end.
+for (const [ref, verses] of [
+  ['1 Иоанна 1:5–2:2', 8], ['1 Иоанна 1:7–2:2', 6],
+  ['1 Ин. 1:5–2:2', 8], ['1 Ин. 1:7–2:2', 6],
+]) {
+  const result = resolver.resolve(ref);
+  assert.equal(result?.verses, verses, ref + ': wrong cross-chapter bound');
+  assert(!result.text.includes('2:3 '), ref + ': extra verse leaked');
+}
+assert.equal(resolver.resolve('1 Иоанна 1:5–2:30'), null,
+  'invalid cross-chapter ending must fail closed');
 assert.equal(resolver.resolve('Матфея 3:1–28'), null,
   'invalid same-chapter end must not become chapter 28');
 const heldCorpus = structuredClone(corpus);

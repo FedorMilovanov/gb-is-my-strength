@@ -15,7 +15,8 @@
  * narrow stays 36rem as the focused short-measure mode; normal is the default.
  */
 
-:root { --gb-reader-measure: 46rem; }
+:root { --gb-reader-measure: 46rem; --gb-reader-font-family: 'Lora',Georgia,serif; }
+:root[data-reader-font-family="cormorant"] { --gb-reader-font-family: 'Cormorant Garamond',Georgia,serif; }
 :root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }
 :root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }
 :root[data-reader-measure="wide"] { --gb-reader-measure: 53rem; }

@@ -15,28 +15,66 @@ const routes=[
  ['apostasy','/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/'],
  ['lawson','/articles/steven-lawson-samoobman-i-publichnyy-golos/']
 ];
+// Exercise real article scroll and the actual two tabs with one ReaderState.
+async function auditTocProgress(page,theme){
+ await page.waitForFunction(()=>!!window.ReaderState?.getSnapshot()&&!!window.GBReaderPreferences?.setTheme);
+ await page.evaluate(theme=>GBReaderPreferences.setTheme(theme,{source:'toc-progress-browser-contract'}),theme);
+ await page.waitForFunction(theme=>GBReaderPreferences.get().theme===theme,theme);
+ await page.evaluate(()=>document.fonts.ready);
+ const trigger=page.locator('#mobPartTocBtn'),overlay=page.locator('#partTocOverlay'),bar=overlay.getByRole('progressbar',{name:'Прогресс чтения'}),checks=[];
+ for(const target of [0,50,100,25]){
+  await page.evaluate(target=>{const s=ReaderState.getSnapshot();window.scrollTo({top:target===0?0:target===100?document.documentElement.scrollHeight:Math.round(s.rangeStart+(s.rangeEnd-s.rangeStart)*target/100),behavior:'instant'});},target);
+  await page.waitForFunction(target=>{const p=ReaderState.getSnapshot()?.progress;return typeof p==='number'&&(target===0||target===100?p===target:Math.abs(p-target)<=2)&&document.querySelector('#gbs2MobPct')?.textContent===p+'%';},target,{timeout:10000});
+  const expected=await page.evaluate(()=>ReaderState.getSnapshot().progress);
+  await trigger.click();await overlay.locator('.toc-sheet').waitFor({state:'visible'});
+  const verify=async()=>{
+   await bar.waitFor({state:'visible'});
+   const d=await bar.evaluate(el=>{const p=el.closest('[data-reader-toc-progress]'),r=el.getBoundingClientRect(),f=el.querySelector('i').getBoundingClientRect();return{value:Number(el.getAttribute('aria-valuenow')),min:el.getAttribute('aria-valuemin'),max:el.getAttribute('aria-valuemax'),label:p.querySelector('[data-reader-toc-pct]').textContent,mobile:document.querySelector('#gbs2MobPct').textContent,state:ReaderState.getSnapshot().progress,ratio:r.width?f.width/r.width:NaN,left:r.left,right:r.right,viewport:document.documentElement.clientWidth};});
+   if(d.value!==expected||d.state!==expected||d.min!=='0'||d.max!=='100'||d.label!==expected+'%'||d.mobile!==expected+'%'||!Number.isFinite(d.ratio)||Math.abs(d.ratio-expected/100)>.015||d.left<0||d.right>d.viewport+1)throw Error('TOC progress mismatch '+JSON.stringify({target,expected,d}));
+   return d;
+  };
+  const toc=await verify();await overlay.locator('#gbrMarginaliaTab').click();await page.waitForFunction(()=>document.querySelector('#gbrMarginaliaTab')?.getAttribute('aria-selected')==='true');const research=await verify();
+  await overlay.locator('#gbrTocTab').click();await page.waitForFunction(()=>document.querySelector('#gbrTocTab')?.getAttribute('aria-selected')==='true');await verify();
+  if(Math.abs(toc.left-research.left)>1||Math.abs(toc.right-research.right)>1)throw Error('progress geometry changes between tabs');
+  await page.keyboard.press('Escape');await page.waitForFunction(()=>document.querySelector('#partTocOverlay')?.getAttribute('aria-hidden')==='true'&&document.documentElement.getAttribute('data-scroll-locked')!=='1');
+  checks.push({target,actual:expected});
+ }
+ return checks;
+}
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const url='http://127.0.0.1:'+server.address().port;
  for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
   const browser=await engine.launch({headless:true});
   try{
-   for(const [slug,route] of routes)for(const width of [320,390,430,1440]){
+   for(const [slug,route] of routes.filter(([id])=>!process.env.GB_READER_MOBILE_ROUTE||id===process.env.GB_READER_MOBILE_ROUTE))for(const width of [320,390,430,1440]){
     const page=await browser.newPage({viewport:{width,height:width===1440?900:844},colorScheme:'light',reducedMotion:'reduce',serviceWorkers:'block'});
     const row={engine:engineName,slug,width},pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
     try{
-     const resp=await page.goto(url+route,{waitUntil:'domcontentloaded',timeout:25000});await page.waitForTimeout(250);row.http=resp.status();
+     const resp=await page.goto(url+route,{waitUntil:'domcontentloaded',timeout:25000});row.http=resp.status();
      if(width<1200){
+      // The canonical owner is mounted asynchronously after DOMContentLoaded;
+      // a fixed 250ms sleep races slower CI runners and reports a false missing bar.
+      await page.locator('[data-reader-mobile-speed]').waitFor({state:'visible',timeout:10000});
       const bar=page.locator('[data-reader-mobile-speed]');
       if(await bar.count()!==1)throw Error('missing shared mobile speed owner');
       const play=bar.locator('.reader-mobile-play');
       const before=await play.boundingBox();
       const badge=bar.locator('.reader-mobile-speed-badge');
-      const menuBtn=bar.locator('[data-reader-mobile-menu-target]');
+      // Shared Gill/Analytics chrome is reused by several article families:
+      // discover the actual DOM variant, not the test fixture's route label.
+      const isResearchVariant=(await bar.getAttribute('data-gill-mobile-bar'))!==null;
+      const menuBtn=bar.locator(isResearchVariant?'[data-gill-marginalia-open]':'[data-reader-mobile-menu-target]');
       const settings=page.locator('.reader-mobile-action[aria-label^="Настройки чтения"]');
       if(await play.count()!==1||await badge.count()!==1||await menuBtn.count()!==1||await settings.count()!==1)throw Error('canonical controls missing or duplicate');
-      const nav=await menuBtn.locator('svg path').getAttribute('d');
-      if(nav!=='M4 7h16M4 12h16M4 17h16')throw Error('noncanonical hamburger');
+      const nav=await menuBtn.locator('svg path').first().getAttribute('d');
+      if(isResearchVariant){
+        const research=bar.locator('[data-gill-marginalia-open]');
+        if(await research.count()!==1
+          ||await research.getAttribute('aria-controls')!=='partTocOverlay'
+          ||await page.locator('#partTocOverlay').count()!==1)
+          throw Error('shared Analytics research trigger missing/incorrect');
+      }else if(nav!=='M4 7h16M4 12h16M4 17h16')throw Error('noncanonical hamburger');
       if(before.width>44)throw Error('oversized Play='+before.width);
       if(await page.locator('[data-fc-action="scroll-top"]:visible').count())throw Error('unwanted back-to-top arrow');
       if(await page.locator('.mobile-bottom-bar .gb-theme-toggle:visible,.hmbar .gb-theme-toggle:visible').count())throw Error('theme still occupies toolbar');
@@ -69,6 +107,7 @@ const routes=[
       if(count!==3)throw Error('three themes not inside settings: '+count);
       if(engineName==='chromium'&&slug==='herm'&&width===390)await page.screenshot({path:path.join(out,'herm-mobile-v12-settings.png'),animations:'disabled'});
      }else{
+      await page.locator('.gb-ember:visible').first().waitFor({state:'visible',timeout:10000});
       const play=page.locator('.gb-ember:visible').first();
       await play.hover();await page.waitForTimeout(180);
       const menu=play.locator('xpath=..').locator('.gb-ember-expand.is-open');
@@ -81,6 +120,18 @@ const routes=[
      row.pass=true;
     }catch(e){row.pass=false;row.error=String(e).slice(0,950);errors.push(row);}
     finally{results.push(row);await page.close()}
+   }
+   // Full theme/width coverage on shared flat series plus book, satellite and frontmatter.
+   if(engineName!=='firefox'&&!process.env.GB_READER_MOBILE_ROUTE){
+    const progressCases=[];
+    for(const width of [320,390,525,768])for(const theme of ['light','sepia','dark'])progressCases.push({slug:'gill',route:'/articles/dzhon-gill-chast-2-uchenyi/',width,theme});
+    progressCases.push({slug:'baptists-book',route:'/baptisty-rossii/noch-na-kure/',width:390,theme:'sepia'},{slug:'gill-context',route:'/articles/dzhon-gill-istoricheskiy-kontekst/',width:390,theme:'sepia'},{slug:'gill-reference',route:'/articles/dzhon-gill-spravochnik/',width:390,theme:'sepia'});
+    for(const c of progressCases){
+     const page=await browser.newPage({viewport:{width:c.width,height:844},reducedMotion:'reduce',serviceWorkers:'block'}),pageErrors=[];
+     const row={engine:engineName,...c,contract:'toc-progress'};page.on('pageerror',e=>pageErrors.push(String(e)));
+     try{await page.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,r=>r.fulfill({status:200,body:''}));const resp=await page.goto(url+c.route,{waitUntil:'domcontentloaded'});if(resp.status()!==200)throw Error('HTTP '+resp.status());row.progress=await auditTocProgress(page,c.theme);if(pageErrors.length)throw Error(pageErrors.join(';'));row.pass=true;}
+     catch(e){row.pass=false;row.error=String(e).slice(0,950);errors.push(row)}finally{results.push(row);await page.close()}
+    }
    }
   }finally{await browser.close()}
  }

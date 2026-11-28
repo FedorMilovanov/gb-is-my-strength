@@ -24,7 +24,7 @@ const html = [
   '<div class="hmbar"><button class="gb-save" data-fc-action="save" aria-label="Сохранить статью" type="button">☆</button>',
   '<button id="hmShareBtn" type="button">↗</button></div>',
   '<script>window.SITE_CONFIG={version:"reader-library-test",site:{id:"gb"},page:{title:"Статья для теста"}};</script>',
-  '<script src="/src/runtime/favorite-store.js"></script>',
+  '<script type="module" src="/src/runtime/favorite-store.js"></script>',
   '<script src="/js/highlights.js"></script>',
   '</body></html>',
 ].join('');
@@ -32,17 +32,28 @@ const gbsHtml = html.replace('</head>',
   '<style>.hmbar{display:none!important}.gbs2-bbar{position:fixed;bottom:12px;left:12px;right:12px;min-height:62px;padding:10px 12px;background:#fff4e9;z-index:2000;border:1px solid #a77d67;border-radius:22px;display:block}.gb-mobile-fallback-controls{position:fixed!important;left:50%!important;bottom:90px!important;z-index:2102!important;display:flex!important;align-items:center!important;gap:4px!important;transform:translateX(-50%)!important;min-height:44px;padding:4px 8px;background:#f7f0e9;border-radius:999px}@media(min-width:900px){.gb-mobile-fallback-controls{display:none!important}}@media(min-width:1200px){.gbs2-bbar{display:none}}</style></head>')
   .replace('</body>', '<button type="button" id="gbs2Bbar" class="gbs2-bbar">Оглавление серии</button><div class="gb-mobile-fallback-controls" data-fc-root role="region" aria-label="Быстрые действия чтения"><button type="button" class="gb-ember" aria-label="Слушать">▶</button><button type="button" class="gb-save" aria-label="Сохранить">☆</button></div></body>');
 
+const w57Html=html.replace('<body>','<body class="np-w57-ready">')
+  .replace('<main>','<main class="np-u-reader-main">')
+  .replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>','')
+  .replace('</body>','<aside id="npUResearch"><div class="np-u-right-scroll"></div></aside><script>window.GBReaderContract={articleRoot:()=>document.querySelector("article")};</script><script src="/research/reader-w57-pilot/assets/reader_w57_annotations.js"></script></body>');
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
-  if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
+  if (url.pathname === '/js/highlights.js' || url.pathname === '/js/site-utils.js' || url.pathname === '/css/highlights-runtime.css' ||
       url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
-      url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js') {
+      url.pathname === '/js/reader-library-storage.js' || url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-research-core.js' || url.pathname === '/js/reader-library-dock.js' || url.pathname === '/js/reader-library-navigation.js' ||
+      url.pathname === '/js/reader-library-record-transactions.js' || url.pathname === '/js/reader-library-selection.js' ||
+      url.pathname === '/js/reader-library-ranges.js' || url.pathname === '/research/reader-w57-pilot/assets/reader_w57_annotations.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));
   } else {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(url.pathname === '/baptisty-rossii/' ? gbsHtml : html);
+    const transientHtml = html.replace('</head>', '<style>#selection-share-popup[aria-hidden="true"]{display:none}</style></head>').replace('<main>', '<button id="qa-unrelated" type="button">Другое действие</button><main>');
+    res.end(url.pathname === '/articles/print-lock/' ? html.replace('<script src="/js/highlights.js">','<script src="/js/site-utils.js"></script><script src="/js/highlights.js">').replace('</article>','<div style="height:2400px">Продолжение статьи</div></article>') :
+      url.pathname === '/articles/selection-argon/' ? w57Html :
+      url.pathname === '/baptisty-rossii/' ? gbsHtml :
+      url.pathname === '/articles/selection-native/' ? transientHtml :
+      url.pathname === '/articles/selection-fallback/' ? transientHtml.replace('<div id="selection-share-popup" role="toolbar" aria-hidden="false"></div>', '') : html);
   }
 });
 const longQuote = 'Длинная выдержка из первой статьи для исследования, '.repeat(16);
@@ -63,11 +74,30 @@ async function check(browserName, driver, url, width) {
     localStorage.setItem('gb-favorites', JSON.stringify([{ path: '/articles/another', title: 'Второй материал', addedAt: 1700000000020 }]));
   }, { quote: storedQuote, note: storedNote });
   const page = await context.newPage();
+  try {
   const errors = [];
   page.on('pageerror', (err) => errors.push(err.message));
-  await page.goto(url, { waitUntil: 'load' });
-  await page.locator('#gb-hl-fab').waitFor();
-  assert.equal(await page.locator('#gb-hl-fab.gb-hl-fab--docked').count(), 1, 'bottom bar hosts shared library');
+  // The FAB is usable before the lazy docking module arrives. Hold the
+  // real module on the previously failing Chromium/390 case to prove both
+  // states independently rather than racing the module request.
+  let releaseDock;
+  const heldDock = browserName==='chromium' && width===390;
+  const dockGate = heldDock ? new Promise(resolve=>{releaseDock=resolve}) : Promise.resolve();
+  if(heldDock) await page.route(/\/js\/reader-library-dock\.js(?:\?|$)/,async route=>{
+    await dockGate;
+    await route.continue();
+  });
+  try {
+    await page.goto(url, { waitUntil: 'load' });
+    await page.locator('#gb-hl-fab').waitFor();
+    if(heldDock){
+      assert.equal(await page.locator('#gb-hl-fab.gb-hl-fab--docked').count(),0,'cold FAB exists before dock import');
+      assert.equal(await page.locator('#gb-hl-fab').isVisible(),true,'cold FAB stays usable');
+      releaseDock();
+    }
+    await page.locator('#gb-hl-fab.gb-hl-fab--docked').waitFor({state:'attached',timeout:10000});
+    assert.equal(await page.locator('.hmbar #gb-hl-fab.gb-hl-fab--docked').count(), 1, 'bottom bar hosts shared library');
+  } finally {releaseDock?.();}
   assert.equal(await page.locator('.gb-save').count(), 1, 'original SaveButton must remain intact');
   assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'library remains visible with existing data');
 
@@ -93,11 +123,13 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-editor').isVisible(), true);
   await page.locator('#gb-hl-note-text').fill('Личная заметка изменена');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
   assert((await page.locator('.gb-hl-note').textContent()).includes('изменена'));
 
   await page.locator('#gb-hl-new-note').click();
   await page.locator('#gb-hl-note-text').fill('Вторая заметка текущей статьи');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
   assert.equal(await page.locator('.gb-hl-item[data-type="note"]').count(), 2);
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('gb-reader-notes-v1')).length), 2);
 
@@ -134,14 +166,17 @@ async function check(browserName, driver, url, width) {
     document.dispatchEvent(new Event('selectionchange'));
   });
   await page.locator('#ss-save').click();
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').length===2);
   const length = await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1')).length);
   assert.equal(length, 2, 'selection saved under existing quote key');
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1'))[0].url.includes('#more:~:text=')), true,
     'saved quote source points to native text fragment at its section anchor');
   await page.locator('#ss-note').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'visible'});
   assert.equal(await page.locator('#gb-hl-editor').isVisible(), true);
   await page.locator('#gb-hl-note-text').fill('Заметка к новой цитате');
   await page.locator('#gb-hl-editor button[type="submit"]').click();
+  await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
   const linked = await page.evaluate(() => JSON.parse(localStorage.getItem('gb-reader-notes-v1')).some((x) => x.quoteText && x.quoteText.includes('Достаточно')));
   assert.equal(linked, true, 'notes can attach to selected quotes');
   await page.keyboard.press('Escape');
@@ -159,7 +194,7 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'book returns to mobile bar after resize');
   assert.deepEqual(errors, [], 'no client-side JS errors');
   console.log('PASS', browserName, width, 'legacy quote/favorite data, notes, expand, search, export, selection, accessibility');
-  await browser.close();
+  } finally { await browser.close(); }
 }
 
 async function checkGbs2(name, driver, url) {
@@ -205,15 +240,438 @@ async function checkGbs2(name, driver, url) {
   }
 }
 
+
+// Exercise actual touch activation on both transient surfaces, with a controlled
+// first presenter request. Selection range setup is deterministic, not a claim
+// of OS-native long-press selection or physical Android/iOS coverage.
+async function checkTransientFocus(name,driver,base) {
+  const browser=await driver.launch({headless:true}), failures=[];
+  const cases=['close','cancel','failure','unrelated-escape','unrelated-reject','unrelated-resolve','unrelated-pointer-escape','unrelated-pointer-reject','unrelated-pointer-resolve','note-B','fab'];
+  let passes=0;
+  try {
+    for(const surface of ['native','fallback']) for(const termination of cases) {
+      const label=name+' '+surface+' '+termination;
+      const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,serviceWorkers:'block'});
+      const page=await context.newPage();
+      let release, signalRequest, requested=0, timer;
+      const gate=new Promise(resolve=>{release=resolve});
+      const requestSeen=new Promise(resolve=>{signalRequest=resolve});
+      const errors=[],moduleRequests=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      page.on('request',req=>{const path=new URL(req.url()).pathname;if(path.startsWith('/js/reader-library-'))moduleRequests.push(path);});
+      const rejected=['failure','unrelated-reject','unrelated-pointer-reject'].includes(termination);
+      const unrelated=termination.startsWith('unrelated-');
+      const pointer=termination.startsWith('unrelated-pointer-');
+      let expectedUnrelatedFocus;
+      const select=async id=>page.evaluate(id=>{
+        const range=document.createRange();range.selectNodeContents(document.getElementById(id));
+        const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+        const popup=document.getElementById('selection-share-popup');
+        if(popup){popup.classList.add('ss-visible');popup.setAttribute('aria-hidden','false');}
+        document.dispatchEvent(new Event('selectionchange'));
+      },id);
+      try {
+        await page.route('**/js/reader-library-presenter.js?*',async route=>{
+          requested++;signalRequest();await gate;
+          if(rejected) await route.abort('failed'); else await route.continue();
+        });
+        await page.goto(base+'/articles/selection-'+surface+'/',{waitUntil:'load'});
+        await page.locator('#gb-hl-fab.gb-hl-fab--docked').waitFor({state:'visible'});
+        // Cold fixture has no reading-resume state and no user selection.
+        assert.equal(moduleRequests.filter(p=>/reader-library-(selection|presenter|record-transactions|v3|research-core)\.js$/.test(p)).length,0,'cold page must not request action/presenter modules before selection');
+        await page.locator('#demo').click();
+        await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,0,'ordinary mouse click does not request selection actions');
+        await select('more');
+        const note=page.locator(surface==='native'?'#ss-note':'#gb-hl-selbar-note');
+        await note.waitFor({state:'visible'});
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,1,'first selection loads one action module');
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-presenter.js')).length,0,'selection alone does not load presenter');
+        const before=await page.evaluate(()=>scrollY);
+        await note.tap();
+        await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')==='true');
+        await Promise.race([requestSeen,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+': presenter request never intercepted')),10000);})]);
+        clearTimeout(timer);
+        assert.equal(requested,1,'one real presenter request');
+        if(unrelated){
+          if(pointer){
+            await page.locator('#qa-unrelated').click();
+            // WebKit intentionally may leave BODY focused after a pointer click.
+            expectedUnrelatedFocus=await page.evaluate(()=>document.activeElement.id);
+            assert.ok(expectedUnrelatedFocus==='qa-unrelated'||expectedUnrelatedFocus==='','pointer focus is engine-dependent');
+            assert.notEqual(await page.locator('#gb-hl-fab').getAttribute('aria-busy'),'true','unrelated pointer cancels pending before presenter returns');
+          } else {
+            await page.locator('#qa-unrelated').focus();
+            await page.waitForFunction(()=>document.activeElement?.id==='qa-unrelated');
+            expectedUnrelatedFocus='qa-unrelated';
+          }
+          if(termination.endsWith('-escape')){
+            await page.evaluate(()=>window.addEventListener('keydown',e=>{if(e.key==='Escape')window.qaEscapePrevented=e.defaultPrevented;},{once:true}));
+            await page.keyboard.press('Escape');
+            assert.equal(await page.evaluate(()=>window.qaEscapePrevented),false,'unrelated Escape not consumed');
+          }
+          const failedRequest=rejected?page.waitForEvent('requestfailed',{predicate:req=>req.url().includes('/js/reader-library-presenter.js?')}):null;
+          release();
+          if(failedRequest)await failedRequest;
+          else await page.locator('#gb-hl-backdrop[inert]').waitFor({state:'attached'});
+          await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true');
+          assert.equal(await page.evaluate(()=>document.activeElement.id),expectedUnrelatedFocus);
+          assert.equal(await page.locator('#gb-hl-panel').isVisible(),false);
+        } else if(termination==='cancel') {
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true');
+          release();
+          await page.locator('#gb-hl-backdrop[inert]').waitFor({state:'attached'});
+        } else {
+          if(termination==='note-B'){
+            await select('demo');await note.waitFor({state:'visible'});await note.tap();
+          } else if(termination==='fab') await page.locator('#gb-hl-fab').tap();
+          release();
+          if(rejected) await page.waitForFunction(()=>document.getElementById('gb-hl-toast')?.dataset.open==='true');
+          else {
+            await page.locator('#gb-hl-panel').waitFor({state:'visible'});
+            if(termination==='fab')assert.equal(await page.locator('#gb-hl-editor').isVisible(),false,'obsolete note must not open editor');
+            else {
+              await page.locator('#gb-hl-editor').waitFor({state:'visible'});
+              if(termination==='note-B')assert.match(await page.locator('#gb-hl-note-context').textContent(),/Размышление/,'latest selected text owns editor');
+            }
+            await page.locator('#gb-hl-close').tap();
+          }
+        }
+        await page.waitForFunction(()=>document.getElementById('gb-hl-fab')?.getAttribute('aria-busy')!=='true'&&!document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'));
+        const after=await page.evaluate(()=>({id:document.activeElement.id,tag:document.activeElement.tagName,scroll:scrollY,
+          visible:document.activeElement.getClientRects().length>0&&!document.activeElement.closest('[hidden],[inert],[aria-hidden="true"]'),
+          lock:document.body.classList.contains('no-scroll'),expanded:document.getElementById('gb-hl-fab').getAttribute('aria-expanded'),
+          busy:[...document.querySelectorAll('#ss-note,#gb-hl-selbar-note,#gb-hl-fab')].some(e=>e.getAttribute('aria-busy')==='true')}));
+        assert.equal(after.visible,true);assert.equal(after.lock,false);assert.equal(after.expanded,'false');assert.equal(after.busy,false);
+        if(unrelated)assert.equal(after.id,expectedUnrelatedFocus);
+        else if(termination==='fab')assert.equal(after.id,'gb-hl-fab');
+        else if(termination==='note-B')assert.equal(after.id,'demo','latest text owns return focus');
+        else assert.ok(after.id==='more'||after.tag==='H1','stable authored reading target: '+JSON.stringify(after));
+        if(!unrelated)assert.ok(Math.abs(after.scroll-before)<=1,'no scroll jump');
+        assert.equal(requested,1,'one presenter import across intents');
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-selection.js')).length,1,'warm actions reuse selection module');
+        assert.equal(moduleRequests.filter(p=>p.endsWith('/reader-library-record-transactions.js')).length,0,'opening unsaved editor must not load transaction module');
+        assert.deepEqual(errors,[]);
+        passes++;console.log('PASS',label,'transient selection focus');
+      } catch(error){failures.push(label+': '+error.message);console.error('FAIL',label,error.message);}
+      finally {clearTimeout(timer);release();await context.close();}
+    }
+  } finally {await browser.close();}
+  console.log(name+' transient focus: '+passes+'/'+(2*cases.length));
+  assert.deepEqual(failures,[],'transient focus failures');
+}
+
+// A real focused button must survive reparenting in either direction,
+// without stealing unrelated focus or focusing a newly inert destination.
+async function checkNativeDockFocus(name, driver, base) {
+  const browser = await driver.launch({headless:true});
+  try {
+    for (const mode of ['herm','gill','legacy','fallback','grok']) {
+      for (const direction of ['into','out','unrelated','same','inert']) {
+        const page = await browser.newPage({viewport:{width:390,height:844}});
+        try {
+          const fixture = base + '/__qa-dock-focus/';
+          await page.route(fixture, route => route.fulfill({contentType:'text/html',body:'<button id="other">Other</button><div id="hosts"></div><button id="gb-hl-fab">Library</button>'}));
+          await page.goto(fixture);
+          const result = await page.evaluate(async ({mode,direction}) => {
+            const {dockLibraryFab:dock} = await import('/js/reader-library-dock.js');
+            const fab=document.getElementById('gb-hl-fab'), other=document.getElementById('other');
+            const host=document.createElement('div');
+            host.className={herm:'hmbar',gill:'mobile-bottom-bar',legacy:'bottom-bar-inner',fallback:'gb-mobile-fallback-controls',grok:'hrail--grok'}[mode];
+            host.innerHTML=mode==='grok'?'<div class="hrail-bottom"></div>':mode==='herm'||mode==='gill'?'<div class="reader-mobile-action-cluster"><button data-reader-pdf>PDF</button></div>':mode==='legacy'?'<button id="barShareBtn">Share</button>':'';
+            document.getElementById('hosts').append(host);
+            if(direction==='out'||direction==='same') dock(fab);
+            (direction==='unrelated'?other:fab).focus();
+            // Retire the host without hiding it first: isolate the actual DOM move,
+            // rather than an earlier browser blur caused by CSS display:none.
+            if(direction==='out') host.className='retired-host';
+            if(direction==='inert') host.inert=true;
+            dock(fab);
+            return {focus:document.activeElement.id,expected:direction==='unrelated'?'other':direction==='inert'?'':'gb-hl-fab',host:direction==='out'?fab.parentElement===document.body:host.contains(fab)};
+          },{mode,direction});
+          assert.equal(result.focus,result.expected,name+' '+mode+' '+direction+' focus');
+          assert.equal(result.host,true,name+' '+mode+' '+direction+' host');
+        } finally { await page.close(); }
+      }
+    }
+  } finally { await browser.close(); }
+}
+
+// W73: real same-origin tabs, the actual shared Web Lock and the native
+// selection surface. No user data: all keys belong to a disposable context.
+async function checkStorageAndSelectionRaces(name,driver,base) {
+  const browser=await driver.launch({headless:true});
+  const context=await browser.newContext({viewport:{width:390,height:844}});
+  const a=await context.newPage(),b=await context.newPage(),errors=[];
+  const key='gb-reader-notes-v1',quoteKey='gb-highlights-v1';
+  const lockName='gb-library:'+key;
+  for(const page of [a,b])page.on('pageerror',e=>errors.push(e.message));
+  const url=base+'/articles/selection-native/';
+  try {
+    await a.goto(url,{waitUntil:'load'});await b.goto(url,{waitUntil:'load'});
+    for(const page of [a,b])await page.waitForFunction(()=>!!window.GBLibraryStorage&&!!window.GBHighlights&&!!navigator.locks);
+    const hold=async()=>{
+      await b.evaluate(lockName=>{
+        window.qaHeld=false;
+        window.qaLock=navigator.locks.request(lockName,()=>new Promise(resolve=>{window.qaRelease=resolve;window.qaHeld=true}));
+      },lockName);
+      await b.waitForFunction(()=>window.qaHeld===true);
+    };
+    const release=async()=>{await b.evaluate(async()=>{window.qaRelease?.();await window.qaLock;window.qaHeld=false});};
+    const queued=()=>b.waitForFunction(async name=>(await navigator.locks.query()).pending.some(lock=>lock.name===name),lockName,{timeout:2500});
+    const select=async id=>{
+      await a.evaluate(id=>{
+        const range=document.createRange();range.selectNodeContents(document.getElementById(id));
+        const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+        const popup=document.getElementById('selection-share-popup');popup.classList.add('ss-visible');popup.setAttribute('aria-hidden','false');
+        document.dispatchEvent(new Event('selectionchange'));
+      },id);
+      await a.locator('#ss-save').waitFor({state:'visible'});
+    };
+    // A completed save for the previous range must not conceal the newer popup.
+    await select('more');await hold();
+    await a.evaluate(()=>document.getElementById('ss-save').click());
+    await queued();await select('demo');await release();
+    await a.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'[]').length===1,quoteKey);
+    // Allow the old feedback timer's full deadline, then inspect the actual DOM.
+    await a.waitForTimeout(750);
+    const selected=await a.evaluate(key=>({
+      rows:JSON.parse(localStorage.getItem(key)||'[]'),
+      text:getSelection().toString(),
+      visible:document.getElementById('selection-share-popup').classList.contains('ss-visible'),
+      hidden:document.getElementById('selection-share-popup').getAttribute('aria-hidden'),
+      label:document.querySelector('#ss-save span').textContent
+    }),quoteKey);
+    assert.match(selected.rows[0].text,/Достаточно длинный/,'committed the original range');
+    assert.match(selected.text,/Размышление/,'new selection preserved');
+    assert.equal(selected.visible,true);assert.equal(selected.hidden,'false');assert.equal(selected.label,'Сохранить');
+    // A pending writer may not repopulate a collection cleared by another tab.
+    await a.evaluate(key=>localStorage.setItem(key,JSON.stringify([{id:'old',text:'old note'}])),key);
+    await hold();
+    await a.evaluate(key=>{
+      window.qaPrepareCalls=0;
+      window.qaWrite=window.GBLibraryStorage.mutateLibrary([key],stores=>{
+        window.qaPrepareCalls++;
+        return {changes:{[key]:[...stores[key],{id:'new',text:'new note'}]}};
+      });
+    },key);
+    await queued();
+    await a.evaluate(()=>{window.qaClearDelivered=false;window.addEventListener('storage',event=>{if(event.key===null&&event.storageArea===localStorage)window.qaClearDelivered=true;});});
+    await b.evaluate(()=>localStorage.clear());
+    await release();
+    const result=await a.evaluate(async key=>({result:await window.qaWrite,calls:window.qaPrepareCalls,raw:localStorage.getItem(key)}),key);
+    assert.equal(result.result.ok,false);assert.equal(result.result.reason,'storage-changed');
+    assert.equal(result.calls,0,'cancelled before preparation');assert.equal(result.raw,null,'collection was not resurrected');
+    // A fresh writer after the clear must still work, under the same owner.
+    await a.waitForFunction(()=>window.qaClearDelivered===true);
+    const fresh=await a.evaluate(async key=>({result:await window.GBLibraryStorage.mutateLibrary([key],()=>({changes:{[key]:[{id:'fresh',text:'fresh note'}]}})),raw:localStorage.getItem(key)}),key);
+    assert.equal(fresh.result.ok,true);assert.equal(JSON.parse(fresh.raw)[0].id,'fresh');
+    assert.deepEqual(errors,[]);
+    console.log('PASS',name,'same-origin storage and selection races');
+  } finally {await context.close();await browser.close();}
+}
+
+// Legacy quotations must resolve against visible authored prose only.
+// Keep actual DOM Range/CSS Highlight semantics; hidden duplicates used to
+// either paint invisible content or make a visible match look ambiguous.
+async function checkVisibleLegacy(name, driver, base) {
+  const browser=await driver.launch({headless:true});
+  try {
+    const page=await browser.newPage({viewport:{width:390,height:720}});
+    const errors=[];page.on('pageerror',err=>errors.push(err.message));
+    await page.goto(base+'/articles/sample/');
+    await page.waitForFunction(()=>!!window.GBHighlights);
+    await page.evaluate(()=>window.GBHighlights.ensureRanges());
+    const results=await page.evaluate(()=>{
+      const article=document.querySelector('article');
+      article.innerHTML=`<p id="visible">Начало. Видимая фраза. Конец.</p>
+        <p><span class="gtip">Видимая фраза</span></p>
+        <p><span hidden>Скрытая фраза А</span><span aria-hidden="true">Скрытая фраза Б</span>
+        <span inert>Скрытая фраза В</span><span style="display:none">Скрытая фраза Г</span>
+        <span style="visibility:hidden">Скрытая фраза Д</span></p>
+        <p><span role="tooltip">Скрытая фраза Е</span><span class="btip">Скрытая фраза Ж</span></p>
+        <div class="manuscript-quote--bilingual"><span class="mq-translation-russian">Русская сторона</span>
+        <details class="mq-translation-flip"><summary class="mq-translation-toggle">Переключатель языка</summary>
+        <span class="mq-translation-original">Original language</span></details></div>
+        <p><span id="edge">Граничный отрывок</span><span hidden>Скрытый хвост</span><span>Следующий текст</span></p>
+        <p>Неоднозначный фрагмент</p><p>Неоднозначный фрагмент</p>
+        <p id="overlap">Контекст абаба конец.</p>
+        <div id="ancestor"><p id="positional">Начало. Позиционный отрывок. Конец.</p></div>
+        <details id="native-details"><summary>Обычное оглавление</summary><p>Закрытое содержание</p></details>`;
+      const resolve=text=>window.GBHighlights.resolveRange({text,url:location.href},article);
+      const range=resolve('Видимая фраза');
+      const data={
+        visible:range?.toString()||null,
+        source:range?.startContainer.parentElement.id||null,
+        edge:resolve('Граничный отрывок')?.toString()||null,
+        hidden:['А','Б','В','Г','Д','Е','Ж'].map(x=>!!resolve('Скрытая фраза '+x)),
+        closedRussian:!!resolve('Русская сторона'),
+        closedOriginal:!!resolve('Original language'),
+        toggle:!!resolve('Переключатель языка'),
+        ambiguous:!!resolve('Неоднозначный фрагмент'),
+        overlapping:!!resolve('аба'),
+        overlapBefore:window.GBHighlights.resolveRange({text:'аба',before:'Контекст',url:location.href},article)?.toString()||null,
+        overlapAfter:window.GBHighlights.resolveRange({text:'аба',after:'конец.',url:location.href},article)?.toString()||null,
+        closedDetails:!!resolve('Закрытое содержание'),
+        summary:!!resolve('Обычное оглавление')
+      };
+      const block=article.querySelector('#positional'),parent=block.parentElement;
+      const selected=document.createRange();selected.selectNodeContents(block);
+      block.scrollIntoView({block:'center'});
+      const sel=window.getSelection();sel.removeAllRanges();sel.addRange(selected);
+      const saved=window.GBReaderAnchors.capture(article);
+      sel.removeAllRanges();
+      if(!saved)throw Error('failed to capture visible positional fixture');
+      const positional=()=>!!window.GBReaderAnchors.resolve(article,saved.anchor);
+      data.visiblePositional=positional();
+      block.hidden=true;data.hiddenRoot=positional();block.hidden=false;
+      parent.setAttribute('aria-hidden','true');data.hiddenAncestor=positional();parent.removeAttribute('aria-hidden');
+      parent.style.display='none';data.displayAncestor=positional();parent.style.display='';
+      parent.inert=true;data.inertAncestor=positional();parent.inert=false;
+      data.restoredPositional=positional();
+      const details=article.querySelector('#native-details');
+      details.open=true;data.openDetails=!!resolve('Закрытое содержание');details.open=false;
+      article.querySelector('details').open=true;
+      data.openRussian=!!resolve('Русская сторона');
+      data.openOriginal=!!resolve('Original language');
+      return data;
+    });
+    assert.deepEqual(results,{
+      visible:'Видимая фраза',source:'visible',edge:'Граничный отрывок',hidden:Array(7).fill(false),
+      closedRussian:true,closedOriginal:false,toggle:false,ambiguous:false,
+      openRussian:false,openOriginal:true,
+      overlapping:false,overlapBefore:'аба',overlapAfter:'аба',
+      closedDetails:false,summary:true,openDetails:true,
+      visiblePositional:true,hiddenRoot:false,hiddenAncestor:false,displayAncestor:false,inertAncestor:false,restoredPositional:true
+    });
+    assert.deepEqual(errors,[]);
+    console.log('PASS',name,'legacy visible projection');
+  }finally{await browser.close();}
+}
+
+async function checkColdRanges(name,driver,base) {
+  const browser=await driver.launch({headless:true});
+  try {
+    for(const argon of [false,true]){
+      const context=await browser.newContext({viewport:{width:argon?1440:390,height:844}});
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      let release,started,rangeRequests=0;
+      const gate=new Promise(r=>release=r),request=new Promise(r=>started=r);
+      await page.route('**/js/reader-library-ranges.js?*',async route=>{
+        rangeRequests++;started();await gate;await route.continue();
+      });
+      try{
+        await page.goto(base+(argon?'/articles/selection-argon/':'/articles/selection-fallback/'));
+        await page.locator('#gb-hl-fab').waitFor();
+        if(argon)await page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
+        // Allow the normal scheduled startup repaint to run on a clean page.
+        await page.waitForTimeout(1100);
+        assert.equal(rangeRequests,0,'clean reader does not fetch range runtime');
+        assert.equal(await page.evaluate(()=>!!window.GBReaderAnchors),false);
+        const select=id=>page.evaluate(id=>{
+          const p=document.getElementById(id),range=document.createRange();
+          range.selectNodeContents(p);
+          const selection=window.getSelection();
+          selection.removeAllRanges();selection.addRange(range);
+          document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+          return range.toString();
+        },id);
+        let expected=await select('demo');
+        await Promise.race([request,page.waitForTimeout(5000).then(()=>{throw Error('range request not started')})]);
+        assert.equal(rangeRequests,1);
+        if(argon){
+          await page.keyboard.press('Escape');
+          release();
+          await page.waitForFunction(()=>!!window.GBReaderAnchors);
+          await page.waitForTimeout(200);
+          assert.equal(await page.locator('#npW57SelectionToolbar').isVisible(),false,'Escape cancels deferred first gesture');
+          expected=await select('more');
+          await page.locator('#npW57SelectionToolbar').waitFor({state:'visible'});
+          await page.locator('[data-w57-action=quote]').click();
+        }else{
+          release();
+          await page.locator('#gb-hl-selbar[data-open=true]').waitFor({state:'visible'});
+          await page.locator('#gb-hl-selbar-quote').click();
+        }
+        await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').length===1);
+        const row=await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1'))[0]);
+        assert.equal(row.text,expected);
+        assert.equal(row.annotation?.version,1,'first selection must retain positional identity');
+        assert.equal(row.annotation.anchor.exact,expected);
+        assert.equal(rangeRequests,1,'one module instance across native and ARGON actions');
+        assert.deepEqual(errors,[]);
+        console.log('PASS',name,argon?'ARGON cancelled cold gesture and new exact selection':'native first cold gesture exact selection');
+      }finally{release();await context.close()}
+    }
+  }finally{await browser.close()}
+}
+
+async function checkPrintLock(name,driver,base){
+  const browser=await driver.launch({headless:true});
+  const context=await browser.newContext({viewport:{width:390,height:844}});
+  const page=await context.newPage(),errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  try{
+    await page.goto(base+'/articles/print-lock/');
+    await page.locator('#gb-hl-fab').click();
+    await page.locator('#gb-hl-new-note').click();
+    const draft=page.locator('#gb-hl-note-text');
+    await draft.fill('Private draft witness');
+    await draft.evaluate(el=>{el.focus();el.setSelectionRange(2,7)});
+    const state=()=>page.evaluate(()=>{
+      const root=document.documentElement,body=document.body,area=document.getElementById('gb-hl-note-text');
+      return {locked:root.getAttribute('data-scroll-locked'),position:body.style.position,
+        owner:window.OverlayRuntime.topLayer()?.ownerId||null,open:document.getElementById('gb-hl-backdrop').classList.contains('is-open'),
+        focus:document.activeElement?.id,draft:area.value,caret:[area.selectionStart,area.selectionEnd]};
+    });
+    const before=await state();
+    assert.equal(before.locked,'1');
+    assert.equal(before.owner,'reader-library','library must register the print-suspendable owner');
+    for(let i=0;i<2;i++){
+      const outcome=await page.evaluate(()=>window.SiteUtils.suspendScrollForPrint());
+      assert.equal(outcome.ok,true,JSON.stringify(outcome));
+      const during=await state();
+      assert.equal(during.locked,null);assert.notEqual(during.position,'fixed');
+      assert.equal(during.open,true);assert.equal(during.draft,before.draft);
+      assert.equal(during.focus,before.focus);assert.deepEqual(during.caret,before.caret);
+      await page.evaluate(()=>window.SiteUtils.resumeScrollAfterPrint());
+      assert.deepEqual(await state(),before,'exact editor/lock restoration');
+    }
+    await page.keyboard.press('Escape');
+    assert.equal((await state()).open,true,'first Escape closes editor only');
+    await page.keyboard.press('Escape');
+    await page.locator('#gb-hl-backdrop.is-open').waitFor({state:'detached'});
+    assert.equal((await state()).locked,null);
+    await page.locator('#gb-hl-fab').click();
+    await page.locator('#gb-hl-backdrop.is-open').waitFor();
+    await page.evaluate(()=>window.OverlayRuntime.forceRecover('force'));
+    assert.equal((await state()).open,false,'external layer recovery reconciles mounted owner');
+    assert.equal((await state()).locked,null);
+    assert.deepEqual(errors,[]);
+    console.log('PASS',name,'library print suspension, draft/caret, nested Escape, external recovery');
+  }finally{await context.close();await browser.close()}
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const url = 'http://127.0.0.1:' + server.address().port + '/articles/sample/';
   try {
+    const failures=[];let passed=0,total=0;
+    const run=async(label,fn)=>{total++;try{await fn();passed++;}catch(error){failures.push(label+': '+error.message);console.error('FAIL',label,error.message);}};
     for (const [name, browser] of [['chromium', chromium], ['firefox', firefox], ['webkit', webkit]]) {
-      for (const width of [320, 390]) await check(name, browser, url, width);
-      await checkGbs2(name, browser, url.replace('/articles/sample/', '/baptisty-rossii/'));
+      for (const width of [320, 390]) await run(name+' '+width,()=>check(name,browser,url,width));
+      await run(name+' GBS2',()=>checkGbs2(name,browser,url.replace('/articles/sample/','/baptisty-rossii/')));
+      if(name!=='firefox') await run(name+' transient focus',()=>checkTransientFocus(name,browser,new URL(url).origin));
+      await run(name+' native dock focus',()=>checkNativeDockFocus(name,browser,new URL(url).origin));
+      await run(name+' storage and selection races',()=>checkStorageAndSelectionRaces(name,browser,new URL(url).origin));
+      await run(name+' legacy visible projection',()=>checkVisibleLegacy(name,browser,new URL(url).origin));
+      await run(name+' cold range readiness',()=>checkColdRanges(name,browser,new URL(url).origin));
+      await run(name+' print lock ownership',()=>checkPrintLock(name,browser,new URL(url).origin));
     }
-    console.log('✅ Reader Library browser integration: 6 end-to-end passes');
+    console.log('Reader Library browser groups: '+passed+'/'+total);
+    assert.deepEqual(failures,[],'browser integration failures');
   } finally { server.close(); }
 })().catch((error) => { console.error(error); process.exitCode = 1; server.close(); });

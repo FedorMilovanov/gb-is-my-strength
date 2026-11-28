@@ -4,10 +4,13 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium, firefox, webkit } from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 
 const ROOT=path.resolve('.');
 const DIST=path.join(ROOT,'dist');
 const ROUTE='/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
+const READING_KEY=ROUTE.replace(/\/+$/,'');
+const LIBRARY_KEYS=['gb-highlights-v1','gb-reader-notes-v1','gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
 const doc=path.join(DIST,ROUTE.replace(/^\/+|\/+$/g,''),'index.html');
 assert.ok(fs.existsSync(doc),'production-like dist must exist');
 assert.match(fs.readFileSync(doc,'utf8'),/<aside\s+class="hrail hrail--grok"/,'expected pilot ON');
@@ -59,21 +62,32 @@ try {
    await isolateAnalytics(page);
    page.on('pageerror',e=>errors.push(e.message));
    const action=name=>page.locator('[data-research-action="'+name+'"]');
-   const getStatus=()=>page.evaluate(()=>{
+   const getStatus=()=>page.evaluate(key=>{
     const records=JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}');
-    const selected=Object.entries(records).find(([path])=>path.includes('hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki'));
-    return {key:selected?.[0]??null,state:selected?.[1]?.state??null,anchor:selected?.[1]?.anchor??null};
-   });
+    const record=records[key];
+    return {key:record?key:null,state:record?.state??null,anchor:record?.anchor??null};
+   },READING_KEY);
+   const rawLibrary=()=>page.evaluate(keys=>Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)])),LIBRARY_KEYS);
+   const waitForResult=message=>page.waitForFunction(expected=>{
+    const status=document.getElementById('gb-hl-status');
+    return !!status && status.classList.contains('is-visible') &&
+     !status.classList.contains('is-error') && status.textContent.trim()===expected;
+   },message,{timeout:10000});
    try{
-    await page.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+    await gotoNativeReader(page,origin+ROUTE,{waitUntil:'domcontentloaded'});
     await page.locator('.hrail--grok.grok-ready').waitFor();
     await page.locator('#gb-hl-fab').click();
     await action('start-current').waitFor();
     verify(engine,'original Library V3 offers save on real article',await action('start-current').count()===1);
+    const empty=await getStatus();
+    verify(engine,'fresh context has no preexisting reading status',empty.key===null,empty);
     await action('start-current').click();
+    // The UI only announces success and replaces the action after the
+    // canonical Web Locks mutation has committed. Do not sample on click return.
+    await waitForResult('Материал добавлен в «Читаю».');
+    await action('finish-current').waitFor({timeout:10000});
     const saved=await getStatus();
-    verify(engine,'explicit reading start persists',saved.state==='reading',saved);
-    await action('finish-current').waitFor();
+    verify(engine,'explicit reading start persists',saved.key===READING_KEY&&saved.state==='reading'&&typeof saved.anchor==='string',saved);
     verify(engine,'status action becomes Finish',await action('finish-current').count()===1);
     await action('manage').click();
     const [download]=await Promise.all([page.waitForEvent('download',{timeout:10000}),action('export-json').click()]);
@@ -90,12 +104,20 @@ try {
     await page.locator('#gb-hl-json-file').setInputFiles({
       name:'grok-qa-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))
     });
+    // The record already exists, so a read immediately after clicking could
+    // pass even if import failed. Witness actual successful completion first.
+    await action('confirm-import').waitFor({state:'visible'});
+    const beforeImport=await rawLibrary();
     await action('confirm-import').click();
+    await waitForResult('Импорт завершён без замены существующих записей.');
+    await page.locator('#gb-hl-import-confirm').waitFor({state:'hidden',timeout:10000});
     const reimported=await getStatus();
-    verify(engine,'backup restore is idempotent',reimported.state==='reading',reimported);
+    const afterImport=await rawLibrary();
+    verify(engine,'backup restore is idempotent',reimported.key===READING_KEY&&reimported.state==='reading',reimported);
+    verify(engine,'completed idempotent import preserves all six raw stores',LIBRARY_KEYS.every(key=>afterImport[key]===beforeImport[key]),LIBRARY_KEYS.filter(key=>afterImport[key]!==beforeImport[key]));
     verify(engine,'no runtime errors',errors.length===0,errors);
     console.log('PASS',engine,JSON.stringify({saved,restored,reimported}));
-    result.push({engine,saved,restored,reimported,checks:9});
+    result.push({engine,saved,restored,reimported,checks:11});
    }finally{await page.close();await context.close();}
   }finally{await browser.close();}
  }

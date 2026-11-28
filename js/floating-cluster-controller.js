@@ -15,6 +15,16 @@
 (function () {
   'use strict';
 
+  /* SSR-значение подписи «Сейчас читаете» (#gbs2MobSec) из серии-конфига:
+     «Часть II. Учёный», «Двустороннее зеркало» и т.д. Снимаем его на этапе
+     разбора скрипта — раньше, чем любая прокрутка или соседний скрипт успеют
+     перезаписать текст. Нужно как честный фолбэк: до первого заголовка
+     подпись не должна подменяться литералом «Введение» на каждой странице. */
+  var MOB_SEC_INITIAL = (function () {
+    var el = document.getElementById('gbs2MobSec');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  })();
+
   var THEME_KEY = 'theme';
   var toastTimer = null;
   /* True on devices with a real hover pointer (desktop/trackpad). Drives the
@@ -178,13 +188,18 @@
     return window.GBFavoriteStore || null;
   }
 
-  function saveCurrent(btn) {
+  async function saveCurrent(btn) {
     var store = favoriteStore();
     if (!store || typeof store.toggle !== 'function') {
       showToast('Избранное пока недоступно', false);
       return;
     }
-    var result = store.toggle({ path: location.pathname }, { source: 'floating-cluster' });
+    if (saveCurrent.busy) return;
+    saveCurrent.busy = true;
+    var result;
+    try { result = await store.toggle({ path: location.pathname }, { source: 'floating-cluster' }); }
+    catch (_) { result = { error: 'storage-write-failed' }; }
+    finally { saveCurrent.busy = false; }
     if (typeof store.syncButtons === 'function') store.syncButtons();
     if (result && result.error) {
       // GBS-FAVORITES-WRITE-FAILURE-IGNORED: отказ записи (напр. QuotaExceededError)
@@ -201,14 +216,14 @@
   // Backward-compatible public facade. Persistence, metadata and events
   // remain exclusively owned by GBFavoriteStore; this adapter only maps
   // the historical Boolean API to canonical mutations.
-  function setSaved(saved) {
+  async function setSaved(saved) {
     var store = favoriteStore();
     if (!store) return null;
     var path = location.pathname;
     var options = { source: 'floating-cluster-api' };
-    var result = saved
+    var result = await (saved
       ? (typeof store.add === 'function' ? store.add({ path: path }, options) : null)
-      : (typeof store.remove === 'function' ? store.remove(path, options) : null);
+      : (typeof store.remove === 'function' ? store.remove(path, options) : null));
     if (typeof store.syncButtons === 'function') store.syncButtons();
     return result;
   }
@@ -319,7 +334,7 @@
   }
 
   var _voskEngineScriptPromise = null;
-  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=8a878744';
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=2f4a99f4';
   var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=a72ba924';
   var fallbackTtsNoticeTimer = null;
 
@@ -1602,6 +1617,7 @@
     var partToc = qs('#partTocOverlay');
     var mobTocBtn = qs('#mobTocBtn');
     var mobPartTocBtn = qs('#mobPartTocBtn');
+    var topResearchBtns = qsa('[data-gill-marginalia-open]');
     var backToSeries = qs('#backToSeries');
 
     [seriesToc, partToc].forEach(function(overlay) {
@@ -1614,7 +1630,6 @@
     var GILL_OVERLAY_OWNERS = {
       seriesTocOverlay: 'gill-series-toc',
       partTocOverlay: 'gill-part-toc',
-      gillLearningOverlay: 'gill-learning',
       gillSettingsOverlay: 'gill-settings'
     };
 
@@ -1684,8 +1699,22 @@
         e.stopPropagation();
         closeOverlay(seriesToc, 'switch', false);
         openOverlay(partToc, e.currentTarget);
+        partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'toc' } }));
       });
     }
+    // Top research uses the exact same modal owner as lower TOC: one sheet.
+    topResearchBtns.forEach(function (btn) {
+      if (!partToc) return;
+      addCleanListener(btn, 'click', function (e) {
+        e.preventDefault();
+        closeOverlay(seriesToc, 'switch', false);
+        openOverlay(partToc, e.currentTarget, {
+          focusTarget: partToc.querySelector('[data-gbr-tab="research"]')
+        });
+        btn.setAttribute('aria-expanded','true');
+        partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'research' } }));
+      });
+    });
 
     // Hardening against a stuck-open sheet rendering with the WRONG (mobile
     // vs desktop) chrome after a viewport crossing (window resize/rotate
@@ -1693,14 +1722,39 @@
     // Gill sheet on breakpoint cross. Cheap and universal — protects every
     // series (Gill/Сердце/Баптисты/pastor) and every future one, not just
     // the two overlays audited today.
-    var deskMq = window.matchMedia && window.matchMedia('(min-width:64em)');
+    // Native Gill chrome switches at 85em (not the earlier 64em
+    // typography/rail-detail breakpoint). Keep the subscription in the
+    // controller's cleanup registry so a re-init cannot retain old owners.
+    var deskMq = window.matchMedia && window.matchMedia('(min-width:85em)');
     if (deskMq && deskMq.addEventListener) {
-      deskMq.addEventListener('change', function () {
-        qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open').forEach(function (ov) {
-          closeOverlay(ov, 'breakpoint', false);
+      addCleanListener(deskMq, 'change', function () {
+        var active = document.activeElement;
+        var opened = [seriesToc, partToc, settingsOverlay].filter(function (ov) {
+          return ov && ov.classList.contains('is-open');
         });
-        qsa('[aria-expanded="true"][data-gill-settings-open], #mobLearningBtn[aria-expanded="true"]')
-          .forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+        var lostFocus = !active || active === document.body || active === document.documentElement;
+        var focusOwner = opened.find(function (ov) { return active && ov.contains(active); });
+        // A browser may already have dropped focus when the old opener
+        // becomes display:none. Recover only for an unambiguous open sheet.
+        if (!focusOwner && lostFocus && opened.length === 1) focusOwner = opened[0];
+        opened.forEach(function (ov) {
+          if (ov === settingsOverlay) closeGillSheet(ov, false, 'breakpoint');
+          else closeOverlay(ov, 'breakpoint', false);
+        });
+        if (!focusOwner) return;
+        var runtime = getOverlayRuntime();
+        if (runtime && runtime.topLayer && runtime.topLayer()) return;
+        var current = document.activeElement;
+        if (current && current !== document.body && current !== document.documentElement &&
+            !focusOwner.contains(current)) return;
+        var target = focusOwner === settingsOverlay
+          ? qs(deskMq.matches ? '#railSettingsBtn' : '#mobSettingsBtn')
+          : (deskMq.matches ? qs('#gbsTocToggle') : (mobPartTocBtn || mobTocBtn));
+        if (target && target.isConnected && target.getClientRects().length &&
+            !target.disabled && !target.closest('[inert],[hidden],[aria-hidden="true"]') &&
+            getComputedStyle(target).visibility === 'visible' && target.focus) {
+          try { target.focus({ preventScroll: true }); } catch (_) {}
+        }
       });
     }
 
@@ -1752,22 +1806,17 @@
     // is driven centrally by updateScrollProgress() below — no separate
     // listener needed here (avoids two writers racing on the same nodes).
 
-    // ── Learning & Settings sheets (Gill mobile v5) ──────────────────────
-    // Additive: only present on routes that ship GillLearningSheet.astro /
-    // GillReaderSettingsSheet.astro (the 6 Gill mobile routes). Reuses the
-    // same openOverlay/closeOverlay primitives as series/part above, so
-    // Hermenevtika/GillContext (which use .toc-overlay for OTHER ids) are
-    // completely unaffected — these selectors simply don't match there.
-    var learningOverlay = qs('#gillLearningOverlay');
+    // Single Settings sheet; research/study live only in native Analytics.
     var settingsOverlay = qs('#gillSettingsOverlay');
-    var mobLearningBtn = qs('#mobLearningBtn');
     // Settings sheet can now have TWO triggers (mobile bottom-bar gear +
     // desktop rail-foot gear) — both carry [data-gill-settings-open], so we
     // bind every match instead of a single #mobSettingsBtn id. Opening/closing
     // syncs aria-expanded on ALL triggers at once (only one is visible at a
     // given viewport width, but keeping both in sync is free and correct).
     var settingsBtns = qsa('[data-gill-settings-open]');
-    var extraOverlays = [learningOverlay, settingsOverlay].filter(function(el) { return !!el; });
+    var settingsOpener = null;
+    var settingsFocusGeneration = 0;
+    var extraOverlays = [settingsOverlay].filter(function(el) { return !!el; });
 
     extraOverlays.forEach(function(overlay) {
       if (!overlay.classList.contains('is-open')) overlay.setAttribute('aria-hidden', 'true');
@@ -1776,41 +1825,51 @@
     });
 
     function triggersFor(overlay) {
-      if (overlay === learningOverlay) return mobLearningBtn ? [mobLearningBtn] : [];
       if (overlay === settingsOverlay) return settingsBtns;
       return [];
     }
     function openGillSheet(overlay, triggers, opener) {
       if (!overlay) return;
+      var generation = ++settingsFocusGeneration;
       var focusable = overlay.querySelector('input, button:not([data-overlay-close]):not(.toc-sheet__handle)');
       openOverlay(overlay, opener || (triggers && triggers[0]), {
         focusTarget: focusable,
         onRequestClose: function(reason) { closeGillSheet(overlay, true, reason); }
       });
       (triggers || []).forEach(function(t) { t.setAttribute('aria-expanded', 'true'); });
-      if (!getOverlayRuntime() && focusable) setTimeout(function() { try { focusable.focus(); } catch(_) {} }, 20);
+      if (!getOverlayRuntime() && focusable) setTimeout(function() {
+        // A delayed legacy focus task must not target a dismissed sheet.
+        if (generation !== settingsFocusGeneration || getOverlayRuntime() ||
+            !overlay.classList.contains('is-open') || settingsOpener !== opener) return;
+        // Focus may already have been deliberately moved inside this sheet.
+        if (overlay.contains(document.activeElement)) return;
+        try { focusable.focus({ preventScroll: true }); } catch(_) {}
+      }, 20);
     }
     function closeGillSheet(overlay, restoreFocus, reason) {
       if (!overlay) return;
+      ++settingsFocusGeneration;
       var triggers = triggersFor(overlay);
       closeOverlay(overlay, reason || 'programmatic', restoreFocus !== false);
       triggers.forEach(function(t) { t.setAttribute('aria-expanded', 'false'); });
-      if (!getOverlayRuntime() && restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
+      var actualOpener = settingsOpener;
+      settingsOpener = null;
+      // OverlayRuntime already restores its own opener. The legacy fallback
+      // must use the same real initiating button, never the first DOM match.
+      if (!getOverlayRuntime() && restoreFocus && actualOpener &&
+          actualOpener.isConnected && actualOpener.getClientRects().length &&
+          !actualOpener.closest('[inert],[hidden],[aria-hidden="true"]') &&
+          getComputedStyle(actualOpener).visibility !== 'hidden' && actualOpener.focus) {
+        try { actualOpener.focus({ preventScroll: true }); } catch(_) {}
+      }
     }
 
-    if (mobLearningBtn && learningOverlay) {
-      addCleanListener(mobLearningBtn, 'click', function(e) {
-        e.preventDefault();
-        closeGillSheet(settingsOverlay, false, 'switch');
-        openGillSheet(learningOverlay, [mobLearningBtn], e.currentTarget);
-      });
-    }
     if (settingsBtns.length && settingsOverlay) {
       settingsBtns.forEach(function(btn) {
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
-          closeGillSheet(learningOverlay, false, 'switch');
-          openGillSheet(settingsOverlay, settingsBtns, e.currentTarget);
+          settingsOpener = e.currentTarget;
+          openGillSheet(settingsOverlay, settingsBtns, settingsOpener);
         });
       });
     }
@@ -1824,6 +1883,7 @@
       var handle = overlay.querySelector('.toc-sheet__handle');
       if (handle) addCleanListener(handle, 'click', function() { closeGillSheet(overlay, true, 'handle'); });
       overlay.querySelectorAll('[data-overlay-close]').forEach(function(btn) {
+        if (btn === handle) return; // The handle already has its own close listener.
         addCleanListener(btn, 'click', function() { closeGillSheet(overlay, true, 'button'); });
       });
       // Focus trap while this sheet is open.
@@ -1843,7 +1903,6 @@
       addCleanListener(document, 'keydown', function(e) {
         if (getOverlayRuntime() || e.key !== 'Escape') return;
         if (settingsOverlay && settingsOverlay.classList.contains('is-open')) closeGillSheet(settingsOverlay, true, 'escape');
-        else if (learningOverlay && learningOverlay.classList.contains('is-open')) closeGillSheet(learningOverlay, true, 'escape');
       });
     }
   }
@@ -2303,7 +2362,8 @@
       });
       if (badge) {
         var label = currentRate + '×';
-        badge.textContent = label;
+        var speedFace = badge.querySelector('.reader-mobile-speed-chip') || badge;
+        speedFace.textContent = label;
         badge.setAttribute('aria-label', 'Скорость озвучки ' + label);
       }
     }
@@ -2316,7 +2376,7 @@
     // The inline rail temporarily replaces the leading navigation in the
     // same 44px-high top bar; never leave faded controls keyboard-focusable.
     var leadingControls = Array.prototype.slice.call(
-      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger')
+      root.querySelectorAll('#mobBackBtn, #mobHomeBtn')
     );
     function setOpen(next) {
       clearTimeout(foldTimer);
@@ -2494,6 +2554,8 @@
     function openSheet(opener) {
       if (!sheet || sheet.classList.contains('gbs2-open')) return;
       sheet.setAttribute('aria-hidden', 'false');
+      sheet.removeAttribute('inert');
+      if (bbar) bbar.setAttribute('aria-expanded', 'true');
       sheet.style.display = 'block';
       sheet.classList.add('gbs2-open');
       var runtime = window.OverlayRuntime;
@@ -2501,7 +2563,7 @@
         runtime.open(GBS2_OVERLAY_OWNER, {
           element: sheet,
           opener: opener || document.activeElement,
-          focusTarget: sheet.querySelector('[data-gbs2-close], [data-gbs2-tab], a[href], button'),
+          focusTarget: sheet.querySelector('button[data-gbs2-close]') || sheet.querySelector('[data-gbs2-tab], a[href], button'),
           onRequestClose: function(reason) { closeSheet(reason, true); },
           closeOnEscape: true,
           trapFocus: true,
@@ -2514,16 +2576,19 @@
     }
     function closeSheet(reason, restoreFocus) {
       if (!sheet) return;
-      sheet.setAttribute('aria-hidden', 'true');
-      sheet.classList.remove('gbs2-open');
-      sheet.style.display = '';
+      if (bbar) bbar.setAttribute('aria-expanded', 'false');
       var runtime = window.OverlayRuntime;
       if (runtime && typeof runtime.close === 'function') {
         runtime.close(GBS2_OVERLAY_OWNER, reason || 'programmatic', { restoreFocus: restoreFocus !== false });
       } else {
         var utils = window.SiteUtils;
         if (utils && typeof utils.unlockScroll === 'function') utils.unlockScroll(GBS2_OVERLAY_OWNER);
+        if (restoreFocus !== false && bbar && sheet.contains(document.activeElement)) bbar.focus({ preventScroll: true });
       }
+      sheet.setAttribute('aria-hidden', 'true');
+      sheet.setAttribute('inert', '');
+      sheet.classList.remove('gbs2-open');
+      sheet.style.display = '';
     }
 
     // Bottom bar opens sheet
@@ -2722,7 +2787,25 @@
       toast.innerHTML = '<span><small>Вы здесь были</small>Вы остановились на ' + Math.round(saved.progress) + '%</span>' +
         '<button type="button" class="gbs2-resume-go">Продолжить</button>' +
         '<button type="button" class="gbs2-resume-x" aria-label="Скрыть">×</button>';
-      document.body.appendChild(toast);
+      // On a phone the previous 6.5s fixed prompt covered the opening
+      // paragraph. Place the resume choice in normal article flow instead:
+      // it stays available until acted upon, without a timed layout shift.
+      // Tablets and desktop retain their existing floating prompt behavior.
+      var inlineArticle = window.matchMedia && window.matchMedia('(max-width:767px)').matches
+        ? qs('[data-gill-v16] article.article-body') : null;
+      var inlineResume = !!(inlineArticle && inlineArticle.parentNode);
+      if (inlineResume) {
+        toast.classList.add('gbs2-resume-inline');
+        // Compact 320px copy: never let a long label overlap its action.
+        var resumeProgress = Math.round(saved.progress);
+        toast.querySelector('span').lastChild.textContent =
+          (window.matchMedia('(max-width:360px)').matches ? 'На ' : 'Место: ') + resumeProgress + '%';
+        toast.querySelector('span').setAttribute('aria-label',
+          'Вы остановились на ' + resumeProgress + '% статьи');
+        inlineArticle.parentNode.insertBefore(toast, inlineArticle);
+      } else {
+        document.body.appendChild(toast);
+      }
       // B13: acknowledge on SHOW, not only in hide() — BookmarkEngine's
       // #bookmarkToast (900ms delay) shares this flag; whoever shows first
       // must win, or both prompts can appear on one page.
@@ -2740,8 +2823,12 @@
         hide(false);
       });
       toast.querySelector('.gbs2-resume-x').addEventListener('click', function () { hide(true); });
-      setTimeout(function () { toast.classList.add('gbs2-on'); }, 900);
-      hideT = setTimeout(function () { hide(false); }, 6500);
+      if (inlineResume) {
+        toast.classList.add('gbs2-on');
+      } else {
+        setTimeout(function () { toast.classList.add('gbs2-on'); }, 900);
+        hideT = setTimeout(function () { hide(false); }, 6500);
+      }
     }
 
     function renderReaderState(reader) {
@@ -2766,6 +2853,18 @@
       }
       var mobPctEl = qs('#gbs2MobPct');
       if (mobPctEl) mobPctEl.textContent = pct + '%';
+      // Project the article percentage, not the section ordinal or series progress.
+      var tocProgress = qs('#partTocOverlay [data-reader-toc-progress]');
+      if (tocProgress) {
+        var progressBar = tocProgress.querySelector('[role="progressbar"]');
+        if (progressBar && progressBar.getAttribute('aria-valuenow') !== String(pct)) {
+          progressBar.setAttribute('aria-valuenow', String(pct));
+          var progressFill = progressBar.querySelector('i');
+          var progressValue = tocProgress.querySelector('[data-reader-toc-pct]');
+          if (progressFill) progressFill.style.width = pct + '%';
+          if (progressValue) progressValue.textContent = pct + '%';
+        }
+      }
       var mobArticleRing = qs('#gbs2MobArticleRing');
       if (mobArticleRing) {
         var articleCirc = 2 * Math.PI * 12.5;
@@ -2779,7 +2878,18 @@
       var mobDualBtn = qs('#gbs2DualProgress');
       if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
       var mobSec = qs('#gbs2MobSec');
-      if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
+      if (mobSec) {
+        /* js/reader-state.js отдаёт title «Введение» как заглушку для фазы
+           before-content (и для «активного раздела нет»), а не как имя части.
+           Раньше эта заглушка уходила прямо в подпись, и на каждой странице
+           серии нижняя панель писала «Сейчас читаете: Введение» — в том числе
+           на «Части II. Учёный» и на не-гилловских сериях. Пока активного
+           раздела нет, держим собственную часть статьи из SSR. */
+        var hasActiveSection = Number(reader.sectionIndex) >= 0 && !!reader.sectionTitle;
+        var label = hasActiveSection ? reader.sectionTitle : (MOB_SEC_INITIAL || 'Начало части');
+        if (phase === 'after-content') label = 'Завершено';
+        mobSec.textContent = label;
+      }
 
       // Cover media now uses intrinsic image geometry across reader series.
       // Only the decorative numeral remains kinetic; moving the image could
@@ -2804,15 +2914,18 @@
         // rail is a curated subset and may target a paragraph. Derive the rail
         // index from its own real targets and the shared scroll snapshot instead
         // of requiring reader.sectionId to be one of the represented rows.
-        // 140px is the canonical Gill anchor offset used by rail navigation and
-        // the pre-v16 live traversal contract.
-        var railLine = scrollY + 140;
+        // Preserve the historical reading line, but native fragment navigation
+        // also applies scroll-padding plus the individual target's scroll-margin.
+        // A target at that resting position must not leave its predecessor active.
+        var scrollRoot = document.scrollingElement || document.documentElement;
+        var scrollPadding = parseFloat(getComputedStyle(scrollRoot).scrollPaddingTop) || 0;
         var activeIdx = phase === 'after-content' ? represented.length - 1 : 0;
         if (phase !== 'before-content' && phase !== 'after-content') {
           for (var ri = 0; ri < represented.length; ri++) {
             var targetTop = represented[ri].target.getBoundingClientRect().top + (window.scrollY || 0);
+            var scrollMargin = parseFloat(getComputedStyle(represented[ri].target).scrollMarginTop) || 0;
+            var railLine = scrollY + Math.max(140, scrollPadding + scrollMargin);
             if (targetTop <= railLine + 2) activeIdx = ri;
-            else break;
           }
         }
         represented.forEach(function (row, idx) {
@@ -2927,14 +3040,6 @@
         }
       }
 
-      var partItems = qsa('.toc-part-item');
-      var partActiveIdx = -1;
-      partItems.forEach(function (el, idx) {
-        if (el.classList.contains('is-active') || el.classList.contains('is-current')) partActiveIdx = idx;
-      });
-      var partPct = partActiveIdx >= 0 ? Math.round(((partActiveIdx + 1) / Math.max(1, partItems.length)) * 100) : pct;
-      var scrollBar = qs('.toc-sheet__scroll-bar i');
-      if (scrollBar) scrollBar.style.width = partPct + '%';
     }
 
     if (readerState && readerState.configure && readerState.subscribe) {
@@ -3095,7 +3200,7 @@
      close button (keeps focus-restore and scroll-unlock paths intact). --- */
   (function initSheetSwipe() {
     var SCROLL_SELS = '.toc-sheet__list, .toc-sheet__body, .hmsheet-list, .btoc-nav';
-    var startY = 0, panel = null, active = false;
+    var startX = 0, startY = 0, panel = null, active = false;
 
     function findPanel(target) {
       if (!target || !target.closest) return null;
@@ -3119,11 +3224,14 @@
       if (!e.touches || e.touches.length !== 1) return;
       var p = findPanel(e.target);
       if (!p || scrollerBlocked(p, e.target)) return;
-      panel = p; startY = e.touches[0].clientY; active = true;
+      panel = p; startX = e.touches[0].clientX; startY = e.touches[0].clientY; active = true;
     }, { passive: true });
     document.addEventListener('touchmove', function (e) {
       if (!active || !panel || !e.touches || e.touches.length !== 1) return;
       var dy = e.touches[0].clientY - startY;
+      var dx = Math.abs(e.touches[0].clientX - startX);
+      if (dx > 8 && dx >= Math.abs(dy)) { reset(); return; }
+      if (dy < 8 || dy < dx * 1.4) return;
       if (dy <= 0) { panel.style.transform = ''; return; }
       e.preventDefault();
       panel.style.transition = 'none';
@@ -3134,7 +3242,7 @@
       var dy = (e.changedTouches && e.changedTouches[0].clientY - startY) || 0;
       var p = panel;
       reset();
-      if (dy > 80) {
+      if (dy > 80 && dy > Math.abs(e.changedTouches[0].clientX - startX) * 1.4) {
         var closer = p.querySelector('[data-overlay-close], .toc-sheet__handle, .hmsheet-close, .btoc-close');
         if (closer) closer.click();
       }
@@ -3170,16 +3278,9 @@
     function inContent(target) {
       return Boolean(target && target.closest && target.closest('article, main, [data-pagefind-body]'));
     }
-    function wantsHijack(target, wantLeft) {
-      // Never steal a swipe from a region that scrolls horizontally itself
-      // (tables, code blocks, rails).
-      var el = target;
-      while (el && el !== document.body) {
-        if (el.scrollWidth && el.clientWidth && el.scrollWidth - el.clientWidth > 2) {
-          var max = el.scrollWidth - el.clientWidth;
-          if (wantLeft ? el.scrollLeft < max - 2 : el.scrollLeft > 2) return true;
-        }
-        el = el.parentElement;
+    function wantsHijack(target) {
+      for (var el = target; el && el !== document.body; el = el.parentElement) {
+        if (el.scrollWidth > el.clientWidth + 2 && /^(auto|scroll)$/.test(getComputedStyle(el).overflowX)) return true;
       }
       return false;
     }
@@ -3195,7 +3296,7 @@
 
     document.addEventListener('touchstart', function (e) {
       reset();
-      if (!e.touches || e.touches.length !== 1) return;
+      if (!e.touches || e.touches.length !== 1 || e.target.closest('.shelf-track, button, a, input, textarea, select, summary, [contenteditable=true]')) { cancelGesture(); return; }
       if (inField() || modalsOpen() || sheetsOpen() || !inContent(e.target)) { dead = true; return; }
       sx = e.touches[0].clientX; sy = e.touches[0].clientY; t0 = Date.now();
     }, { passive: true });
@@ -3203,11 +3304,11 @@
       if (dead || !e.touches || e.touches.length !== 1) return;
       if (Date.now() - t0 > TMAX) { cancelGesture(); return; }
       var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
-      if (!dir) {
-        if (Math.abs(dy) > VMAX) { dead = true; return; } // vertical scroll wins
+      if (Math.abs(dy) > VMAX || (dir && Math.abs(dx) < Math.abs(dy) * 1.4)) { cancelGesture(); return; }
+      if (!dir) { // vertical scroll wins
         if (Math.abs(dx) < COMMIT || Math.abs(dx) < Math.abs(dy) * 1.4) return; // angle gate
         var wantLeft = dx < 0;
-        if (wantsHijack(e.target, wantLeft)) { dead = true; return; }
+        if (wantsHijack(e.target)) { dead = true; return; }
         var ds = targets();
         dirData = wantLeft ? ds.next : ds.prev;
         if (!dirData) { dead = true; return; }
@@ -3215,21 +3316,21 @@
         var el = document.createElement('aside');
         el.className = 'gbs2-peek gbs2-peek-' + dir;
         el.setAttribute('aria-hidden', 'true');
-        // Quote the cover URL (spaces would break an unquoted url()) and strip
-        // any quotes the source serialization left behind.
-        var peekImg = dirData.img ? String(dirData.img).replace(/"/g, '') : '';
-        el.innerHTML = '<span class="gbs2-peek-img"' + (peekImg ? ' style="background-image:url("' + peekImg + '")"' : '') + '></span>' +
-          '<span class="gbs2-peek-b"><small>' + (dir === 'next' ? 'Дальше' : 'Назад') + '</small><b></b><i>Отпустите, чтобы перейти</i></span>';
+        el.innerHTML = '<span class="gbs2-peek-img"></span>' +
+          '<span class="gbs2-peek-b"><small>' + (dir === 'next' ? 'Дальше' : 'Назад') + '</small><b></b><i>Отпустите для перехода</i></span>';
+        if (dirData.img) el.firstElementChild.style.backgroundImage = 'url(' + JSON.stringify(dirData.img) + ')';
         el.querySelector('b').textContent = dirData.title;
         document.body.appendChild(el);
         peek = el;
       }
       e.preventDefault(); // committed: suppress link-click and scroll
       var amt = dir === 'next' ? Math.max(0, -dx) : Math.max(0, dx);
+      peek.querySelector('i').textContent = amt > TRIG ? 'Отпустите для перехода' : 'Проведите дальше';
       peek.style.setProperty('--gbs2-peek', Math.min(210, amt) + 'px');
       peek.classList.add('gbs2-on');
     }, { passive: false });
     function finish(e) {
+      if (e.touches && e.touches.length) { cancelGesture(); return; }
       if (dead || !dir || !dirData) { reset(); return; }
       var t = e.changedTouches && e.changedTouches[0];
       var dx = t ? t.clientX - sx : 0;
@@ -3237,7 +3338,7 @@
       var href = dirData.href;
       var slow = Date.now() - t0 > TMAX;
       reset();
-      if (!slow && amt > TRIG && href) {
+      if (!slow && amt > TRIG && t && Math.abs(t.clientY - sy) <= VMAX && amt > Math.abs(t.clientY - sy) * 1.4 && href) {
         if (document.startViewTransition) {
           try { document.startViewTransition(function () { location.href = href; }); }
           catch (_) { location.href = href; }
@@ -3245,7 +3346,7 @@
       }
     }
     document.addEventListener('touchend', finish, { passive: true });
-    document.addEventListener('touchcancel', reset, { passive: true });
+    document.addEventListener('touchcancel', cancelGesture, { passive: true });
 
     try {
       var ds0 = targets();
@@ -3257,11 +3358,31 @@
           tip.setAttribute('role', 'status');
           tip.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 7l-5 5 5 5"/></svg>Свайп по статье — соседняя часть серии';
           document.body.appendChild(tip);
-          requestAnimationFrame(function () { tip.classList.add('gbs2-on'); });
-          setTimeout(function () {
+          // W62: this is an article-only onboarding toast, not part of the
+          // Analytics/TOC/Library sheet. Dismiss it immediately if a sheet
+          // opens after the initial 2400ms gate; it must never cover a verse,
+          // reading item or drawer action.
+          var tipObserver = new MutationObserver(function () {
+            if (!sheetsOpen() && !modalsOpen()) return;
+            tipObserver.disconnect();
+            clearTimeout(tipTimer);
+            if (tip.parentNode) tip.parentNode.removeChild(tip);
+          });
+          tipObserver.observe(document.body, {
+            subtree: true, attributes: true, attributeFilter: ['class']
+          });
+          var tipTimer = setTimeout(function () {
+            tipObserver.disconnect();
             tip.classList.remove('gbs2-on');
-            setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 450);
+            setTimeout(function () {
+              if (tip.parentNode) tip.parentNode.removeChild(tip);
+            }, 450);
           }, 5200);
+          requestAnimationFrame(function () {
+            if (!sheetsOpen() && !modalsOpen() && tip.isConnected) {
+              tip.classList.add('gbs2-on');
+            }
+          });
           try { window.localStorage.setItem(TIP_KEY, '1'); } catch (_) {}
         }, 2400);
       }

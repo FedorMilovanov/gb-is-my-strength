@@ -37,6 +37,97 @@ const BASE_ROUTES = [
   ['single-article', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/']
 ];
 const PAGINATION_ROUTE_URLS = new Set(BASE_ROUTES.map(([, url]) => url));
+const GILL_ATLAS_ROUTE_URLS = ['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek','dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik'].map(slug => `/articles/${slug}/`);
+
+// HERM-PAPER-CHROME: clean physical PDF witness independent of marker pagination.
+const HERM_HEADER_EXPECTED = {
+  "journal": "MSJ 27/2 (Fall 2016) 113–139",
+  "title": "Оценка христоцентричной герменевтики",
+  "author": "Абнер Чау",
+  "byline": "Редактор: Фёдор Милованов",
+  "body": "Проповедь занимает центральное место в служении пастора",
+  "end": "богословской и терминологической верификацией",
+  "content": {
+    "rights": "Русский перевод этой статьи публикуется с разрешения TMS Journal",
+    "source": "A Hermeneutical Evaluation of the Christocentric Hermeneutic",
+    "original": "открыть PDF на сайте TMS",
+    "abstractStart": "То, как изучать и преподавать Библию",
+    "abstractEnd": "как Он того требует"
+  }
+};
+
+function hermHeaderWitness(text, expected) {
+ const norm = value => String(value || '').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/\u00ad/g,'').replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+ const compact = value=>norm(value).replace(/ /g,'');
+ const pages=String(text).split('\f'); if(pages.length>1&&!pages.at(-1).trim())pages.pop();
+ // Compact only individual journal lines, not general publication text.
+ const journal=compact(expected.journal);
+ const lines=pages[0].split(/\r?\n/);
+ const lineIndexes=lines.map((line,i)=>compact(line)===journal?i:-1).filter(i=>i>=0);
+ const first=lineIndexes.length===1?norm(lines.slice(lineIndexes[0]+1).join('\n')):'';
+ let cursor=0;
+ const ordered=[expected.title,expected.author,expected.byline].map(norm).every(anchor=>{
+ if(!anchor)return false;const at=first.indexOf(anchor,cursor);if(at<0)return false;cursor=at+anchor.length;return true;
+ });
+ const allLines=pages.join('\n').split(/\r?\n/);
+ const start=allLines.findIndex(line=>compact(line)===journal);
+ const after=start>=0?norm(allLines.slice(start+1).join('\n')):'';
+ const body=norm(expected.body),bodyStart=body?after.indexOf(body):-1;
+ const front=bodyStart>0?after.slice(0,bodyStart):'';
+ const missing=Object.entries(expected.content).filter(([,value])=>!norm(value)||!front.includes(norm(value))).map(([key])=>key);
+ const failures=[];
+ if(!ordered)failures.push('first-page-journal-title-author-byline');
+ if(!front)failures.push('missing-front-boundary');
+ failures.push(...missing.map(key=>'missing-front-content:'+key));
+ if(!norm(expected.end)||!norm(text).includes(norm(expected.end)))failures.push('missing-end');
+ return {pages:pages.length,ordered,missing,failures};
+}
+
+function paperFormatWitness(file, format) {
+  const expected = { A4: [210 * 72 / 25.4, 297 * 72 / 25.4], Letter: [612, 792] }[format];
+  if (!expected) throw new Error(`Unsupported paper format: ${format}`);
+  const read = args => execFileSync('pdfinfo', args, { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' }, maxBuffer: 8 * 1024 * 1024 });
+  const total = Number(read([file]).match(/^Pages:\s+(\d+)\s*$/m)?.[1]);
+  if (!Number.isSafeInteger(total) || total < 1) throw new Error('PDF page count unavailable');
+  const output = read(['-f', '1', '-l', String(total), file]);
+  const sizes = new Map(), rotations = new Map();
+  for (const match of output.matchAll(/^Page\s+(\d+)\s+size:\s+([\d.]+)\s+x\s+([\d.]+)\s+pts\b/gm)) sizes.set(Number(match[1]), [Number(match[2]), Number(match[3])]);
+  for (const match of output.matchAll(/^Page\s+(\d+)\s+rot:\s+(-?\d+)\s*$/gm)) rotations.set(Number(match[1]), Number(match[2]));
+  const failures = [];
+  for (let page = 1; page <= total; page++) {
+    const actual = sizes.get(page), rotation = rotations.get(page);
+    if (!actual || rotation !== 0 || actual.some((value, i) => !Number.isFinite(value) || Math.abs(value - expected[i]) > 2)) failures.push({ page, actual: actual || null, rotation: rotation ?? null });
+  }
+  return { format, total, first: sizes.get(1) || null, failures };
+}
+
+function gillAtlasTextWitness(text, route){
+  const labels=[['Введение','Исторический контекст','28 мин'],['I','Человек','32 мин'],['II','Учёный','39 мин'],['III','Экзегет','71 мин'],['IV','Наследие','54 мин'],['Справочный раздел','Справочник по Гиллу','15 мин']];
+  const current=GILL_ATLAS_ROUTE_URLS.indexOf(route);
+  if(current<0)return null;
+  const failures=[],pages=text.normalize('NFC').split('\f').map(p=>p.split(/\r?\n/));
+  const compact=s=>s.replace(/\s+/g,'').toLowerCase();
+  const locations=token=>pages.flatMap((lines,p)=>lines.flatMap((line,y)=>compact(line)===compact(token)?[{p,y}]:[]));
+  const heads=locations('Джон Гилл · путеводитель'),ends=locations('Порядок чтения, а не хронология событий.');
+  if(heads.length!==1||ends.length!==1)return {failures:['atlas boundary missing or ambiguous'],heads,ends};
+  const head=heads[0],end=ends[0];
+  if(head.p!==end.p||head.y>=end.y)return {failures:['atlas split or reversed'],head,end};
+  const cells=pages[head.p].slice(head.y+1,end.y).flatMap((line,y)=>[...line.matchAll(/\S+(?: \S+)*/g)].map(m=>({x:m.index,y,text:m[0].trim().replace(/\s+/g,' ')})));
+  const one=value=>{const found=cells.filter(cell=>cell.text===value);if(found.length!==1){failures.push('missing/duplicate: '+value);return null;}return found[0];};
+  const title=one('Карта серии'),intro=one('Четыре основные части, историческое введение и справочник.');
+  const rows=labels.map(label=>label.map(one));const here=one('Вы здесь');
+  if(title&&intro&&rows[0][0]&&!(title.y<intro.y&&intro.y<rows[0][0].y))failures.push('wrong atlas header order');
+  for(let i=0;i<rows.length;i++){
+    const [m,n,t]=rows[i];if(!m||!n||!t)continue;
+    if(!(m.y<n.y&&n.y<t.y&&Math.abs(m.x-n.x)<=3&&Math.abs(t.x-n.x)<=3))failures.push('wrong label group: '+labels[i][1]);
+  }
+  if(here&&rows[current][2]){const t=rows[current][2];if(here.y<=t.y||here.y>t.y+2||Math.abs(here.x-t.x)>3)failures.push('wrong current label');}
+  const names=rows.map(r=>r[1]);if(names.every(Boolean)){
+    const [a,b,c,d,e,f]=names;
+    if(!(a.y<b.y&&b.y===c.y&&b.y<d.y&&d.y===e.y&&d.y<f.y&&c.x>b.x+10&&e.x>d.x+10))failures.push('wrong atlas folio order');
+  }
+  return {page:head.p+1,failures,scope:'bounded clean PDF text/column witness, not vector/font geometry'};
+}
 
 function routeId(route) {
   const slug = String(route || '')
@@ -109,6 +200,10 @@ for (const [url, entry] of Object.entries(noteRegistry.routes)) {
   if (!notes.length) throw new Error(`NoteRegistry route ${url} has no notes`);
   if (routeMap.has(url)) routeMap.get(url)[2] = notes;
   else routeMap.set(url, [routeId(url), url, notes]);
+}
+// Atlas coverage is independent of whether a route has registered publication notes.
+for (const url of GILL_ATLAS_ROUTE_URLS) {
+  if (!routeMap.has(url)) routeMap.set(url, [routeId(url), url, []]);
 }
 const ROUTES = [...routeMap.values()];
 
@@ -443,6 +538,8 @@ try {
           flow: node.getAttribute('data-print-flow') || '',
           breakInside: style.breakInside,
           height: Math.round(node.getBoundingClientRect().height),
+          measuredHeight: node.getBoundingClientRect().height,
+          atomicLimit: runtime.atomicLimitPx,
           initial,
           toggled
         };
@@ -492,8 +589,13 @@ try {
     if (id === 'gill-part1' && !(setup.flipCards || []).length) report.failures.push(`${id}: reversible-card fixture missing`);
     const badCards = (setup.flipCards || []).filter((item) => {
       const modes = [item.initial, item.toggled];
-      return item.flow !== 'atomic'
-        || !String(item.breakInside).includes('avoid')
+      const oversized=item.measuredHeight>item.atomicLimit;
+      // A card taller than the printable budget must remain splittable:
+      // forcing it atomic cannot preserve its entire visible face on paper.
+      // All cards still have to expose exactly one static, untransformed face.
+      return !Number.isFinite(item.measuredHeight)||!Number.isFinite(item.atomicLimit)
+        || item.flow !== (oversized?'splittable':'atomic')
+        || (oversized?item.breakInside!=='auto':!String(item.breakInside).includes('avoid'))
         || modes.some((mode) => mode.innerPosition !== 'static'
           || mode.innerTransform !== 'none'
           || mode.visibleFaces.length !== 1
@@ -564,6 +666,12 @@ try {
     await page.pdf({ path: cleanPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
     execFileSync('pdftotext', ['-layout', cleanPdf, cleanTxt]);
     const cleanPdfText = await readFile(cleanTxt, 'utf8');
+    const cleanPaper = paperFormatWitness(cleanPdf, 'A4');
+    if (cleanPaper.failures.length) report.failures.push(`${id}: physical A4 page-size witness failed: ${JSON.stringify(cleanPaper.failures.slice(0, 12))}`);
+    const hermHeader = id === 'single-article' ? hermHeaderWitness(cleanPdfText, HERM_HEADER_EXPECTED) : null;
+    if (hermHeader?.failures.length) report.failures.push(`${id}: HERM-PAPER-CHROME: ${hermHeader.failures.join(', ')}`);
+    const gillAtlas = gillAtlasTextWitness(cleanPdfText, url);
+    if (gillAtlas?.failures.length) report.failures.push(`${id}: GILL-ATLAS-PAPER: ${gillAtlas.failures.join(', ')}`);
     const textProbeMissingNotes = missingPublicationNotes(cleanPdfText, routeNotes);
 
     const noteTokens = routeNotes.map((note, index) => ({
@@ -651,6 +759,9 @@ try {
       noteDom,
       printNoteState,
       missingPublicationNoteIds: missingNotes.map((note) => note.id),
+      hermHeader,
+      cleanPaper,
+      gillAtlas,
       textProbeMissingPublicationNoteIds: textProbeMissingNotes.map((note) => note.id),
       paginationAuthority: enforcePaginationMarkers,
       noteMarkerPdf: routeNotes.length ? `note-markers/${id}.pdf` : null,
@@ -663,11 +774,415 @@ try {
     });
     await context.close();
   }
+  // Real default-media PDFs: no emulateMedia('print') or CSS-size override.
+  // The physical dimensions are the independent authority, not page.pdf's label.
+  report.paperFormats = [];
+  const formatDir = join(OUT, 'paper-formats');
+  await mkdir(formatDir, { recursive: true });
+  for (const format of ['A4', 'Letter']) {
+    for (const javaScriptEnabled of [true, false]) {
+      const name = `herm-${format.toLowerCase()}-${javaScriptEnabled ? 'js' : 'nojs'}`;
+      const context = await browser.newContext({
+        viewport: { width: 1240, height: 900 }, javaScriptEnabled, serviceWorkers: 'block'
+      });
+      try {
+        const page = await context.newPage();
+        await page.route('**/*', r => r.request().url().startsWith(base + '/') ? r.continue() : r.abort());
+        const url = BASE_ROUTES.find(([id]) => id === 'single-article')[1];
+        const response = await page.goto(base + url, { waitUntil: 'load' });
+        if (response?.status() !== 200) throw new Error('Herm route not served');
+        await page.evaluate(async () => { await document.fonts?.ready; });
+        if (javaScriptEnabled) {
+          await page.waitForFunction(() => window.GBPrintPagination?.geometryVersion === 3);
+          await page.evaluate(() => {
+            const media = matchMedia('print');
+            window.__gbPaperFormatWitness = null;
+            const capture = event => {
+              if (event.matches) window.__gbPaperFormatWitness = window.GBPrintPagination.getReport()?.paperGeometry || null;
+            };
+            if (media.addEventListener) media.addEventListener('change', capture);
+            else media.addListener(capture);
+          });
+        }
+        const pdf = join(formatDir, name + '.pdf');
+        const txt = join(formatDir, name + '.txt');
+        await page.pdf({ path: pdf, format, printBackground: true, preferCSSPageSize: true });
+        execFileSync('pdftotext', ['-layout', pdf, txt]);
+        const paper = paperFormatWitness(pdf, format);
+        const header = hermHeaderWitness(await readFile(txt, 'utf8'), HERM_HEADER_EXPECTED);
+        const runtime = javaScriptEnabled ? await page.evaluate(() => window.__gbPaperFormatWitness) : null;
+        const expectedMm = format === 'A4' ? 269 : 251.4;
+        const runtimeOk = !javaScriptEnabled || (runtime?.source === 'print-media-14mm-css-margins'
+          && Math.abs(runtime.contentMm - expectedMm) < 0.01);
+        await page.waitForFunction(() => !matchMedia('print').matches
+          && !document.querySelector('[data-gb-print-monolith]')
+          && !document.documentElement.hasAttribute('data-gb-print-geometry-ready'));
+        report.paperFormats.push({ name, paper, header, runtime, runtimeOk, pdf: 'paper-formats/' + name + '.pdf' });
+        if (paper.failures.length || header.failures.length || !runtimeOk)
+          report.failures.push(`${name}: physical format/header/runtime witness failed`);
+      } catch (error) {
+        report.failures.push(`${name}: ${String(error)}`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+  // Protected Nagornaya: clean physical PDFs for the existing raster/semantic gate.
+  report.nagornayaFormats = [];
+  report.nagornayaOverlayPrint = [];
+  const ngOverlayDir = join(OUT, 'nagornaya-open-overlays');
+  await mkdir(ngOverlayDir, { recursive: true });
+  for (const format of ['A4', 'Letter']) {
+    for (const javaScriptEnabled of [true, false]) {
+      for (const width of [390, 1240]) {
+        const name = `nagornaya-${format.toLowerCase()}-${javaScriptEnabled ? 'js' : 'nojs'}-${width}`;
+        const context = await browser.newContext({
+          viewport: { width, height: 900 }, javaScriptEnabled, serviceWorkers: 'block'
+        });
+        try {
+          const page = await context.newPage();
+          await page.route('**/*', r => r.request().url().startsWith(base + '/') ? r.continue() : r.abort());
+          const response = await page.goto(base + '/nagornaya/chast-1/', { waitUntil: 'load' });
+          if (response?.status() !== 200) throw new Error('Nagornaya route not served');
+          const source = await page.evaluate(async () => {
+            await document.fonts?.ready;
+            const matrix = document.querySelector('#nagornaya-matthew-luke-observation-matrix');
+            const group = document.querySelector('[data-ng-print-heading-group]');
+            return { cells: matrix?.querySelectorAll('tbody td').length, marked: !!group?.querySelector('h2[id]') };
+          });
+          if (source.cells !== 16 || !source.marked) throw new Error('Nagornaya source contract drift');
+          const pdf = join(formatDir, name + '.pdf');
+          await page.pdf({ path: pdf, format, printBackground: true, preferCSSPageSize: true });
+          const paper = paperFormatWitness(pdf, format);
+          // One physical Letter/mobile baseline is sufficient for the two
+          // previously untracked locks. Never add these PDFs to format inventory.
+          if (format === 'Letter' && javaScriptEnabled && width === 390) {
+            const baselineText = execFileSync('pdftotext', ['-enc', 'UTF-8', '-layout', pdf, '-']);
+            const state = (owner, opener) => page.evaluate(({ owner, opener }) => ({
+              owners: window.OverlayRuntime?.snapshot().map(layer => layer.ownerId) || [],
+              sources: Object.keys(window.SiteUtils?._scrollLockSources || {}).sort(),
+              root: document.documentElement.getAttribute('data-scroll-locked'),
+              position: getComputedStyle(document.body).position,
+              expanded: document.querySelector(opener).getAttribute('aria-expanded'),
+              ownerOpen: window.OverlayRuntime?.isOpen(owner) === true
+            }), { owner, opener });
+            for (const [owner, opener] of [['nagornaya-btoc', '#barSectionBtn'], ['nagornaya-menu', '#menuBtn']]) {
+              await page.locator(opener).click();
+              await page.waitForFunction(owner => window.OverlayRuntime?.isOpen(owner) &&
+                document.documentElement.getAttribute('data-scroll-locked') === '1', owner);
+              const before = await state(owner, opener);
+              if (!before.ownerOpen || before.owners.length !== 1 || before.owners[0] !== owner ||
+                  before.sources.length !== 1 || before.sources[0] !== 'overlay:' + owner ||
+                  before.position !== 'fixed' || before.expanded !== 'true')
+                throw new Error('Nagornaya overlay owner mismatch: ' + JSON.stringify(before));
+              const lockedPdf = join(ngOverlayDir, owner + '.pdf');
+              await page.pdf({ path: lockedPdf, format, printBackground: true, preferCSSPageSize: true });
+              const lockedText = execFileSync('pdftotext', ['-enc', 'UTF-8', '-layout', lockedPdf, '-']);
+              const after = await state(owner, opener);
+              const sameText = baselineText.equals(lockedText);
+              const sameState = JSON.stringify(before) === JSON.stringify(after);
+              const lockedPaper = paperFormatWitness(lockedPdf, format);
+              report.nagornayaOverlayPrint.push({ owner, sameText, sameState, before, after, paper: lockedPaper });
+              if (!sameText || !sameState || lockedPaper.failures.length || lockedPaper.total !== paper.total)
+                report.failures.push('Nagornaya open overlay print changed text, state or physical format: ' + owner);
+              await page.keyboard.press('Escape');
+              await page.waitForFunction(({owner,opener}) => !window.OverlayRuntime.isOpen(owner) &&
+                !document.documentElement.hasAttribute('data-scroll-locked') &&
+                document.querySelector(opener).getAttribute('aria-expanded') === 'false' &&
+                document.activeElement === document.querySelector(opener), { owner, opener });
+            }
+          }
+          // Inspect the actual owner after the physical PDF was generated.
+          // No injected CSS and no screen/print emulation before PDF capture.
+          await page.emulateMedia({ media: 'print' });
+          const chrome = await page.evaluate(() => {
+            const candidates = [...document.body.children].filter(el => el.matches(
+              'header.fixed,aside.fixed,.skip-link,.nag-project-nav,#mobileMenu,#bottomBar,#btocOverlay,#gb-sw-toast,#nag-fn-popup,.gb-mobile-fallback-controls,.gb-anchor-copy-toast,[role="region"]:has(> #read-progress)'));
+            const visible = candidates.filter(el => getComputedStyle(el).display !== 'none')
+              .map(el => el.id || el.tagName + '.' + el.className);
+            return { count: candidates.length, visible,
+              mainVisible: document.querySelector('#main-content').getClientRects().length > 0 };
+          });
+          if (chrome.count < 5 || chrome.visible.length || !chrome.mainVisible)
+            report.failures.push(name + ': screen chrome leaked into print ' + JSON.stringify(chrome));
+          report.nagornayaFormats.push({name, source, paper, chrome, pdf: 'paper-formats/' + name + '.pdf'});
+          if (paper.failures.length) report.failures.push(name + ': physical format witness failed');
+        } catch (error) {
+          report.failures.push(name + ': ' + String(error));
+        } finally {
+          await context.close();
+        }
+      }
+    }
+  }
+  if (report.nagornayaFormats.length !== 8) report.failures.push('Nagornaya physical matrix incomplete');
+  if (report.nagornayaOverlayPrint.length !== 2) report.failures.push('Nagornaya overlay physical matrix incomplete');
+
+  // W42 privacy: real Product Library, fresh contexts, synthetic private
+  // data only. Physical PDFs must match a clean same-route baseline.
+  // This does NOT exercise the native headed dialog or opt-in W57.
+  report.privateLibrary = [];
+  const privacyDir = join(OUT, 'private-library');
+  await mkdir(privacyDir, { recursive: true });
+  const { createHash } = await import('node:crypto');
+  const { mkdtemp, readdir, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const privacyHash = bytes => createHash('sha256').update(bytes).digest('hex');
+  async function privacyRaster(pdf, pages) {
+    const dir = await mkdtemp(join(tmpdir(), 'gb-print-private-raster-'));
+    try {
+      execFileSync('pdftoppm', ['-r','72','-gray',pdf,join(dir,'page')],
+        { timeout:120000, maxBuffer:8*1024*1024 });
+      const names = (await readdir(dir)).filter(x=>/^page-\d+\.pgm$/.test(x))
+        .sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+      if (names.length !== pages) throw Error('raster page count mismatch');
+      return await Promise.all(names.map(async name => privacyHash(await readFile(join(dir,name)))));
+    } finally { await rm(dir,{recursive:true,force:true}); }
+  }
+  async function privateState(page) {
+    return page.evaluate(() => {
+      const keys=['gb-highlights-v1','gb-reader-notes-v1','gb-favorites','gb-library-tags-v1','gb-library-reading-v1','gb-library-revisit-v1'];
+      const area=document.querySelector('#gb-hl-note-text'), editor=document.querySelector('#gb-hl-editor');
+      const dialog=document.querySelector('#gb-hl-panel'), selection=getSelection();
+      return {
+        stores:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),
+        url:location.href,title:document.title,
+        focus:document.activeElement?.id||null,
+        scroll:[scrollX,scrollY],dialogScroll:dialog?[dialog.scrollLeft,dialog.scrollTop]:null,
+        editorHidden:editor?.hidden??null,
+        draft:area?.value??null,readOnly:area?.readOnly??null,
+        caret:area?[area.selectionStart,area.selectionEnd,area.selectionDirection]:null,
+        documentSelection:selection?.toString()||'',selectionRanges:selection?.rangeCount||0,
+        printMedia:matchMedia('print').matches,
+        printMarkers:document.querySelectorAll('[data-gb-print-monolith]').length,
+        geometryReady:document.documentElement.hasAttribute('data-gb-print-geometry-ready')
+      };
+    });
+  }
+  async function privacyPdf(page, name) {
+    const pdf = join(privacyDir,name+'.pdf');
+    // No screen/print emulation or injected suppression CSS.
+    await page.pdf({path:pdf,format:'A4',printBackground:true,preferCSSPageSize:true,timeout:120000});
+    const text=execFileSync('pdftotext',['-enc','UTF-8','-layout',pdf,'-'],
+      {encoding:'utf8',maxBuffer:32*1024*1024,timeout:120000});
+    const paper=paperFormatWitness(pdf,'A4');
+    if(paper.failures.length)throw Error('privacy physical page geometry failed');
+    const raster=await privacyRaster(pdf,paper.total);
+    return {text,textHash:privacyHash(text),raster,paper,pdf:'private-library/'+name+'.pdf'};
+  }
+  for (const [id,route] of BASE_ROUTES.filter(([id])=>['gill-part2','single-article'].includes(id))) {
+    const context=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+    const row={id,route,scope:'synthetic private QA only',checks:[],failures:[]};
+    report.privateLibrary.push(row);
+    try {
+      await context.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      const response=await page.goto(base+route+'?reader-pilot=0',{waitUntil:'load'});
+      const source=await readFile(join(DIST,route,'index.html'));
+      if(!response?.ok()||privacyHash(await response.body())!==privacyHash(source))throw Error('privacy HTTP/dist mismatch');
+      row.sourceHash=privacyHash(source);
+      await page.evaluate(async()=>{await document.fonts.ready;});
+      await page.waitForFunction(()=>!!window.GBHighlights?.mutateLibrary&&!!window.GBPrintEngine?.prepare);
+      const saved='GBPRIVATEW42SAVED'+id.replace(/[^a-z0-9]/gi,'').toUpperCase();
+      const draft='GBPRIVATEW42DRAFT'+id.replace(/[^a-z0-9]/gi,'').toUpperCase();
+      const clean=await privacyPdf(page,id+'-clean');
+      row.clean={pdf:clean.pdf,pages:clean.paper.total,textHash:clean.textHash,raster:clean.raster};
+      const compact=x=>x.normalize('NFKC').replace(/[\s\u00ad]+/g,'');
+      if(!clean.text.trim()||[saved,draft].some(token=>compact(clean.text).includes(token)))throw Error('invalid clean baseline');
+      await page.locator('#gb-hl-fab').click();
+      await page.locator('#gb-hl-panel').waitFor({state:'visible'});
+      await page.locator('#gb-hl-new-note').click();
+      await page.locator('#gb-hl-note-text').fill(saved);
+      await page.locator('#gb-hl-editor button[type=submit]').click();
+      await page.waitForFunction(token=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]').some(n=>n.text===token),saved);
+      await page.locator('#gb-hl-editor').waitFor({state:'hidden'});
+      await page.locator('#gb-hl-list').getByText(saved,{exact:true}).waitFor({state:'visible'});
+      await page.locator('#gb-hl-new-note').click();
+      const area=page.locator('#gb-hl-note-text');
+      await area.fill(draft);
+      await area.evaluate(el=>{el.focus({preventScroll:true});el.setSelectionRange(2,8,'forward');});
+      await page.locator('#gb-hl-editor').waitFor({state:'visible'});
+      const initial=await privateState(page);
+      if(initial.draft!==draft||initial.focus!=='gb-hl-note-text'||initial.editorHidden||
+         initial.readOnly||initial.caret?.[0]!==2||initial.caret?.[1]!==8||
+         !JSON.parse(initial.stores['gb-reader-notes-v1']||'[]').some(n=>n.text===saved)||
+         Object.values(initial.stores).some(raw=>raw?.includes(draft)))throw Error('private fixture not established');
+      for(const attempt of ['open-draft','warm-retry']){
+        const before=await privateState(page);
+        if(before.draft!==draft||before.editorHidden||before.focus!=='gb-hl-note-text')throw Error('draft lost before print');
+        const actual=await privacyPdf(page,id+'-'+attempt);
+        await page.waitForFunction(()=>!matchMedia('print').matches);
+        const after=await privateState(page);
+        const leak=[saved,draft].filter(token=>compact(actual.text).includes(token));
+        const textEqual=actual.text===clean.text;
+        const rasterEqual=JSON.stringify(actual.raster)===JSON.stringify(clean.raster);
+        const stateChanges=Object.keys(before).filter(k=>JSON.stringify(before[k])!==JSON.stringify(after[k]));
+        const check={attempt,pdf:actual.pdf,pages:actual.paper.total,textHash:actual.textHash,
+          raster:actual.raster,leak,textEqual,rasterEqual,stateChanges};
+        row.checks.push(check);
+        if(leak.length||!textEqual||!rasterEqual||stateChanges.length)
+          row.failures.push(attempt+': privacy/content/raster/lifecycle mismatch');
+      }
+      if(errors.length)row.failures.push('page errors: '+errors.slice(0,3).join('; '));
+      if(row.checks.length!==2)row.failures.push('incomplete private PDF attempts');
+    }catch(error){row.failures.push(String(error));}
+    finally{await context.close();}
+    for(const failure of row.failures)report.failures.push(id+' W42: '+failure);
+  }
+  if(report.privateLibrary.length!==2)report.failures.push('W42 required private-library routes missing');
+
+  // W43: the same physical privacy witness for opt-in W57 with real
+  // Analytics and linked-note editor. Keep native and pilot receipts separate.
+  report.privateW57={scope:'synthetic opt-in W57 QA only',checks:[],failures:[]};
+  {
+    const row=report.privateW57;
+    const route=BASE_ROUTES.find(([id])=>id==='gill-part2')[1];
+    const context=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
+    try {
+      await context.route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      const url=base+route+'?reader-pilot=1&paper=space&panel=open';
+      const source=await readFile(join(DIST,route,'index.html'));
+      const ready=async()=>{
+        await page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready&&window.__NP_UNIVERSAL_PREVIEW__?.ready);
+        await page.evaluate(async()=>{await document.fonts.ready;});
+        await page.locator('#npUResearch').waitFor({state:'visible'});
+        const section=page.locator('#npW57NotesDetails');
+        if(!(await section.evaluate(el=>el.open)))await section.locator('summary').click();
+        await page.waitForFunction(()=>document.querySelector('#npW57NotesDetails')?.open===true);
+      };
+      const response=await page.goto(url,{waitUntil:'load'});
+      if(!response?.ok()||privacyHash(await response.body())!==privacyHash(source))throw Error('W57 HTTP/dist mismatch');
+      row.route=route;row.sourceHash=privacyHash(source);
+      await ready();
+      const qid='gb-w43-private-quote',nid='gb-w43-private-note';
+      const saved='GBPRIVATEW43W57SAVED',draft='GBPRIVATEW43W57DRAFT';
+      const clean=await privacyPdf(page,'w57-gill-clean');
+      row.clean={pdf:clean.pdf,pages:clean.paper.total,textHash:clean.textHash,raster:clean.raster};
+      const compact=x=>x.normalize('NFKC').replace(/[\s\u00ad]+/g,'');
+      if(!clean.text.trim()||[saved,draft].some(token=>compact(clean.text).includes(token)))throw Error('W57 clean baseline invalid');
+      // Reuse actual visible selection + canonical anchor seed from the
+      // existing two-tab contract; all data stays in a disposable profile.
+
+    const seeded = await page.evaluate(async ({qid,nid,initial}) => {
+      await window.GBHighlights.ensureRanges();
+      const article = window.GBReaderContract?.articleRoot?.(document);
+      if (!article || !window.GBReaderAnchors?.capture) throw Error('Canonical anchor owner missing');
+      // Use the canonical authored-block list. An arbitrary first paragraph
+      // can be below the fold, in which case GBReaderAnchors.capture correctly
+      // returns null. Seed a REAL visible selection, never fake coordinates.
+      let textNode = null, sourceBlock = null;
+      for (const block of window.GBReaderAnchors.blocks(article)) {
+        if (!block.getClientRects().length || block.closest('[hidden],[inert],[aria-hidden="true"]')) continue;
+        const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          const owner=node.parentElement;
+          if (node.nodeValue.trim().length >= 75 &&
+              !owner?.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]')) {
+            textNode = node; sourceBlock = block; break;
+          }
+        }
+        if (textNode) break;
+      }
+      if (!textNode || !sourceBlock) throw Error('No eligible authored source block');
+      sourceBlock.scrollIntoView({block:'center',behavior:'instant'});
+      const range = document.createRange();
+      range.setStart(textNode, Math.min(3,textNode.length-1));
+      range.setEnd(textNode, Math.min(textNode.length,58));
+      const selection = window.getSelection();
+      selection.removeAllRanges(); selection.addRange(range);
+      const geometry=range.getBoundingClientRect();
+      if (geometry.width < 2 || geometry.height < 2 ||
+          geometry.bottom < 0 || geometry.top > innerHeight)
+        throw Error('Fixture selection is not visible to canonical anchor capture: '+JSON.stringify({
+          top:geometry.top,bottom:geometry.bottom,height:geometry.height,width:geometry.width
+        }));
+      const source = window.GBReaderAnchors.capture(article);
+      selection.removeAllRanges();
+      if (!source?.anchor || !source.text || source.text.length < 10)
+        throw Error('Canonical position capture failed');
+      const savedAt = Date.now();
+      const q = {
+        id:qid, text:source.text,articleTitle:document.title,
+        url:location.origin+location.pathname,savedAt,
+        before:source.anchor.prefix||'',after:source.anchor.suffix||'',
+        kind:'quote',color:'amber',
+        annotation:{version:1,kind:'quote',color:'amber',anchor:source.anchor,noteId:nid}
+      };
+      const n = {
+        id:nid,text:initial,quoteId:qid,quoteText:source.text,
+        articleTitle:document.title,url:q.url,savedAt
+      };
+      localStorage.setItem('gb-highlights-v1',JSON.stringify([q]));
+      localStorage.setItem('gb-reader-notes-v1',JSON.stringify([n]));
+      return {textLength:source.text.length,sourceId:qid};
+    },{qid:qid,nid:nid,initial:saved});
+      row.seeded=seeded;
+      const reloaded=await page.reload({waitUntil:'load'});
+      if(!reloaded?.ok()||privacyHash(await reloaded.body())!==row.sourceHash)throw Error('W57 reload source drift');
+      await ready();
+      const card=page.locator('#npW57NotesList li[data-id="'+qid+'"]');
+      const savedPreview=card.locator('.np-w57-note-preview-text');
+      await savedPreview.waitFor({state:'visible'});
+      if(await savedPreview.innerText()!==saved)throw Error('W57 saved private note not rendered');
+      await card.locator('[data-action="edit"]').click();
+      const area=page.locator('#npW57NoteText');
+      await area.fill(draft);
+      await area.evaluate(el=>{el.focus({preventScroll:true});el.setSelectionRange(2,8,'forward');});
+      const state=async()=>{
+        const general=await privateState(page);
+        const w57=await page.evaluate(()=>{
+          const root=document.querySelector('#npUniversalDemo'),panel=document.querySelector('#npUResearch');
+          const details=document.querySelector('#npW57NotesDetails'),editor=document.querySelector('#npW57NoteEditor');
+          const area=document.querySelector('#npW57NoteText');
+          return{panelOpen:!!root&&!root.classList.contains('np-u-hide-right')&&!!panel?.getClientRects().length,
+            panelScroll:panel?[panel.scrollLeft,panel.scrollTop]:null,detailsOpen:details?.open??null,
+            editorHidden:editor?.hidden??null,draft:area?.value??null,readOnly:area?.readOnly??null,
+            caret:area?[area.selectionStart,area.selectionEnd,area.selectionDirection]:null};
+        });
+        return{...general,w57};
+      };
+      const before=await state();
+      if(!before.w57.panelOpen||!before.w57.detailsOpen||before.w57.editorHidden||
+         before.w57.draft!==draft||before.focus!=='npW57NoteText'||before.w57.readOnly||
+         before.w57.caret?.[0]!==2||before.w57.caret?.[1]!==8||
+         !JSON.parse(before.stores['gb-reader-notes-v1']||'[]').some(n=>n.id===nid&&n.text===saved)||
+         Object.values(before.stores).some(raw=>raw?.includes(draft)))throw Error('W57 private fixture not established');
+      const actual=await privacyPdf(page,'w57-gill-private');
+      await page.waitForFunction(()=>!matchMedia('print').matches);
+      const after=await state();
+      const check={pdf:actual.pdf,pages:actual.paper.total,textHash:actual.textHash,raster:actual.raster,
+        leak:[saved,draft].filter(token=>compact(actual.text).includes(token)),
+        textEqual:actual.text===clean.text,
+        rasterEqual:JSON.stringify(actual.raster)===JSON.stringify(clean.raster),
+        stateChanges:Object.keys(before).filter(k=>JSON.stringify(before[k])!==JSON.stringify(after[k]))};
+      row.checks.push(check);
+      if(check.leak.length||!check.textEqual||!check.rasterEqual||check.stateChanges.length)
+        row.failures.push('W57 privacy/content/raster/lifecycle mismatch');
+      if(errors.length)row.failures.push('page errors: '+errors.slice(0,3).join('; '));
+    }catch(error){row.failures.push(String(error));}
+    finally{await context.close();}
+    if(row.checks.length!==1)row.failures.push('W57 physical comparison missing');
+    for(const failure of row.failures)report.failures.push('W43: '+failure);
+  }
+
+
 } finally {
   await browser.close().catch(() => {});
   await new Promise((resolve) => server.close(resolve));
 }
 
+for (const url of GILL_ATLAS_ROUTE_URLS) {
+  const rows = report.routes.filter(row => row.url === url);
+  if (rows.length !== 1 || !rows[0].cleanPdf || !existsSync(join(OUT, rows[0].cleanPdf)) ||
+      !rows[0].cleanPaper || rows[0].cleanPaper.failures.length ||
+      !rows[0].gillAtlas || rows[0].gillAtlas.failures.length) {
+    report.failures.push(`GILL-ATLAS-PAPER: missing or failed required physical witness for ${url}`);
+  }
+}
 if (!mutationWitnessDone) report.failures.push('NoteRegistry mutation witness did not run');
 await writeFile(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

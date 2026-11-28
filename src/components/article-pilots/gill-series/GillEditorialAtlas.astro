@@ -1,0 +1,130 @@
+---
+import { GILL_SERIES_ITEMS, type GillSeriesPageId } from './gillSeriesData';
+interface Props { current: GillSeriesPageId }
+const { current } = Astro.props;
+const paths: Record<GillSeriesPageId, string> = {
+  context: 'M4 20h24M6 18V9l10-5 10 5v9M10 18v-7m6 7v-7m6 7v-7M3 9h26M7 24h18',
+  part1: 'M16 5c-3 0-5 2.5-5 6s2 6 5 6 5-2.5 5-6-2-6-5-6ZM5 26c1-5 5-8 11-8s10 3 11 8M10 26h12',
+  part2: 'M4 24h23M8 22l14-15 3 3-14 15-5 1 2-4ZM19 10l3 3M5 7h10M5 11h7M5 15h4',
+  part4: 'M16 26c-3-4-8-5-13-4V6c5-1 10 0 13 4 3-4 8-5 13-4v16c-5-1-10 0-13 4ZM16 10v16M6 11l6 2M6 15l6 2M20 13l6-2M20 17l6-2',
+  part3: 'M16 28V10M16 18c-7 0-10-4-11-10 6 0 11 3 11 10Zm0-4c7 0 11-4 12-10-7 0-12 4-12 10ZM16 24c5 0 9-3 10-7-5 0-8 2-10 7ZM7 28h18',
+  spravochnik: 'M6 4h20v24H6zM10 4v24M14 10h8m-8 5h8m-8 5h8M3 8h6M3 16h6M3 24h6',
+};
+---
+<section class="gill-atlas" aria-label="Карта серии Джона Гилла" data-glossary-skip data-pagefind-ignore>
+  <header class="atlas-head">
+    <span class="atlas-kicker">Джон Гилл · путеводитель</span>
+    <p class="atlas-title">Карта серии</p>
+    <p class="atlas-intro">Четыре основные части, историческое введение и справочник.</p>
+  </header>
+  <nav aria-label="Порядок чтения серии Джона Гилла">
+    <ol class="atlas-list" role="list">
+      {GILL_SERIES_ITEMS.map(item => (
+        <li class:list={['atlas-row', { 'atlas-endpoint': item.mark.kind === 'label', 'atlas-current': item.id === current }]}>
+          <span class="atlas-junction" aria-hidden="true">
+            <svg class="atlas-branch" viewBox="0 0 48 16" preserveAspectRatio="none" focusable="false"><path d="M0 8H48" vector-effect="non-scaling-stroke" /></svg>
+            <svg class="atlas-dot" viewBox="0 0 20 20" focusable="false"><circle cx="10" cy="10" r="4"/><circle class="atlas-halo" cx="10" cy="10" r="8"/></svg>
+          </span>
+          <a class="atlas-node" href={item.href} tabindex="0" aria-current={item.id === current ? 'page' : undefined}>
+            <svg class="atlas-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d={paths[item.id]}/></svg>
+            <span class="atlas-details">
+              <span class="atlas-mark">{item.mark.kind === 'roman' ? item.mark.value : item.id === 'context' ? 'Введение' : 'Справочный раздел'}</span>
+              <span class="atlas-name">{item.mark.kind === 'roman' ? item.shortTitle : item.title}</span>
+              <span class="atlas-time">{item.readingTime}</span>
+              {item.id === current && <span class="atlas-here">Вы здесь</span>}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+  <footer class="atlas-foot">
+    <svg class="atlas-rule" viewBox="0 0 320 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 8H150m20 0H320M154 8l6-5 6 5-6 5z" vector-effect="non-scaling-stroke"/></svg>
+    <p>Порядок чтения, а не хронология событий.</p>
+  </footer>
+</section>
+<style>
+  .gill-atlas {
+    --atlas-paper: #f5f0e5; --atlas-ink: #272820; --atlas-muted: #625d50;
+    --atlas-gold: #87602a; --atlas-rule: #b9ac91; --atlas-line: #8f8268;
+    --atlas-current: #fffaf0; --atlas-hover: #eae2d0;
+    container: gill-atlas / inline-size;
+    box-sizing: border-box; min-width: 0; max-width: 100%; margin: 2rem 0;
+    padding: clamp(.85rem, 3%, 1.65rem); border: 1px solid var(--atlas-rule);
+    background: var(--atlas-paper); color: var(--atlas-ink);
+    font-family: inherit; line-height: 1.45;
+  }
+  :global(html.dark) .gill-atlas {
+    --atlas-paper: #24241f; --atlas-ink: #f1e8d6; --atlas-muted: #c0b7a4;
+    --atlas-gold: #e5bd72; --atlas-rule: #76694f; --atlas-line: #a49a83;
+    --atlas-current: #302d24; --atlas-hover: #333128;
+  }
+  .atlas-head { border-top: 3px double var(--atlas-rule); padding-top: .8rem; }
+  .atlas-kicker,.atlas-mark,.atlas-time,.atlas-here,.atlas-foot { font-family: system-ui,sans-serif; }
+  .atlas-kicker { font-size: .68rem; color: var(--atlas-gold); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .atlas-head .atlas-title { font: inherit; font-size: 1.65rem; line-height: 1.15; margin: .35rem 0; color: var(--atlas-ink); padding: 0; border: 0; }
+  .atlas-intro { font-size: .9rem; color: var(--atlas-muted); margin: .4rem 0 1rem; }
+  .atlas-list { display: block; list-style: none; margin: 0; padding: 0; }
+  .atlas-list .atlas-row { display: grid; grid-template-columns: 24px minmax(0,1fr); align-items: stretch; position: relative; padding: 0; margin: 0; min-width: 0; }
+  .atlas-row::marker { content: ''; }
+  .atlas-junction { display: grid; place-items: center; position: relative; min-width: 0; color: var(--atlas-line); }
+  .atlas-junction::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid var(--atlas-line); }
+  .atlas-row:first-child .atlas-junction::before { top: 50%; }
+  .atlas-row:last-child .atlas-junction::before { bottom: 50%; }
+  .atlas-dot { position: relative; width: 20px; height: 20px; fill: var(--atlas-paper); stroke: var(--atlas-gold); stroke-width: 1.1; }
+  .atlas-halo { opacity: 0; fill: none; }
+  .atlas-current .atlas-dot circle:first-child { fill: var(--atlas-gold); }
+  .atlas-current .atlas-halo { opacity: 1; }
+  .atlas-branch { position: absolute; width: 50%; height: 16px; left: 50%; top: calc(50% - 8px); fill: none; stroke: currentColor; }
+  .atlas-list .atlas-node { box-sizing: border-box; display: flex; align-items: center; gap: .6rem; min-width: 0; min-height: 64px; padding: .6rem .55rem; margin: 3px 0; border: 1px solid transparent; border-bottom-color: var(--atlas-rule); color: var(--atlas-ink); background: transparent; text-decoration: none; overflow-wrap: anywhere; }
+  .atlas-list .atlas-node:hover { background: var(--atlas-hover); border-color: var(--atlas-gold); color: var(--atlas-ink); text-decoration: none; }
+  .atlas-list .atlas-node:focus-visible { outline: 2px solid var(--atlas-gold); outline-offset: 2px; }
+  .atlas-list .atlas-node[aria-current] { background: var(--atlas-current); border-color: var(--atlas-gold); box-shadow: inset 3px 0 var(--atlas-gold); }
+  .atlas-icon { display: block; width: 34px; height: 34px; flex: 0 0 34px; fill: none; stroke: var(--atlas-gold); stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+  .atlas-details { flex: 1; min-width: 0; }
+  .atlas-mark,.atlas-name,.atlas-time,.atlas-here { display: block; }
+  .atlas-mark { font-size: .75rem; font-weight: 700; color: var(--atlas-gold); }
+  .atlas-name { font-size: 1.13rem; line-height: 1.25; }
+  .atlas-time { font-size: .76rem; color: var(--atlas-muted); margin-top: .15rem; }
+  .atlas-here { font-size: .72rem; font-weight: 700; color: var(--atlas-gold); margin-top: .15rem; }
+  /* site.css styles every footer as site chrome; keep this editorial note local. */
+  .gill-atlas .atlas-foot { display: block; margin: 0; padding: 0; border: 0; }
+  .atlas-foot { font-size: .75rem; color: var(--atlas-muted); }
+  .gill-atlas .atlas-foot p { margin: 0; font: inherit; }
+  .atlas-rule { display: block; width: 100%; height: 16px; margin: .65rem 0; fill: none; stroke: var(--atlas-rule); }
+  @container gill-atlas (min-width: 36rem) {
+    .atlas-list .atlas-row { grid-template-columns: minmax(0,1fr) 48px minmax(0,1fr); }
+    .atlas-junction { grid-column: 2; grid-row: 1; }
+    .atlas-list .atlas-node { grid-column: 3; grid-row: 1; min-height: 86px; }
+    .atlas-row:nth-child(odd):not(.atlas-endpoint) .atlas-node { grid-column: 1; flex-direction: row-reverse; text-align: right; }
+    .atlas-row:nth-child(odd):not(.atlas-endpoint) .atlas-branch { left: 0; }
+    .atlas-list .atlas-endpoint .atlas-node { grid-column: 1 / -1; justify-self: center; width: min(100%, 21rem); background: var(--atlas-paper); border-color: var(--atlas-rule); position: relative; min-height: 76px; }
+    .atlas-endpoint .atlas-junction { grid-column: 2; }
+    .atlas-endpoint .atlas-branch,.atlas-endpoint .atlas-dot { visibility: hidden; }
+    .atlas-list .atlas-endpoint .atlas-node[aria-current] { border-color: var(--atlas-gold); background: var(--atlas-current); }
+  }
+  @container gill-atlas (max-width: 15rem) {
+    .atlas-list .atlas-row { grid-template-columns: 16px minmax(0,1fr); }
+    .atlas-list .atlas-node { gap: .35rem; padding: .5rem .3rem; }
+    .atlas-icon { width: 24px; height: 24px; flex-basis: 24px; }
+  }
+  @media print {
+    .gill-atlas { container-type: normal; --atlas-paper: #fff; --atlas-ink: #111; --atlas-muted: #444; --atlas-gold: #333; --atlas-rule: #aaa; --atlas-line: #777; --atlas-current: #fff; --atlas-hover: #fff; background: #fff; margin: .5em 0; padding: .45em; break-inside: avoid; }
+    :global(html.dark) .gill-atlas { --atlas-paper: #fff; --atlas-ink: #111; --atlas-muted: #444; --atlas-gold: #333; --atlas-rule: #aaa; --atlas-line: #777; --atlas-current: #fff; --atlas-hover: #fff; }
+    .atlas-head { padding-top: .25em; break-after: avoid; }
+    .atlas-head .atlas-title { font-size: 14pt; margin: .15em 0; }
+    .atlas-intro { font-size: 9pt; margin: .15em 0 .4em; }
+    .atlas-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 .5em; }
+    .atlas-list .atlas-row { display: block; break-inside: avoid; }
+    .atlas-list .atlas-endpoint { grid-column: 1 / -1; }
+    .atlas-junction { display: none; }
+    .atlas-list .atlas-node { min-height: 0; padding: .2em .35em; margin: 0; box-shadow: none; line-height: 1.2; }
+    .atlas-time,.atlas-here { margin-top: 0; }
+    .atlas-rule { height: 10px; margin: .3em 0; }
+    .atlas-list .atlas-node[aria-current] { box-shadow: none; }
+    .atlas-icon { width: 26px; height: 26px; flex-basis: 26px; }
+    .atlas-name { font-size: 11pt; }
+    .atlas-mark,.atlas-time,.atlas-here,.atlas-foot { font-size: 8.5pt; }
+    .atlas-foot { break-before: avoid; }
+  }
+</style>

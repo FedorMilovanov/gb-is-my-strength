@@ -131,16 +131,35 @@ const context = vm.createContext({
 });
 vm.runInContext(source, context, { filename: 'site-utils.js' });
 
-localStorage.setItem('gb-highlights-v1', JSON.stringify([
+// The shared runtime no longer intercepts Storage.setItem: only the
+// canonical Library transaction owner may change stored reader records.
+const legacyRows = [
   { id: '1', text: '  Один   текст ', url: 'https://gospod-bog.ru/a/#x' },
   { id: '2', text: 'Один текст', url: 'https://gospod-bog.ru/a/?q=1' },
   { id: '3', text: 'Один текст', url: 'https://gospod-bog.ru/b/' },
-]));
-assert.equal(
-  JSON.parse(localStorage.getItem('gb-highlights-v1')).length,
-  2,
-  'dedupe must preserve the same quote on a different page',
-);
+];
+const originalBytes = JSON.stringify(legacyRows);
+localStorage.setItem('gb-highlights-v1', originalBytes);
+assert.equal(localStorage.getItem('gb-highlights-v1'), originalBytes,
+  'shared runtime must not rewrite legacy records on setItem');
+const project = window.GBRuntimeIntegrity.dedupeHighlights;
+assert.deepEqual(Array.from(project(legacyRows), item => item.id), ['1','3'],
+  'read-only legacy projection deduplicates the same text on one route, not across routes');
+assert.equal(localStorage.getItem('gb-highlights-v1'), originalBytes,
+  'projection must never change persisted bytes');
+const marker = (id, start, before) => ({
+  id, text:'Один текст', url:'https://gospod-bog.ru/a/',
+  kind:'marker', color:'amber', before, after:'после',
+  ...(start === null ? {} : {annotation:{version:1,anchor:{blockId:'p',blockIndex:0,start,end:start+10,exact:'Один текст'}}})
+});
+const positionalRows = [
+  marker('p1',0,'a'), marker('p1-duplicate',0,'a'), marker('p2',20,'b'),
+  marker('legacy1',null,'a'), marker('legacy2',null,'b'), marker('legacy1-duplicate',null,'a'),
+];
+assert.deepEqual(Array.from(project(positionalRows),item=>item.id),['p1','p2','legacy1','legacy2'],
+  'exact ranges and distinct legacy contexts must survive the read-only projection');
+assert.equal(localStorage.getItem('gb-highlights-v1'), originalBytes,
+  'positional projection is read-only as well');
 
 window.SiteUtils.lockScroll('sheet-a');
 window.SiteUtils.lockScroll('sheet-b');

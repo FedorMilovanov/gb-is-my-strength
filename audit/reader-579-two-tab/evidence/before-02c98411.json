@@ -1,0 +1,241 @@
+{
+  "update": {
+    "rounds": 6,
+    "sameSourceAll": true,
+    "tornWrites": 0,
+    "silentBothSucceeded": 5,
+    "exactlyOneRefused": 1,
+    "outcomes": [
+      {
+        "round": 0,
+        "sameSource": true,
+        "texts": [
+          "B0"
+        ],
+        "aRefused": false,
+        "bRefused": false,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 1,
+        "sameSource": true,
+        "texts": [
+          "B1"
+        ],
+        "aRefused": false,
+        "bRefused": false,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 2,
+        "sameSource": true,
+        "texts": [
+          "A2"
+        ],
+        "aRefused": false,
+        "bRefused": true,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопи"
+      },
+      {
+        "round": 3,
+        "sameSource": true,
+        "texts": [
+          "B3"
+        ],
+        "aRefused": false,
+        "bRefused": false,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 4,
+        "sameSource": true,
+        "texts": [
+          "B4"
+        ],
+        "aRefused": false,
+        "bRefused": false,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 5,
+        "sameSource": true,
+        "texts": [
+          "A5"
+        ],
+        "aRefused": false,
+        "bRefused": false,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка обновлена."
+      }
+    ]
+  },
+  "create": {
+    "rounds": 6,
+    "bothSurvived": 0,
+    "lostOne": 6,
+    "outcomes": [
+      {
+        "round": 0,
+        "texts": [
+          "Новая B0"
+        ],
+        "both": false,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 1
+      },
+      {
+        "round": 1,
+        "texts": [
+          "Новая A1"
+        ],
+        "both": false,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 1
+      },
+      {
+        "round": 2,
+        "texts": [
+          "Новая B2"
+        ],
+        "both": false,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 1
+      },
+      {
+        "round": 3,
+        "texts": [
+          "Новая A3"
+        ],
+        "both": false,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 1
+      },
+      {
+        "round": 4,
+        "texts": [
+          "Новая A4"
+        ],
+        "both": false,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 1
+      },
+      {
+        "round": 5,
+        "texts": [
+          "Новая B5"
+        ],
+        "both": false,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 1
+      }
+    ]
+  },
+  "library": {
+    "rounds": 6,
+    "silentLoss": 6,
+    "outcomes": [
+      {
+        "round": 0,
+        "sameSource": true,
+        "texts": [
+          "LibB0"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 1,
+        "sameSource": true,
+        "texts": [
+          "LibA1"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 2,
+        "sameSource": true,
+        "texts": [
+          "LibA2"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 3,
+        "sameSource": true,
+        "texts": [
+          "LibB3"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 4,
+        "sameSource": true,
+        "texts": [
+          "LibB4"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 5,
+        "sameSource": true,
+        "texts": [
+          "LibB5"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      }
+    ]
+  },
+  "errors": []
+}

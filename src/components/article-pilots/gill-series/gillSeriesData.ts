@@ -28,7 +28,7 @@ export interface GillPartTocItem {
   /** Historical hierarchy: H2/top-level = 2, H3/submenu row = 3. */
   level: 2 | 3;
   current?: boolean;
-  /** One-sentence gloss for the mobile Learning → «Конспект» outline tab.
+  /** One-sentence editorial gloss retained as source data; only selected notes are eligible for Analytics.
    *  Only populated on real level:2 (H2) rows — sub-items stay in the
    *  granular Part TOC sheet, the outline tab shows the coarse structure. */
   summary?: string;

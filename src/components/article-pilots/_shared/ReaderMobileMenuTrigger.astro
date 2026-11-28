@@ -3,20 +3,28 @@
  * Icon is taken from ReaderRail.astro (#hMobileMenuBtn), not redesigned.
  * Runtime forwards to the corresponding canonical TOC button.
  */
-interface Props { targetId: string; }
-const { targetId }=Astro.props as Props;
+interface Props { targetId?: string; mode?: 'toc' | 'research'; }
+const { targetId, mode = 'toc' }=Astro.props as Props;
 ---
 <button
   class="reader-mobile-menu-trigger"
   type="button"
-  data-reader-mobile-menu-target={targetId}
-  aria-label="Открыть оглавление и поиск"
+  data-reader-mobile-menu-target={mode === 'toc' ? targetId : undefined}
+  data-gill-marginalia-open={mode === 'research' ? '' : undefined}
+  aria-controls={mode === 'research' ? 'partTocOverlay' : undefined}
+  aria-expanded={mode === 'research' ? 'false' : undefined}
+  aria-label={mode === 'research' ? 'Открыть раздел «Аналитика»: определения и контекст статьи' : 'Открыть оглавление и поиск'}
   aria-haspopup="dialog"
 >
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
-    <path d="M4 7h16M4 12h16M4 17h16" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {mode === 'research' ? (
+      <Fragment>
+        <path d="M5 3.5h11.5a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2z" />
+        <path d="M8.5 9.5h6M8.5 13h6" />
+      </Fragment>
+    ) : <path d="M4 7h16M4 12h16M4 17h16" />}
   </svg>
-  <span>Оглавление</span>
+  <span>{mode === 'research' ? 'Аналитика' : 'Оглавление'}</span>
 </button>
 <script>
   function bindReaderMobileMenuTriggers() {

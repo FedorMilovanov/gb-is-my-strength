@@ -695,6 +695,15 @@ function checkSupportingWorkflows(workflowTexts) {
   must(interactivePath, interactive, /npm run strangler:build:production-like/, 'must build production-like dist first');
   must(interactivePath, interactive, /npm run pagefind:build:dist/, 'must build Pagefind');
   must(interactivePath, interactive, /npm run interactive-audit/, 'must execute interactive audit');
+  must(interactivePath, interactive, /reports\/series-quiz-source-handoff\/w121-search-contract\.json/, 'must upload exact-head Pagefind search-handoff evidence');
+  const interactiveRunnerPath = 'scripts/interactive-audit-runner.js';
+  const interactiveRunner = read(interactiveRunnerPath);
+  must(interactiveRunnerPath, interactiveRunner, /w121-search-contract\.mjs/, 'must execute the Pagefind search-handoff browser contract');
+  const pagefindHandoffCall = interactiveRunner.indexOf('const pagefindHandoffCode = await runPagefindSearchHandoffGuard(baseUrl);');
+  const broadAuditCall = interactiveRunner.indexOf('const auditCode = await runAudit(baseUrl);');
+  if (pagefindHandoffCall === -1 || broadAuditCall === -1 || pagefindHandoffCall >= broadAuditCall) {
+    issues.push(`${interactiveRunnerPath}: Pagefind handoff browser contract must run before the broad site audit can short-circuit it`);
+  }
 
   const sharedPath = '.github/workflows/shared-files-guard.yml';
   const shared = workflowTexts[sharedPath] || read(sharedPath);

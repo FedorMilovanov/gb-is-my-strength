@@ -10,7 +10,11 @@ const REPORT_DIR = path.join(ROOT, 'reports', 'hermenevtika-regression-guards');
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const OWNER = 'article-inline-tooltip';
-const OWNER_VERSION = 20;
+const ownerSource = fs.readFileSync(path.join(ROOT, 'src/runtime/article-tooltips.js'), 'utf8');
+const ownerEpochs = [...ownerSource.matchAll(/^const VERSION\s*=\s*(\d+)\s*;/gm)];
+assert.equal(ownerEpochs.length, 1, 'unique canonical tooltip owner epoch');
+const OWNER_VERSION = Number(ownerEpochs[0][1]);
+assert.ok(Number.isSafeInteger(OWNER_VERSION) && OWNER_VERSION >= 20, 'canonical tooltip epoch must not regress');
 const OWNED_SELECTORS = ['.gterm', '.fn-marker', '.bref[data-ref]'];
 
 assert.ok(BASE, 'AUDIT_BASE is required');
@@ -41,7 +45,7 @@ function sourceContracts() {
   const assertions = [
     ['HGT-S01', 'canonical tooltip runtime source exists', runtime.length > 0],
     ['HGT-S02', 'canonical tooltip owner stylesheet exists', runtimeCss.length > 0],
-    ['HGT-S03', 'canonical tooltip epoch is exactly 20', /const VERSION\s*=\s*20\s*;/.test(runtime)],
+    ['HGT-S03', 'canonical tooltip epoch is uniquely declared and non-regressing', ownerEpochs.length === 1 && OWNER_VERSION >= 20 && runtime === ownerSource],
     ['HGT-S04', 'canonical owner name is exact', runtime.includes("const OWNER = 'article-inline-tooltip';")],
     ['HGT-S05', 'runtime claims exactly the three inline selectors', runtime.includes("new Set(['.gterm', '.fn-marker', '.bref[data-ref]'])")],
     ['HGT-S06', 'legacy retirement mutates the original controller array', /controllers\.splice\(index,\s*1\)/.test(runtime)],
@@ -201,8 +205,10 @@ async function restoredTooltipState(page) {
 
 async function modeTransitionContracts(page) {
   await page.setViewportSize({ width: 769, height: 900 });
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
+  await page.goto(`${BASE}${ROUTE}?reader-pilot=0`, { waitUntil: 'load', timeout: 60000 });
   await waitForOwner(page);
+  assert.equal(await page.evaluate(() => Boolean(window.__NP_UNIVERSAL_PREVIEW__ || window.__NP_W57_ANNOTATIONS__)),
+    false, 'native tooltip regression guard must run under explicit Classic owner');
   const trigger = page.locator('.bref[data-ref]').first();
   await trigger.scrollIntoViewIfNeeded();
   await trigger.click();
@@ -319,8 +325,10 @@ async function modeTransitionContracts(page) {
 async function popupContracts(page) {
   await modeTransitionContracts(page);
   await page.setViewportSize({ width: 1366, height: 900 });
-  await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
+  await page.goto(`${BASE}${ROUTE}?reader-pilot=0`, { waitUntil: 'load', timeout: 60000 });
   await waitForOwner(page);
+  assert.equal(await page.evaluate(() => Boolean(window.__NP_UNIVERSAL_PREVIEW__ || window.__NP_W57_ANNOTATIONS__)),
+    false, 'native tooltip regression guard must run under explicit Classic owner');
   await twoFrames(page);
 
 
@@ -334,7 +342,7 @@ async function popupContracts(page) {
       ? window.SiteUtils._tooltipControllers.map((item) => item?.anchorSel).filter((selector) => owned.includes(selector))
       : [],
   }), OWNED_SELECTORS);
-  record('HGT-T01', 'exact owner v20 is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
+  record('HGT-T01', 'exact current epoch is published by the owner module', ownerState.globalVersion === OWNER_VERSION && ownerState.globalOwner === OWNER && ownerState.markerOwner === OWNER && ownerState.markerVersion === String(OWNER_VERSION), ownerState, 'tooltip');
   record('HGT-T02', 'shared interaction bootstrap completes after owner installation', ownerState.interactionsReady === '1', ownerState, 'tooltip');
   record('HGT-T03', 'no legacy owner remains after load', ownerState.legacyOwners.length === 0, ownerState, 'tooltip');
 

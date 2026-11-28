@@ -1,0 +1,133 @@
+{
+  "cases": 2,
+  "reports": [
+    {
+      "width": 320,
+      "originalLabel": "Часть II · Учёный",
+      "opened": {
+        "dialogLabel": "Аналитика · исследовательские материалы",
+        "focusId": "gbrMarginaliaTab",
+        "focusTab": "research",
+        "open": true
+      },
+      "chosenLabel": "Исход 19:9",
+      "before": {
+        "activeRef": "Исход 19:9",
+        "selected": 1,
+        "markCount": "0",
+        "markOpen": true,
+        "scriptureOpen": true,
+        "panelScrollTop": 622,
+        "panelScrollHeight": 928,
+        "docOverflow": 0,
+        "focusText": "Открыть библиотеку",
+        "focusClass": "gbr-marginalia-jump",
+        "dialogLabel": "Аналитика · исследовательские материалы"
+      },
+      "afterAdd": {
+        "activeRef": "Исход 19:9",
+        "selected": 1,
+        "markCount": "1",
+        "markOpen": true,
+        "scriptureOpen": true,
+        "panelScrollTop": 622,
+        "noteText": [
+          "Cross-tab Analytics note 320"
+        ],
+        "focusText": "Открыть библиотеку",
+        "focusClass": "gbr-marginalia-jump",
+        "ariaLabel": "Аналитика · исследовательские материалы"
+      },
+      "afterDelete": {
+        "activeRef": "Исход 19:9",
+        "selected": 1,
+        "markCount": "0",
+        "markOpen": true,
+        "scriptureOpen": true,
+        "panelScrollTop": 622,
+        "empty": "Выделите фразу в статье, чтобы сохранить её здесь.",
+        "focusText": "Открыть библиотеку",
+        "focusClass": "gbr-marginalia-jump",
+        "ariaLabel": "Аналитика · исследовательские материалы"
+      },
+      "sameTab": {
+        "count": "1",
+        "notes": [
+          "Same-tab QA note 320"
+        ]
+      },
+      "tocLabel": "Часть II · Учёный",
+      "close": {
+        "focusIsOpener": true,
+        "focusLabel": "Открыть раздел «Аналитика»: определения и контекст статьи",
+        "expanded": "false",
+        "open": false
+      },
+      "errors": []
+    },
+    {
+      "width": 390,
+      "originalLabel": "Часть II · Учёный",
+      "opened": {
+        "dialogLabel": "Аналитика · исследовательские материалы",
+        "focusId": "gbrMarginaliaTab",
+        "focusTab": "research",
+        "open": true
+      },
+      "chosenLabel": "Исход 19:9",
+      "before": {
+        "activeRef": "Исход 19:9",
+        "selected": 1,
+        "markCount": "0",
+        "markOpen": true,
+        "scriptureOpen": true,
+        "panelScrollTop": 552,
+        "panelScrollHeight": 858,
+        "docOverflow": 0,
+        "focusText": "Открыть библиотеку",
+        "focusClass": "gbr-marginalia-jump",
+        "dialogLabel": "Аналитика · исследовательские материалы"
+      },
+      "afterAdd": {
+        "activeRef": "Исход 19:9",
+        "selected": 1,
+        "markCount": "1",
+        "markOpen": true,
+        "scriptureOpen": true,
+        "panelScrollTop": 552,
+        "noteText": [
+          "Cross-tab Analytics note 390"
+        ],
+        "focusText": "Открыть библиотеку",
+        "focusClass": "gbr-marginalia-jump",
+        "ariaLabel": "Аналитика · исследовательские материалы"
+      },
+      "afterDelete": {
+        "activeRef": "Исход 19:9",
+        "selected": 1,
+        "markCount": "0",
+        "markOpen": true,
+        "scriptureOpen": true,
+        "panelScrollTop": 552,
+        "empty": "Выделите фразу в статье, чтобы сохранить её здесь.",
+        "focusText": "Открыть библиотеку",
+        "focusClass": "gbr-marginalia-jump",
+        "ariaLabel": "Аналитика · исследовательские материалы"
+      },
+      "sameTab": {
+        "count": "1",
+        "notes": [
+          "Same-tab QA note 390"
+        ]
+      },
+      "tocLabel": "Часть II · Учёный",
+      "close": {
+        "focusIsOpener": true,
+        "focusLabel": "Открыть раздел «Аналитика»: определения и контекст статьи",
+        "expanded": "false",
+        "open": false
+      },
+      "errors": []
+    }
+  ]
+}

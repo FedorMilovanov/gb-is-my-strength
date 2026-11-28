@@ -40,14 +40,26 @@ try{
  for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
   browser=await driver.launch({headless:true});
   for(const slug of paths){
-   const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
+   // Each width is a cold document. Crossing the Reader breakpoint in an
+   // existing document intentionally reloads it and invalidates measurements.
+   for(const width of widths){
+   const page=await browser.newPage({viewport:{width,height:width===390?844:900},reducedMotion:'reduce',serviceWorkers:'block'});
+   const errors=[],failed=[],navigations=[];
+   const route='/baptisty-rossii/'+slug+'/';
+   page.on('console',m=>{if(m.type()==='error'&&m.text().startsWith('Reader desktop:'))errors.push(m.text());});
+   page.on('pageerror',e=>errors.push(String(e)));
+   page.on('requestfailed',r=>{if(r.url().startsWith(base+'/'))failed.push({url:r.url(),error:r.failure()?.errorText});});
+   page.on('framenavigated',f=>{if(f===page.mainFrame())navigations.push(f.url());});
    try{
-    const response=await page.goto(base+'/baptisty-rossii/'+slug+'/',{waitUntil:'domcontentloaded',timeout:30000});
+    await page.route(/^https:\/\/(?:mc\.yandex\.(?:ru|com)|mdd\.yandex\.net)\//i,r=>r.fulfill({status:200,contentType:'application/javascript',body:'',headers:{'access-control-allow-origin':'*'}}));
+    const response=await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:30000});
+    if(!response?.ok()||page.url()!==base+route)throw Error('unexpected archival route response');
+    if(width>=1121&&await page.locator('[data-gb-reader-desktop-bootstrap]').count()){
+     await page.waitForFunction(()=>document.body?.classList.contains('np-w57-ready')&&window.__NP_UNIVERSAL_PREVIEW__?.ready===true&&window.__NP_W57_ANNOTATIONS__?.ready===true,null,{timeout:15000});
+    }
     await page.evaluate(()=>document.querySelectorAll('img[loading=lazy]').forEach(img=>img.loading='eager'));
     await Promise.race([page.evaluate(()=>document.fonts?.ready),page.waitForTimeout(4000)]);
     await page.waitForFunction(()=>[...document.querySelectorAll('[data-baptist-master-evidence] img')].every(img=>img.complete),null,{timeout:5000}).catch(()=>{});
-    for(const width of widths){
-     await page.setViewportSize({width,height:width===390?844:900});
      for(const theme of themes){
       await page.evaluate(t=>{
        if(window.GBReaderPreferences?.setTheme)window.GBReaderPreferences.setTheme(t,{source:'baptist-archival-qa'});
@@ -90,6 +102,7 @@ try{
         })
        };
       });
+      if(page.url()!==base+route)throw Error('archival witness navigated or fell back');
       results.push({sha,engine,slug,width,theme,status:response.status(),...data});
       if(engine==='chromium'&&['light','dark'].includes(theme)&&data.figures.length){
        await page.locator('[data-baptist-master-evidence]').first().scrollIntoViewIfNeeded();
@@ -97,9 +110,9 @@ try{
        await page.locator('[data-baptist-master-evidence]').first().screenshot({path:join(OUT,name),timeout:14000}).catch(()=>{});
       }
      }
-    }
-   }catch(e){results.push({sha,engine,slug,error:String(e)})}
-   await page.close();
+   }catch(e){results.push({sha,engine,slug,width,error:String(e),url:page.url(),errors,failed,navigations})}
+   finally{await page.close();}
+   }
   }
   await browser.close();browser=null;
  }
