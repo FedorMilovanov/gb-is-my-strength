@@ -48,7 +48,7 @@ try {
   await page.route('https://example.test/**', request => request.fulfill({
     status: 200,
     contentType: 'text/html; charset=utf-8',
-    body: `<!doctype html><html><head><meta charset="utf-8"></head><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:false,archaeologyProjection:${JSON.stringify(projection)}});<\/script></body></html>`,
+    body: `<!doctype html><html><head><meta charset="utf-8"></head><body><div id="stage" style="width:100vw;height:100vh"></div><script>${engine}<\/script><script>window.projectionTest=MapEngine.createMap(document.getElementById('stage'),${JSON.stringify(route)},{showIntro:true,archaeologyProjection:${JSON.stringify(projection)}});<\/script></body></html>`,
   }));
   checkpoint = 'navigate';
   await page.goto('https://example.test/karty/test/?place=ur');
@@ -56,6 +56,7 @@ try {
   await page.waitForSelector('.me-panel--open');
   await page.waitForFunction(() => !document.querySelector('.me-loading'));
   checkpoint = 'initial-panel';
+  assert.equal(await page.locator('.me-intro').count(), 0, 'valid URL place must never be covered by the Intro');
   assert.equal(await panel.getAttribute('inert'), null, 'standalone open panel must not remain inert');
   assert.equal(await panel.getAttribute('aria-hidden'), 'false');
   assert.equal(await page.locator('[data-archaeology-projection-root]').count(), 0, 'story tab must not render archaeology');
@@ -72,6 +73,57 @@ try {
   assert.equal(await page.locator('[data-source-id="field-source"] a').first().getAttribute('href'), 'https://example.test/report');
   assert.match(await page.locator('[data-source-id="field-source"] .map-arch-source__meta').first().textContent(), /академическая рамка/);
 
+  checkpoint = 'reader-typography';
+  const typographyProfiles = [];
+  const originalTheme = await page.locator('.me-map').getAttribute('data-map-theme');
+  const minSizes = {
+    '.map-arch-projection__eyebrow': 11,
+    '.map-arch-badge': 11,
+    '.map-arch-projection__note': 12,
+    '.map-arch-card__statement': 14,
+    '.map-arch-card__limitations': 12,
+    '.map-arch-source__link': 13,
+    '.map-arch-source__meta': 12,
+  };
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const theme of ['light', 'dark']) {
+      if (await page.locator('.me-map').getAttribute('data-map-theme') !== theme) {
+        await page.locator('.me-theme-btn').evaluate(button => button.click());
+      }
+      assert.equal(await page.locator('.me-map').getAttribute('data-map-theme'), theme);
+      const measured = await page.locator('[data-archaeology-projection-root]').evaluate((root, selectors) => {
+        const roles = Object.fromEntries(Object.keys(selectors).map(selector => {
+          const nodes = [...root.querySelectorAll(selector)];
+          return [selector, nodes.map(node => {
+            const style = getComputedStyle(node);
+            return { size: parseFloat(style.fontSize), line: parseFloat(style.lineHeight), color: style.color };
+          })];
+        }));
+        return { roles, overflow: root.scrollWidth - root.clientWidth };
+      }, minSizes);
+      for (const [selector, min] of Object.entries(minSizes)) {
+        const samples = measured.roles[selector];
+        assert.ok(samples.length > 0, `missing typography role ${selector}`);
+        assert.ok(samples.every(sample => sample.size >= min && sample.line >= sample.size * 1.4 - 0.1),
+          `${width}/${theme}: unreadable ${selector}: ${JSON.stringify(samples)}`);
+      }
+      assert.ok(measured.overflow <= 1, `${width}/${theme}: archaeology projection horizontal overflow ${measured.overflow}`);
+      assert.equal(await page.locator('.map-arch-projection__note').evaluate(node => getComputedStyle(node).color),
+        theme === 'light' ? 'rgb(107, 91, 71)' : 'rgb(154, 162, 174)', `${width}/${theme}: note must use the active palette`);
+      assert.equal(await page.locator('a.map-arch-source__link').first().evaluate(node => getComputedStyle(node).textDecorationLine),
+        'underline', 'document links must be visibly identifiable without relying on color');
+      if (theme === 'light') {
+        assert.equal(await page.locator('.map-arch-badge--high').first().evaluate(node => getComputedStyle(node).color), 'rgb(33, 100, 59)');
+      }
+      typographyProfiles.push({ width, theme, roles: Object.keys(minSizes).length, overflow: measured.overflow });
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  if (await page.locator('.me-map').getAttribute('data-map-theme') !== originalTheme) {
+    await page.locator('.me-theme-btn').evaluate(button => button.click());
+  }
+
   checkpoint = 'close-panel';
   await page.locator('[data-tab="story"]').click();
   await page.waitForFunction(() => !document.querySelector('[data-archaeology-projection-root]'));
@@ -87,12 +139,37 @@ try {
   await page.locator('[data-tab="arch"]').click();
   await page.waitForSelector('[data-claim-id="retracted-context"]');
   assert.equal(await page.locator('[data-source-id="retracted-source"] a').count(), 0);
+  const inactiveSource = page.locator('[data-source-id="retracted-source"] span.map-arch-source__link');
+  assert.equal(await inactiveSource.count(), 1);
+  assert.equal(await inactiveSource.evaluate(node => getComputedStyle(node).textDecorationLine), 'none');
+  assert.equal(await inactiveSource.evaluate(node => getComputedStyle(node).color),
+    originalTheme === 'light' ? 'rgb(46, 36, 24)' : 'rgb(233, 228, 214)');
   assert.equal(await page.locator('[data-source-id="retracted-source"][data-evidence-use="negative"][data-source-status="retracted"]').count(), 1);
   assert.equal(await page.locator('.me-arch-footer').count(), 0);
+  checkpoint = 'initial-entry-ownership';
+  const entryProfiles = [{ mode: 'explicit-place', intro: false, panel: true }];
+  await page.evaluate(() => localStorage.setItem('me-map-state-projection-test', JSON.stringify({ place: 'ur', story: 'main' })));
+  await page.goto('https://example.test/karty/test/');
+  await page.waitForSelector('.me-panel--open');
+  assert.equal(await page.locator('.me-intro').count(), 0, 'resumed place must never compete with the Intro');
+  assert.equal(await panel.getAttribute('inert'), null);
+  await page.locator('[data-tab="arch"]').click();
+  await page.waitForSelector('[data-claim-id="ur-context"]');
+  entryProfiles.push({ mode: 'saved-place', intro: false, panel: true });
+  for (const [mode, query] of [['default', ''], ['invalid-place', '?place=missing'], ['story-only', '?story=main']]) {
+    await page.evaluate(() => localStorage.removeItem('me-map-state-projection-test'));
+    await page.goto('https://example.test/karty/test/' + query);
+    await page.locator('.me-intro').waitFor();
+    await page.waitForFunction(() => document.activeElement?.classList.contains('me-intro__btn'));
+    await page.locator('.me-intro__btn').click();
+    await page.locator('.me-intro').waitFor({ state: 'detached' });
+    assert.equal(await page.locator('.me-panel--open').count(), 0, mode + ' must not invent a selected place');
+    entryProfiles.push({ mode, intro: true, panel: false });
+  }
   assert.deepEqual(errors, []);
 
-  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, errors }, null, 2));
-  console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, errors: 0 }, null, 2));
+  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, entryProfiles, errors }, null, 2));
+  console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, entryProfiles, errors: 0 }, null, 2));
 } catch (error) {
   const panelState = await page.locator('.me-panel').evaluate(element => ({
     className: element.className,
