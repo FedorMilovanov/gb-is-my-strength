@@ -1,0 +1,132 @@
+{
+  "status": "RESEARCH_HOLD",
+  "canonicalRead": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "purpose": "Two editorial lanes distinguish conference-related reports from the separate statement discussion. No causal link, chronology of publication is not session schedule. Proposed replacement/support of existing 2018 history passage, not additional factual claims.",
+  "sourcePaths": [
+    "src/components/journal/G3HistoryFeature.astro#L103-L124",
+    "src/data/journal/g3HistorySources.ts"
+  ],
+  "lanes": [
+    {
+      "id": "conference",
+      "title": "Жизнь общины",
+      "records": [
+        {
+          "date": "2018-01-23",
+          "dateKind": "publication",
+          "sourceIds": [
+            "challies-2018-video"
+          ],
+          "title": "Тим Чаллис",
+          "claim": "Author reports multilingual reading of Revelation 5 in a video concluding his presentation; video not viewed in this wave."
+        },
+        {
+          "date": "2018-01-30",
+          "dateKind": "report publication",
+          "sourceIds": [
+            "firstlove-2018"
+          ],
+          "title": "FirstLove Missions",
+          "claim": "First exhibition participation and over 16,000 copies of literature distributed, as reported by the mission; not audience."
+        },
+        {
+          "date": "2018-02-02",
+          "dateKind": "article publication",
+          "sourceIds": [
+            "challies-2018-lessons"
+          ],
+          "title": "Гостеприимство",
+          "claim": "Author separately explains lessons from local church experience, including hospitality."
+        }
+      ]
+    },
+    {
+      "id": "discussion",
+      "title": "Заявление",
+      "records": [
+        {
+          "date": "2018-06-19",
+          "dateKind": "meeting date attributed to author",
+          "sourceIds": [
+            "ascol-2018"
+          ],
+          "title": "Встреча в Далласе",
+          "claim": "Ascol reports meeting of fourteen and his preparation of initial text; not G3 conference or independent minutes."
+        },
+        {
+          "date": "2018-09-04",
+          "dateKind": "statement publication",
+          "sourceIds": [
+            "statement-2018"
+          ],
+          "title": "Социальная справедливость и Евангелие",
+          "claim": "Statement published after discussion and revision; distinguish the authors' stated positions from independent fact."
+        },
+        {
+          "date": "2018-09",
+          "dateKind": "reaction coverage month",
+          "sourceIds": [
+            "responses-2018"
+          ],
+          "title": "Разные позиции",
+          "claim": "Contemporary reactions include support and objection. Conference participation does not imply endorsement."
+        }
+      ]
+    }
+  ],
+  "qa": {
+    "artifact": "G3_2018_documentary_spread.html",
+    "sha256": "c605bba06150c1ea9355f287b074ddbca79baa7f9a813675fb2950b95156bf22",
+    "surface": "isolated ChatGPT Chromium, noJS",
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "cases": 6,
+    "overflow": 0,
+    "duplicateIds": 0,
+    "records": 6,
+    "links": 7,
+    "keyboardForwardPerCase": 7,
+    "keyboardBackwardPerCase": 6,
+    "print": [
+      {
+        "format": "A4",
+        "pages": 1,
+        "words": 294,
+        "links": 7
+      },
+      {
+        "format": "Letter",
+        "pages": 1,
+        "words": 294,
+        "links": 7
+      }
+    ],
+    "visual": "1440 light, 390 dark, A4 inspected directly. Letter bounding boxes and text checked, not direct visual inspection. Exact HTML and QA runner provided in owner chat, JSON stores source-bound model and QA, not full template."
+  },
+  "resources": {
+    "RDC": 0,
+    "CUDA": false,
+    "ownerWorkstation": false,
+    "windowsWebKit": false
+  },
+  "gate": "No production write, no new rights, no donor merge. Independent editorial review, real site QA, Firefox/WebKit, full accessibility and placement acceptance outstanding.",
+  "retrospective": {
+    "date": "2025-05-23",
+    "dateKind": "retrospective article publication",
+    "sourceIds": [
+      "challies"
+    ],
+    "title": "Позднейшее свидетельство",
+    "claim": "Challies retrospectively reported that he participated in discussions but did not sign.",
+    "placement": "Outside both 2018 chronology lanes."
+  },
+  "sourceBoundary": "Ascol's account and History and Formation belong to the same testimony family, not independent corroboration.",
+  "qaHistoryNote": "The original G39 QA below refers to G39 artifact only; superseding G41 artifact and QA in G41-ACCESSIBILITY.md."
+}

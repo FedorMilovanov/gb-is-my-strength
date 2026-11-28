@@ -1,0 +1,31 @@
+---
+import {exhibitView} from './av-exhibit-model.mjs';
+import './av-exhibit.css';
+// Parent passes only the accepted, canonical evidence projection. No route owns approval here.
+interface SourceLink { id: string; label: string; href: string; citationId: string }
+interface Props { evidence: unknown }
+const v=exhibitView(Astro.props.evidence);
+---
+{v && <figure class:list={['g3av',{'g3av-has-frame':!!v.frame}]} data-g3-av-exhibit={v.excerptId}>
+ <div class="g3av-body">
+  {v.frame && <div class="g3av-frame">
+   <img src={v.frame.src} width={v.frame.width} height={v.frame.height} alt={v.frame.alt} loading="lazy" decoding="async"/>
+   <p class="g3av-frame-meta">Кадр · {v.frameTime} · {v.frame.credit}</p>
+  </div>}
+  <div class="g3av-content">
+   <p class="g3av-kicker">{v.event} · <time datetime={v.sessionDate}>{v.sessionDate.split('-').reverse().join('.')}</time></p>
+   {v.textMode==='verified-quote' ? <div class="g3av-quotation">
+    <p class="g3av-label">Перевод с английского</p>
+    <blockquote lang="ru"><p>{v.translatedQuote}</p></blockquote>
+    <p class="g3av-original-label">Оригинал · English</p>
+    <blockquote class="g3av-original" lang="en"><p>{v.originalQuote}</p></blockquote>
+   </div> : <div><p class="g3av-label">Пересказ фрагмента</p><p class="g3av-paraphrase">{v.paraphrase}</p></div>}
+   <p class="g3av-attribution"><strong>{v.speaker}</strong><span>{v.sessionTitle}</span></p>
+  </div>
+ </div>
+ <figcaption class="g3av-caption">
+  <a class="g3av-time" href={v.playbackHref} aria-label={'Оригинальная запись: '+v.speaker+', '+v.sessionTitle+', '+v.interval}><span aria-hidden="true" class="g3av-play">▶</span><span>Смотреть фрагмент <b>{v.interval}</b></span></a>
+  <p class="g3av-recording">Запись: <a href={v.recordingUrl}>{v.recordingUrl}</a></p>
+  <div class="g3av-sources">{v.sourceLinks.map((s: SourceLink)=><a id={s.citationId} data-journal-citation href={s.href}>{s.label}</a>)}</div>
+ </figcaption>
+</figure>}

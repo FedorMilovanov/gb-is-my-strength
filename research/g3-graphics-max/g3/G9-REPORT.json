@@ -1,0 +1,70 @@
+{
+  "testedComponentHead": "216c612a7bfb9a6b337a87e9719b4c27cdf1e59f",
+  "cssBlob": "9d367d67ff657bf380fc3ddd5bd1eb679b6c7f05",
+  "build": "PASS",
+  "environment": {
+    "node": "22.23.4",
+    "astro": "7.4.12",
+    "os": "Windows",
+    "pdfText": "Poppler pdftotext -layout -enc UTF-8"
+  },
+  "widths": [
+    320,
+    390,
+    850
+  ],
+  "chromium": {
+    "geometryPass": 24,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "negativePass": 1,
+    "total": 141
+  },
+  "firefox": {
+    "geometryPass": 24,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "negativePass": 1,
+    "total": 141
+  },
+  "webkit": {
+    "geometryPass": 24,
+    "returnPass": 104,
+    "hashPass": 4,
+    "printPass": 4,
+    "crossPass": 4,
+    "negativePass": 1,
+    "total": 141
+  },
+  "total": 423,
+  "failures": [],
+  "browserExit": 0,
+  "pdfDateGate": {
+    "light": {
+      "years": [
+        2013,
+        2019,
+        2021,
+        2026
+      ],
+      "broken": 0
+    },
+    "dark": {
+      "years": [
+        2013,
+        2019,
+        2021,
+        2026
+      ],
+      "broken": 0
+    },
+    "pass": 8,
+    "scope": "standalone compiled witness A4 text extraction; not visual PDF or full route acceptance"
+  },
+  "note": "Initial wrapper expected whitespace after year and falsely failed standalone year lines. Corrected separate command trimmed exact full lines, required exactly one each and no 201/202 lines; PASS.",
+  "evidence": "%TEMP%/g3-graphics-g8-25a3d50e/results"
+}

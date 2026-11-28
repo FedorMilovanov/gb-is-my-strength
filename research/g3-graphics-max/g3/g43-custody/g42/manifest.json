@@ -1,0 +1,162 @@
+[
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-01",
+    "sourceId": "gnl-2015",
+    "href": "#history-source-gnl-2015",
+    "canonicalReturn": "g3-year-2015",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Каталог GNL, 2015",
+    "originalUrl": "https://www.gnli.com/titles/2015-G3-Conference-or-G3-Ministries/2910"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-02",
+    "sourceId": "white-manuscripts-2022",
+    "href": "#history-source-white-manuscripts-2022",
+    "canonicalReturn": "g3-year-2022",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Джеймс Уайт · Making Sense of Manuscripts",
+    "originalUrl": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-making-sense-of-manuscripts-immanuel-bible-church-springfield-virginia-9-15-2022/"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-03",
+    "sourceId": "white-bible-2022",
+    "href": "#history-source-white-bible-2022",
+    "canonicalReturn": "g3-year-2022",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Джеймс Уайт · How We Got Our Bible",
+    "originalUrl": "https://www.aomin.org/aoblog/road-trip/road-trip-g3-regional-conference-how-we-got-our-bible-immanuel-bible-church-springfield-virginia-9-15-2022/"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-04",
+    "sourceId": "gnl-2014",
+    "href": "#history-source-gnl-2014",
+    "canonicalReturn": "g3-year-2014",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Каталог GNL, 2014",
+    "originalUrl": "https://www.gnli.com/titles/2014-G3-Conference-or-G3-Ministries/2909"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-05",
+    "sourceId": "challies-2018-lessons",
+    "href": "#history-source-challies-2018-lessons",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Статья Тима Чаллиса · 2 февраля 2018",
+    "originalUrl": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-06",
+    "sourceId": "gnl-2016",
+    "href": "#history-source-gnl-2016",
+    "canonicalReturn": "g3-year-2016",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Каталог GNL, 2016",
+    "originalUrl": "https://www.gnli.com/titles/2016-G3-Conference-or-G3-Ministries/2912"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-07",
+    "sourceId": "crotts-2021",
+    "href": "#history-source-crotts-2021",
+    "canonicalReturn": "g3-growth",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Свидетельство Джеффа Кроттса · 2021",
+    "originalUrl": "https://anchoragegrace.org/gospel-grace-and-glory/"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-08",
+    "sourceId": "gnl-2013",
+    "href": "#history-source-gnl-2013",
+    "canonicalReturn": "g3-year-2013",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Каталог GNL, 2013",
+    "originalUrl": "https://www.gnli.com/titles/2013-G3-Conference-or-G3-Ministries/2908"
+  },
+  {
+    "specimen": "atlas",
+    "citationId": "cite-g42-atlas-09",
+    "sourceId": "piper-2019",
+    "href": "#history-source-piper-2019",
+    "canonicalReturn": "g3-year-2019",
+    "fixtureReturn": "#g3-meaning",
+    "label": "Авторский текст Джона Пайпера · 2019",
+    "originalUrl": "https://www.desiringgod.org/messages/the-invincible-power-of-joy-for-world-missions"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-01",
+    "sourceId": "challies-2018-video",
+    "href": "#history-source-challies-2018-video",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Сообщение Чаллиса · 23 января 2018",
+    "originalUrl": "https://www.challies.com/vlog/from-every-tribe-and-language-and-people-and-nation/"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-02",
+    "sourceId": "firstlove-2018",
+    "href": "#history-source-firstlove-2018",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Отчёт FirstLove · 30 января 2018",
+    "originalUrl": "https://www.missionsfirstlove.org/united-states-blog/g3-conference-in-atlanta-georgia"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-03",
+    "sourceId": "challies-2018-lessons",
+    "href": "#history-source-challies-2018-lessons",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Статья Тима Чаллиса · 2 февраля 2018",
+    "originalUrl": "https://www.challies.com/articles/seven-key-lessons-in-diversity-from-grace-fellowship-church/"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-04",
+    "sourceId": "ascol-2018",
+    "href": "#history-source-ascol-2018",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Рассказ Тома Аскола",
+    "originalUrl": "https://founders.org/articles/the-statement-on-social-justice-and-the-gospel/"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-05",
+    "sourceId": "statement-2018",
+    "href": "#history-source-statement-2018",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Текст заявления и история подготовки",
+    "originalUrl": "https://socialjusticestatement.com/"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-06",
+    "sourceId": "responses-2018",
+    "href": "#history-source-responses-2018",
+    "canonicalReturn": "g3-year-2018",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Отклики 2018 года",
+    "originalUrl": "https://churchleaders.com/news/333017-the-statement-on-social-justice-and-the-gospel-stirs-up-controversy-and-conversation.html"
+  },
+  {
+    "specimen": "spread",
+    "citationId": "cite-g42-spread-07",
+    "sourceId": "challies",
+    "href": "#history-source-challies",
+    "canonicalReturn": "g3-history",
+    "fixtureReturn": "#g3-year-2018",
+    "label": "Воспоминания Чаллиса · 23 мая 2025",
+    "originalUrl": "https://www.challies.com/articles/you-me-and-g3/"
+  }
+]

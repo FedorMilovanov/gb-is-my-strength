@@ -1,0 +1,192 @@
+{
+  "status": "RESEARCH_HOLD",
+  "baseline": "6e0c9a0c18ae8ce2a0228d07b1ad6794a092a9c8",
+  "canonicalMain": "b3f4e00436fe8dd154694ea5a38d909353f9047e",
+  "observed": "2026-11-24",
+  "sources": {
+    "historicalList": "https://veritasdomain.wordpress.com/2015/01/25/complete-videos-from-g3-conference-2015/",
+    "participantNotes": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+    "currentCatalogue": "https://www.sermonaudio.com/series/64422"
+  },
+  "scope": "Metadata crosswalk, not original media identity, event timetable, completeness or audio verification. Participant notes give title and slot; current catalogue gives date and duration of its edition. No public media rights.",
+  "rows": [
+    {
+      "slot": "1",
+      "speaker": "Josh Buice",
+      "catalogueDate": null,
+      "recordingId": null,
+      "durationSeconds": null,
+      "status": "outside_current_sample",
+      "attendeeReportedTitle": "Unwise Men Proclaiming the Wisdom of God",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata",
+      "attendeeReportedScripture": "1 Corinthians 1:18–25"
+    },
+    {
+      "slot": "2",
+      "speaker": "Tim Challies",
+      "catalogueDate": "2015-01-22",
+      "recordingId": "212152051282",
+      "durationSeconds": 3233,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "3",
+      "speaker": "James White",
+      "catalogueDate": "2015-01-22",
+      "recordingId": "212152044526",
+      "durationSeconds": 3696,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "4",
+      "speaker": "Richard Owen Roberts",
+      "catalogueDate": "2015-01-22",
+      "recordingId": "212152042231",
+      "durationSeconds": 3201,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "5",
+      "speaker": "Voddie Baucham",
+      "catalogueDate": "2015-01-22",
+      "recordingId": "212152037231",
+      "durationSeconds": 2335,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "6",
+      "speaker": "Paul Washer",
+      "catalogueDate": "2015-01-22",
+      "recordingId": "21215202928",
+      "durationSeconds": 3437,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "7",
+      "speaker": "James White",
+      "catalogueDate": "2015-01-23",
+      "recordingId": "212152022176",
+      "durationSeconds": 3227,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "8",
+      "speaker": "H.B. Charles Jr.",
+      "catalogueDate": "2015-01-23",
+      "recordingId": "212152013461",
+      "durationSeconds": 3079,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "Q&A",
+      "speaker": null,
+      "catalogueDate": null,
+      "recordingId": null,
+      "durationSeconds": null,
+      "status": "outside_current_sample",
+      "attendeeReportedTitle": "Q&A",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata"
+    },
+    {
+      "slot": "9",
+      "speaker": "Richard Owen Roberts",
+      "catalogueDate": "2015-01-23",
+      "recordingId": "21215204387",
+      "durationSeconds": 4610,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "10",
+      "speaker": "Voddie Baucham",
+      "catalogueDate": "2015-01-23",
+      "recordingId": "212151957575",
+      "durationSeconds": 3416,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "11",
+      "speaker": "Steven Lawson",
+      "catalogueDate": null,
+      "recordingId": null,
+      "durationSeconds": null,
+      "status": "alternate_edition_unresolved",
+      "attendeeReportedTitle": "The War on the Word",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata"
+    },
+    {
+      "slot": "12",
+      "speaker": "David Miller",
+      "catalogueDate": "2015-01-24",
+      "recordingId": "212151946281",
+      "durationSeconds": 2335,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "13",
+      "speaker": "Paul Washer",
+      "catalogueDate": "2015-01-24",
+      "recordingId": "212151937224",
+      "durationSeconds": 3760,
+      "status": "metadata_match"
+    },
+    {
+      "slot": "14",
+      "speaker": "Steven Lawson",
+      "catalogueDate": null,
+      "recordingId": null,
+      "durationSeconds": null,
+      "status": "outside_current_sample",
+      "attendeeReportedTitle": "The God-Breathed Word",
+      "titleSource": "https://farinvazquez.blogspot.com/2015/02/g3-2015.html",
+      "titleEvidence": "attendee report only; not acquired recording metadata"
+    }
+  ],
+  "alternate": {
+    "slot": "11",
+    "recordingId": "1201905434136",
+    "catalogueDate": "2015-01-12",
+    "durationSeconds": 3404,
+    "status": "date_conflict_and_timebase_unresolved; excluded from eleven matches"
+  },
+  "qa": {
+    "engine": "Chromium, noJS",
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "cases": 6,
+    "horizontalOverflow": 0,
+    "slots": 15,
+    "matches": 11,
+    "sourceLinks": 15,
+    "print": [
+      {
+        "format": "A4",
+        "pages": 2,
+        "words": [
+          152,
+          126
+        ]
+      },
+      {
+        "format": "Letter",
+        "pages": 2,
+        "words": [
+          152,
+          126
+        ]
+      }
+    ],
+    "htmlSha256": "94602ad3718d936928c402d4a88fc0bea5a9200ebf88217e48761ab4ff46dbb1",
+    "note": "Owner-chat standalone V3 specimen. Print Q&A column widened and page break before Q&A. Not site QA."
+  },
+  "handoff": "Research-only. Main already contains accepted G3 visual components. No production write or merge permission; editorial approval and fresh source authority required."
+}
