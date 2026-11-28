@@ -256,6 +256,53 @@ function validateStructure(snapshot) {
   return problems;
 }
 
+// Route-owned guard: the seven labels remain selectable, contained and non-overlapping;
+// changing print readability must not alter the screen diagram.
+async function exerciseJourneyPrintLabels(page) {
+  const expected = [
+    'Быт 11:31', 'Быт 11:31–12:5', 'Быт 12–13', 'Быт 13:10–12',
+    'Быт 14; 19', 'Быт 19:20–23', 'Быт 19:30',
+  ];
+  try {
+    for (const media of ['screen', 'print']) {
+      await page.emulateMedia({ media });
+      const result = await page.locator('figure[aria-labelledby="lot-journey-caption"] svg').evaluate(svg => {
+        const labels = [...svg.querySelectorAll('.lot-journey-reference-labels > text')];
+        const allText = [...svg.querySelectorAll('text')];
+        const view = svg.viewBox.baseVal;
+        const overlaps = [];
+        const clipped = [];
+        for (const label of labels) {
+          const box = label.getBBox();
+          if (box.x < view.x || box.y < view.y || box.x + box.width > view.x + view.width ||
+              box.y + box.height > view.y + view.height) clipped.push(label.textContent);
+          for (const other of allText) {
+            if (other === label) continue;
+            const candidate = other.getBBox();
+            if (box.x < candidate.x + candidate.width && candidate.x < box.x + box.width &&
+                box.y < candidate.y + candidate.height && candidate.y < box.y + box.height) {
+              overlaps.push([label.textContent, other.textContent]);
+            }
+          }
+        }
+        return {
+          labels: labels.map(label => label.textContent.trim()),
+          fontSizes: labels.map(label => parseFloat(getComputedStyle(label).fontSize)),
+          overlaps,
+          clipped,
+        };
+      });
+      assert.deepEqual(result.labels, expected, media + ': seven Scripture labels');
+      assert.deepEqual(result.fontSizes, expected.map(() => media === 'print' ? 16 : 13),
+        media + ': separate print and screen size');
+      assert.deepEqual(result.overlaps, [], media + ': overlapping labels');
+      assert.deepEqual(result.clipped, [], media + ': clipped labels');
+    }
+  } finally {
+    await page.emulateMedia({ media: null });
+  }
+}
+
 async function exerciseToc(page) {
   for (const href of TOC) {
     const ok = await page.evaluate((target) => {
@@ -352,6 +399,7 @@ async function inspectCase(engineName, browserType, profile, theme) {
     const snapshot = await structuralSnapshot(page);
     const problems = validateStructure(snapshot);
     assert.deepEqual(problems, [], problems.join(' | '));
+    await exerciseJourneyPrintLabels(page);
     await exerciseToc(page);
     await exerciseQuiz(page);
     assert.deepEqual(pageErrors, [], `page errors: ${pageErrors.join(' | ')}`);
