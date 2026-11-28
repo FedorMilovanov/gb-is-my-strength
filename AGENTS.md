@@ -1,5 +1,12 @@
 # AGENTS.md — operational contract
 
+## ENGINEERING FIRST — общий принцип работы (25.11.2026)
+
+**Меньше координационной суеты — больше реальной инженерной работы за одну волну.** Общий регламент всех проектов: [AuditRepo Operating Model — ENGINEERING FIRST](https://github.com/FedorMilovanov/AuditRepo/blob/main/AUDITREPO_OPERATING_MODEL.md) ([policy PR #590](https://github.com/FedorMilovanov/AuditRepo/pull/590)). Прямая директива владельца действует немедленно.
+
+По умолчанию агент самостоятельно закрывает порученный scope от диагностики до проверенного результата, включая связанные мелочи; «Продолжай» — следующий полезный блок в текущем сеансе. MAX — только явно назначенная или уже действующая роль в конкретном направлении, не обязательный режим: наличие runbook не активирует его и не расширяет полномочия. При действующем MAX он сам закрывает доступные исправления и интеграцию, делегирует только целостные пакеты, когда полезны параллельность, специализация или независимая приёмка. Один содержательный handoff по готовому пакету либо немедленная эскалация реального блокера. Без микропоручений, повторных неизменных статусов, искусственных квот и новых уровней управления. При HOLD — независимая разрешённая работа. Сохранять единственного writer, обязательные проверки, независимую приёмку, безопасность, права, ресурсные и релизные ограничения.
+
+
 > **Владелец:** Фёдор Милованов.  
 > Этот короткий файл обязателен перед mutation. Текущая маршрутизация архитектурных,
 > route, content и UI-контрактов находится в [`AGENTS-REFERENCE.md`](AGENTS-REFERENCE.md);
@@ -28,6 +35,18 @@
 Не требуется перед каждой задачей перечитывать исторический reference/changelog, проводить
 полный environment inventory или запускать все repository checks. Возможности среды
 проверяются только когда выбранные команды от них зависят.
+
+## Shared workstation and Remote Commander resource policy
+
+Follow the shared [local execution resource protocol](https://github.com/FedorMilovanov/AuditRepo/blob/main/LOCAL_EXECUTION_RESOURCE_PROTOCOL.md) (canonical path in AuditRepo; use integrated current authority when available). These minimum rules are mandatory independently of link availability:
+
+- QUALITY FIRST, RESOURCE SMART: choose the fastest reliable authorized execution surface by total cost (time, tokens, RDC credits, CI queue, local load, evidence fidelity). GitHub/API normally suits simple repository reads/status; hosted CI normally suits full matrices. RDC is welcome when local batches, worktree edits or short verification materially improve speed, quality or cost. LIGHT (short reads/commands/edits) and genuinely bounded MEDIUM (incremental build/file transform/isolated short probe) may proceed autonomously, with proportionate resource checks and owned cleanup for MEDIUM; no per-call approval, proof of failed alternatives, hard call cap or heavy slot for these. Sustained/uncertain pressure, full builds, persistent browsers/servers and bulk media are HEAVY; never relabel to bypass admission.
+- Batch related local commands, compact outputs and retain one process/call ID. Reconcile timeout/unknown effects before replay; no rapid polling, redundant clones/builds, account enumeration or account switching to evade service limits.
+- Before resource-heavy work on the owner's Windows machine, verify fresh system Commit, free RAM, disk and shared admission. Warn at 75% Commit, deny new heavy jobs at 80%, diagnose at 90%; deny if free RAM < 6 GiB, target disk free < 15 GiB or admission/counters unknown. Until a verified common controller exists, maximum one heavy job machine-wide with positive coordination; otherwise hosted CI or HOLD. After verified rollout, use its actual enforced slot count (initially one; maximum two only after measured acceptance). Never run parallel browser engines within a slot.
+- No local Windows WebKit or CUDA by default; exceptions need explicit owner approval and bounded isolated execution. Browser probe 10 min, heavy build/QA 20 min by default; approved long media jobs require an explicit deadline. Close contexts/browsers/servers in finally and use an external watchdog for hangs; clean only the identified owned process tree, never owner tabs, other agents or dirty worktrees.
+- Report substantive phase outcomes and actual RDC calls where meaningful, exact evidence, completion/cleanup and HOLD; no per-call reporting ritual. Additional useful calls are encouraged when they improve evidence. Do not bypass existing evidence, rights, publication, security, visual acceptance or required exact-head checks to save resources. A written policy alone is not proof of a deployed controller.
+
+For NEWS, Reader, Names of God, G3, HOREB and other visual lanes, use hosted browser matrices and artifacts rather than parallel Windows browser processes. Reuse exact-head witnesses where appropriate; never replace owner visual signoff with green CI.
 
 ## 2. Minimum lane record
 
