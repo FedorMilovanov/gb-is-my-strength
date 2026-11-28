@@ -5,6 +5,7 @@ import path from 'node:path';
 import http from 'node:http';
 import {fileURLToPath} from 'node:url';
 import {chromium,firefox,webkit} from 'playwright';
+import { gotoNativeReader } from './lib/native-reader-browser-fixture.mjs';
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const DIST=path.join(ROOT,'dist');
 const ROUTE='/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
@@ -46,7 +47,7 @@ for(const [engine,kind] of Object.entries({chromium,firefox,webkit})){
   await page.route('**/*',r=>/^(mc\.yandex\.(ru|com)|www\.googletagmanager\.com)$/.test(new URL(r.request().url()).hostname)?r.fulfill({status:200,body:''}):r.continue());
   const entry={engine,viewport:size.id};
   try{
-   await page.goto(route,{waitUntil:'domcontentloaded',timeout:30000});
+   await gotoNativeReader(page,route,{waitUntil:'domcontentloaded',timeout:30000});
    await page.evaluate(()=>document.fonts.ready);
    const result=await page.evaluate(()=>{
     const main=document.querySelector('.article-body');

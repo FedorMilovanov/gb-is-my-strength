@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
+import readerDesktop from './scripts/astro-reader-desktop.mjs';
 
 export default defineConfig({
   site: 'https://gospod-bog.ru',
@@ -13,5 +14,6 @@ export default defineConfig({
       filter: (page) => !page.includes('/izbrannoe'), // personal/localStorage page — noindex, not for search engines
     }),
     react(),
+    readerDesktop(),
   ],
 });

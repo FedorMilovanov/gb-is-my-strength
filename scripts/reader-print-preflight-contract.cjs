@@ -20,6 +20,7 @@ function fixture(options={}){
   title:'Reader fixture',
   documentElement:{dataset:{},getAttribute(key){return key==='data-scroll-locked'&&options.locked?'1':null},removeAttribute(){}},
   querySelector(selector){return selector==='.gb-fc-toast'?toast:null},
+  querySelectorAll(selector){assert.equal(selector,'[data-action="print"]');return [];},
   addEventListener(event,handler){calls.events['doc:'+event]=handler},
   body:{appendChild(){}}
  };

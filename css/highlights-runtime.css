@@ -49,6 +49,8 @@
 #gb-hl-fab:active { transform: scale(.94); }
 #gb-hl-fab > svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; }
 #gb-hl-fab-count {
+  /* Library total remains in the button's accessible name; no visual count dot. */
+  display: none;
   position: absolute;
   top: 7px;
   right: 7px;
@@ -105,7 +107,12 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(640px, 100vw);
+  /* The standalone Library does not assume a page-wide border-box reset.
+     Fit the actual containing viewport, including classic scrollbars. */
+  box-sizing: border-box;
+  width: min(640px, 100%);
+  min-width: 0;
+  max-width: 100%;
   max-height: min(86dvh, 840px);
   color: var(--library-ink);
   background: var(--library-paper);
@@ -608,4 +615,446 @@ html.theme-sepia #gb-hl-panel, html[data-reader-theme="sepia"] #gb-hl-panel { --
 html.dark .gb-hl-hit {background:#89643c;color:#fff6ea;}
 @media (prefers-reduced-motion: reduce) {
   .gb-hl-revisit-card,.gb-hl-source-group,.gb-hl-tag {animation:none;transition:none;}
+}
+
+/* Мобильный тулбар выделения (страницы без js/site.js): цитата и заметка
+ * в один тап. 44px тап-таргеты, safe-area, тема через те же токены, что у
+ * библиотеки. Показывается только когда нет W57-тулбара пилота. */
+#gb-hl-selbar {
+  position: fixed;
+  z-index: 12000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  row-gap: 6px;
+  padding: 6px 4px;
+  border-radius: 14px;
+  background: var(--library-paper, #fbf7f0);
+  border: 1px solid var(--library-edge, rgba(90, 65, 54, .13));
+  box-shadow: 0 10px 30px rgba(46, 31, 22, .22);
+  max-width: calc(100vw - 16px);
+}
+#gb-hl-selbar[data-open="true"] { display: inline-flex; }
+#gb-hl-selbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--library-ink, #312926);
+  font: 600 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: .01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+#gb-hl-selbar button:active { background: rgba(128, 80, 65, .12); }
+#gb-hl-selbar button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+#gb-hl-selbar #gb-hl-selbar-quote { background: rgba(133, 89, 66, .10); }
+html.dark #gb-hl-selbar {
+  background: #2b2320;
+  border-color: rgba(232, 204, 180, .16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+html.dark #gb-hl-selbar button { color: #f3e7d7; }
+html.dark #gb-hl-selbar #gb-hl-selbar-quote { background: rgba(217, 169, 142, .14); }
+
+/* Цветные пометы рисуются CSS Custom Highlight API: текст не оборачивается
+ * в элементы, поэтому анкоры, озвучка и поиск остаются нетронутыми.
+ * Палитра та же, что у движка пилота (amber / sage / blue / lime / rose),
+ * и задаётся токенами, чтобы серии могли адаптировать оттенки. */
+/* Осознанная двухстрочная компоновка: сверху палитра, снизу действия.
+ * Так тулбар не сжимается в кашу на 320–390 и остаётся предсказуемым. */
+#gb-hl-selbar .gb-hl-selbar-colors {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+@media (max-width: 359px) { #gb-hl-selbar { max-width: calc(100vw - 12px); } #gb-hl-selbar button { padding: 0 10px; } }
+#gb-hl-selbar .gb-hl-selbar-swatch {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+#gb-hl-selbar .gb-hl-selbar-swatch::after {
+  content: '';
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--swatch, #f2d98a);
+  border: 1px solid rgba(90, 65, 54, .2);
+  transition: transform .12s ease;
+}
+#gb-hl-selbar .gb-hl-selbar-swatch:active::after { transform: scale(.9); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="amber"] { --swatch: var(--gb-hl-amber, #f2d98a); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="sage"]  { --swatch: var(--gb-hl-sage, #cfe0c3); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="blue"]  { --swatch: var(--gb-hl-blue, #cfe0f2); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="lime"]  { --swatch: var(--gb-hl-lime, #e2f0b8); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="rose"]  { --swatch: var(--gb-hl-rose, #f3cdd3); }
+#gb-hl-selbar .gb-hl-selbar-swatch:active { transform: scale(.94); }
+#gb-hl-selbar .gb-hl-selbar-swatch:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+::highlight(gb-hl-amber) { background-color: var(--gb-hl-amber, #f2d98a); color: #2a2118; }
+::highlight(gb-hl-sage)  { background-color: var(--gb-hl-sage, #cfe0c3); color: #21291c; }
+::highlight(gb-hl-blue)  { background-color: var(--gb-hl-blue, #cfe0f2); color: #16222b; }
+::highlight(gb-hl-lime)  { background-color: var(--gb-hl-lime, #e2f0b8); color: #21291a; }
+::highlight(gb-hl-rose)  { background-color: var(--gb-hl-rose, #f3cdd3); color: #2a1b1e; }
+html.dark ::highlight(gb-hl-amber) { background-color: #8a6a24; color: #fff5e2; }
+html.dark ::highlight(gb-hl-sage)  { background-color: #4a6440; color: #f0f7ea; }
+html.dark ::highlight(gb-hl-blue)  { background-color: #35586e; color: #eaf3fb; }
+html.dark ::highlight(gb-hl-lime)  { background-color: #5d6f34; color: #f4f9e7; }
+html.dark ::highlight(gb-hl-rose)  { background-color: #7a4450; color: #fbeef0; }
+
+/* P2: цвет пометы в списке библиотеки. Точка повторяет тот же оттенок, что
+ * и подсветка в тексте, и не зависит от темы — цвет это смысл, не декор. */
+.gb-hl-mark-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: baseline;
+  background: var(--gb-hl-amber, #f2d98a);
+  box-shadow: 0 0 0 1px rgba(60, 45, 35, .25);
+}
+.gb-hl-mark-dot[data-color="amber"] { background: var(--gb-hl-amber, #f2d98a); }
+.gb-hl-mark-dot[data-color="sage"]  { background: var(--gb-hl-sage, #cfe0c3); }
+.gb-hl-mark-dot[data-color="blue"]  { background: var(--gb-hl-blue, #cfe0f2); }
+.gb-hl-mark-dot[data-color="lime"]  { background: var(--gb-hl-lime, #e2f0b8); }
+.gb-hl-mark-dot[data-color="rose"]  { background: var(--gb-hl-rose, #f3cdd3); }
+
+/* P3/P5: тост подтверждения с откатом. Выше временных подсказок (например,
+ * свайп-подсказки серий), но ниже модальных слоёв; цели не меньше 44 px.
+ * max-content не даёт fixed-элементу с left:50% сжаться до половины экрана. */
+#gb-hl-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-toast-high, 9998);
+  display: none;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: min(92vw, 460px);
+  box-sizing: border-box;
+  padding: 10px 12px 10px 16px;
+  border-radius: 14px;
+  background: var(--gb-hl-toast-bg, #31302c);
+  color: var(--gb-hl-toast-ink, #fbf7f0);
+  box-shadow: 0 12px 32px rgba(20, 14, 10, .28);
+  font-family: var(--gb-font-sans, system-ui, sans-serif);
+  font-size: 14px;
+  line-height: 1.3;
+  transform: translateX(-50%);
+}
+#gb-hl-toast[data-open="true"] { display: flex; }
+#gb-hl-toast .gb-hl-toast-text { min-width: 0; }
+#gb-hl-toast .gb-hl-toast-action {
+  flex: 0 0 auto;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+html.dark #gb-hl-toast {
+  --gb-hl-toast-bg: #f0e8db;
+  --gb-hl-toast-ink: #26333a;
+}
+
+/* P6: глобальный энхансер якорей (`js/site.js`, `h2[id]`) вешает в заголовок
+ * диалога «Моя библиотека» ссылку «Скопировать ссылку на раздел». Внутри
+ * диалога она не нужна, а визуально читалась как случайная скрепка/карандаш
+ * под названием. Скрываем только в этом заголовке. */
+#gb-hl-title .heading-anchor { display: none !important; }
+
+/* P6b: на узком экране источник записи больше не сжимается в три строки
+ * рядом с кнопками — он занимает свою строку, кнопки идут ниже. */
+@media (max-width: 600px) {
+  #gb-hl-panel .gb-hl-meta a { flex: 1 1 100%; min-width: 0; }
+}
+
+/* Keep editor and footer actions reachable on short mobile viewports. */
+@media (max-width: 900px) and (max-height: 520px) {
+  #gb-hl-panel {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    max-height: 94dvh;
+  }
+  #gb-hl-list, #gb-hl-editor {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* W59 Mobile Reader Library Classic typography.
+   Font assets are locally hosted SIL OFL. No desktop/pilot changes. */
+@font-face{
+  font-family:'GB Classic Literata';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-cyrillic-400-normal.woff2') format('woff2');
+  unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face{
+  font-family:'GB Classic Literata';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-latin-400-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'GB Classic Literata';font-style:italic;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-cyrillic-400-italic.woff2') format('woff2');
+  unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face{
+  font-family:'GB Classic Literata';font-style:italic;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-latin-400-italic.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'GB Classic Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/fonts/JetBrainsMono/jetbrains-mono-cyrillic-500-normal.woff2') format('woff2');
+  unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face{
+  font-family:'GB Classic Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/fonts/JetBrainsMono/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@media (max-width:767px) {
+  /* Only real Reader pages; existing unified Library data/actions stay owned by Product. */
+  body:has(article.article-body) #gb-hl-panel {
+    --library-paper:#FBF9F5;
+    --library-ink:#1A1816;
+    --library-muted:#5A534A;
+    --library-edge:#DFD9CE;
+    --library-accent:#8C6239;
+    --library-rubric:#9B2C2C;
+    --library-surface:#EFECE4;
+    background:var(--library-paper) !important;
+    color:var(--library-ink) !important;
+    border-color:var(--library-edge);
+    border-radius:19px 19px 0 0;
+  }
+  body:has(article.article-body) #gb-hl-header {
+    background:var(--library-paper);
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-handle {background:var(--library-accent);}
+  body:has(article.article-body) #gb-hl-title {
+    font:500 clamp(25px,7.2vw,28px)/1.08 'GB Mobile Classic Cormorant',Georgia,serif !important;
+    letter-spacing:-.021em;
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-eyebrow {
+    font:600 10px/1.45 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+    color:var(--library-rubric);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(button,select,input,textarea){
+    font-family:'GB Mobile Classic Inter',system-ui,sans-serif;
+  }
+  body:has(article.article-body) #gb-hl-tabs {
+    background:var(--library-surface) !important;
+    border:1px solid var(--library-edge);
+    border-radius:8px;
+  }
+  body:has(article.article-body) #gb-hl-tabs button {
+    font:600 11px/1.25 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+    border-radius:6px;
+  }
+  body:has(article.article-body) #gb-hl-tabs button[aria-pressed="true"] {
+    background:var(--library-paper) !important;
+    color:var(--library-accent);
+    border-color:var(--library-edge);
+    box-shadow:none;
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-tools,#gb-hl-list) {
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-searchwrap,#gb-hl-source,#gb-hl-sort){
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-quote,.gb-hl-quote.gb-hl-note,.gb-hl-related,.gb-hl-note-preview){
+    font:400 14px/1.63 'GB Classic Literata',Georgia,serif !important;
+    color:var(--library-ink);
+    overflow-wrap:anywhere;
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-quote:not(.gb-hl-note):not(.gb-hl-favorite){
+    font-style:italic !important;
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-quote.gb-hl-favorite{
+    font:400 13px/1.55 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-type {
+    color:var(--library-rubric);
+    font:600 10px/1.4 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-count,.gb-hl-date,time,.gb-hl-time,.gb-hl-reading-time){
+    font-family:'GB Classic Mono',Consolas,monospace !important;
+    font-variant-numeric:tabular-nums;
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-item,.gb-hl-source-group){
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-close,#gb-hl-source,#gb-hl-sort){
+    background:var(--library-surface);
+    color:var(--library-muted);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-meta button,.gb-hl-mini,#gb-hl-export){
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-meta a,.gb-hl-expand){
+    color:var(--library-accent);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(button,input,select,textarea):focus-visible{
+    outline:2px solid var(--library-accent);
+    outline-offset:2px;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) body:has(article.article-body) #gb-hl-panel {
+    --library-paper:#17191D;
+    --library-ink:#EAE6DF;
+    --library-muted:#B6AA9B;
+    --library-edge:#343940;
+    --library-accent:#C89B6E;
+    --library-rubric:#D46A6A;
+    --library-surface:#1D2025;
+  }
+  /* The Classic mobile layout owns its typography, not the reader's chosen
+     paper theme. Preserve the approved sepia palette in the same mobile
+     scope as light/dark, without changing desktop W57/ARGON styling. */
+  html:is(.theme-sepia,[data-reader-theme="sepia"]) body:has(article.article-body) #gb-hl-panel {
+    --library-paper:#F7EFDF;
+    --library-ink:#44342B;
+    --library-muted:#8B6D5D;
+    --library-accent:#855942;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) body:has(article.article-body) #gb-hl-tabs button[aria-pressed="true"] {
+    background:var(--library-paper) !important;
+    color:var(--library-accent);
+  }
+}
+/* W59 library narrow title geometry: preserve all 44px actions without chopping
+   Cormorant 'Моя библиотека' into broken syllables at 320px. */
+@media (max-width:767px) {
+  body:has(article.article-body) #gb-hl-header {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-rows:auto auto;
+    column-gap:7px;
+    row-gap:3px;
+    align-items:center;
+  }
+  body:has(article.article-body) #gb-hl-header .gb-hl-heading {
+    grid-column:1 / 3;
+    grid-row:1;
+    min-width:0;
+  }
+  body:has(article.article-body) #gb-hl-title {
+    white-space:nowrap;
+  }
+  body:has(article.article-body) #gb-hl-export {
+    grid-column:2;
+    grid-row:2;
+    justify-self:end;
+  }
+  body:has(article.article-body) #gb-hl-manage {
+    grid-column:3;
+    grid-row:2;
+  }
+  body:has(article.article-body) #gb-hl-close {
+    grid-column:3;
+    grid-row:1;
+  }
+}
+/* W59 isolated mobile Classic font faces. Source: Fontsource 5.3.0 / SIL OFL 1.1.
+   Aliases are used ONLY under mobile selectors, never in desktop or article body. */
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/CormorantGaramond/cormorantgaramond-cyrillic-500.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-500-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-cyrillic-600-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/Inter/inter-cyrillic-400.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/Inter/inter-latin-400-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/Inter/inter-cyrillic-500.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/Inter/inter-latin-500-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Inter/inter-cyrillic-600.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Inter/inter-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+/* W59 mobile Classic: keep reading-progress cards legible in night theme.
+   The original Product cards used the site's light --paper-2 even in dark mode. */
+@media (max-width:767px) {
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-current,.gb-hl-revisit-card,.gb-hl-context,.gb-hl-tag-editor) {
+    background:var(--library-surface);
+    color:var(--library-muted);
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-reading-title {
+    font:400 14px/1.63 'GB Classic Literata',Georgia,serif;
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-empty-title {
+    font:500 22px/1.19 'GB Mobile Classic Cormorant',Georgia,serif;
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-revisit-card :is(.gb-hl-mini,.gb-hl-reading-actions button) {
+    color:var(--library-accent);
+    border-color:var(--library-edge);
+    background:var(--library-paper);
+  }
+}
+/* W59 Classic Cormorant regular and bold, installed locally (SIL OFL 1.1). */
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:400;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorantgaramond-cyrillic-400.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:400;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-400-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:700;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-cyrillic-700-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:700;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-700-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+
+/* W62: preserve readable labels in the 5-tab narrow Library.
+   The previous equal-width grid + W59 11px !important split Источники. */
+@media (max-width:350px) {
+  body:has(article.article-body) #gb-hl-tabs {
+    grid-template-columns:44px 72px repeat(3,minmax(0,1fr));
+  }
+  body:has(article.article-body) #gb-hl-tabs button {
+    font-size:10px!important;
+    letter-spacing:-.015em!important;
+    white-space:nowrap!important;
+  }
+}
+
+/* W83: the global site's 64px footer margin must never leak into the
+   mobile Library modal. Manage is a focused subview: while open, the
+   saved-items list and filters yield their area to the backup actions. */
+@media (max-width: 767px) {
+  #gb-hl-panel > #gb-hl-foot { margin-top: 0; }
+  #gb-hl-panel:has(> #gb-hl-manage-panel:not([hidden])) > :is(#gb-hl-tabs, #gb-hl-tools, #gb-hl-topics, #gb-hl-tag-editor, #gb-hl-list) {
+    display: none;
+  }
+  #gb-hl-panel:has(> #gb-hl-manage-panel:not([hidden])) > #gb-hl-manage-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  }
+}
+/* Short portrait phones need a real reading window for saved notes. */
+@media (max-width: 767px) and (max-height: 700px) {
+  #gb-hl-panel { height: min(96dvh, 760px); max-height: 96dvh; }
+  #gb-hl-panel > #gb-hl-list { min-height: 0; }
 }

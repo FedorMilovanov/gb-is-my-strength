@@ -1,422 +1,176 @@
 #!/usr/bin/env node
 /**
- * Series quiz source handoff — permanent native mobile browser contract.
- *
- * Matrix: GBS-GILL-QUIZ-SOURCE-LINK-MOBILE-NOOP. After answering a question
- * in the series learning sheet, the «Перечитать…» source link must deliver the
- * reader to the source fragment: modal closed, body unlocked, URL keeps the
- * page identity + fragment, target inside the viewport and winning centre
- * hit-testing with stable focus.
- *
- * Coverage: first/middle/final Gill pages, the generic SeriesReaderChrome
- * adapter (apostasy), cross-document source → normal navigation, missing-
- * fragment negative fixture (never a silent hash-only success). Native clicks
- * only (no `force`), mobile 390×844 Dark, reduced-motion profile.
- *
- * Self-serves production-like dist/ unless AUDIT_BASE is provided (runner).
- * Chromium: Playwright install or GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE.
- * Precondition: npm run strangler:build:production-like
+ * W121: article + series quiz share ONE DOM owner across inline and Analytics.
+ * This replaces the retired Settings→Learning sheet contract with stronger,
+ * source-backed browser scenarios; it does not waive existing functional gates.
  */
-
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
-import { serve } from './lib/a04-contract.mjs';
-
-const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DIST = path.join(ROOT, 'dist');
-const OUT = path.join(ROOT, 'reports', 'series-quiz-source-handoff');
-fs.mkdirSync(OUT, { recursive: true });
-
-// Known sandbox/egress noise — filtered explicitly by URL, never silently (§7).
-const EGRESS_NOISE = ['mc.yandex.ru', 'yandex.ru/metrika', 'googletagmanager.com', 'google-analytics.com', 'doubleclick.net'];
-
-const MOBILE = {
-  viewport: { width: 390, height: 844 },
-  deviceScaleFactor: 2,
-  isMobile: true,
-  hasTouch: true,
-  colorScheme: 'dark',
-  reducedMotion: 'reduce',
-};
-
-// Gill rail display order (gillSeriesData.ts, guarded by
-// gill:series:data:consistency:audit): Введение → I → II → III → IV →
-// Справочник. first/middle/final filter the quiz pool by relatedPageId, so
-// their sourceHref values always resolve into the SAME document.
-const FIRST_PAGE = '/articles/dzhon-gill-istoricheskiy-kontekst/';
-const MIDDLE_PAGE = '/articles/dzhon-gill-chast-4-ekzeget/';
-const FINAL_PAGE = '/articles/dzhon-gill-spravochnik/';
-// Generic SeriesReaderChrome adapter with the apostasy config.
-const ADAPTER_PAGE = '/articles/otstuplenie-chto-govorit-bibliya/';
-// part2 has <4 related questions → full 32-item pool → natural cross-doc case.
-const CROSS_DOC_PAGE = '/articles/dzhon-gill-chast-2-uchenyi/';
-
-const failures = [];
-const summary = {
-  generatedAt: new Date().toISOString(),
-  base: '',
-  scenarios: [],
-  checks: 0,
-};
-let currentScenario = null;
-
-function check(name, ok, detail) {
-  summary.checks += 1;
-  if (ok) {
-    console.log(`  ✔ ${name}`);
-  } else {
-    console.log(`  ✘ ${name}${detail ? ` — ${detail}` : ''}`);
-    failures.push(`${name}${detail ? ` — ${detail}` : ''}`);
-  }
-  return ok;
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {serve} from './lib/a04-contract.mjs';
+const require=createRequire(import.meta.url);
+const {chromium,webkit}=require('playwright');
+const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const OUT=path.join(ROOT,'reports','series-quiz-source-handoff');
+fs.mkdirSync(OUT,{recursive:true});
+const GILL='/articles/dzhon-gill-chast-2-uchenyi/';
+const APOSTASY='/articles/otstuplenie-chto-govorit-bibliya/';
+const TEEN='/articles/podrostok-za-kadrom-dvoynaya-zhizn/';
+const failures=[],checks=[],screens={};
+function ck(label,condition,detail=''){
+  const ok=!!condition;checks.push({label,ok,detail});
+  console.log((ok?'PASS ':'FAIL ')+label+(detail?' :: '+detail:''));
+  if(!ok)failures.push(label+' '+detail);
 }
-
-async function scenario(name, fn) {
-  console.log(`\n▶ ${name}`);
-  const record = { name, ok: false, details: [] };
-  summary.scenarios.push(record);
-  currentScenario = record;
-  try {
-    await fn();
-    record.ok = record.details.every((d) => d.ok);
-    record.details.forEach((d) => check(d.name, d.ok, d.detail));
-  } catch (error) {
-    record.error = String(error && error.message ? error.message : error);
-    console.log(`  ✘ scenario error: ${record.error}`);
-    failures.push(`${name}: ${record.error}`);
-  } finally {
-    currentScenario = null;
-  }
-}
-
-function rec(name, ok, detail) {
-  currentScenario.details.push({ name, ok: Boolean(ok), detail: detail || '' });
-  return Boolean(ok);
-}
-
-function attachErrorProbe(page, base, label) {
-  const errors = [];
-  page.on('pageerror', (error) => {
-    errors.push({ kind: 'pageerror', text: String(error), url: '' });
-  });
-  page.on('console', (message) => {
-    if (message.type() !== 'error') return;
-    const location = message.location() || {};
-    errors.push({ kind: 'console.error', text: message.text(), url: location.url || '' });
-  });
-  return () => {
-    // Explicit egress-noise policy: blocked third-party resources (metrika et al)
-    // are sandbox/egress artifacts — filtered BY URL and labeled, never silent.
-    const product = errors.filter((entry) => {
-      if (entry.kind === 'pageerror') return true;
-      if (EGRESS_NOISE.some((needle) => `${entry.text} ${entry.url}`.includes(needle))) return false;
-      if (entry.text.startsWith('Failed to load resource') && entry.url && !entry.url.startsWith(base)) {
-        return false; // external resource the sandbox cannot reach
-      }
-      return true;
-    });
-    const filtered = errors
-      .map((entry) => entry.url || entry.text)
-      .filter((_, index) => !product.includes(errors[index]));
-    if (filtered.length) console.log(`    (egress noise filtered: ${filtered.join(', ')})`);
-    if (product.length) console.log(`    product errors: ${product.map((e) => `${e.text}${e.url ? ` @${e.url}` : ''}`).join(' | ')}`);
-    return { product, label };
+async function withEngine(engineName,engine,base){
+ const browser=await engine.launch({headless:true});
+ try{
+  const ctx=await browser.newContext({viewport:{width:390,height:844},colorScheme:'dark',
+    isMobile:true,hasTouch:true,reducedMotion:'reduce',serviceWorkers:'block'});
+  await ctx.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,r=>r.fulfill({status:200,body:'',contentType:'text/plain'}));
+  const page=await ctx.newPage();const pageErrors=[];
+  page.on('pageerror',e=>pageErrors.push(String(e)));
+  await page.goto(base+GILL,{waitUntil:'domcontentloaded',timeout:30000});
+  await page.locator('#gbAnalyticsStudy:not([hidden])').waitFor({timeout:20000});
+  const atStart=await page.evaluate(()=>({
+    learning:!!document.querySelector('#gillLearningOverlay,#mobLearningBtn'),
+    study:document.querySelectorAll('#gbAnalyticsStudy').length,
+    quizLegacy:document.querySelectorAll('#quizLaunch').length,
+    series:JSON.parse(document.querySelector('#gbAnalyticsStudy').getAttribute('data-study')).series.length,
+    inline:!!document.querySelector('#quizPlaceholder #gbAnalyticsStudy')
+  }));
+  ck(engineName+' Gill II: one inline owner, no Learning or legacy quiz',
+    !atStart.learning&&atStart.study===1&&atStart.quizLegacy===0&&atStart.inline,
+    JSON.stringify(atStart));
+  ck(engineName+' Gill II: own series bank 32',atStart.series===32);
+  await page.locator('#gbAnalyticsStudy > summary').click();
+  let total=await page.evaluate(()=>window.SITE_CONFIG?.quiz?.questions?.length||0);
+  ck(engineName+' article quiz 4 editorial questions',total===4);
+  const ask=async(index)=>{
+    const correct=await page.evaluate(i=>window.SITE_CONFIG.quiz.questions[i].correct,index);
+    const options=page.locator('#gbAnalyticsQuiz .gb-study-options button');
+    await options.nth(Number(correct)).click();
+    await page.locator('#gbAnalyticsQuiz .gb-study-feedback').waitFor();
+    const first=(await page.locator('#gbAnalyticsQuiz .gb-study-next').textContent()).trim();
+    return first;
   };
-}
-
-async function openSheetToQuiz(page) {
-  // Learning moved into the canonical Reader Settings sheet. Exercise the
-  // actual two-step mobile user journey instead of assuming a retired top-bar
-  // shortcut remains directly visible.
-  const settings = page.locator('#mobSettingsBtn');
-  await settings.waitFor({ state: 'visible', timeout: 10000 });
-  await settings.click();
-  await page.waitForFunction(() => {
-    const sheet = document.getElementById('gillSettingsOverlay');
-    return Boolean(sheet && sheet.classList.contains('is-open') && sheet.getAttribute('aria-hidden') === 'false');
-  }, null, { timeout: 10000 });
-  const opener = page.locator('#mobLearningBtn');
-  await opener.waitFor({ state: 'visible', timeout: 10000 });
-  await opener.click();
-  const overlay = page.locator('#gillLearningOverlay');
-  await page.waitForFunction(
-    () => {
-      const el = document.getElementById('gillLearningOverlay');
-      return Boolean(el && el.classList.contains('is-open') && el.getAttribute('aria-hidden') === 'false');
-    },
-    undefined,
-    { timeout: 10000 },
-  );
-  await page.locator('#tabQuiz').click();
-  await page.locator('.quiz-conf__btn').first().click();
-  await page.locator('.quiz-option').first().click();
-  const source = page.locator('#glsQuizSource');
-  await source.waitFor({ state: 'visible', timeout: 10000 });
-}
-
-async function answerNextQuestion(page) {
-  await page.locator('#glsQuizNext').click();
-  await page.locator('.quiz-conf__btn').first().click();
-  await page.locator('.quiz-option').first().click();
-  await page.locator('#glsQuizSource').waitFor({ state: 'visible', timeout: 10000 });
-}
-
-async function readSource(page) {
-  return page.evaluate(() => {
-    const source = document.getElementById('glsQuizSource');
-    const raw = source ? source.getAttribute('href') || '' : '';
-    const resolved = new URL(raw, location.href);
-    return {
-      raw,
-      resolved: resolved.href,
-      fragment: decodeURIComponent(resolved.hash.replace(/^#/, '')),
-      sameDocument:
-        resolved.origin === location.origin &&
-        resolved.pathname === location.pathname &&
-        resolved.search === location.search,
-    };
-  });
-}
-
-async function assertSheetClosedUnlocked(page) {
-  return page.evaluate(() => {
-    const overlay = document.getElementById('gillLearningOverlay');
-    const style = getComputedStyle(document.body);
-    return {
-      overlayGone: Boolean(
-        overlay && !overlay.classList.contains('is-open') && overlay.getAttribute('aria-hidden') === 'true',
-      ),
-      bodyUnlocked: document.body.style.overflow !== 'hidden' && style.overflow !== 'hidden' && style.overflowY !== 'hidden',
-    };
-  });
-}
-
-async function assertLanding(page, expected) {
-  return page.evaluate((exp) => {
-    const target = document.getElementById(exp.fragment);
-    if (!target) return { targetExists: false };
-    const rect = target.getBoundingClientRect();
-    const vh = window.innerHeight;
-    const vw = window.innerWidth;
-    const inViewport = rect.height > 0 && rect.top >= -1 && rect.bottom <= vh + 1 && rect.left >= -1 && rect.right <= vw + 1;
-    const cx = Math.min(vw - 1, Math.max(0, rect.left + rect.width / 2));
-    const cy = Math.min(vh - 1, Math.max(0, rect.top + rect.height / 2));
-    const hit = document.elementFromPoint(cx, cy);
-    return {
-      targetExists: true,
-      inViewport,
-      hitWins: Boolean(hit && (hit === target || target.contains(hit) || hit.contains(target))),
-      focusOnTarget: document.activeElement === target,
-      hash: location.hash,
-      pathname: location.pathname,
-      rectTop: Math.round(rect.top),
-      rectBottom: Math.round(rect.bottom),
-    };
-  }, expected);
-}
-
-async function run() {
-  const explicitBase = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
-  let server = null;
-  let base = explicitBase;
-  if (!base) {
-    if (!fs.existsSync(DIST) || !fs.statSync(DIST).isDirectory()) {
-      throw new Error(`dist not found at ${DIST} — run npm run strangler:build:production-like first`);
-    }
-    ({ server, base } = await serve());
+  await ask(0);
+  const link=page.locator('#gbAnalyticsQuiz .gb-study-feedback a').first();
+  const hashBefore=await link.getAttribute('href');
+  await link.click();
+  ck(engineName+' Perereread current article: fragment+focus',await page.evaluate(raw=>{
+    let url=new URL(raw,location.href);return location.hash===url.hash&&
+      (document.activeElement?.id===decodeURIComponent(url.hash.slice(1)))&&
+      !document.querySelector('#partTocOverlay.is-open');
+  },hashBefore),hashBefore);
+  await page.goBack({waitUntil:'domcontentloaded'}).catch(()=>{});
+  await page.locator('#gbAnalyticsStudy > summary').click().catch(()=>{});
+  ck(engineName+' return after source retains answered question',
+    await page.locator('#gbAnalyticsQuiz .gb-study-feedback').count()===1);
+  await page.locator('#gbAnalyticsQuiz .gb-study-next').click();
+  await ask(1);
+  await page.locator('#gbAnalyticsQuiz .gb-study-next').click();
+  // Open the bottom Part TOC then select its canonical Analytics tab.
+  // The top research capsule may be scrolled away after a source jump.
+  await page.locator('#mobPartTocBtn').click();
+  await page.locator('#gbrMarginaliaTab').click();
+  await page.locator('#gbrMarginalia:not([hidden])').waitFor({timeout:12000});
+  await page.waitForFunction(()=>!!document.querySelector('#gbrMarginaliaContent #gbAnalyticsStudy'),null,{timeout:10000});
+  ck(engineName+' Analytics: same DOM, continue question 3',await page.evaluate(()=>{
+    const p=document.querySelector('#gbrMarginaliaContent #gbAnalyticsStudy');
+    return !!p&&document.querySelectorAll('#gbAnalyticsStudy').length===1&&
+      p.textContent.includes('Вопрос 3 из 4');
+  }));
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(()=>!document.querySelector('#partTocOverlay.is-open'),null,{timeout:12000});
+  ck(engineName+' Escape restores native sheet',await page.evaluate(()=>
+    !document.querySelector('#partTocOverlay.is-open')&&
+    document.querySelectorAll('#gbAnalyticsStudy').length===1));
+  await page.waitForFunction(()=>!!document.querySelector('#quizPlaceholder #gbAnalyticsStudy'),null,{timeout:10000});
+  await ask(2);await page.locator('#gbAnalyticsQuiz .gb-study-next').click();
+  await ask(3);await page.locator('#gbAnalyticsQuiz .gb-study-next').click();
+  ck(engineName+' article final score and series opt-in',
+    await page.locator('#gbAnalyticsQuiz .gb-study-score').textContent()==='Результат: 4 из 4' &&
+    await page.getByRole('button',{name:/Проверить себя по всей серии/}).count()===1);
+  await page.getByRole('button',{name:/Проверить себя по всей серии/}).click();
+  ck(engineName+' series mode selected',await page.locator('[data-study-mode="series"]').getAttribute('aria-pressed')==='true');
+  const answerSeries=async(correct)=>{
+    const q=await page.locator('#gbAnalyticsQuiz h4').textContent();
+    const item=await page.evaluate(question=>{
+      const bank=JSON.parse(document.getElementById('gbAnalyticsStudy').getAttribute('data-study')).series;
+      return bank.find(x=>x.question===question);
+    },q);
+    if(!item)throw Error('Question from source pool absent: '+q);
+    await page.getByRole('button',{name:'Точно знаю'}).click();
+    const idx=correct?item.correctIndex:(item.correctIndex+1)%item.answers.length;
+    const label=item.answers[idx];
+    await page.locator('#gbAnalyticsQuiz .gb-study-options button').filter({hasText:label}).first().click();
+    return{item,feedback:await page.locator('#gbAnalyticsQuiz .gb-study-feedback strong').textContent()};
+  };
+  const wrong=await answerSeries(false);
+  ck(engineName+' shuffled series wrong answer correctly marked',wrong.feedback==='Неверно');
+  await page.locator('#gbAnalyticsQuiz .gb-study-next').click();
+  const right=await answerSeries(true);
+  ck(engineName+' shuffled series correct answer correctly marked',right.feedback==='Верно');
+  ck(engineName+' series source hyperlink present',await page.locator('#gbAnalyticsQuiz .gb-study-feedback a').count()===1);
+  const beforeSource=await page.locator('#gbAnalyticsQuiz h4').textContent();
+  // If current source is another Gill article, verify regular navigation + Back.
+  const xUrl=await page.locator('#gbAnalyticsQuiz .gb-study-feedback a').getAttribute('href');
+  const target=new URL(xUrl,base+GILL);
+  if(target.pathname!==GILL){
+    await page.locator('#gbAnalyticsQuiz .gb-study-feedback a').click();
+    await page.waitForURL(u=>u.pathname===target.pathname,{timeout:15000});
+    ck(engineName+' cross-article source navigation',new URL(page.url()).pathname===target.pathname);
+    await page.goBack({waitUntil:'domcontentloaded'});
+    await page.locator('#gbAnalyticsStudy:not([hidden])').waitFor({timeout:15000});
+    ck(engineName+' Back restores same series question',await page.locator('#gbAnalyticsQuiz h4').textContent()===beforeSource);
+  } else {
+    ck(engineName+' same-article series source',!!target.hash,target.href);
   }
-  summary.base = base;
-  console.log(`series quiz source handoff contract base: ${base}`);
-
-  const executablePath = process.env.GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined;
-  const browser = await chromium.launch({
-    headless: true,
-    executablePath,
-    args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
-  });
-
-  const pageErrors = [];
-  try {
-    // ── Same-document landing: first / middle / final Gill + generic adapter ──
-    for (const route of [FIRST_PAGE, MIDDLE_PAGE, FINAL_PAGE, ADAPTER_PAGE]) {
-      await scenario(`same-document handoff on ${route}`, async () => {
-        const context = await browser.newContext(MOBILE);
-        const page = await context.newPage();
-        const drain = attachErrorProbe(page, base, route);
-        try {
-          await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-          await openSheetToQuiz(page);
-          const source = await readSource(page);
-          rec('source link visible after answer', Boolean(source.raw), source.raw);
-          rec('source resolves same-document', source.sameDocument, source.resolved);
-          if (!source.sameDocument || !source.fragment) return;
-
-          const before = await page.evaluate(() => ({ hash: location.hash, scrollY: window.scrollY }));
-          // Native pointer click, no force.
-          await page.locator('#glsQuizSource').click();
-
-          const closed = await assertSheetClosedUnlocked(page);
-          rec('modal sheet closed', closed.overlayGone, JSON.stringify(closed));
-          rec('body scroll lock released', closed.bodyUnlocked, JSON.stringify(closed));
-
-          const landing = await assertLanding(page, source);
-          rec('url keeps page identity + fragment',
-            landing.pathname === route && landing.hash === `#${source.fragment}`,
-            `pathname=${landing.pathname} hash=${landing.hash} want=#${source.fragment}`);
-          rec('target element exists', landing.targetExists, source.fragment);
-          rec('target inside viewport', landing.targetExists && landing.inViewport,
-            landing.targetExists ? `rect ${landing.rectTop}..${landing.rectBottom} vh=${MOBILE.viewport.height}` : 'no target');
-          rec('target wins centre hit-test', landing.targetExists && landing.hitWins);
-          rec('focus lands on target (stable identity)', landing.focusOnTarget && landing.targetExists,
-            landing.focusOnTarget ? '' : 'activeElement is not the target');
-          rec('hash placement occurred for the source', before.hash !== landing.hash || before.scrollY > 0,
-            `before=${JSON.stringify(before)} after hash=${landing.hash}`);
-
-          const drained = drain();
-          rec('no product console/page errors', drained.product.length === 0,
-            drained.product.map((e) => e.text).join(' | '));
-          pageErrors.push(...drained.product);
-        } finally {
-          await context.close();
-        }
-      });
-    }
-
-    // ── Cross-document source → normal navigation ──
-    await scenario(`cross-document handoff on ${CROSS_DOC_PAGE}`, async () => {
-      const context = await browser.newContext(MOBILE);
-      const page = await context.newPage();
-      const drain = attachErrorProbe(page, base, CROSS_DOC_PAGE);
-      try {
-        await page.goto(`${base}${CROSS_DOC_PAGE}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await openSheetToQuiz(page);
-        let source = await readSource(page);
-        // part2's fallback pool is mostly cross-document; bounded question cycle.
-        for (let attempt = 0; attempt < 24 && source.sameDocument; attempt += 1) {
-          await answerNextQuestion(page);
-          source = await readSource(page);
-        }
-        rec('a cross-document source appeared in the natural pool', source.sameDocument === false, source.resolved);
-        if (source.sameDocument) return;
-
-        await page.locator('#glsQuizSource').click();
-        await page.waitForFunction(
-          (exp) => location.pathname === exp.pathname && location.hash === exp.hash,
-          { pathname: new URL(source.resolved).pathname, hash: `#${source.fragment}` },
-          { timeout: 15000 },
-        );
-        await page.waitForFunction(
-          (fragment) => {
-            const target = document.getElementById(fragment);
-            if (!target) return false;
-            const rect = target.getBoundingClientRect();
-            return rect.height > 0 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1;
-          },
-          source.fragment,
-          { timeout: 15000 },
-        );
-
-        const landing = await page.evaluate(() => {
-          const overlay = document.getElementById('gillLearningOverlay');
-          const style = getComputedStyle(document.body);
-          return {
-            overlayClosed: Boolean(overlay && overlay.getAttribute('aria-hidden') === 'true'),
-            bodyUnlocked: document.body.style.overflow !== 'hidden' && style.overflowY !== 'hidden',
-          };
-        });
-        rec('navigated to the source page identity', page.url().startsWith(`${base}${new URL(source.resolved).pathname}`), page.url());
-        rec('fresh page renders sheet closed + body unlocked', landing.overlayClosed && landing.bodyUnlocked, JSON.stringify(landing));
-
-        // The reader must be able to return to the exact originating
-        // document using native Back, without restoring a stranded modal
-        // or leaving the reading surface scroll-locked.
-        const returned = await page.goBack({ waitUntil: 'domcontentloaded', timeout: 15000 });
-        await page.waitForFunction((original) => location.pathname === original, CROSS_DOC_PAGE, { timeout: 10000 });
-        const back = await page.evaluate(() => {
-          const overlay = document.getElementById('gillLearningOverlay');
-          return {
-            pathname: location.pathname,
-            locked: document.body.style.overflow === 'hidden'
-              || getComputedStyle(document.body).overflowY === 'hidden',
-            overlayOpen: Boolean(overlay?.classList.contains('is-open')),
-          };
-        });
-        rec('browser Back returns to originating series article',
-          Boolean(returned) && back.pathname === CROSS_DOC_PAGE, JSON.stringify(back));
-        rec('return does not strand a quiz overlay or scroll lock',
-          !back.locked && !back.overlayOpen, JSON.stringify(back));
-
-        const drained = drain();
-        rec('no product console/page errors', drained.product.length === 0,
-          drained.product.map((e) => e.text).join(' | '));
-        pageErrors.push(...drained.product);
-      } finally {
-        await context.close();
-      }
-    });
-
-    // ── Missing-fragment negative fixture: never a silent hash-only success ──
-    await scenario(`missing-fragment negative fixture on ${ADAPTER_PAGE}`, async () => {
-      const context = await browser.newContext(MOBILE);
-      const page = await context.newPage();
-      const drain = attachErrorProbe(page, base, `${ADAPTER_PAGE}#negative`);
-      try {
-        await page.goto(`${base}${ADAPTER_PAGE}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await openSheetToQuiz(page);
-        // Fixture: point the visible source at a fragment that does not exist.
-        await page.evaluate(() => {
-          document.getElementById('glsQuizSource').href =
-            `${location.pathname}#gbs-quiz-source-missing-probe`;
-        });
-        const before = await page.evaluate(() => ({ hash: location.hash, open: document.getElementById('gillLearningOverlay').classList.contains('is-open') }));
-        await page.locator('#glsQuizSource').click();
-
-        const after = await page.evaluate(() => ({
-          hash: location.hash,
-          open: document.getElementById('gillLearningOverlay').classList.contains('is-open'),
-          sourceVisible: !document.getElementById('glsQuizSource').hidden,
-        }));
-        rec('missing fragment does not fake a hash-only success', after.hash === before.hash,
-          `hash ${before.hash} → ${after.hash}`);
-        rec('sheet stays open when there is nowhere to land', after.open === true && before.open === true);
-        rec('source link stays operable for a retry', after.sourceVisible === true);
-
-        // Recovery: closing must still unlock the reader.
-        await page.locator('#gillLearningOverlay [data-overlay-close]').last().click();
-        const closed = await assertSheetClosedUnlocked(page);
-        rec('manual close still releases the modal + scroll lock', closed.overlayGone && closed.bodyUnlocked, JSON.stringify(closed));
-
-        const drained = drain();
-        rec('no product console/page errors', drained.product.length === 0,
-          drained.product.map((e) => e.text).join(' | '));
-        pageErrors.push(...drained.product);
-      } finally {
-        await context.close();
-      }
-    });
-  } finally {
-    await browser.close();
-    if (server) await new Promise((resolve) => server.close(resolve));
-  }
-
-  summary.failureCount = failures.length;
-  summary.productErrors = pageErrors.length;
-  fs.writeFileSync(path.join(OUT, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
-
-  if (failures.length) {
-    console.error(`\n❌ series quiz source handoff contract failed (${failures.length} of ${summary.checks} checks):`);
-    failures.forEach((f) => console.error(`   - ${f}`));
-    process.exit(1);
-  }
-  console.log(`\n✅ series quiz source handoff contract passed (${summary.checks} checks; mobile 390×844 Dark, reduced-motion, native clicks)`);
+  ck(engineName+' no duplicate IDs on Gill II',await page.evaluate(()=>{
+    const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);
+    return new Set(ids).size===ids.length;
+  }));
+  await page.screenshot({path:path.join(OUT,engineName+'-gill-mobile.png')});
+  // Bank-only route: no editorial SITE_CONFIG.quiz.
+  await page.goto(base+APOSTASY,{waitUntil:'domcontentloaded'});
+  await page.locator('#gbAnalyticsStudy:not([hidden])').waitFor({timeout:15000});
+  ck(engineName+' Apostasy 30 series-only questions',await page.evaluate(()=>{
+    const d=JSON.parse(document.getElementById('gbAnalyticsStudy').getAttribute('data-study'));
+    return d.series.length===30&&!window.SITE_CONFIG?.quiz?.questions?.length;
+  }));
+  // No data: no empty study tab.
+  await page.goto(base+TEEN,{waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(200);
+  ck(engineName+' no-data route: no blank Quiz or Learning',
+    await page.locator('#gbAnalyticsStudy,#gillLearningOverlay,#mobLearningBtn').count()===0);
+  ck(engineName+' no uncaught Product JS errors',pageErrors.length===0,pageErrors.join(' | ').slice(0,250));
+  await ctx.close();
+  // Desktop W57 and non-pilot desktop share inline fallback and one research owner.
+  const dc=await browser.newContext({viewport:{width:1440,height:900},colorScheme:'light',reducedMotion:'reduce',serviceWorkers:'block'});
+  await dc.route(/^https:\/\/mc\.yandex\.(?:ru|com)\//i,r=>r.fulfill({status:200,body:'',contentType:'text/plain'}));
+  const dp=await dc.newPage();await dp.goto(base+GILL+'?reader-pilot=1&paper=space&panel=open',{waitUntil:'domcontentloaded'});
+  await dp.locator('#gbAnalyticsStudy:not([hidden])').waitFor({timeout:15000});
+  await dp.waitForFunction(()=>!!document.querySelector('#npUResearch .np-u-right-scroll #gbAnalyticsStudy'),null,{timeout:20000});
+  ck(engineName+' desktop W57: study in existing Research, no second sheet',await dp.evaluate(()=>
+    document.body.classList.contains('np-w57-ready')&&
+    document.querySelectorAll('#gbAnalyticsStudy').length===1&&
+    !document.querySelector('#gillLearningOverlay,#mobLearningBtn')));
+  await dp.screenshot({path:path.join(OUT,engineName+'-w57-desktop.png')});
+  await dp.goto(base+GILL,{waitUntil:'domcontentloaded'});
+  await dp.locator('#gbAnalyticsStudy:not([hidden])').waitFor({timeout:15000});
+  ck(engineName+' standard desktop: inline article quiz fallback',
+    await dp.locator('#quizPlaceholder #gbAnalyticsStudy').count()===1);
+  await dc.close();
+ }finally{await browser.close();}
 }
-
-run().catch((error) => {
-  console.error('FATAL', error);
-  process.exit(1);
-});
+const {server,base}=process.env.AUDIT_BASE?{server:null,base:process.env.AUDIT_BASE}:await serve();
+try{
+ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
+   try{await withEngine(name,engine,base)}catch(e){failures.push(name+' FATAL '+String(e));console.error(name+' FATAL '+String(e));}
+ }
+}finally{if(server)await new Promise(done=>server.close(done));}
+fs.writeFileSync(path.join(OUT,'summary.json'),JSON.stringify({base,checks,failures},null,2));
+console.log('W121 QUIZ HANDOFF '+JSON.stringify({checks:checks.length,failed:failures.length}));
+if(failures.length)process.exitCode=1;

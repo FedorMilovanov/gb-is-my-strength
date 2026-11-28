@@ -43,7 +43,10 @@ for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
    const row={engine,slug,width,fail:[],proof:{}};
    const check=(name,ok,detail)=>{if(!ok)row.fail.push({name,detail});};
    try{
-    const response=await page.goto(base+route,{waitUntil:'domcontentloaded'});
+    // Desktop Grok rail geometry belongs to Classic, not the default ARGON owner.
+    const classic=slug==='grok'&&width===1440;
+    const target=base+route+(classic?'?reader-pilot=0':'');
+    const response=await page.goto(target,{waitUntil:'domcontentloaded'});
     check('HTTP 200',response.status()===200,response.status());
     await page.waitForTimeout(160);
     const initial=await page.evaluate(()=>{
@@ -62,6 +65,8 @@ for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
     check('sitewide focus width',initial.focusMeasure==='49rem',initial);
     if(slug==='grok'&&width===1440){
       await page.locator('.hrail--grok.grok-ready').waitFor();
+      const railOwner=await page.locator('.hrail--grok.grok-ready').evaluate(el=>({hidden:el.getAttribute('aria-hidden'),inert:el.inert,docked:el.getAttribute('data-np-pilot-docked')}));
+      check('Classic rail owns desktop controls',railOwner.hidden!=='true'&&!railOwner.inert&&railOwner.docked!=='true',railOwner);
       const original=await page.locator('.article-body > p').first().boundingBox();
       row.proof.expanded=original;
       await page.screenshot({path:path.join(OUT,engine+'-grok-expanded.png')});

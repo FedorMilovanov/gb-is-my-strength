@@ -3,6 +3,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('node:crypto');
+const assert = require('node:assert/strict');
+const { ASSETS, LAZY_NO_PRECACHE } = require('./cache-bust-assets');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -61,6 +64,7 @@ function loadAssetVersions() {
   const source = fs.readFileSync(ASSET_VERSION_HELPER, 'utf8');
   const versions = new Map();
   for (const match of source.matchAll(/['"]([^'"]+)['"]\s*:\s*['"]([a-f0-9]{8})['"]/g)) {
+    if (versions.has(match[1])) bad(`duplicate ASSET_VERSIONS entry: ${match[1]}`);
     versions.set(match[1], match[2]);
   }
   if (!versions.size) bad('src/lib/asset-version.js ASSET_VERSIONS could not be parsed');
@@ -116,6 +120,73 @@ function checkCacheVersion(rootSw, matrix) {
   return version;
 }
 
+// The shared asset policy, not the worker's existing list, defines the
+// mandatory offline inventory. Compare actual published bytes to the exact URL.
+function auditPrecacheIdentity(assets, versions, policy, readBytes) {
+  const issues = [], byPath = new Map();
+  const governed = new Set(policy.ASSETS), lazy = new Set(policy.LAZY_NO_PRECACHE);
+  let verified = 0;
+  for (const url of assets) {
+    const path = localPath(url);
+    const entries = byPath.get(path) || [];
+    entries.push(url);
+    byPath.set(path, entries);
+  }
+  for (const asset of lazy) {
+    if (byPath.has(asset)) issues.push(`lazy asset must not be precached: ${asset}`);
+  }
+  for (const asset of versions.keys()) {
+    if (!governed.has(asset)) issues.push(`undeclared ASSET_VERSIONS entry: ${asset}`);
+  }
+  for (const asset of governed) {
+    const hash = versions.get(asset);
+    if (!/^[a-f0-9]{8}$/.test(hash || '')) {
+      issues.push(`missing authoritative revision: ${asset}`);
+      continue;
+    }
+    if (lazy.has(asset)) continue;
+    const expected = `/${asset}?v=${hash}`;
+    const entries = byPath.get(asset) || [];
+    if (entries.length !== 1 || entries[0] !== expected) {
+      issues.push(`${asset}: expected exactly ${expected}, got ${entries.join(', ') || '(missing)'}`);
+      continue;
+    }
+    try {
+      const bytes = readBytes(asset);
+      const actual = crypto.createHash('md5').update(bytes).digest('hex').slice(0, 8);
+      if (actual !== hash) issues.push(`${asset}: published bytes have revision ${actual}, expected ${hash}`);
+      else verified += 1;
+    } catch (error) {
+      issues.push(`${asset}: published bytes unavailable (${error.message})`);
+    }
+  }
+  return { issues, verified };
+}
+
+function assertPrecacheIdentityContract() {
+  const required = 'js/reader-library-research-core.js', optional = 'js/search.js';
+  const bytes = Buffer.from('exact fixture bytes');
+  const hash = crypto.createHash('md5').update(bytes).digest('hex').slice(0,8);
+  const policy = {ASSETS:[required,optional],LAZY_NO_PRECACHE:[optional,'manifest.json']};
+  const versions = new Map([[required,hash],[optional,hash]]);
+  const exact = `/${required}?v=${hash}`;
+  const run = (assets=[exact], manifest=versions, read=()=>bytes) => auditPrecacheIdentity(assets,manifest,policy,read);
+  assert.deepEqual(run(),{issues:[],verified:1});
+  for (const [label, result, expected] of [
+    ['missing required module',run([]),/\(missing\)/],
+    ['queryless URL',run(['/'+required]),/expected exactly/],
+    ['wrong revision',run(['/'+required+'?v=deadbeef']),/expected exactly/],
+    ['duplicate revision path',run([exact,'/'+required+'?v=deadbeef']),/expected exactly/],
+    ['lazy module',run([exact,'/'+optional+'?v='+hash]),/lazy asset/],
+    ['lazy manifest',run([exact,'/manifest.json']),/lazy asset/],
+    ['missing authority',run([exact],new Map([[optional,hash]])),/missing authoritative/],
+    ['extra authority',run([exact],new Map([...versions,['js/undeclared.js',hash]])),/undeclared/],
+    ['wrong published bytes',run([exact],versions,()=>Buffer.from('other bytes')), /published bytes have revision/],
+    ['missing published bytes',run([exact],versions,()=>{throw Error('ENOENT')}),/published bytes unavailable/],
+  ]) assert.ok(result.issues.some(issue=>expected.test(issue)),label);
+  console.log('  PASS precache identity mutation contract: 11/11');
+}
+
 function checkPrecache(rootSw) {
   const assets = parsePrecache(rootSw);
   if (!assets.length) return bad('sw.js PRECACHE_ASSETS not parsed');
@@ -147,18 +218,10 @@ function checkPrecache(rootSw) {
   if (assets.some((asset) => /(?:audio|tts|model|vosk)|\.(?:zip|bin|mp3|m4a|ogg|wav)$/i.test(asset))) bad('TTS/audio/model assets must not be precached');
   else ok('PRECACHE_ASSETS excludes TTS/audio/model payloads');
 
-  const versions = loadAssetVersions();
-  const byPath = new Map(assets.map((asset) => [localPath(asset), asset]));
-  const mismatches = [];
-  let governedPrecache = 0;
-  for (const [asset, hash] of versions) {
-    if (!byPath.has(asset)) continue;
-    governedPrecache += 1;
-    const expected = `/${asset}?v=${hash}`;
-    if (byPath.get(asset) !== expected) mismatches.push(`${asset}: expected ${expected}, got ${byPath.get(asset)}`);
-  }
-  if (mismatches.length) mismatches.forEach((item) => bad(`revision-governed precache identity mismatch: ${item}`));
-  else ok(`revision-governed precache entries preserve exact ASSET_VERSIONS identity (${governedPrecache})`);
+  const { issues, verified } = auditPrecacheIdentity(assets, loadAssetVersions(),
+    { ASSETS, LAZY_NO_PRECACHE }, asset => fs.readFileSync(path.join(DIST, asset)));
+  if (issues.length) issues.forEach(item => bad(`revision-governed precache identity mismatch: ${item}`));
+  else ok(`required precache inventory and published bytes preserve exact ASSET_VERSIONS identity (${verified})`);
 }
 
 function checkSwRuntimeShape(rootSw) {
@@ -284,6 +347,7 @@ function writeReport(version, matrix) {
 
 function main() {
   console.log(`SW DIST READINESS AUDIT (pagefind ${REQUIRE_PAGEFIND ? 'required' : 'optional'}, cache bump ${REQUIRE_CACHE_BUMP ? 'required' : 'advisory'})`);
+  assertPrecacheIdentityContract();
   checkDistPresence();
   if (!fs.existsSync(path.join(ROOT, 'sw.js')) || !existsInDist('sw.js')) process.exit(1);
   let matrix = {};

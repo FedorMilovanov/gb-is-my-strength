@@ -118,3 +118,26 @@
     display: none !important;
   }
 }
+
+
+/* Readable server-rendered FAQ, including native-entry delivery failure. */
+.faq-accordion .faq-accordion__item > .faq-accordion__q[data-gb-faq-static]:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.faq-accordion .faq-accordion__q[data-gb-faq-static]:disabled .faq-accordion__icon {
+  visibility: hidden;
+}
+.faq-accordion .faq-accordion__item > .faq-accordion__q[data-gb-faq-static]:disabled + .faq-accordion__body {
+  max-height: none;
+  grid-template-rows: 1fr;
+  overflow: visible;
+  pointer-events: auto;
+  transition: none;
+}
+.faq-accordion .faq-accordion__item > .faq-accordion__q[data-gb-faq-static]:disabled + .faq-accordion__body .faq-accordion__body-inner {
+  overflow: visible;
+  padding-bottom: 16px;
+  pointer-events: auto;
+  transition: none;
+}

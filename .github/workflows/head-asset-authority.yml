@@ -1,0 +1,59 @@
+name: Head Asset Authority Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/head-asset-authority.yml'
+      - 'scripts/head-asset-authority-contract-test.js'
+      - 'src/lib/asset-version.js'
+      - 'scripts/cache-bust.js'
+      - 'scripts/cache-bust-assets.js'
+      - 'src/components/**/*.astro'
+      - 'src/layouts/**/*.astro'
+      - 'src/pages/**/*.astro'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/head-asset-authority.yml'
+      - 'scripts/head-asset-authority-contract-test.js'
+      - 'src/lib/asset-version.js'
+      - 'scripts/cache-bust.js'
+      - 'scripts/cache-bust-assets.js'
+      - 'src/components/**/*.astro'
+      - 'src/layouts/**/*.astro'
+      - 'src/pages/**/*.astro'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: head-asset-authority-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  head-asset-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.4'
+
+      - name: Enforce head asset authority contract
+        run: node scripts/head-asset-authority-contract-test.js
+
+      - name: Verify asset revisions are in sync (read-only)
+        run: node scripts/cache-bust.js
+
+      - name: Ensure validation is read-only
+        if: always()
+        run: git diff --exit-code

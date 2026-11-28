@@ -6,6 +6,9 @@ on:
       - '.github/workflows/interactive-audit.yml'
       - 'scripts/interactive-audit.js'
       - 'scripts/interactive-audit-runner.js'
+      - 'scripts/reader-mobile-print-lock-browser-contract.cjs'
+      - 'scripts/w121-search-contract.mjs'
+      - 'scripts/reader-search-handoff-unit-contract.mjs'
       - 'scripts/home-design-audit-pro.mjs'
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-responsive-evidence-contract.mjs'
@@ -42,6 +45,9 @@ on:
       - '.github/workflows/interactive-audit.yml'
       - 'scripts/interactive-audit.js'
       - 'scripts/interactive-audit-runner.js'
+      - 'scripts/reader-mobile-print-lock-browser-contract.cjs'
+      - 'scripts/w121-search-contract.mjs'
+      - 'scripts/reader-search-handoff-unit-contract.mjs'
       - 'scripts/home-design-audit-pro.mjs'
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-responsive-evidence-contract.mjs'
@@ -273,7 +279,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|scripts/hermenevtika-regression-guard\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/components/ui/floating-cluster/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/reader-mobile-print-lock-browser-contract\.cjs|scripts/w121-search-contract\.mjs|scripts/reader-search-handoff-unit-contract\.mjs|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|scripts/hermenevtika-regression-guard\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/components/ui/floating-cluster/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
@@ -318,6 +324,13 @@ jobs:
         if: steps.audit-scope.outputs.run == 'true'
         run: timeout 12m npx playwright install --with-deps chromium webkit
 
+      - name: Install Poppler for physical Reader PDF text parity
+        if: steps.audit-scope.outputs.run == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+          pdftotext -v
+
       - name: Build production-like dist
         if: steps.audit-scope.outputs.run == 'true'
         run: npm run strangler:build:production-like
@@ -333,10 +346,36 @@ jobs:
           echo $! > /tmp/gb-http.pid
           sleep 2
 
+      - name: Verify canonical desktop Reader against the same built dist
+        if: steps.audit-scope.outputs.run == 'true'
+        shell: bash
+        run: |
+          READER_W57_DIST="$GITHUB_WORKSPACE/dist" READER_W57_PORT=19061 python3 research/reader-w57-pilot/preview.py > /tmp/gb-w57.log 2>&1 &
+          echo $! > /tmp/gb-w57.pid
+          ready=false
+          for _attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:19061/reader-desktop/bootstrap.js -o /tmp/gb-w57-bootstrap.js; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then cat /tmp/gb-w57.log; exit 1; fi
+          curl --fail --silent 'http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open' -o /tmp/gb-w57-probe.html
+          digest="$(sha256sum /tmp/gb-w57-bootstrap.js | cut -d ' ' -f 1)"
+          grep -Fq "/reader-desktop/bootstrap.js?v=$digest" /tmp/gb-w57-probe.html
+          test "$(grep -o 'data-gb-reader-desktop-bootstrap' /tmp/gb-w57-probe.html | wc -l)" -eq 1
+          if grep -Fq '/__reader_w57__/' /tmp/gb-w57-probe.html; then echo 'Retired injection prefix found'; exit 1; fi
+          curl --fail --silent 'http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=0&paper=space&panel=open' -o /tmp/gb-w57-classic.html
+          cmp /tmp/gb-w57-probe.html /tmp/gb-w57-classic.html
+          curl --fail --silent 'http://127.0.0.1:19061/articles/' -o /tmp/gb-w57-negative.html
+          if grep -Fq '/reader-desktop/' /tmp/gb-w57-negative.html; then echo 'Catalog unexpectedly mounts desktop Reader'; exit 1; fi
+
       - name: Runtime interactive audit with durable evidence
         if: steps.audit-scope.outputs.run == 'true'
         env:
           AUDIT_BASE: http://127.0.0.1:8080
+          AUDIT_W57_BASE: http://127.0.0.1:19061
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           SOURCE_REF: ${{ github.event.pull_request.head.ref || github.ref }}
         shell: bash
@@ -378,12 +417,17 @@ jobs:
           if [ -f /tmp/gb-http.pid ]; then
             kill "$(cat /tmp/gb-http.pid)" 2>/dev/null || true
           fi
+          if [ -f /tmp/gb-w57.pid ]; then
+            kill "$(cat /tmp/gb-w57.pid)" 2>/dev/null || true
+          fi
 
       - name: Upload runtime interactive audit evidence
         if: always() && steps.audit-scope.outputs.run == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-interactive-audit-${{ github.run_id }}-${{ github.run_attempt }}
-          path: reports/interactive-audit
+          path: |
+            reports/interactive-audit
+            reports/series-quiz-source-handoff/w121-search-contract.json
           if-no-files-found: error
           retention-days: 14

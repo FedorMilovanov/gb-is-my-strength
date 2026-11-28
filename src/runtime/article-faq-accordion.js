@@ -1,4 +1,5 @@
 const OWNER = 'native-v1';
+let fragmentListenerBound = false;
 
 function resolveBody(button) {
   const id = button.getAttribute('aria-controls');
@@ -51,6 +52,31 @@ function setOpen(button, item, body, open, { animate = true } = {}) {
   }
 }
 
+// Exact Scripture search and ordinary fragment links can target an answer
+// (or a descendant). Reveal it before relying on native fragment geometry.
+function revealFragmentAnswer() {
+  const hash = window.location.hash;
+  if (!hash || hash === '#') return;
+  let id;
+  try { id = decodeURIComponent(hash.slice(1)); } catch (_) { return; }
+  const target = document.getElementById(id);
+  if (!target) return;
+  const item = target.closest('.faq-accordion__item');
+  const button = item?.querySelector('.faq-accordion__q[data-gb-faq-owner="native-v1"]');
+  const body = button && resolveBody(button);
+  if (!body || !body.contains(target) || button.getAttribute('aria-expanded') === 'true') return;
+  setOpen(button, item, body, true, { animate: false });
+  // The SSR-open answer may already have been scrolled to before hydration
+  // collapsed earlier answers. Re-align this exact target once, without
+  // changing focus, URL or the state of unrelated accordions.
+  requestAnimationFrame(() => {
+    if (window.location.hash === hash && target.isConnected &&
+        button.getAttribute('aria-expanded') === 'true') {
+      target.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+    }
+  });
+}
+
 export function installArticleFaqAccordions() {
   const buttons = [...document.querySelectorAll('.faq-accordion__q')];
   if (!buttons.length) return Object.freeze({ enabled: false, buttons: 0 });
@@ -59,14 +85,17 @@ export function installArticleFaqAccordions() {
   for (const button of buttons) {
     const item = button.closest('.faq-accordion__item');
     const body = resolveBody(button);
-    if (!item || !body) {
+    if (!item || !body || !item.contains(body)) {
       button.dataset.gbFaqInvalid = 'missing-body';
       continue;
     }
 
     button.dataset.gbFaqOwner = OWNER;
     item.dataset.gbFaqOwner = OWNER;
-    const initiallyOpen = item.classList.contains('is-open') || item.classList.contains('open') || button.getAttribute('aria-expanded') === 'true';
+    // SSR answers remain readable until the native owner enables the control.
+    const staticFallback = button.hasAttribute('data-gb-faq-static') && button.disabled;
+    const initiallyOpen = !staticFallback && (item.classList.contains('is-open') ||
+      item.classList.contains('open') || button.getAttribute('aria-expanded') === 'true');
     setOpen(button, item, body, initiallyOpen, { animate: false });
 
     if (button.dataset.gbFaqBound !== OWNER) {
@@ -76,6 +105,7 @@ export function installArticleFaqAccordions() {
         setOpen(button, item, body, open);
       });
     }
+    if (staticFallback) button.disabled = false;
     owned += 1;
   }
 
@@ -87,6 +117,12 @@ export function installArticleFaqAccordions() {
     }
   };
   window.addEventListener('resize', resize, { passive: true });
+
+  if (!fragmentListenerBound) {
+    fragmentListenerBound = true;
+    window.addEventListener('hashchange', revealFragmentAnswer);
+    revealFragmentAnswer();
+  }
 
   document.querySelectorAll('.faq-accordion').forEach((root) => { root.dataset.gbFaqEnhanced = OWNER; });
   document.documentElement.dataset.gbArticleFaqReady = owned === buttons.length ? '1' : 'invalid';

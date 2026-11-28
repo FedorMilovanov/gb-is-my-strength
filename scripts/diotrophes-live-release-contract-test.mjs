@@ -24,15 +24,14 @@ const SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
   'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
-  'https://www.thejourney.org/about/our-story-new',
 ].sort();
+const HISTORICAL_JOURNEY_URL = 'https://www.thejourney.org/about/our-story-new';
 const STALE_READER_LINKS = [
   'https://www.thejourney.org/our-story',
   'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
 ];
 const CANONICAL_IICSA_READER_LINK = 'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings';
 const CANONICAL_BASE_READER_LINKS = [
-  'https://www.thejourney.org/about/our-story-new',
   CANONICAL_IICSA_READER_LINK,
 ];
 const BASE_ONLY_READER_LINKS = [
@@ -44,7 +43,7 @@ const SUPPLEMENT_ONLY_READER_LINKS = Array.from(
   (_, index) => `https://example.test/supplement-source-${index}`,
 );
 const BASE_READER_LINKS = [...SHARED_READER_LINKS, ...BASE_ONLY_READER_LINKS];
-const SUPPLEMENT_READER_LINKS = [...SHARED_READER_LINKS, ...SUPPLEMENT_ONLY_READER_LINKS];
+const SUPPLEMENT_READER_LINKS = [...SHARED_READER_LINKS, HISTORICAL_JOURNEY_URL, ...SUPPLEMENT_ONLY_READER_LINKS];
 
 function pointer(overrides = {}) {
   return {
@@ -120,7 +119,13 @@ function validHtml(overrides = {}) {
     ...overrides,
   };
   const baseLinks = values.baseReaderLinks.map(link).join('');
-  const supplementLinks = values.supplementReaderLinks.map(link).join('');
+  const supplementLinks = (values.supplementHistoryDisabled
+    ? values.supplementReaderLinks.filter((href) => href !== HISTORICAL_JOURNEY_URL)
+    : values.supplementReaderLinks).map(link).join('');
+  const baseHistoricalNote = values.baseHistoryDisabled === false ? '' :
+    `<span data-locator-status="unavailable-404-2026-11-23" data-historical-href="${HISTORICAL_JOURNEY_URL}">The Journey historic 404</span>`;
+  const supplementHistoricalNote = values.supplementHistoryDisabled ?
+    `<span data-locator-status="unavailable-404-2026-11-23" data-historical-href="${HISTORICAL_JOURNEY_URL}">The Journey historic 404</span>` : '';
   return `<!doctype html>
 <html lang="ru">
 <head>
@@ -133,8 +138,8 @@ function validHtml(overrides = {}) {
     <h1>${values.h1}</h1>
     <section id="faithful-witness-under-pressure"></section>
     <section id="twenty-faithful-responses"></section>
-    <section id="sources"><div>${baseLinks}</div></section>
-    <section id="faithful-witness-sources"><div>${supplementLinks}</div></section>
+    <section id="sources"><div>${baseLinks}${baseHistoricalNote}</div></section>
+    <section id="faithful-witness-sources"><div>${supplementLinks}${supplementHistoricalNote}</div></section>
     ${values.draftText}
   </main>
 </body>
@@ -236,14 +241,55 @@ try {
     assert.equal(report.evidence.route.publicationMarker, 'true');
     assert.equal(report.evidence.route.sourceAuthority, '148');
     assert.deepEqual(report.evidence.route.sourceLinks, {
-      base: 40,
+      base: 39,
       supplement: 33,
-      total: 73,
+      total: 72,
       unique: 69,
       shared: SHARED_READER_LINKS.map((href) => ({ href, base: 1, supplement: 1, total: 2 })),
       stale: [],
       canonicalBase: Object.fromEntries(CANONICAL_BASE_READER_LINKS.map((href) => [href, 1])),
+      historicJourney: { baseDisabled: true, supplementDisabled: false },
     });
+  }
+
+  // The integrated reader lane disables the same historical 404 locator in
+  // the 33-entry supplement. Preserve source-record counts without fake links.
+  {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-integrated-history-'));
+    roots.push(root);
+    const witnessDirectory = makeWitnessDirectory(root);
+    const report = await withServer(
+      { html: validHtml({ supplementHistoryDisabled: true }) },
+      (liveBaseUrl) => verifyDiotrophesLiveRelease({
+        witnessDirectory,
+        liveBaseUrl,
+        reportPath: path.join(root, 'report.json'),
+        timeoutMs: 5000,
+      }),
+    );
+    assert.equal(report.result, 'PASS');
+    assert.equal(report.evidence.route.sourceLinks.base, 39);
+    assert.equal(report.evidence.route.sourceLinks.supplement, 32);
+    assert.equal(report.evidence.route.sourceLinks.total, 71);
+    assert.equal(report.evidence.route.sourceLinks.unique, 68);
+    assert.deepEqual(report.evidence.route.sourceLinks.historicJourney, {
+      baseDisabled: true, supplementDisabled: true,
+    });
+  }
+
+  {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-history-marker-'));
+    roots.push(root);
+    const witnessDirectory = makeWitnessDirectory(root);
+    await assert.rejects(
+      withServer({ html: validHtml({ baseHistoryDisabled: false }) }, (liveBaseUrl) => verifyDiotrophesLiveRelease({
+        witnessDirectory,
+        liveBaseUrl,
+        reportPath: path.join(root, 'report.json'),
+        timeoutMs: 5000,
+      })),
+      /historical Journey 404 marker missing/,
+    );
   }
 
   {

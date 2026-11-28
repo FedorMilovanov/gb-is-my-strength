@@ -163,6 +163,9 @@ jobs:
       - name: Source authority regression
         run: node scripts/legacy-source-authority-regression-test.js
 
+      - name: CSS layer baselines contract
+        run: node scripts/css-layer-baselines-contract-test.js
+
       - name: Build production-like dist
         run: npm run strangler:build:production-like
 

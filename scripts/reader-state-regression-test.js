@@ -156,7 +156,7 @@ function loadMeasuredApi(seed = {}) {
     readyState: 'complete',
     title: 'Measured Reader',
     body,
-    documentElement: { clientHeight: 800 },
+    documentElement: { clientHeight: 800, getAttribute(name) { return attrs.get(name) || null; } },
     visibilityState: 'visible',
     fonts: null,
     querySelector(selector) {
@@ -199,7 +199,7 @@ function loadMeasuredApi(seed = {}) {
     cancelAnimationFrame() {},
   });
   vm.runInContext(source, context, { filename: 'js/reader-state.js' });
-  return { api: window.GBReaderState, window, storage, session, windowListeners, root, headings };
+  return { api: window.GBReaderState, window, storage, session, windowListeners, documentListeners, document, attrs, root, headings };
 }
 
 const { api, listeners } = loadApi();
@@ -303,6 +303,39 @@ assert.strictEqual(measured.api.getSnapshot().progress, 100);
 assert.strictEqual(measured.api.getSnapshot().phase, 'after-content');
 assert.strictEqual(measured.api.getSnapshot().sectionId, '');
 assert.strictEqual(measured.api.getSnapshot().sectionTitle, 'Завершено');
+
+// Lifecycle persistence must not depend on the next animation frame.
+const lifecycleKey = 'gb:reader-state:v1:gb-strength:/series/part-one';
+function position(h, y) { h.window.scrollY = y; h.window.pageYOffset = y; }
+function fireLifecycle(h, type) {
+  const listeners = type === 'visibilitychange' ? h.documentListeners : h.windowListeners;
+  if (type === 'visibilitychange') h.document.visibilityState = 'hidden';
+  (listeners.get(type) || []).forEach(fn => fn({ type }));
+}
+for (const event of ['pagehide', 'beforeunload', 'visibilitychange']) {
+  const h = loadMeasuredApi();
+  position(h, 900);
+  h.api.measure();
+  position(h, 1600); // no measurement/frame between final scroll and exit
+  fireLifecycle(h, event);
+  const saved = JSON.parse(h.storage.get(lifecycleKey));
+  assert.strictEqual(saved.scrollY, 1600, event + ' saves the latest unlocked position');
+  assert.strictEqual(saved.sectionId, 'section-two', event + ' saves the latest section');
+  h.api.destroy();
+}
+const lockedExit = loadMeasuredApi();
+position(lockedExit, 900);
+lockedExit.api.measure();
+lockedExit.attrs.set('data-scroll-locked', '1');
+position(lockedExit, 0);
+fireLifecycle(lockedExit, 'visibilitychange');
+fireLifecycle(lockedExit, 'pagehide');
+assert.strictEqual(JSON.parse(lockedExit.storage.get(lifecycleKey)).scrollY, 900, 'nested lock retains last truthful position during lifecycle save');
+lockedExit.attrs.delete('data-scroll-locked');
+position(lockedExit, 1600);
+fireLifecycle(lockedExit, 'pagehide');
+assert.strictEqual(JSON.parse(lockedExit.storage.get(lifecycleKey)).scrollY, 1600, 'last unlock followed by immediate exit flushes actual restored geometry');
+lockedExit.api.destroy();
 
 const bookmarkSource = fs.readFileSync(path.join(ROOT, 'js/bookmark-engine.js'), 'utf8');
 const mobileBarSource = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro'), 'utf8');

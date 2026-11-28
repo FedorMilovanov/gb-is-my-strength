@@ -33,6 +33,7 @@ const files = {
   baptismBody: read('src/components/konfessii/russkij-baptizm/Baptizm3DBody.astro'),
   mapHead: read('src/components/map/MapPageHead.astro'),
   atlasBody: read('src/components/map/AtlasBody.astro'),
+  assetVersions: read('src/lib/asset-version.js'),
   workflow: read('.github/workflows/search-modal-contract.yml'),
 };
 
@@ -41,13 +42,20 @@ const check = (condition, message) => { assert.ok(condition, message); passed +=
 const count = (text, marker) => text.split(marker).length - 1;
 const assetHash = (text) => crypto.createHash('md5').update(text).digest('hex').slice(0, 8);
 
+// Head asset authority (SYS-HEAD-ASSET-PROLIFERATION): markup references go
+// through assetUrl(); revision freshness is proven against the registry,
+// which cache-bust.js keeps equal to the file md5 (fail-closed corpus).
+const registry = Object.fromEntries(
+  [...files.assetVersions.matchAll(/'([^']+)': '([a-f0-9]{8})'/g)].map((m) => [m[1], m[2]]),
+);
 const commandPaletteHash = assetHash(files.commandPalette);
-check(files.head.includes(`/css/command-palette.css?v=${commandPaletteHash}`), 'current command-palette revision missing');
+check(files.head.includes("assetUrl('css/command-palette.css')"), 'AppSearchHead must load command-palette via the assetUrl authority');
+check(registry['css/command-palette.css'] === commandPaletteHash, 'current command-palette revision missing from the asset registry');
 check(files.readerHead.includes("assetUrl('js/search.js')") && files.readerHead.includes('data-search-src={searchRuntimeSrc}'), 'current search revision missing from the sole lazy bootstrap');
 check(!files.head.includes('/js/search.js'), 'AppSearchHead must not enqueue a second Search bootstrap path');
 const siteUtilsHash = assetHash(files.siteUtils);
-check(files.head.includes(`/js/site-utils.js?v=${siteUtilsHash}`), 'current SiteUtils revision missing');
-check(files.head.includes('/js/site-utils.js'), 'SiteUtils runtime missing from strict-native Search surface');
+check(files.head.includes("assetUrl('js/site-utils.js')"), 'AppSearchHead must load SiteUtils via the assetUrl authority');
+check(registry['js/site-utils.js'] === siteUtilsHash, 'current SiteUtils revision missing from the asset registry');
 check(files.head.includes('defer'), 'search bootstrap must remain deferred');
 check(files.surface.includes('id="gbSearchBtn"'), 'canonical trigger id missing');
 check(files.surface.includes('aria-haspopup="dialog"'), 'dialog semantics missing');
@@ -91,7 +99,14 @@ for (const marker of [
   "window.dispatchEvent(new CustomEvent('gb:openSearch'",
   "document.addEventListener('keydown', handleSearchShortcut, true)",
 ]) check(files.siteUtils.includes(marker), `SiteUtils canonical shortcut marker missing: ${marker}`);
-check(!/\b(?:ctrlKey|metaKey)\b/.test(files.search), 'Search must not parse the global keyboard chord');
+// A native result link must preserve modified clicks (new tab/window). This
+// precise exception is for the result's click handler, never a keydown owner.
+const nativeReadClickGuard = 'var d=document.getElementById("cp-read-btn");d&&d.addEventListener("click",function(t){if(t.button===0&&!t.ctrlKey&&!t.metaKey&&!t.shiftKey&&!t.altKey){t.preventDefault();e.title&&U(e.title);__gbOpenArticleResult(e)}})';
+const hasUnexpectedSearchModifier = (source) => /\b(?:ctrlKey|metaKey)\b/.test(source.replace(nativeReadClickGuard, ''));
+check(count(files.search, nativeReadClickGuard) === 1, 'Search result must preserve native modified-click navigation with one guarded handler');
+check(!hasUnexpectedSearchModifier(files.search), 'Search must not parse the global keyboard chord');
+check(hasUnexpectedSearchModifier(files.search + 'document.addEventListener("keydown",function(e){if(e.ctrlKey&&e.key==="k")e.preventDefault()})'), 'modifier guard must reject an added Ctrl+K owner');
+check(hasUnexpectedSearchModifier(files.search + 'document.addEventListener("keydown",function(e){if(e.metaKey&&e.key==="k")e.preventDefault()})'), 'modifier guard must reject an added Meta+K owner');
 check(files.search.includes('window.addEventListener("gb:openSearch",function(){ne()})'), 'loaded Search gb:openSearch transport missing');
 check(files.search.includes('window.addEventListener("gb:openSearch",function(){__gbLoadSearch(true)})'), 'bootstrap Search gb:openSearch transport missing');
 check(files.search.includes('we(),ie())'), 'Search open path must only warm Pagefind');
@@ -112,7 +127,7 @@ check(!files.home.includes('const onShortcut'), 'Home route-local shortcut parse
 check(!files.home.includes("window.addEventListener('gb:openSearch'"), 'Home route-local gb:openSearch orchestration survived');
 check(!files.homeProgressive.includes('stopImmediatePropagation'), 'Home progressive shortcut capture gate survived');
 check(!files.notFound.includes('function key(e)') && files.notFound.includes('gb:openSearch'), '404 raw keyboard owner survived');
-check(files.rodosloviye.includes('/js/site-utils.js') && files.rodosloviye.indexOf('/js/site-utils.js') < files.rodosloviye.indexOf('/js/site.js'), 'Rodosloviye shared runtime order missing');
+check(files.rodosloviye.includes("assetUrl('js/site-utils.js')") && files.rodosloviye.indexOf("assetUrl('js/site-utils.js')") < files.rodosloviye.indexOf("assetUrl('js/site.js')"), 'Rodosloviye shared runtime order missing');
 
 const walkSource = (dir, predicate, out = []) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

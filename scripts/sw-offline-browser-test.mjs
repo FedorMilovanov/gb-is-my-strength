@@ -18,6 +18,15 @@ assert.ok(siteUtilsRevision, 'dist/sw.js must precache the governed site-utils r
 const exactSiteUtilsUrl = `/js/site-utils.js?v=${siteUtilsRevision}`;
 const unseenSiteUtilsRevision = siteUtilsRevision === 'deadbeef' ? 'feedface' : 'deadbeef';
 const expectedSiteUtilsSha = crypto.createHash('sha256').update(fs.readFileSync(path.join(DIST, 'js', 'site-utils.js'))).digest('hex');
+const readerPath = '/__a07_reader__/';
+const readerCorePath = '/js/reader-library-research-core.js';
+const readerAssets = [...swSource.matchAll(/['"](\/js\/(?:highlights|reader-library-[a-z-]+)\.js\?v=[a-f0-9]{8})['"]/g)].map(m=>m[1]);
+const readerBootstrap = readerAssets.find(url=>url.startsWith('/js/highlights.js?'));
+const coreUrl = readerAssets.find(url=>url.startsWith(readerCorePath+'?'));
+assert.ok(readerBootstrap && coreUrl, 'Reader bootstrap and shared research core must have exact precache URLs');
+const readerDigests = readerAssets.map(url=>({
+  url, sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(DIST,url.split('?')[0].slice(1)))).digest('hex')
+}));
 const pagefindDataFile = findFirst(path.join(DIST, 'pagefind'), (file) => /[\\/](?:fragment|index)[\\/]/.test(file));
 assert.ok(pagefindDataFile, 'production-like dist must contain Pagefind index/fragment data');
 const pagefindDataPath = `/${path.relative(DIST, pagefindDataFile).replace(/\\/g, '/')}`;
@@ -75,6 +84,10 @@ const server = http.createServer((request, response) => {
   if (pathname === '/sw.js') {
     const source = state.release === 'old' ? swSource.replaceAll(currentVersion, oldVersion) : swSource;
     send(response, 200, 'application/javascript; charset=utf-8', source, { 'service-worker-allowed': '/' });
+    return;
+  }
+  if (pathname === readerPath) {
+    send(response, 200, 'text/html; charset=utf-8', '<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Offline Reader</title><style>section{height:1000px}body{margin:0}article{padding:24px}</style></head><body><main><article><h1>Offline Reader</h1><section>Начало чтения</section><h2 id="second">Вторая глава</h2><section>Продолжение чтения</section></article></main><script src="'+readerBootstrap+'"></script></body></html>');
     return;
   }
   if (pathname === '/__a07_fixture__/' || pathname === '/__a07_fixture__/index.html') {
@@ -303,7 +316,37 @@ try {
   pass('TTS/audio boundary', 'network-only and absent from CacheStorage');
   await context.setOffline(false);
 
+  // A missing newly required core must not destroy the already active generation.
   state.release = 'new';
+  state.failPrecachePath = readerCorePath;
+  const failedUpgrade = await page.evaluate(async () => {
+    const registration=await navigator.serviceWorker.getRegistration('/');
+    const active=registration.active;
+    const state=await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(Error('failed successor timeout')),15000);
+      registration.addEventListener('updatefound',()=>{
+        const worker=registration.installing;
+        const done=()=>{
+          if(!['redundant','activated'].includes(worker.state))return;
+          clearTimeout(timer);resolve(worker.state);
+        };
+        worker.addEventListener('statechange',done);done();
+      },{once:true});
+      registration.update().catch(error=>{clearTimeout(timer);reject(error)});
+    });
+    return {state,sameActive:registration.active===active,sameController:navigator.serviceWorker.controller===active,caches:await caches.keys()};
+  });
+  assert.equal(failedUpgrade.state,'redundant');
+  assert.equal(failedUpgrade.sameActive,true);
+  assert.equal(failedUpgrade.sameController,true);
+  assert.ok(failedUpgrade.caches.includes(oldVersion+'-static'));
+  assert.equal(failedUpgrade.caches.some(name=>name.startsWith(currentVersion)),false);
+  await context.setOffline(true);
+  assert.equal((await responseDigest(page,exactSiteUtilsUrl)).sha256,expectedSiteUtilsSha);
+  await context.setOffline(false);
+  pass('missing research core rejects successor without damaging active cache','old controller and exact offline bytes survive');
+  state.failPrecachePath = '';
+
   await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.getRegistration('/');
     await new Promise(async (resolve, reject) => {
@@ -322,12 +365,45 @@ try {
   assert.equal(await releaseMarker(page), 'new');
   pass('release update over old cache', 'old generation caches removed only after valid successor activation; new route survives offline');
 
+  await context.setOffline(false);
+  // Visit only the Reader route, not its optional research UI, before going
+  // offline. First use of the new core and panel must come from precache.
+  await page.goto(baseUrl+readerPath);
+  await page.locator('#gb-hl-fab').waitFor();
+  await page.evaluate(()=>localStorage.setItem('gb-library-reading-v1',JSON.stringify({
+    '/__a07_reader__':{state:'reading',title:'Offline Reader',updatedAt:Date.now(),anchor:'',ratio:0}
+  })));
+  await context.setOffline(true);
+  const coreRequestsBefore=state.requestCounts.get(readerCorePath)||0;
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('#gb-hl-fab').waitFor();
+  await page.waitForFunction(()=>Boolean(window.GBHighlights));
+  await page.evaluate(()=>window.scrollTo(0,1250));
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('gb-library-reading-v1')||'{}')['/__a07_reader__']?.anchor==='second',null,{timeout:12000});
+  assert.equal(await page.locator('#gb-hl-backdrop').count(),0,'offline warm reading must not mount panel');
+  assert.equal(state.requestCounts.get(readerCorePath)||0,coreRequestsBefore,'offline progress never fetches core from server');
+  pass('offline warm reading persists exact heading without panel','actual bootstrap, research core and shared storage owner');
+  await page.locator('#gb-hl-fab').click();
+  await page.locator('#gb-hl-backdrop.is-open').waitFor();
+  await page.locator('[data-research-action=resume]').waitFor();
+  await page.locator('#gb-hl-close').click();
+  assert.equal(state.requestCounts.get(readerCorePath)||0,coreRequestsBefore,'offline panel uses the same cached core');
+  pass('first offline library open loads complete module graph','no online panel warm-up');
+  for (const {url,sha256} of readerDigests) {
+    const actual=await responseDigest(page,url);
+    assert.equal(actual.status,200,url);
+    assert.equal(actual.sha256,sha256,url);
+  }
+  const staleCore=coreUrl.replace(/v=[a-f0-9]{8}$/,'v='+ (coreUrl.endsWith('deadbeef')?'feedface':'deadbeef'));
+  assert.equal((await rejectedFetch(page,staleCore)).rejected,true,'unseen core revision must not be served');
+  pass('all Reader precache modules retain exact offline bytes',readerDigests.length+' exact SHA-256 digests; unseen core revision rejected');
+
   await context.close();
 
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   const report = {
     contract: 'A07-honest-offline-pwa', browser: 'chromium', cacheVersion: currentVersion,
-    oldFixtureVersion: oldVersion, exactSiteUtilsUrl, expectedSiteUtilsSha, pagefindDataPath, mapEnginePath, teenImagePath,
+    oldFixtureVersion: oldVersion, exactSiteUtilsUrl, expectedSiteUtilsSha, readerDigests, pagefindDataPath, mapEnginePath, teenImagePath,
     scenarios: results, requestCounts: Object.fromEntries([...state.requestCounts.entries()].sort()),
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'a07-offline-pwa-browser.json'), `${JSON.stringify(report, null, 2)}\n`);

@@ -1,0 +1,6 @@
+﻿pilot-preview.log
+pilot-preview.err
+__pycache__/
+*.pyc
+REPO_W57_PREVIEW_*.png
+REPO_W57_PREVIEW_QA_*.json

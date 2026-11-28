@@ -8,6 +8,7 @@
   var themes = ['light', 'dark', 'sepia'];
   var lines = ['compact', 'normal', 'relaxed'];
   var measures = ['narrow', 'normal', 'wide'];
+  var fontFamilies = ['lora', 'cormorant'];
   var lineValues = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
 
   function get(key) {
@@ -43,6 +44,7 @@
   var state = stored && typeof stored === 'object' ? stored : {
     theme: legacyTheme,
     fontScale: get('gb:font-scale') || 1,
+    fontFamily: 'lora',
     lineHeight: legacy(['gb:gill-line-height:v1', 'gb:hm-line-height:v1'], lines, 'normal'),
     measure: legacy(['gb:gill-measure:v1', 'gb:hm-measure:v1'], measures, 'normal'),
     textMode: get('gb:reader-text-mode:v1') || 'rich',
@@ -53,6 +55,7 @@
     version: 1,
     theme: one(state.theme, themes, legacyTheme),
     fontScale: font(state.fontScale),
+    fontFamily: one(state.fontFamily, fontFamilies, 'lora'),
     lineHeight: one(state.lineHeight, lines, 'normal'),
     measure: one(state.measure, measures, 'normal'),
     textMode: state.textMode === 'plain' ? 'plain' : 'rich',
@@ -63,6 +66,7 @@
   root.setAttribute('data-reader-text-mode', state.textMode);
   root.setAttribute('data-reader-motion', state.motion);
   root.setAttribute('data-reader-measure', state.measure);
+  root.setAttribute('data-reader-font-family', state.fontFamily);
   root.classList.toggle('dark', state.theme === 'dark');
   root.style.setProperty('--gb-reader-font-scale', String(state.fontScale));
   root.style.setProperty('--gb-reader-line-height', lineValues[state.lineHeight]);
@@ -187,11 +191,36 @@
     '.epilogue'
   ].join(',');
   var ROLE_CLASS_RE = /(?:^|[\s_-])(timeline|chronology|milestone|roadmap|series-map|series-overview|diagram|callout|flip-card|note-box|info-box|warn-box|quote-box|summary-card|fact-card|source-card|author-card|closing-mark|devotional-tail|epilogue)(?:$|[\s_-])/i;
-  var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"]';
+  var CHROME_SELECTOR = '.gbs-rail,.gbs-theme-corner,.mobile-top-bar,.mobile-bottom-bar,.toc-overlay,.gb-floater,.hrail,.gbs2-next,.gbs2-vignette,[aria-hidden="true"],[data-print-policy="exclude"],#npUniversalDemo';
   var TAIL_SELECTOR = '[data-print-tail],.article-end-block,.article-end-sdg-wrap,.article-end-sdg,.closing-mark,.devotional-tail,.epilogue';
   var STYLE_ID = 'gb-print-pagination-contract';
   var closingGroups = [];
+  var printDisclosures = new Map();
+  var EDITORIAL_DISCLOSURES = 'details.shelf-about,details[data-print-disclosure="editorial"]';
   var report = null;
+
+  // Only admitted authorial disclosures may be expanded. Preserve the
+  // original attribute, including its exact value, across repeated prepare
+  // calls and restore after native cancellation / media exit.
+  function expandEditorialDisclosures(root) {
+    if (!root) return;
+    var nodes = root.querySelectorAll(EDITORIAL_DISCLOSURES);
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (node.closest(CHROME_SELECTOR) || node.closest('[data-print-disclosure="ui"]')) continue;
+      // Named details are mutually exclusive; never mutate the group owner.
+      if (node.hasAttribute('name')) continue;
+      if (!printDisclosures.has(node)) printDisclosures.set(node, node.getAttribute('open'));
+      if (!node.open) node.open = true;
+    }
+  }
+  function restoreEditorialDisclosures() {
+    printDisclosures.forEach(function (value, node) {
+      if (value === null) node.removeAttribute('open');
+      else node.setAttribute('open', value);
+    });
+    printDisclosures.clear();
+  }
 
   function installStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -199,7 +228,7 @@
     style.id = STYLE_ID;
     style.textContent = [
       '@media print {',
-      '  @page { size: A4; margin: 14mm; }',
+      '  @page { size: auto; margin: 14mm; }',
       '  html body { orphans: 3; widows: 3; }',
       '  html body [data-print-flow="atomic"],',
       '  html body .gb-print-closing-group { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
@@ -288,6 +317,35 @@
     var value = probe.getBoundingClientRect().height;
     probe.remove();
     return value || (mm * 96 / 25.4);
+  }
+
+  // Paper size is observable only while print media is active. Preserve the
+  // existing A4 preflight when the browser does not expose a supported size.
+  function resolvePaperGeometry() {
+    var fallback = { heightMm: 297, contentMm: 269, source: 'a4-fallback' };
+    if (!isPrintMedia()) return fallback;
+    try {
+      var matches = function (mm) {
+        return window.matchMedia('(min-height: ' + mm + 'mm)').matches;
+      };
+      if (!matches(50) || matches(1000)) return fallback;
+      var lo = 50, hi = 1000;
+      while (hi - lo > 0.05) {
+        var mid = (lo + hi) / 2;
+        if (matches(mid)) lo = mid;
+        else hi = mid;
+      }
+      // Snap the four supported physical paper heights, avoiding fractional
+      // Chromium paper rounding and not interpreting arbitrary viewport sizes.
+      var supported = [297, 279.4, 210, 215.9];
+      for (var i = 0; i < supported.length; i++) {
+        if (Math.abs(lo - supported[i]) <= 0.75) {
+          return { heightMm: supported[i], contentMm: supported[i] - 28,
+            source: 'print-media-14mm-css-margins' };
+        }
+      }
+    } catch (_) {}
+    return fallback;
   }
 
   function depth(node) {
@@ -510,6 +568,11 @@
     for (var i = 0; i < candidates.length; i++) {
       var node = candidates[i];
       if (closestAtomic(node)) continue;
+      if (node.matches && node.matches(EDITORIAL_DISCLOSURES) && node.querySelector('table')) {
+        mark(node, 'data-print-flow', 'splittable');
+        stats.splittable += 1;
+        continue;
+      }
       var table = node.matches && node.matches('table,.table-scroll');
       if (table) {
         markTable(node, pageHeight, stats);
@@ -532,7 +595,7 @@
       }
     }
 
-    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
+    var keepers = root.querySelectorAll('h1,h2,h3,h4,h5,h6,details.shelf-about > summary,details[data-print-disclosure="editorial"] > summary,.section-label,.eyebrow,.overline,.editorial-dateline,[class*="__kicker"],[class*="-kicker"],[class*="__label"]');
     for (var k = 0; k < keepers.length; k++) {
       var keeper = keepers[k];
       if (!isVisible(keeper) || closestAtomic(keeper)) continue;
@@ -576,7 +639,7 @@
     return stats;
   }
 
-  function prepare() {
+  function prepare(event) {
     installStyle();
     clearGenerated();
     var root = resolveRoot();
@@ -584,13 +647,19 @@
       report = { version: VERSION, prepared: false, reason: 'reader root not found' };
       return report;
     }
-    var pageHeight = measureMm(269);
+    // A native beforeprint callback can precede the print media query.
+    // Do not expand during the engine's ordinary screen preflight.
+    if (isPrintMedia() || event && event.type === 'beforeprint') expandEditorialDisclosures(root);
+    var paperGeometry = resolvePaperGeometry();
+    var pageHeight = measureMm(paperGeometry.contentMm);
     var stats = classifyCandidates(root, pageHeight);
     report = {
       version: VERSION,
       prepared: true,
       route: location.pathname,
       pageContentHeight: Math.round(pageHeight),
+      atomicLimitPx: pageHeight * 0.84,
+      paperGeometry: paperGeometry,
       stats: stats
     };
     document.documentElement.setAttribute('data-gb-print-pagination', 'ready');
@@ -599,6 +668,7 @@
 
   function reset() {
     clearGenerated();
+    restoreEditorialDisclosures();
     document.documentElement.removeAttribute('data-gb-print-pagination');
   }
 

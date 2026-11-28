@@ -1,0 +1,73 @@
+---
+interface Props { description: string }
+const { description } = Astro.props;
+---
+<section class="note-box gill-series-shelf" aria-label="Серия о Джоне Гилле">
+  <header class="shelf-heading">
+    <span>Серия о Джоне Гилле</span>
+    <div class="shelf-controls" hidden>
+      <button type="button" data-step="-1" aria-label="Предыдущая карточка"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
+      <button type="button" data-step="1" aria-label="Следующая карточка"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></button>
+    </div>
+  </header>
+  <p class="shelf-intro">{description}</p>
+  <details class="shelf-about"><summary>О серии</summary><p>{description}</p></details>
+  <div class="shelf-track grid md:grid-cols-3 gap-4" tabindex="0" role="region" aria-label="Части серии"><slot /></div>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>('.gill-series-shelf').forEach(shelf => {
+    const track = shelf.querySelector<HTMLElement>('.shelf-track')!;
+    const cards = Array.from(track.children) as HTMLElement[];
+    const controls = shelf.querySelector<HTMLElement>('.shelf-controls')!;
+    const [prev, next] = controls.querySelectorAll('button');
+    const mobile = matchMedia('(max-width:767px)');
+    function index() {
+      const left = track.getBoundingClientRect().left;
+      return cards.reduce((best, card, i) =>
+        Math.abs(card.getBoundingClientRect().left-left) < Math.abs(cards[best].getBoundingClientRect().left-left) ? i : best, 0);
+    }
+    function select(i: number, animate: boolean) {
+      const card = cards[Math.max(0, Math.min(i, cards.length-1))];
+      track.scrollTo({left:track.scrollLeft + card.getBoundingClientRect().left - track.getBoundingClientRect().left,
+        behavior:animate && !matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'instant'});
+    }
+    function sync() {
+      prev.disabled = track.scrollLeft < 2;
+      next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 2;
+    }
+    function layout() {
+      controls.hidden = !mobile.matches;
+      if (mobile.matches) select(Math.max(0,cards.findIndex(c => c.classList.contains('gill-card--active'))), false);
+      sync();
+    }
+    prev.addEventListener('click', () => select(index()-1,true));
+    next.addEventListener('click', () => select(index()+1,true));
+    track.addEventListener('scroll',sync,{passive:true});
+    new ResizeObserver(sync).observe(track);
+    mobile.addEventListener('change',layout);
+    layout();
+  });
+</script>
+<style>
+  .gill-series-shelf {margin:32px 0 48px;padding:24px 28px;border-left:4px solid var(--color-accent)}
+  .shelf-heading {display:flex;align-items:center;justify-content:space-between;color:var(--color-accent);font:700 .72rem/1.35 system-ui;letter-spacing:.1em;text-transform:uppercase}
+  .shelf-intro {margin:8px 0 20px;color:var(--color-text-secondary)}
+  .shelf-about,.shelf-controls[hidden]{display:none}
+  @media(max-width:767px){
+    .gill-series-shelf {min-width:0;margin:20px 0 28px;padding:12px 14px 14px;border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface)}
+    .shelf-heading {letter-spacing:.065em}
+    .shelf-intro{display:none}
+    .shelf-about{display:block;margin:0 0 10px;font-size:.84rem;color:var(--color-text-secondary)}
+    .shelf-about summary{width:fit-content;cursor:pointer;padding:5px 0}
+    .shelf-about p{margin:.5em 0 1em;font-size:inherit}
+    .shelf-controls{display:flex;gap:2px}
+    .shelf-controls button{display:grid;place-items:center;width:32px;height:32px;color:inherit;background:transparent;border:1px solid var(--color-border);border-radius:50%;cursor:pointer}
+    .shelf-controls button:disabled{opacity:.35}
+    .shelf-controls svg{width:16px;fill:none;stroke:currentColor;stroke-width:1.4}
+    .shelf-track{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:87%;gap:9px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:var(--color-border) transparent;padding-bottom:5px}
+    .shelf-track :global(.gill-card){min-width:0;min-height:0;scroll-snap-align:start;padding:14px;gap:5px}
+    .shelf-track :global(.gill-card__title){margin:3px 0;font-size:1.25rem}
+    .shelf-track :global(.gill-card__desc){margin:2px 0 8px;font-size:.88rem;line-height:1.5}
+    .shelf-track :global(.gill-card__time){margin-top:auto;padding-top:7px}
+  }
+</style>

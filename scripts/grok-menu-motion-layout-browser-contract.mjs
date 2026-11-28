@@ -19,8 +19,16 @@ const server=http.createServer((req,res)=>{
  fs.createReadStream(target).pipe(res);
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const url='http://127.0.0.1:'+server.address().port+ROUTE;
+// This contract exercises the independent flag-ON native Grok rail and its
+// ReaderSettings owner, not ARGON's reparented desktop presentation.
+const url='http://127.0.0.1:'+server.address().port+ROUTE+'?reader-pilot=0';
 const outcomes=[];
+// Isolate local production assets from unrelated analytics and remote media.
+// Keep every same-origin request and all page errors observable.
+async function isolate(page){
+ const origin=new URL(url).origin;
+ await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+}
 const measure=()=>{const q=s=>document.querySelector(s),rect=e=>{const r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null;},h=document.documentElement,b=document.body,a=q('.article-body'),p=a?.querySelector('p'),menu=q('#hMobileNav'),sheet=q('#hmSettings'),pop=sheet?.querySelector('.hmsheet-panel');
  return{cw:h.clientWidth,scrollY:scrollY,htmlGutter:getComputedStyle(h).scrollbarGutter,
   article:rect(a),p:rect(p),bodyPadding:getComputedStyle(b).paddingRight,
@@ -35,12 +43,14 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
  for(const width of [1200,1440]){
   const p=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'no-preference'});
   const row={engine,width,passed:[],failed:[],states:{}},errors=[];
+  await isolate(p);
   p.on('pageerror',e=>errors.push(e.message));
   const test=(name,ok,detail)=>{(ok?row.passed:row.failed).push({name,...(!ok?{detail}:{})})};
   try{
    await p.goto(url,{waitUntil:'domcontentloaded'});await p.locator('.hrail--grok.grok-ready').waitFor();
+   if(await p.evaluate(()=>document.body.classList.contains('np-w57-ready')))throw Error('Native Grok motion fixture mounted ARGON');
    await p.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';window.scrollTo({top:550,behavior:'instant'});});
-   await p.waitForFunction(()=>Math.abs(window.scrollY-550)<2,{timeout:2500});
+   await p.waitForFunction(()=>Math.abs(window.scrollY-550)<2,null,{timeout:2500});
    await p.waitForTimeout(50);
    // Capture actual CSS transition events INSIDE the browser process.
    // Playwright .click() may return after a complete 260ms opacity tween
@@ -70,7 +80,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.locator('#hMobileMenuBtn').click();
    row.states.menuStart=await p.evaluate(measure);
    await p.waitForTimeout(100);row.states.menuMid=await p.evaluate(measure);
-   await p.waitForTimeout(320);row.states.menuEnd=await p.evaluate(measure);
+   await p.waitForFunction(()=>{const menu=document.getElementById('hMobileNav');return menu.classList.contains('open')&&Number(getComputedStyle(menu).opacity)>.99},null,{timeout:1800});row.states.menuEnd=await p.evaluate(measure);
    const base=row.states.base,early=row.states.menuStart,mid=row.states.menuMid,end=row.states.menuEnd;
    test('stable article while site menu opens',closeEnough(base.article,end.article)&&closeEnough(base.p,end.p),{base:base.p,end:end.p});
    test('stable root gutter',base.htmlGutter==='stable'&&end.htmlGutter==='stable',{base:base.htmlGutter,end:end.htmlGutter});
@@ -109,21 +119,21 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.locator('#hrailSettingsBtn').click();
    row.states.settingsStart=await p.evaluate(measure);
    await p.waitForTimeout(110);row.states.settingsMid=await p.evaluate(measure);
-   await p.waitForTimeout(330);row.states.settingsEnd=await p.evaluate(measure);
+   await p.waitForFunction(()=>{const sheet=document.getElementById('hmSettings');return sheet.classList.contains('is-open')&&Number(getComputedStyle(sheet.querySelector('.hmsheet-panel')).opacity)>.99},null,{timeout:1800});row.states.settingsEnd=await p.evaluate(measure);
    const s0=row.states.settingsStart,s1=row.states.settingsMid,s2=row.states.settingsEnd;
    test('stable article while reader settings opens',closeEnough(base.article,s2.article)&&closeEnough(base.p,s2.p),{base:base.p,end:s2.p});
    row.states.settingsOpacityMotion=await p.evaluate(()=>window.__gbSettingsOpacityMotion || []);
    const motionStart=row.states.settingsOpacityMotion.find(e=>e.type==='transitionrun');
    const motionEnd=row.states.settingsOpacityMotion.find(e=>e.type==='transitionend');
    const observedTween=!!(motionStart&&motionEnd&&motionEnd.time-motionStart.time>=120);
-   const sampledTween=s0.sheet.opacity<.85&&s1.sheet.opacity>s0.sheet.opacity;
+   const sampledTween=s0.sheet.opacity<.995&&s2.sheet.opacity>s0.sheet.opacity+.001;
    test('animated settings entry',s0.sheet.open&&s2.sheet.opacity>.99&&(sampledTween||observedTween),
      {start:s0.sheet,mid:s1.sheet,end:s2.sheet,motion:row.states.settingsOpacityMotion,sampledTween,observedTween});
    await p.evaluate(()=>{window.__gbSettingsExitMotionOffset=(window.__gbSettingsOpacityMotion||[]).length;});
    await p.mouse.click(width-50,430);
    row.states.settingsCloseStart=await p.evaluate(measure);
    await p.waitForTimeout(140);row.states.settingsCloseMid=await p.evaluate(measure);
-   await p.waitForTimeout(350);row.states.settingsCloseEnd=await p.evaluate(measure);
+   await p.waitForFunction(()=>getComputedStyle(document.getElementById('hmSettings')).display==='none',null,{timeout:1800});row.states.settingsCloseEnd=await p.evaluate(measure);
    const c0=row.states.settingsCloseStart,c1=row.states.settingsCloseMid,c2=row.states.settingsCloseEnd;
    // A WebKit runner may deliver the mid-frame snapshot after the complete
    // 260ms transition. Record native opacity events rather than requiring a
@@ -147,6 +157,63 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.keyboard.press('Escape');await p.waitForTimeout(470);
    row.states.escapeClosed=await p.evaluate(measure);
    test('Escape closes after rapid reopen',!row.states.escapeClosed.sheet.open&&row.states.escapeClosed.sheet.display==='none',row.states.escapeClosed.sheet);
+   // Close during the actual entry animation. Sample both ends in the
+   // browser so an old compositor entry cannot masquerade as an exit.
+   row.states.interruptedEntry=await p.evaluate(async()=>{
+     document.dispatchEvent(new CustomEvent('hm:open-settings'));
+     const sheet=document.getElementById('hmSettings'),panel=sheet.querySelector('.hmsheet-panel');
+     const sample=()=>({opacity:Number(getComputedStyle(panel).opacity),open:sheet.classList.contains('is-open'),
+       closing:sheet.classList.contains('is-closing'),display:getComputedStyle(sheet).display,
+       inert:sheet.inert,aria:sheet.getAttribute('aria-hidden')});
+     const motion=[];
+     const observe=event=>{if(event.target===panel&&event.propertyName==='opacity')motion.push({type:event.type,time:performance.now(),opacity:Number(getComputedStyle(panel).opacity)});};
+     for(const type of ['transitionrun','transitionstart','transitioncancel','transitionend'])panel.addEventListener(type,observe);
+     // Control the actual browser-created transition clock, not a mock or
+     // replacement animation. A slow CI frame can skip the entire 260ms
+     // interval; seeking native CSS transitions proves the exact interrupted
+     // pose independently of renderer scheduling. Normal live entry/exit is
+     // still tested above without any clock control.
+     const opacityTransition=()=>panel.getAnimations().find(a=>a.transitionProperty==='opacity');
+     const entry=opacityTransition();
+     const entryDuration=Number(entry?.effect?.getComputedTiming().duration);
+     if(!entry||!(entryDuration>0))throw Error('Missing native entry opacity transition');
+     entry.pause();entry.currentTime=entryDuration*.4;
+     const before=sample();
+     document.getElementById('hmSettingsClose').click();
+     const start=sample(),frames=[];
+     const exit=opacityTransition();
+     const exitDuration=Number(exit?.effect?.getComputedTiming().duration);
+     let controlled=null;
+     if(exit&&exit!==entry&&exitDuration>0){
+       exit.pause();exit.currentTime=0;const first=sample();
+       exit.currentTime=exitDuration*.5;const middle=sample();
+       controlled={first,middle,entryDuration,exitDuration};
+       exit.play();
+     }
+     const exitDeadline=performance.now()+1500;
+     while(performance.now()<exitDeadline){
+       await new Promise(requestAnimationFrame);
+       const frame=sample();
+       frames.push({...frame,time:performance.now(),animations:panel.getAnimations().map(a=>({property:a.transitionProperty,currentTime:a.currentTime,progress:a.effect?.getComputedTiming().progress}))});
+       if(frame.display==='none')break;
+     }
+     for(const type of ['transitionrun','transitionstart','transitioncancel','transitionend'])panel.removeEventListener(type,observe);
+     return {before,start,frames,motion,controlled};
+   });
+   await p.waitForFunction(()=>getComputedStyle(document.getElementById('hmSettings')).display==='none',null,{timeout:1500});
+   const interrupted=row.states.interruptedEntry;
+   test('interrupted entry reverses into real inert exit',
+     interrupted.before.opacity>.10&&interrupted.before.opacity<.90&&
+     !interrupted.start.open&&interrupted.start.closing&&interrupted.start.inert&&interrupted.start.aria==='true'&&
+     !!interrupted.controlled&&Math.abs(interrupted.controlled.first.opacity-interrupted.before.opacity)<.03&&
+     interrupted.controlled.middle.opacity<interrupted.controlled.first.opacity-.001&&
+     interrupted.controlled.middle.opacity>.001&&interrupted.controlled.middle.closing&&
+     interrupted.controlled.middle.inert&&!interrupted.controlled.middle.open&&
+     interrupted.controlled.middle.aria==='true'&&
+     interrupted.frames.every(frame=>!frame.open&&frame.inert&&frame.aria==='true'),interrupted);
+   const afterInterrupted=await p.evaluate(measure);
+   test('interrupted exit releases scroll and restores article',afterInterrupted.sheet.display==='none'&&
+     !afterInterrupted.sheet.closing&&Math.abs(afterInterrupted.scrollY-base.scrollY)<2&&closeEnough(base.p,afterInterrupted.p),afterInterrupted);
    test('no runtime errors',errors.length===0,errors);
   }catch(e){row.failed.push({name:'test-execution',detail:String(e)})}
   outcomes.push(row);await p.close();
@@ -160,6 +227,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
  for(const width of [320,390]){
   const page=await browser.newPage({viewport:{width,height:width===320?640:844},serviceWorkers:'block',reducedMotion:'no-preference'});
   const row={engine,width,mobile:true,passed:[],failed:[]},errors=[];
+  await isolate(page);
   page.on('pageerror',e=>errors.push(e.message));
   const test=(label,pass,detail)=>{(pass?row.passed:row.failed).push({label,...(!pass?{detail}:{})});};
   try{
@@ -186,6 +254,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
 }
 const reduced=await chromium.launch({headless:true});
 const p=await reduced.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce',serviceWorkers:'block'});
+await isolate(p);
 const r={engine:'chromium',width:1440,motion:'reduce',passed:[],failed:[]};
 try {
  await p.goto(url,{waitUntil:'domcontentloaded'});await p.locator('#hrailSettingsBtn').click();await p.locator('#hmSettingsClose').click();

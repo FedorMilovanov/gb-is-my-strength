@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 /** Native PageHead extracted from approved legacy head for /articles/krajne-li-isporcheno-serdce/ */
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
@@ -269,10 +270,10 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <meta name="theme-color" content="#171411" media="(prefers-color-scheme: dark)">
 <!-- LCP preload — сообщаем браузеру о первом изображении ДО загрузки стилей -->
 <link as="image" fetchpriority="high" href="../../images/ieremia-judea-fall.webp" rel="preload">
-<link rel="preload" as="style" href="../../fonts/fonts.css?v=864cc57a">
+<link rel="preload" as="style" href={assetUrl('fonts/fonts.css')}>
   <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
-<link rel="stylesheet" href="../../fonts/fonts.css?v=864cc57a">
-<link href="../../css/site.css?v=511fb678" rel="stylesheet">
+<link rel="stylesheet" href={assetUrl('fonts/fonts.css')}>
+<link href={assetUrl('css/site.css')} rel="stylesheet">
 <script is:inline>
 window.SITE_CONFIG = {
   version: 1778943682,
@@ -767,6 +768,6 @@ window.SITE_CONFIG = {
 <!-- /Yandex.Metrika counter -->
 <meta name="geo.region" content="RU-SPE">
   <meta name="geo.placename" content="Санкт-Петербург">
-  <link rel="stylesheet" href="../../css/command-palette.css?v=3b88813f">
-    <link rel="stylesheet" href="../../css/floating-cluster.css?v=18742944">
-    <link rel="stylesheet" href="../../css/mobile-hotfix.css?v=9cfd6aee">
+  <link rel="stylesheet" href={assetUrl('css/command-palette.css')}>
+    <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')}>
+    <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')}>

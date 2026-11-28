@@ -28,6 +28,24 @@
  */
 ---
 <style is:global>
+  /* These are direct screen-chrome owners, never article headings or
+     authored asides. Physical paper must not repeat or overlay them. */
+  @media print {
+    body.nagornaya-page > header.fixed,
+    body.nagornaya-page > aside.fixed,
+    body.nagornaya-page > .skip-link,
+    body.nagornaya-page > .nag-project-nav,
+    body.nagornaya-page > #mobileMenu,
+    body.nagornaya-page > #bottomBar,
+    body.nagornaya-page > #btocOverlay,
+    body.nagornaya-page > #gb-sw-toast,
+    body.nagornaya-page > #nag-fn-popup,
+    body.nagornaya-page > .gb-mobile-fallback-controls,
+    body.nagornaya-page > .gb-anchor-copy-toast,
+    body.nagornaya-page > [role="region"]:has(> #read-progress) {
+      display: none !important;
+    }
+  }
   body.nagornaya-page .gtip:not(.gb-floating-tip) {
     display: none !important;
   }

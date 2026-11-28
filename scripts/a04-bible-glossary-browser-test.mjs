@@ -6,7 +6,7 @@ import {
   REPORT, SNAPSHOT, DESKTOP, SURFACES, LEGACY, results, record,
   launchBrowser, serve, configureContext, loadSourceContract,
 } from './lib/a04-contract.mjs';
-import { inspectRoute, desktopWitness, mobileWitness } from './lib/a04-browser-witness.mjs';
+import { inspectRoute, desktopWitness, mobileWitness, argonScriptureWitness } from './lib/a04-browser-witness.mjs';
 
 const require = createRequire(import.meta.url);
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
@@ -100,6 +100,9 @@ try {
     record(mobile.route || '*', 'a04-mobile-390', `surface:${surface.id}:no-pageerror`, mobile.pageErrors.length === 0 && !mobile.error, JSON.stringify(mobile));
   }
 
+  const argonScripture = await argonScriptureWitness(browser, base, [...new Set(candidateRoutes['bible-reference'])]);
+  record(argonScripture.route, 'a04-argon-desktop', 'surface:bible-reference:keyboard-and-pointer-study-owner', argonScripture.ok, JSON.stringify(argonScripture));
+
   record('*', 'a04-coverage', 'registry:all-production-routes-scanned', routeResults.length === productionEntries.length, `${routeResults.length}/${productionEntries.length}`);
 
   const baseReport = JSON.parse(await readFile(REPORT, 'utf8'));
@@ -130,6 +133,7 @@ try {
       sourceContract,
       surfaceCoverage,
       interactionWitnesses,
+      argonScripture,
       routes: routeResults,
       webkitBarrier: 'owned by Public surfaces — webkit touch/scroll on the same canonical production-route registry',
     },

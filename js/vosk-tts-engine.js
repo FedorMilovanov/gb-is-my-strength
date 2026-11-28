@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=d5850c06';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=4acb3d42';
 // A shared worker cannot answer a new client while it is inside one inference.
 // Documents therefore read the worker's "sessions parsed and live" flag from
 // IndexedDB instead of waiting for the worker's event loop.
@@ -38,7 +38,8 @@ notice: null,
 noticeTimer: 0,
 noticeRemovalTimer: 0,
 status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null },
-readySource: null
+readySource: null,
+loadEpoch: 0
 };
 function modelDownloadOptedOut() {
 try { return localStorage.getItem(MODEL_DOWNLOAD_OPTOUT_KEY) === 'off'; }
@@ -100,6 +101,7 @@ loading: !!state.loading,
 optedOut: modelDownloadOptedOut(),
 workerMode: state.workerMode,
 readySource: state.readySource || null,
+loadEpoch: state.loadEpoch,
 workerClients: typeof state.workerClients === 'number' ? state.workerClients : null,
 workerEpoch: typeof state.workerEpoch === 'number' ? state.workerEpoch : null,
 workerTimeline: state.workerTimeline.slice(-30),
@@ -365,6 +367,7 @@ state.worker = null;
 state.workerMode = null;
 state.ready = false;
 state.loading = null;
+state.loadEpoch += 1;
 if (error) {
 settleAllLoads(error);
 failAllSpeaks(error);
@@ -458,6 +461,25 @@ if (disconnect) disconnect();
 return;
 }
 if (type === 'status') {
+// Recovery/status ownership (SYS-TTS-RECOVERY-STATUS-OWNERSHIP): a status
+// broadcast without a load owned by THIS client is a foreign lifecycle event
+// (shared-worker broadcast for another tab, or a stale in-flight message from
+// a pre-cancel generation). It is recorded for diagnostics but must never
+// move state or the notice. The one exception is an adoptable ready: the
+// shared worker already holds the model and this client may adopt it.
+var hasActiveLoad = state.loadRequests.size > 0;
+var adoptableReady = message.phase === 'ready' && (message.ready === true || state.ready);
+if (!hasActiveLoad && !adoptableReady && message.phase !== 'connected') {
+markTimeline(state.workerTimeline, {
+at: Math.round(performance.now()),
+phase: message.phase || null,
+ready: state.ready === true,
+clients: typeof message.clients === 'number' ? message.clients : null,
+reason: 'foreign-status-ignored',
+epoch: state.loadEpoch
+});
+return;
+}
 if (message.phase === 'ready') state.ready = true;
 if (typeof message.clients === 'number') state.workerClients = message.clients;
 if (typeof message.epoch === 'number') state.workerEpoch = message.epoch;
@@ -466,7 +488,8 @@ at: Math.round(performance.now()),
 phase: message.phase || null,
 ready: message.ready === true,
 clients: typeof message.clients === 'number' ? message.clients : null,
-reason: message.reason || null
+reason: message.reason || null,
+epoch: state.loadEpoch
 });
 if (!anyQuietLoad()) {
 showStatus(message.phase || 'preparing', {
@@ -477,6 +500,10 @@ meta: message.message || undefined
 return;
 }
 if (type === 'ready') {
+// Late/foreign ready: a ready that no pending load waits for must not flip
+// state (e.g. delivered in-flight after a persisted cancel). Legitimate
+// cross-tab adoption flows through the status broadcast path instead.
+if (!state.loadRequests.has(message.id)) return;
 var quietReady = anyQuietLoad();
 state.ready = true;
 settleLoad(message.id);
@@ -545,7 +572,13 @@ try { raw.terminate(); } catch (_) {}
 }
 }
 };
-port.onmessage = function (event) { handleWorkerMessage(event.data || {}); };
+port.onmessage = function (event) {
+// Stale-channel guard (SYS-TTS-RECOVERY-STATUS-OWNERSHIP): after cancel/retry
+// teardown a SharedWorker port can still deliver in-flight messages from the
+// old generation; only the CURRENT channel may move engine state.
+if (state.worker !== channel) return;
+handleWorkerMessage(event.data || {});
+};
 port.onmessageerror = function () {
 var error = new Error('Persistent Vosk worker returned an unreadable message');
 showStatus('error', { reason: error.message });
@@ -643,6 +676,7 @@ return Promise.reject(createCancelledError('enhanced voice download disabled by 
 }
 if (state.loading) return state.loading;
 var id = ++state.loadSequence;
+var epoch = state.loadEpoch;
 if (!quiet) showStatus('preparing');
 state.loading = new Promise(function (resolve, reject) {
 state.loadRequests.set(id, { resolve: resolve, reject: reject, quiet: quiet });
@@ -652,7 +686,10 @@ state.loadRequests.delete(id);
 reject(error);
 }
 }).finally(function () {
-state.loading = null;
+// Ownership: a generation that was superseded (worker terminated for
+// cancel/retry, loadEpoch bumped) must not clear the NEW generation's
+// loading slot when its late rejection settles.
+if (state.loadEpoch === epoch) state.loading = null;
 });
 if (state.workerMode === 'shared') adoptReadyMarker(id, quiet);
 return state.loading;
@@ -664,7 +701,15 @@ dispatchStatus('enabled');
 function retryLoading(options) {
 options = options || {};
 if (options.clearOptOut !== false) clearModelDownloadOptOut();
-if (!state.worker && state.loading) state.loading = null;
+// Kill the old worker whenever it is in ANY non-ready phase: cancel/retry
+// ownership must move to the new generation, and an idle-but-non-ready
+// shared worker (e.g. after a failed or aborted load) would otherwise
+// silently absorb the retry. A ready worker is reusable as-is.
+if (state.worker && !state.ready) {
+terminateWorker(createCancelledError('vosk load superseded by retry'));
+} else if (!state.worker && state.loading) {
+state.loading = null;
+}
 return ensureLoaded({ quiet: options.quiet === true });
 }
 function cancelLoading(options) {

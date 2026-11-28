@@ -133,10 +133,18 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Build production-like dist
-        run: npm run strangler:build:production-like
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          {
+            printf 'SOURCE_SHA=%s\n' "$(git rev-parse HEAD)"
+            npm run strangler:build:production-like
+          } 2>&1 | tee reports/search-manifest-build.log
 
       - name: Require existing manifest rows to match built PageHead authority
-        run: node scripts/search-manifest-policy-normalizer.js --dist=dist
+        run: |
+          set -o pipefail
+          node scripts/search-manifest-policy-normalizer.js --dist=dist 2>&1 | tee reports/search-manifest-normalizer.log
 
       - name: Build Pagefind index
         run: npm run pagefind:build:dist
@@ -166,6 +174,8 @@ jobs:
         with:
           name: a15-discovery-followups-${{ github.run_id }}
           path: |
+            reports/search-manifest-build.log
+            reports/search-manifest-normalizer.log
             reports/a15-discovery-followups.json
             reports/a15-discovery-followups.md
             reports/search-index-policy-inventory.json

@@ -136,6 +136,34 @@ function normalize(html) {
 }
 function wordCount(html) { return (stripTags(html).match(/[A-Za-zА-Яа-яЁё0-9]{2,}/g) || []).length; }
 function h2Count(html) { return (String(html || '').match(/<h2\b/gi) || []).length; }
+function editorialH2Count(html) {
+  // The postbuild relation engine owns a labelled navigation landmark, not
+  // editorial prose. Exclude only its own route-specific heading, not an
+  // arbitrary added heading or all headings inside nav.
+  const generated = /<nav\b(?=[^>]*\bclass="gb-relations-panel")(?=[^>]*\bdata-relation-engine="1")(?=[^>]*\bdata-relation-source="dzhon-gill-istoricheskiy-kontekst")(?=[^>]*\baria-labelledby="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst")[^>]*>[\s\S]*?<\/nav>/gi;
+  const matches = [...String(html).matchAll(generated)];
+  if (matches.length > 1) throw new Error('Duplicate Gill context relation owner');
+  if (!matches.length) return h2Count(html);
+  const panel = matches[0][0];
+  const heading = /<h2\b(?=[^>]*\bid="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst")[^>]*>[\s\S]*?<\/h2>/gi;
+  if (h2Count(panel) !== 1 || [...panel.matchAll(heading)].length !== 1) {
+    throw new Error('Unexpected Gill context relation heading structure');
+  }
+  return h2Count(html) - 1;
+}
+function assertEditorialH2Contract() {
+  const h = '<h2>Editorial</h2>';
+  const nav = '<nav class="gb-relations-panel" data-relation-engine="1" data-relation-source="dzhon-gill-istoricheskiy-kontekst" aria-labelledby="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst"><h2 id="gbRelationsTitle-dzhon-gill-istoricheskiy-kontekst">Relation</h2></nav>';
+  const assert = require('node:assert/strict');
+  assert.equal(editorialH2Count(h), 1);
+  assert.equal(editorialH2Count(h + nav), 1);
+  assert.equal(editorialH2Count(h + nav + h), 2);
+  assert.equal(editorialH2Count(h + nav.replace('data-relation-engine="1"', 'data-relation-engine="0"')), 2);
+  assert.throws(() => editorialH2Count(nav + nav), /Duplicate/);
+  assert.throws(() => editorialH2Count(nav.replace('</nav>', h + '</nav>')), /Unexpected/);
+  ok('Editorial H2 projection contract: 6 positive/negative fixtures');
+}
+assertEditorialH2Contract();
 function themeBtn(cls) {
   const c = [cls].filter(Boolean).join(' ');
   return `<button type="button" class="${c}" aria-label="Переключить тему" title="Тема" aria-pressed="false" data-gbs2-theme=""><span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg></span><span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></span></button>`;
@@ -235,6 +263,43 @@ if (!problems.length) {
   const scopeText = [page, pageHead, pageChrome, sharedChrome, shell, header, body, post, ...SECTION_COMPONENTS.map((name) => read(`${BASE_REL}/${name}`))].join('\n');
 
   for (const token of FORBIDDEN) mustNotContain('strict-native source scope', scopeText, token);
+
+  // Intentional editorial map migration: verify native ownership, not a retired CSS marker.
+  const atlasPath = 'src/components/article-pilots/gill-series/GillEditorialAtlas.astro';
+  mustExist('shared editorial atlas', atlasPath);
+  const atlasTail = read(BASE_REL + '/GillContextSectionSourcesAndSeriesTail.astro');
+  mustContain('tail imports canonical atlas', atlasTail, "import GillEditorialAtlas from '../gill-series/GillEditorialAtlas.astro';");
+  const mounts = [...atlasTail.matchAll(/<GillEditorialAtlas\b[^>]*\/>/g)];
+  if (mounts.length !== 1 || mounts[0][0] !== '<GillEditorialAtlas current="context" />') bad('exactly one route-correct native atlas mount required');
+  else ok('route-correct native atlas mount');
+  mustNotContain('tail excludes retired static map', atlasTail, 'class="gbs2-timeline"');
+  if (exists(atlasPath)) {
+    const atlas = read(atlasPath);
+    for (const token of FORBIDDEN) mustNotContain('native atlas source scope', atlas, token);
+    mustContain('atlas consumes canonical series', atlas, 'GILL_SERIES_ITEMS.map(');
+    mustContain('atlas owns semantic section', atlas, '<section class="gill-atlas"');
+    mustContain('atlas owns real links', atlas, 'href={item.href}');
+    mustContain('atlas identifies current route', atlas, "aria-current={item.id === current ? 'page' : undefined}");
+  }
+  if (distHtml) {
+    const distArticle = articleInner(distHtml);
+    const sections = [...distArticle.matchAll(/<section\b[^>]*\bclass=["']gill-atlas["'][^>]*>[\s\S]*?<\/section>/g)];
+    if (sections.length !== 1) bad('dist must render exactly one editorial atlas in article body');
+    else {
+      const map = sections[0][0];
+      const links = [...map.matchAll(/<a\b[^>]*\bclass=["']atlas-node["'][^>]*>/g)].map(m => ({
+        href: m[0].match(/\bhref=["']([^"']+)["']/)?.[1],
+        current: /\baria-current=["']page["']/.test(m[0]),
+      }));
+      const expected = ['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek','dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik'].map(slug => '/articles/' + slug + '/');
+      if (JSON.stringify(links.map(link => link.href)) !== JSON.stringify(expected)) bad('dist atlas links missing, duplicated or out of canonical order');
+      else ok('dist atlas six ordered native links');
+      if (links.filter(link => link.current).length !== 1 || !links.some(link => link.current && link.href === ROUTE)) bad('dist atlas current route mismatch');
+      else ok('dist atlas current route');
+    }
+    mustNotContain('dist article excludes retired static map', distArticle, 'class="gbs2-timeline"');
+  }
+
   mustContain('route imports native page head', page, 'GillContextPageHead');
   mustContain('route imports native page chrome', page, 'GillContextPageChrome');
   mustContain('route imports native main shell', page, 'GillContextMainShell');
@@ -276,7 +341,7 @@ if (!problems.length) {
   mustContain('main shell uses post article', shell, 'GillContextPostArticle');
   mustContain('body component owns article wrapper', body, '<article class="article-body" data-pagefind-body>');
   for (const comp of SECTION_COMPONENTS) mustContain(`body imports ${comp}`, body, comp.replace(/\.astro$/, ''));
-  for (const marker of ['class="gbs2-hero"', 'Джон Гилл: исторический контекст', 'summary-card', 'id="sec-from-puritans-to-baptists"', 'id="sec-clarendon"', 'id="sec-books"', 'gbs2-next', 'gbs2-timeline', 'article-end-sdg-wrap']) {
+  for (const marker of ['class="gbs2-hero"', 'Джон Гилл: исторический контекст', 'summary-card', 'id="sec-from-puritans-to-baptists"', 'id="sec-clarendon"', 'id="sec-books"', 'gbs2-next', '<GillEditorialAtlas current="context" />', 'article-end-sdg-wrap']) {
     mustContain('reconstructed body marker', reconstructed, marker);
   }
   if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed body matches legacy body after normalization');
@@ -297,17 +362,22 @@ if (!problems.length) {
     bad(`unsupported non-authoritative legacy status: ${profile.legacyStatus || 'missing'}`);
   }
 
-  const lh = h2Count(legacyBody);
-  if (distHtml) {
-    const distArticle = articleInner(distHtml);
-    if (!distArticle) bad('dist article-body scope missing');
-    else {
-      const dh = h2Count(distArticle);
-      lh === dh ? ok(`H2 parity (dist article body): ${dh}`) : bad(`H2 drift: legacy=${lh}, distArticle=${dh}`);
+  // Compare editorial article with editorial article, not legacy page chrome.
+  const legacyArticle = articleInner(legacy);
+  if (!legacyArticle) bad('legacy article-body scope missing');
+  else {
+    const lh = h2Count(legacyArticle);
+    if (distHtml) {
+      const distArticle = articleInner(distHtml);
+      if (!distArticle) bad('dist article-body scope missing');
+      else {
+        const dh = editorialH2Count(distArticle);
+        lh === dh ? ok(`H2 parity (dist article body): ${dh}`) : bad(`H2 drift: legacyArticle=${lh}, distArticle=${dh}`);
+      }
+    } else {
+      const rh = h2Count(sectionHtml);
+      lh === rh ? ok(`H2 parity (native editorial sections): ${rh}`) : bad(`H2 drift: legacyArticle=${lh}, nativeSections=${rh}`);
     }
-  } else {
-    const rh = h2Count(reconstructed);
-    Math.abs(lh - rh) <= 1 ? ok(`H2 parity within shared-chrome tolerance: legacy=${lh}, reconstructed=${rh}`) : bad(`H2 drift: legacy=${lh}, reconstructed=${rh}`);
   }
 }
 

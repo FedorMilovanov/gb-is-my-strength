@@ -8,6 +8,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium, webkit } from 'playwright';
+import readerDesktop from './lib/reader-desktop-contract.js';
+const desktopRoutes = new Set(readerDesktop.buildDesktopReaderContract().routes);
+
+// CSS relative colors serialize as color(srgb ... / alpha) in modern engines.
+// Check both syntaxes so opacity regressions cannot hide behind serialization.
+function computedColorAlpha(color) {
+  const rgba = /^rgba\([^)]*,\s*([\d.]+)\s*\)$/i.exec(color);
+  const modern = /^color\([^)]*\/\s*([\d.]+)\s*\)$/i.exec(color);
+  return Number((rgba || modern)?.[1] ?? 1);
+}
 
 const root = path.resolve(import.meta.dirname, '..');
 const dist = path.join(root, 'dist');
@@ -69,14 +79,15 @@ const drivers = { chromium, webkit };
 const selectedEngines = (process.env.GB_LAYOUT_ENGINES || 'chromium,webkit').split(',').map((name) => name.trim());
 assert.ok(selectedEngines.length > 0 && selectedEngines.every((name) => name in drivers),
   'GB_LAYOUT_ENGINES must list chromium and/or webkit');
-let passed = 0, covers = 0;
+let passed = 0, covers = 0, defaultCases = 0;
+const widths = [320, 390, 480, 768, 1024, 1120, 1121, 1359, 1360, 1440];
 const failures = [];
 try {
   for (const engine of selectedEngines) {
     const driver = drivers[engine];
     const browser = await driver.launch({ headless: true });
     try {
-      for (const width of [320, 390, 480, 768, 1024, 1359, 1360, 1440]) {
+      for (const width of widths) {
         const context = await browser.newContext({
           viewport: { width, height: 880 }, isMobile: width <= 768,
           hasTouch: width <= 768, serviceWorkers: 'block', reducedMotion: 'reduce',
@@ -88,7 +99,36 @@ try {
         page.on('pageerror', (error) => pageErrors.push(error.message));
         for (const candidate of routes) {
           try {
-            const response = await page.goto(origin + candidate.route, { waitUntil: 'domcontentloaded', timeout: 13000 });
+            const url = new URL(candidate.route, origin);
+            if (candidate.kind === 'reader' && width >= 1121 && desktopRoutes.has(candidate.route)) {
+              const defaultResponse = await page.goto(url.href, { waitUntil: 'domcontentloaded', timeout: 13000 });
+              assert.equal(defaultResponse?.status(), 200, 'default reader HTTP status');
+              await page.waitForFunction(() => document.body.classList.contains('np-w57-ready') &&
+                window.__NP_UNIVERSAL_PREVIEW__?.ready && window.__NP_W57_ANNOTATIONS__?.ready,
+                null, { timeout: 15000 });
+              const owner = await page.evaluate(() => {
+                const visible = el => !!el && el.getBoundingClientRect().width > 2 &&
+                  el.getBoundingClientRect().height > 2 && getComputedStyle(el).visibility !== 'hidden';
+                return {
+                  explicit: new URLSearchParams(location.search).has('reader-pilot'),
+                  overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+                  rail: visible(document.querySelector('[data-gill-v16] .gbs-rail')),
+                  outline: visible(document.querySelector('#npUOutline')),
+                  top: visible(document.querySelector('.mobile-top-bar')),
+                  bottom: visible(document.querySelector('.mobile-bottom-bar')),
+                };
+              });
+              assert.equal(owner.explicit, false, 'default ARGON must not fall back');
+              assert.ok(owner.overflow <= 2, 'default ARGON horizontal overflow');
+              assert.equal(owner.rail, width >= 1360, 'default native series rail owner');
+              assert.equal(owner.outline, width < 1360, 'default ARGON outline owner');
+              assert.deepEqual([owner.top, owner.bottom], [false, false], 'no duplicate native mobile bars in desktop ARGON');
+              defaultCases++;
+              // The established native breakpoint assertions below are a
+              // separate Classic comparison, not an expectation of ARGON.
+              url.searchParams.set('reader-pilot', '0');
+            }
+            const response = await page.goto(url.href, { waitUntil: 'domcontentloaded', timeout: 13000 });
             assert.equal(response?.status(), 200, 'HTTP status');
             await page.waitForTimeout(50);
             const state = await page.evaluate(() => {
@@ -101,6 +141,7 @@ try {
               const art = document.querySelector('.gbs2-hero[data-reader-cover-fit="contain"]');
               const img = art?.querySelector('img'), style = img ? getComputedStyle(img) : null;
               return {
+                argonRuntime: !!window.__NP_UNIVERSAL_PREVIEW__ || !!window.__NP_W57_ANNOTATIONS__,
                 docOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
                 railVisible: visible(rail),
                 topVisible: visible(document.querySelector('.mobile-top-bar')),
@@ -118,6 +159,7 @@ try {
             assert.ok(state.docOverflow <= 2, 'horizontal overflow ' + state.docOverflow + 'px');
             const desktop = width >= 1360;
             if (candidate.kind === 'reader') {
+              assert.equal(state.argonRuntime, false, 'native layout comparison must not contain ARGON');
               assert.equal(state.railVisible, desktop, 'shared series rail breakpoint');
               assert.equal(state.topVisible, !desktop, 'shared series top-bar breakpoint');
               assert.equal(state.bottomVisible, !desktop, 'shared series bottom-bar breakpoint');
@@ -196,8 +238,7 @@ try {
                   chooser.panel.right <= width + 1 &&
                   chooser.panel.y >= chooser.headerTop - 1 && chooser.panel.y + 44 <= chooser.headerBottom + 2,
                   'canonical speed picker must remain inside the same 44px mobile top bar');
-                const bgAlpha = /rgba\([^)]*,\s*([.\d]+)\)$/.exec(chooser.background)?.[1];
-                assert.ok(!bgAlpha || Number(bgAlpha) >= .98,
+                assert.ok(computedColorAlpha(chooser.background) >= .98,
                   'speed popover must have opaque theme background: ' + chooser.background);
                 const darkSurface = await page.evaluate(() => {
                   const html = document.documentElement, before = html.classList.contains('dark');
@@ -206,8 +247,7 @@ try {
                   html.classList.toggle('dark', before);
                   return bg;
                 });
-                const darkAlpha = /rgba\([^)]*,\s*([.\d]+)\)$/.exec(darkSurface)?.[1];
-                assert.ok(!darkAlpha || Number(darkAlpha) >= .98,
+                assert.ok(computedColorAlpha(darkSurface) >= .98,
                   'dark speed popover must be opaque: ' + darkSurface);
                 assert.equal(chooser.choices.length, 6, 'speed choices lost');
                 assert.ok(chooser.choices.every((x) => x.w >= 43 && x.h >= 43),
@@ -258,13 +298,13 @@ try {
         await context.close();
       }
     } finally { await browser.close(); }
-    console.log(engine + ': ' + routes.length * 8 + ' cases complete');
+    console.log(engine + ': ' + routes.length * widths.length + ' native/landing cases complete');
   }
 } finally { await new Promise((resolve) => server.close(resolve)); }
 if (covers === 0) failures.push({ error: 'No lettered artwork cover tested (data-reader-cover-fit=contain)' });
 console.log(JSON.stringify({
   total: passed + failures.length, passed, failed: failures.length,
   series: [...readerBySeries.keys()], landings: landingRoutes,
-  coverCases: covers, failures,
+  coverCases: covers, defaultArgonCases: defaultCases, failures,
 }, null, 2));
 if (failures.length) process.exitCode = 1;

@@ -1,0 +1,321 @@
+{
+  "update": {
+    "rounds": 8,
+    "sameSourceAll": true,
+    "tornWrites": 0,
+    "silentBothSucceeded": 0,
+    "exactlyOneRefused": 8,
+    "outcomes": [
+      {
+        "round": 0,
+        "sameSource": true,
+        "texts": [
+          "A0"
+        ],
+        "aRefused": false,
+        "bRefused": true,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о"
+      },
+      {
+        "round": 1,
+        "sameSource": true,
+        "texts": [
+          "A1"
+        ],
+        "aRefused": false,
+        "bRefused": true,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о"
+      },
+      {
+        "round": 2,
+        "sameSource": true,
+        "texts": [
+          "B2"
+        ],
+        "aRefused": true,
+        "bRefused": false,
+        "statusA": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 3,
+        "sameSource": true,
+        "texts": [
+          "B3"
+        ],
+        "aRefused": true,
+        "bRefused": false,
+        "statusA": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 4,
+        "sameSource": true,
+        "texts": [
+          "A4"
+        ],
+        "aRefused": false,
+        "bRefused": true,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о"
+      },
+      {
+        "round": 5,
+        "sameSource": true,
+        "texts": [
+          "B5"
+        ],
+        "aRefused": true,
+        "bRefused": false,
+        "statusA": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 6,
+        "sameSource": true,
+        "texts": [
+          "B6"
+        ],
+        "aRefused": true,
+        "bRefused": false,
+        "statusA": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о",
+        "statusB": "Заметка обновлена."
+      },
+      {
+        "round": 7,
+        "sameSource": true,
+        "texts": [
+          "A7"
+        ],
+        "aRefused": false,
+        "bRefused": true,
+        "statusA": "Заметка обновлена.",
+        "statusB": "Заметка изменена в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или о"
+      }
+    ]
+  },
+  "create": {
+    "rounds": 8,
+    "bothSurvived": 8,
+    "lostOne": 0,
+    "outcomes": [
+      {
+        "round": 0,
+        "texts": [
+          "Новая B0",
+          "Новая A0"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 1,
+        "texts": [
+          "Новая B1",
+          "Новая A1"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 2,
+        "texts": [
+          "Новая A2",
+          "Новая B2"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 3,
+        "texts": [
+          "Новая B3",
+          "Новая A3"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 4,
+        "texts": [
+          "Новая B4",
+          "Новая A4"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 5,
+        "texts": [
+          "Новая B5",
+          "Новая A5"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 6,
+        "texts": [
+          "Новая A6",
+          "Новая B6"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      },
+      {
+        "round": 7,
+        "texts": [
+          "Новая B7",
+          "Новая A7"
+        ],
+        "both": true,
+        "aMsg": "Заметка сохранена.",
+        "bMsg": "Заметка сохранена.",
+        "uniqueIds": 2
+      }
+    ]
+  },
+  "library": {
+    "rounds": 8,
+    "silentLoss": 0,
+    "outcomes": [
+      {
+        "round": 0,
+        "sameSource": true,
+        "texts": [
+          "LibA0"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        }
+      },
+      {
+        "round": 1,
+        "sameSource": true,
+        "texts": [
+          "LibB1"
+        ],
+        "a": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 2,
+        "sameSource": true,
+        "texts": [
+          "LibA2"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        }
+      },
+      {
+        "round": 3,
+        "sameSource": true,
+        "texts": [
+          "LibA3"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        }
+      },
+      {
+        "round": 4,
+        "sameSource": true,
+        "texts": [
+          "LibA4"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        }
+      },
+      {
+        "round": 5,
+        "sameSource": true,
+        "texts": [
+          "LibB5"
+        ],
+        "a": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        },
+        "b": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        }
+      },
+      {
+        "round": 6,
+        "sameSource": true,
+        "texts": [
+          "LibA6"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        }
+      },
+      {
+        "round": 7,
+        "sameSource": true,
+        "texts": [
+          "LibA7"
+        ],
+        "a": {
+          "open": false,
+          "msg": "Заметка обновлена."
+        },
+        "b": {
+          "open": true,
+          "msg": "Заметка изменена в другом редакторе. Черновик не сохранён; с"
+        }
+      }
+    ]
+  },
+  "errors": []
+}

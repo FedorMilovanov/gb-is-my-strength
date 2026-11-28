@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "src/runtime/favorite-store.js"
+      - "js/reader-library-storage.js"
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/components/ui/floating-cluster/SaveButton.astro"
       - "src/components/home/HomeSections/Favorites.astro"
@@ -16,6 +17,7 @@ on:
     branches: [main]
     paths:
       - "src/runtime/favorite-store.js"
+      - "js/reader-library-storage.js"
       - "src/components/reader-platform/ReaderActionsRuntime.astro"
       - "src/components/ui/floating-cluster/SaveButton.astro"
       - "src/components/home/HomeSections/Favorites.astro"

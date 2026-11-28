@@ -6,6 +6,7 @@ import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { assertArgonScriptureActivation } from './lib/reader-scripture-owner-browser.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -308,17 +309,24 @@ async function inspectArticle(page, spec, vp) {
 
   const firstBible = page.locator('.bref[data-ref]').first();
   try {
-    await firstBible.scrollIntoViewIfNeeded();
-    if (vp.width <= 768) await firstBible.click();
-    else await firstBible.focus();
-    const tip = page.locator('.btip.is-open').last();
-    await tip.waitFor({ state: 'visible', timeout: 8_000 });
-    const box = await tip.boundingBox();
-    check(insideViewport(box, vp.width, vp.height), route, viewport,
-      `Bible tooltip escapes viewport: ${JSON.stringify(box)}`);
-    if (vp.width <= 768) await firstBible.click();
-    else await page.keyboard.press('Escape');
-    await page.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0, null, { timeout: 5_000 });
+    if (vp.width >= 1121) {
+      // All seven authored Teen articles are registered desktop Reader routes.
+      // Keyboard activation must reach the actual ARGON study owner; focus-only
+      // native tooltip remains the contract at smaller widths.
+      await assertArgonScriptureActivation(page, firstBible);
+    } else {
+      await firstBible.scrollIntoViewIfNeeded();
+      if (vp.width <= 768) await firstBible.click();
+      else await firstBible.focus();
+      const tip = page.locator('.btip.is-open').last();
+      await tip.waitFor({ state: 'visible', timeout: 8_000 });
+      const box = await tip.boundingBox();
+      check(insideViewport(box, vp.width, vp.height), route, viewport,
+        `Bible tooltip escapes viewport: ${JSON.stringify(box)}`);
+      if (vp.width <= 768) await firstBible.click();
+      else await page.keyboard.press('Escape');
+      await page.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0, null, { timeout: 5_000 });
+    }
   } catch (error) {
     issue(route, viewport, `Bible tooltip interaction failed: ${error.message}`);
   }

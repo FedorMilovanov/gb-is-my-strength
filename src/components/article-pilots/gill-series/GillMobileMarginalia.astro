@@ -1,0 +1,1276 @@
+---
+import registry from '../../../../data/bible/books.json';
+const aliases = Object.values(registry.books).flatMap(book => book.aliases);
+const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => book.aliases.map(alias => [alias, bookId]));
+---
+<!-- Additive research view inside the canonical Gill part-TOC sheet.
+     The native overlay, actions, TTS, library and speed controls remain owned
+     by their original Product runtimes. Source material is never invented. -->
+<section class="gbr-marginalia toc-sheet__body" id="gbrMarginalia" role="tabpanel" aria-labelledby="gbrMarginaliaTab" hidden inert tabindex="0">
+  <div class="gbr-marginalia-inner" id="gbrMarginaliaContent" data-books={JSON.stringify(aliases)} data-book-ids={JSON.stringify(aliasEntries)} aria-live="off">
+    <p class="gbr-marginalia-empty">Материалы раздела появятся при открытии вкладки.</p>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  'use strict';
+  var sheet = document.getElementById('partTocOverlay');
+  var toc = document.getElementById('gbs2PartToc');
+  var panel = document.getElementById('gbrMarginalia');
+  var content = document.getElementById('gbrMarginaliaContent');
+  var tabs = sheet && Array.from(sheet.querySelectorAll('[data-gbr-tab]'));
+  if (!sheet || !toc || !panel || !content || !tabs || tabs.length !== 2 || sheet.dataset.gbrMarginaliaBound) return;
+  sheet.dataset.gbrMarginaliaBound = '1';
+  var partTitle = sheet.querySelector('.toc-head-txt h3');
+  var originalTitle = partTitle ? partTitle.textContent : '';
+  var dialog = sheet.querySelector('.toc-sheet[role="dialog"]');
+  var originalDialogLabel = dialog ? dialog.getAttribute('aria-label') : null;
+  var researchOpener = document.querySelector('[data-gill-marginalia-open]');
+  var article = document.querySelector('article.article-body') || document.querySelector('main article');
+  var text = function (el) { return (el && el.textContent || '').replace(/\s+/g, ' ').trim(); };
+  function node(tag, className, value) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    if (value != null) el.textContent = value;
+    return el;
+  }
+  function visibleText(el) {
+    if (!el) return '';
+    var clone = el.cloneNode(true);
+    clone.querySelectorAll('.gtip,.btip,.tooltip,.fn-marker,.footnote-ref,[data-reader-exclude],[data-no-speech],[hidden],[inert],[aria-hidden="true"],script,style').forEach(function (child) { child.remove(); });
+    return text(clone);
+  }
+  function jumpTo(destination) {
+    var resolve = typeof destination === 'function' ? destination : function () { return destination; };
+    if (!resolve()?.isConnected) return;
+    var close = sheet.querySelector('.toc-sheet__handle');
+    if (close) close.click();
+    window.setTimeout(function () {
+      var el = resolve();
+      if (!el?.isConnected) return;
+      if (!el.hasAttribute('tabindex')) {
+        el.setAttribute('tabindex', '-1');
+        el.addEventListener('blur', function () { el.removeAttribute('tabindex'); }, { once: true });
+      }
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.focus({ preventScroll: true });
+    }, 160);
+  }
+  function action(parent, caption, destination) {
+    var b = node('button', 'gbr-marginalia-jump', caption);
+    b.type = 'button';
+    b.addEventListener('click', function () { jumpTo(destination); });
+    parent.appendChild(b);
+    return b;
+  }
+  function group(title, suffix) {
+    var section = node('details', 'gbr-marginalia-group');
+    var head = node('summary', 'gbr-marginalia-group-head');
+    head.appendChild(node('strong', '', title));
+    if (suffix) head.appendChild(node('span', '', suffix));
+    section.appendChild(head);
+    content.appendChild(section);
+    return section;
+  }
+  function uniqueBy(items, keyFn) {
+    var seen = new Set();
+    return items.filter(function (item) {
+      var key = keyFn(item);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  // Glossary hydration owns canonical identity and the published title.
+  // Visible prose is an inflected occurrence, never a lexicon heading.
+  function termKey(el) { return (el.dataset.term || '').trim(); }
+  function termTitle(el) { return (el.dataset.termTitle || '').trim() || termKey(el); }
+  function termTip(el) { return window.SiteUtils?.getGlossaryTip?.(el) || el; }
+  function collectTerms(items) {
+    return uniqueBy(items.filter(function (el) {
+      return !!termKey(el) && !!text(termTip(el).querySelector('.gtip-brief'));
+    }), termKey);
+  }
+  function articleGlossaryTerms() {
+    return Array.from(article.querySelectorAll('.gterm[data-term]')).filter(function (el) {
+      return !el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]');
+    });
+  }
+  function lexiconData(active, end) {
+    var all = articleGlossaryTerms();
+    var terms = collectTerms(all.filter(function (el) {
+      return !active || (!!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && (!end || !!(el.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING)));
+    }));
+    return terms.length ? { terms: terms, termScope: 'В текущем разделе' }
+      : { terms: collectTerms(all), termScope: 'Из всей статьи' };
+  }
+  function researchData() {
+    if (!article) return null;
+    var headings = Array.from(article.querySelectorAll('h2[id]'));
+    var active = headings[0] || null;
+    for (var i = 0; i < headings.length; i++) {
+      if (headings[i].getBoundingClientRect().top <= window.innerHeight * 0.32) active = headings[i];
+    }
+    var idx = active ? headings.indexOf(active) : -1;
+    var end = idx >= 0 ? headings[idx + 1] || null : null;
+    function inSection(el) {
+      if (!active) return true;
+      var afterStart = !!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+      var beforeEnd = !end || !!(el.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return afterStart && beforeEnd;
+    }
+    function elements(selector) {
+      return Array.from(article.querySelectorAll(selector)).filter(function (el) {
+        return inSection(el) && !el.closest('nav,aside,footer,.related-articles,.faq-accordion,[data-reader-exclude]');
+      });
+    }
+    var paras = elements('p,blockquote').filter(function (p) { return visibleText(p).length >= 95; });
+    var refs = elements('button.bref[data-ref]');
+    var lexicon = lexiconData(active, end);
+    var notes = elements('.fn-marker,.footnote-ref,[data-footnote-ref]').filter(function (el) { return !!el.id || !!el.dataset.noteOrdinal; });
+    var refScope = 'В текущем разделе';
+    var aliasToBook = new Map(JSON.parse(content.dataset.bookIds).map(function (entry) {
+      return [entry[0].toLocaleLowerCase('ru').replace(/[.\s]/g, ''), entry[1]];
+    }));
+    var books = new Set(aliasToBook.keys());
+    function passageKey(label) {
+      var clean = String(label || '').replace(/[\u00a0\u202f]/g, ' ').replace(/[\u2012-\u2015]/g, '-').replace(/\s+/g, ' ').trim();
+      var match = /^(.+?)\s*(\d{1,3}:\d{1,3}(?:-\d{1,3}(?::\d{1,3})?)?)$/u.exec(clean);
+      if (!match) return 'raw:' + clean.toLocaleLowerCase('ru');
+      var bookId = aliasToBook.get(match[1].toLocaleLowerCase('ru').replace(/[.\s]/g, ''));
+      return bookId ? bookId + ':' + match[2] : 'raw:' + clean.toLocaleLowerCase('ru');
+    }
+    var passages = [];
+    var corpus = Array.from(article.querySelectorAll('p, blockquote, li')).filter(el => !el.closest('nav, aside, footer, .gill-series-shelf'));
+    function citations(blocks) {
+      var found = [];
+      blocks.forEach(el => {
+        for (var match of visibleText(el).matchAll(/(?<![\p{L}\d])(?:[1-3]\s*)?[А-ЯЁ][а-яё]+\.?\s+\d{1,3}:\d{1,3}(?:[–—-]\d{1,3}(?::\d{1,3})?)?/gu)) {
+          var name = match[0].replace(/\s+\d+:.*/, '').toLowerCase().replace(/[.\s]/g,'');
+          if (books.has(name)) found.push({label:match[0],target:el});
+        }
+      });
+      return found;
+    }
+    function addPassages(items) {
+      items.forEach(function (item) {
+        var label = String(item.label || '').trim().replace(/\s+/g, ' ');
+        if (!label || !item.target) return;
+        var key = passageKey(label);
+        var entry = passages.find(function (value) { return value.key === key; });
+        if (!entry) {
+          entry = { key: key, label: label, labels: [], targets: [] };
+          passages.push(entry);
+        }
+        if (!entry.labels.includes(label)) entry.labels.push(label);
+        var anchor = item.target.closest('p,li,blockquote') || item.target;
+        if (!entry.targets.includes(anchor)) entry.targets.push(anchor);
+      });
+    }
+    addPassages(citations(corpus.filter(inSection)));
+    addPassages(refs.map(el => ({label:el.dataset.ref, target:el})));
+    if (!passages.length) {
+      addPassages(Array.from(article.querySelectorAll('button.bref[data-ref]'), el => ({label:el.dataset.ref, target:el})));
+      addPassages(citations(corpus));
+      refScope = 'Из всей статьи';
+    }
+    return { active: active, end: end, paras: paras.slice(0,3), refs: passages, terms: lexicon.terms, notes: notes, refScope: refScope, termScope: lexicon.termScope };
+  }
+  var scriptureSelection = '';
+  var scriptureRailObserver = null;
+  var marksPanel = null;
+  var marksRefreshFrame = 0;
+  function refreshMarks() {
+    if (!marksPanel || !marksPanel.isConnected) return;
+    var summary = marksPanel.querySelector(':scope > summary');
+    if (!summary) return;
+    var restoreButtonFocus = marksPanel.contains(document.activeElement)
+      && document.activeElement.matches('button.gbr-marginalia-jump');
+    var library = window.GBReaderLibrary;
+    var here = location.pathname.replace(/\/+$/, '');
+    var entries = library ? library.getLibrary().filter(function (item) {
+      return item.type !== 'favorite' && library.highlightPath(item) === here;
+    }) : [];
+    var count = summary.querySelector('span');
+    if (count) count.textContent = String(entries.length);
+    while (marksPanel.lastElementChild && marksPanel.lastElementChild !== summary)
+      marksPanel.lastElementChild.remove();
+    entries.forEach(function (item) {
+      var row = node('div', 'gbr-marginalia-personal');
+      row.appendChild(node('small', '', item.type === 'note' ? 'Заметка'
+        : item.kind === 'marker' ? 'Помета' : 'Цитата'));
+      row.appendChild(node('p', '', item.text || item.quoteText));
+      marksPanel.appendChild(row);
+    });
+    if (!entries.length)
+      marksPanel.appendChild(node('p', 'gbr-marginalia-empty',
+        'Выделите фразу в статье, чтобы сохранить её здесь.'));
+    if (library) {
+      var open = node('button', 'gbr-marginalia-jump', 'Открыть библиотеку');
+      open.type = 'button';
+      open.addEventListener('click', function () {
+        sheet.querySelector('.toc-sheet__handle')?.click();
+        document.getElementById('gb-hl-fab')?.click();
+      });
+      marksPanel.appendChild(open);
+      if (restoreButtonFocus) open.focus({preventScroll:true});
+    }
+  }
+  function scheduleMarksRefresh() {
+    if (marksRefreshFrame) return;
+    marksRefreshFrame = requestAnimationFrame(function () {
+      marksRefreshFrame = 0;
+      refreshMarks();
+    });
+  }
+  function onMarksStorage(event) {
+    var key = event && (event.key || event.detail?.key);
+    if (key === 'gb-highlights-v1' || key === 'gb-reader-notes-v1' || key == null)
+      scheduleMarksRefresh();
+  }
+  window.addEventListener('storage', onMarksStorage);
+  window.addEventListener('gb:library-committed', onMarksStorage);
+  var lexiconGroup = null, lexiconContext = null, lexiconSignature = '', lexiconFrame = 0, lexiconSources = [];
+  function lexiconStamp(data) {
+    return JSON.stringify([data.termScope, data.terms.map(function (el) {
+      return [termKey(el), termTitle(el), el.dataset.category || '', text(termTip(el).querySelector('.gtip-brief')), text(termTip(el).querySelector('.gtip-papyrus'))];
+    })]);
+  }
+  function renderLexiconGroup(lex, data) {
+    var summary = lex.firstElementChild;
+    summary.querySelector('span').textContent = String(data.terms.length);
+    var expanded = new Set(Array.from(lex.querySelectorAll('.gbr-marginalia-term[open]'), function (el) { return el.dataset.termKey; }));
+    while (lex.lastElementChild !== summary) lex.lastElementChild.remove();
+    if (data.terms.length) {
+      lex.appendChild(node('p','gbr-marginalia-empty',data.termScope));
+      data.terms.forEach(function (source) {
+        var item = node('details', 'gbr-marginalia-term');
+        item.dataset.termKey = termKey(source);
+        item.open = expanded.has(item.dataset.termKey);
+        item.appendChild(node('summary', '', termTitle(source)));
+        var body = node('div', 'gbr-marginalia-term-body');
+        if (source.dataset.category) body.appendChild(node('span', 'gbr-marginalia-category', source.dataset.category));
+        var tip = termTip(source);
+        body.appendChild(node('p', '', text(tip.querySelector('.gtip-brief'))));
+        var detail = text(tip.querySelector('.gtip-papyrus'));
+        if (detail) body.appendChild(node('p', 'gbr-marginalia-detail', detail));
+        var key = termKey(source), context = lexiconContext, articleWide = data.termScope === 'Из всей статьи';
+        action(body, 'Показать в статье ↗', function () {
+          if (!context) return null;
+          var current = lexiconData(context.active, context.end);
+          var terms = articleWide ? collectTerms(articleGlossaryTerms()) :
+            current.termScope === 'В текущем разделе' ? current.terms : [];
+          return terms.find(function (el) { return termKey(el) === key; }) || null;
+        });
+        item.appendChild(body); lex.appendChild(item);
+      });
+    } else lex.appendChild(node('p', 'gbr-marginalia-empty', 'В статье пока нет опубликованных определений.'));
+    lexiconSources = data.terms.slice();
+    return lexiconStamp(data);
+  }
+  function scheduleLexiconRefresh() {
+    if (lexiconFrame || panel.hidden || !lexiconGroup || !lexiconGroup.isConnected) return;
+    lexiconFrame = requestAnimationFrame(function () {
+      lexiconFrame = 0;
+      if (panel.hidden || !lexiconGroup || !lexiconGroup.isConnected || !lexiconContext) return;
+      var data = lexiconData(lexiconContext.active, lexiconContext.end);
+      var sameSources = data.terms.length === lexiconSources.length &&
+        data.terms.every(function (el, index) { return el === lexiconSources[index]; });
+      if ((sameSources && lexiconStamp(data) === lexiconSignature) || lexiconGroup.contains(document.activeElement)) return;
+      lexiconSignature = renderLexiconGroup(lexiconGroup, data);
+    });
+  }
+  // Source mutations only; never rebuild Scripture, notes or scroll state.
+  function glossaryMutation(record) {
+    var target = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+    if (record.type === 'attributes' && record.attributeName === 'class') {
+      var before = new Set((record.oldValue || '').split(/\s+/));
+      if (!['gterm','related-articles','faq-accordion','gtip-brief','gtip-papyrus'].some(function (c) { return before.has(c) !== target.classList.contains(c); })) return false;
+      return !!(target.closest('.gterm') || target.querySelector('.gterm') || before.has('gterm'));
+    }
+    if (record.type === 'attributes' && record.attributeName === 'data-reader-exclude') return !!(target.closest('.gterm') || target.querySelector('.gterm'));
+    if (target && target.closest('.gterm')) return true;
+    return Array.from(record.addedNodes || []).concat(Array.from(record.removedNodes || [])).some(function (el) {
+      return el.nodeType === 1 && (el.matches('.gterm') || el.querySelector('.gterm'));
+    });
+  }
+  var lexiconObserver = new MutationObserver(function (records) {
+    if (records.some(glossaryMutation)) scheduleLexiconRefresh();
+  });
+  if (article) lexiconObserver.observe(article, { subtree: true, childList: true, characterData: true,
+    attributes: true, attributeFilter: ['data-term','data-term-title','data-category','data-reader-exclude','class'],attributeOldValue:true });
+  panel.addEventListener('focusout', scheduleLexiconRefresh);
+  window.addEventListener('pagehide', function (event) {
+    if (lexiconFrame) cancelAnimationFrame(lexiconFrame);
+    lexiconFrame = 0;
+    if (!event.persisted) lexiconObserver.disconnect();
+  });
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) scheduleLexiconRefresh();
+  });
+  function render() {
+    if (scriptureRailObserver) scriptureRailObserver.disconnect();
+    scriptureRailObserver = null;
+    content.replaceChildren();
+    lexiconGroup = null; lexiconContext = null; lexiconSources = [];
+    var data = researchData();
+    if (!data) {
+      content.appendChild(node('p', 'gbr-marginalia-empty', 'Для этой страницы исследовательские материалы пока недоступны.'));
+      return;
+    }
+    var lead = node('header', 'gbr-marginalia-lead');
+    lead.appendChild(node('span', 'gbr-marginalia-eyebrow', 'АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА'));
+    lead.appendChild(node('h3', '', data.active ? text(data.active) : 'Исследовательский контекст'));
+    content.appendChild(lead);
+    {
+      var refs = group('Писание', String(data.refs.length));
+      var projection = window.SCRIPTURE_DATA || {};
+      var sources = window.SCRIPTURE_SOURCE_BY_REF || {};
+      function normalizedRef(value) {
+        return String(value || '').replace(/[\u00a0\u202f]/g, ' ').replace(/[\u2012-\u2015]/g, '-').replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
+      }
+      if (!data.refs.length) {
+        refs.appendChild(node('p', 'gbr-marginalia-empty', 'В статье не найдены ссылки на главы и стихи.'));
+      } else {
+        var captionRow = node('div', 'gbr-scripture-caption');
+        captionRow.appendChild(node('span', 'gbr-scripture-scope', data.refScope));
+        var countLabel = node('span', 'gbr-scripture-count');
+        captionRow.appendChild(countLabel);
+        refs.appendChild(captionRow);
+        var picker = node('div', 'gbr-scripture-picker');
+        var previous = node('button', 'gbr-scripture-step', '‹');
+        previous.type = 'button';
+        previous.setAttribute('aria-label', 'Предыдущие места Писания');
+        var rail = node('div', 'gbr-scripture-rail');
+        rail.setAttribute('role', 'group');
+        rail.setAttribute('aria-label', 'Выберите место Писания');
+        rail.setAttribute('tabindex', '0');
+        rail.dataset.count = String(data.refs.length);
+        var next = node('button', 'gbr-scripture-step', '›');
+        next.type = 'button';
+        next.setAttribute('aria-label', 'Следующие места Писания');
+        picker.append(previous, rail, next);
+        refs.appendChild(picker);
+        var reading = node('section', 'gbr-scripture-reading');
+        reading.id = 'gbrScriptureReading';
+        reading.setAttribute('aria-labelledby', 'gbrScriptureActiveRef');
+        var bookLabel = node('h4', 'gbr-scripture-active-ref');
+        bookLabel.id = 'gbrScriptureActiveRef';
+        var passage = node('div', 'gbr-scripture-passage');
+        var attribution = node('p', 'gbr-scripture-source');
+        var destinations = node('div', 'gbr-scripture-destinations');
+        reading.append(bookLabel, passage, attribution, destinations);
+        refs.appendChild(reading);
+        var buttons = data.refs.map(function (source, index) {
+          var b = node('button', 'gbr-scripture-ref', source.label);
+          b.type = 'button';
+          b.setAttribute('aria-controls', reading.id);
+          b.setAttribute('aria-pressed', 'false');
+          b.dataset.scriptureIndex = String(index);
+          rail.appendChild(b);
+          return b;
+        });
+        function updateArrows() {
+          var max = rail.scrollWidth - rail.clientWidth;
+          var scrollable = max > 2;
+          picker.classList.toggle('gbr-scripture-scrollable', scrollable);
+          previous.disabled = !scrollable || rail.scrollLeft <= 2;
+          next.disabled = !scrollable || rail.scrollLeft >= max - 2;
+        }
+        function chooseScripture(index, focusButton) {
+          var source = data.refs[index];
+          if (!source) return;
+          scriptureSelection = source.label;
+          buttons.forEach(function (b, i) {
+            var selected = index === i;
+            b.setAttribute('aria-pressed', String(selected));
+            if (selected) b.setAttribute('aria-current', 'true');
+            else b.removeAttribute('aria-current');
+          });
+          countLabel.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(data.refs.length).padStart(2, '0');
+          bookLabel.textContent = source.label;
+          passage.replaceChildren();
+          attribution.replaceChildren();
+          destinations.replaceChildren();
+          var refKey = null;
+          (source.labels || [source.label]).forEach(function (label) {
+            var match = Object.prototype.hasOwnProperty.call(projection, label) ? label
+              : Object.keys(projection).find(function (key) { return normalizedRef(key) === normalizedRef(label); });
+            if (match && (!refKey || String(projection[match] || '').trim())) refKey = match;
+          });
+          var verse = refKey ? String(projection[refKey] || '').trim() : '';
+          if (verse) {
+            passage.appendChild(node('blockquote', 'gbr-scripture-quote', verse));
+            var credit = refKey && sources[refKey];
+            if (credit) attribution.textContent = String(credit);
+            attribution.hidden = !credit;
+          } else {
+            passage.appendChild(node('p', 'gbr-scripture-unavailable', 'Текст этого места отсутствует в утверждённой проекции. Упоминание в статье доступно ниже.'));
+            attribution.hidden = true;
+          }
+          source.targets.forEach(function (target, occurrence) {
+            var caption = source.targets.length === 1 ? 'К упоминанию в статье'
+              : 'К упоминанию в статье · ' + (occurrence + 1);
+            action(destinations, caption, target).classList.add('gbr-scripture-return');
+          });
+          if (focusButton) buttons[index].focus({ preventScroll: true });
+          var button = buttons[index];
+          var leftEdge = button.offsetLeft;
+          var rightEdge = leftEdge + button.offsetWidth;
+          if (leftEdge < rail.scrollLeft + 8) rail.scrollLeft = Math.max(0, leftEdge - 8);
+          else if (rightEdge > rail.scrollLeft + rail.clientWidth - 8)
+            rail.scrollLeft = rightEdge - rail.clientWidth + 8;
+          updateArrows();
+        }
+        buttons.forEach(function (b, i) {
+          b.addEventListener('click', function () { chooseScripture(i, false); });
+          b.addEventListener('keydown', function (event) {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            var chosen = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
+              : (i + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+            chooseScripture(chosen, true);
+          });
+        });
+        previous.addEventListener('click', function () {
+          rail.scrollBy({ left: -Math.max(rail.clientWidth * .75, 120), behavior: 'smooth' });
+        });
+        next.addEventListener('click', function () {
+          rail.scrollBy({ left: Math.max(rail.clientWidth * .75, 120), behavior: 'smooth' });
+        });
+        rail.addEventListener('scroll', updateArrows, { passive: true });
+        refs.addEventListener('toggle', function () {
+          if (refs.open) window.requestAnimationFrame(updateArrows);
+        });
+        if (typeof ResizeObserver !== 'undefined') {
+          scriptureRailObserver = new ResizeObserver(updateArrows);
+          scriptureRailObserver.observe(rail);
+        }
+        var initiallySelected = data.refs.findIndex(function (item) { return item.label === scriptureSelection; });
+        chooseScripture(initiallySelected >= 0 ? initiallySelected : 0, false);
+        window.requestAnimationFrame(updateArrows);
+      }
+    }
+    lexiconGroup = group('Понятия', String(data.terms.length));
+    lexiconContext = { active: data.active, end: data.end };
+    lexiconSignature = renderLexiconGroup(lexiconGroup, data);
+    var sourceGroup = group('Ход текста', data.paras.length ? 'Исходные фрагменты' : 'Без фрагментов');
+    data.paras.forEach(function (p, i) {
+      var quote = node('div', 'gbr-marginalia-evidence');
+      quote.appendChild(node('span', 'gbr-marginalia-index', String(i + 1).padStart(2, '0')));
+      var fragment = visibleText(p);
+      quote.appendChild(node('p', '', fragment.length > 320 ? fragment.slice(0,317).replace(/\s+\S*$/,'') + '…' : fragment));
+      action(quote, 'Читать в статье ↗', p);
+      sourceGroup.appendChild(quote);
+    });
+    if (!data.paras.length) sourceGroup.appendChild(node('p', 'gbr-marginalia-empty', 'Показаны только материалы, подтверждённые текстом статьи.'));
+    {
+      var foot = group('Сноски', String(data.notes.length));
+      if (!data.notes.length) foot.appendChild(node('p','gbr-marginalia-empty','В этом разделе нет сносок.'));
+      data.notes.forEach(function (source, i) { action(foot, 'Примечание ' + (source.dataset.noteOrdinal || i + 1) + ' ↗', source); });
+    }
+    marksPanel = group('Мои пометы', '0');
+    refreshMarks();
+  }
+  function switchTab(which, keyboard) {
+    var research = which === 'research';
+    tabs.forEach(function (tab) {
+      var chosen = tab.dataset.gbrTab === which;
+      tab.setAttribute('aria-selected', String(chosen));
+      tab.tabIndex = chosen ? 0 : -1;
+    });
+    toc.hidden = research;
+    toc.inert = research;
+    panel.hidden = !research;
+    panel.inert = !research;
+    sheet.classList.toggle('gbr-research-open', research);
+    if (partTitle) partTitle.textContent = research ? 'Аналитика' : originalTitle;
+    if (dialog) {
+      if (research) dialog.setAttribute('aria-label', 'Аналитика · исследовательские материалы');
+      else if (originalDialogLabel !== null) dialog.setAttribute('aria-label', originalDialogLabel);
+      else dialog.removeAttribute('aria-label');
+    }
+    if (research) {
+      render();
+      document.dispatchEvent(new CustomEvent('gb:analytics-study-place'));
+    }
+    if (keyboard) tabs.find(function (tab) { return tab.dataset.gbrTab === which; }).focus();
+  }
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () { switchTab(tab.dataset.gbrTab, false); });
+    tab.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'Home' && e.key !== 'End') return;
+      e.preventDefault();
+      var research = e.key === 'End' || (e.key === 'ArrowRight' && tab.dataset.gbrTab === 'toc') || (e.key === 'ArrowLeft' && tab.dataset.gbrTab === 'toc');
+      switchTab(research ? 'research' : 'toc', true);
+    });
+  });
+  sheet.addEventListener('gb:gill-select-part-panel', function (event) {
+    var choice = event.detail && event.detail.panel === 'research' ? 'research' : 'toc';
+    switchTab(choice, false);
+    if (choice === 'research') tabs.find(function (t) { return t.dataset.gbrTab === 'research'; }).focus({preventScroll:true});
+  });
+  var observer = new MutationObserver(function () {
+    var opened = sheet.classList.contains('is-open');
+    if (!opened && panel && !panel.hidden) switchTab('toc', false);
+    if (!opened && researchOpener) researchOpener.setAttribute('aria-expanded', 'false');
+  });
+  observer.observe(sheet, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>
+
+<style is:global>
+  #partTocOverlay .gbr-marginalia-tabs { display:flex; align-items:center; gap:4px; padding:6px 18px 7px; border-bottom:1px solid rgba(121,92,67,.14); flex-shrink:0; }
+  #partTocOverlay .gbr-marginalia-tab { flex:1; min-height:44px; border:0; border-radius:6px; background:transparent; color:inherit; opacity:.72; cursor:pointer; font:600 12.5px/1.25 'Source Sans 3',system-ui,sans-serif; letter-spacing:.012em; transition:background-color .15s ease,opacity .15s ease; }
+  #partTocOverlay .gbr-marginalia-tab[aria-selected="true"] { background:rgba(128,92,63,.085); opacity:1; }
+  #partTocOverlay .gbr-marginalia-tab:focus-visible { outline:2px solid #9a704b; outline-offset:2px; }
+  #partTocOverlay .gbr-marginalia[hidden], #partTocOverlay #gbs2PartToc[hidden] { display:none !important; }
+  #partTocOverlay .gbr-marginalia { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:0 20px 22px; scrollbar-width:thin; color:inherit; }
+  #partTocOverlay .gbr-marginalia-inner { max-width:620px; margin:0 auto; }
+  #partTocOverlay .gbr-marginalia-lead { padding:12px 0 11px; border-bottom:1px solid rgba(121,92,67,.17); }
+  #partTocOverlay .gbr-marginalia-eyebrow { display:block; font:650 9px/1.5 'Source Sans 3',system-ui,sans-serif; letter-spacing:.14em; color:#987956; }
+  #partTocOverlay .gbr-marginalia-lead h3 { margin:4px 0 2px; font:600 15.5px/1.35 'Lora',Georgia,serif; letter-spacing:-.015em; }
+  #partTocOverlay .gbr-marginalia-lead p { margin:0; font-size:12px; line-height:1.6; opacity:.7; }
+  #partTocOverlay .gbr-marginalia-group { padding:18px 0 15px; border-bottom:1px solid rgba(121,92,67,.13); }
+  #partTocOverlay .gbr-marginalia-group-head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:12px; }
+  #partTocOverlay .gbr-marginalia-group-head h4 { margin:0; font:600 15px/1.3 Georgia,serif; }
+  #partTocOverlay .gbr-marginalia-group-head span { font:500 10px/1.4 system-ui,sans-serif; opacity:.65; text-align:right; }
+  #partTocOverlay .gbr-marginalia-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  #partTocOverlay .gbr-marginalia-jump { min-height:44px; padding:9px 12px; border:1px solid rgba(135,98,69,.24); border-radius:9px; background:rgba(131,103,79,.045); color:inherit; font:500 12px/1.45 system-ui,sans-serif; text-align:left; cursor:pointer; }
+  #partTocOverlay .gbr-marginalia-jump:hover { background:rgba(128,92,63,.10); }
+  #partTocOverlay .gbr-marginalia-jump:focus-visible { outline:2px solid #9a704b; outline-offset:2px; }
+  /* ARGON-style Scripture: one reading surface and a horizontally scrolling,
+     two-row citation shelf, NOT one nested card per verse. */
+  @font-face {
+    font-family:'GB Cormorant Scripture';
+    src:url('/fonts/CormorantGaramond/cormorantgaramond-cyrillic-500.woff2') format('woff2');
+    font-weight:500;font-display:swap;
+  }
+  #partTocOverlay .gbr-scripture-caption { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:1px 1px 9px; }
+  #partTocOverlay .gbr-scripture-scope { font:500 11px/1.4 'Source Sans 3',system-ui,sans-serif; opacity:.67; }
+  #partTocOverlay .gbr-scripture-count { font:600 11px/1.3 'Source Sans 3',system-ui,sans-serif; font-variant-numeric:tabular-nums; letter-spacing:.06em; opacity:.72; white-space:nowrap; }
+  #partTocOverlay .gbr-scripture-picker { display:flex; align-items:stretch; min-width:0; gap:5px; margin:0 0 11px; }
+  #partTocOverlay .gbr-scripture-rail {
+    position:relative;display:grid;grid-auto-flow:column;grid-template-rows:repeat(2, minmax(42px,auto));grid-auto-columns:max-content;
+    align-content:start;align-items:stretch;gap:4px 7px;min-width:0;width:100%;
+    overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:rgba(125,88,63,.52) transparent;
+    overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+    padding:2px 2px 8px;outline-offset:2px;
+    touch-action:pan-x pan-y;
+  }
+  #partTocOverlay .gbr-scripture-rail[data-count="1"],
+  #partTocOverlay .gbr-scripture-rail[data-count="2"] { grid-template-rows:minmax(42px,auto);grid-auto-columns:minmax(0,1fr); }
+  #partTocOverlay .gbr-scripture-ref {
+    display:flex;align-items:center;justify-content:flex-start;
+    min-height:42px;max-width:240px;padding:7px 13px;
+    color:inherit;border:1px solid transparent;border-bottom:2px solid rgba(128,93,63,.22);
+    border-radius:4px 4px 0 0;background:transparent;
+    text-align:left;white-space:normal;overflow-wrap:break-word;
+    font:600 13px/1.3 'Lora',Georgia,serif;cursor:pointer;
+    scroll-snap-align:start;transition:background .15s,border-color .15s;
+  }
+  #partTocOverlay .gbr-scripture-ref[aria-pressed="true"] {
+    background:rgba(136,88,58,.09);border-bottom-color:#875942;color:#633d2d;
+  }
+  #partTocOverlay .gbr-scripture-ref:hover { background:rgba(136,88,58,.08); }
+  #partTocOverlay .gbr-scripture-ref:focus-visible,
+  #partTocOverlay .gbr-scripture-rail:focus-visible,
+  #partTocOverlay .gbr-scripture-step:focus-visible,
+  #partTocOverlay .gbr-scripture-return:focus-visible { outline:2px solid #915e43;outline-offset:2px; }
+  #partTocOverlay .gbr-scripture-step {
+    display:none;flex:0 0 32px;align-self:stretch;align-items:center;justify-content:center;
+    padding:0;border:0;border-radius:4px;background:rgba(136,88,58,.07);
+    color:inherit;font:400 25px/1 Georgia,serif;cursor:pointer;
+  }
+  #partTocOverlay .gbr-scripture-scrollable .gbr-scripture-step { display:flex; }
+  #partTocOverlay .gbr-scripture-step:disabled { opacity:.24;cursor:default; }
+  #partTocOverlay .gbr-scripture-reading {
+    min-width:0;margin:0;padding:13px 1px 3px;
+    border-top:1px solid rgba(128,93,63,.24);
+  }
+  #partTocOverlay .gbr-scripture-active-ref {
+    margin:0 0 11px;color:#754532;
+    font:600 15px/1.4 'Lora',Georgia,serif;letter-spacing:-.015em;
+  }
+  #partTocOverlay .gbr-scripture-passage {
+    max-height:clamp(185px,35dvh,390px);overflow-y:auto;overscroll-behavior-y:contain;
+    scrollbar-width:thin;scrollbar-color:rgba(125,88,63,.45) transparent;padding:2px 9px 4px 0;
+  }
+  #partTocOverlay .gbr-scripture-quote {
+    display:block;max-width:100%;margin:0!important;padding:2px 0 2px 14px!important;
+    border:0!important;border-left:2px solid #9e7359!important;border-radius:0!important;
+    background:transparent!important;box-shadow:none!important;color:inherit!important;
+    font:500 22px/1.38 'GB Cormorant Scripture','Cormorant Garamond',Georgia,serif!important;
+    letter-spacing:0!important;white-space:pre-line;overflow-wrap:anywhere;
+  }
+  #partTocOverlay .gbr-scripture-quote::before,
+  #partTocOverlay .gbr-scripture-quote::after { content:none!important;display:none!important; }
+  #partTocOverlay .gbr-scripture-source { margin:12px 0 10px;color:inherit;opacity:.7;overflow-wrap:anywhere;font:500 11px/1.55 'Source Sans 3',system-ui,sans-serif; }
+  #partTocOverlay .gbr-scripture-source[hidden] { display:none!important; }
+  #partTocOverlay .gbr-scripture-unavailable { margin:0;padding:5px 0 5px 14px;border-left:2px solid #9e7359;font:400 14px/1.6 'Lora',Georgia,serif; }
+  #partTocOverlay .gbr-scripture-destinations { display:flex;flex-wrap:wrap;gap:6px 13px;margin:9px 0 0; }
+  #partTocOverlay .gbr-scripture-return {
+    min-height:44px;padding:6px 0;border:0;border-radius:0;background:transparent;
+    color:#80513d;font:600 11.5px/1.5 'Source Sans 3',system-ui,sans-serif;
+    text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(128,81,61,.35);
+  }
+  #partTocOverlay .gbr-scripture-return:hover { background:transparent;text-decoration-color:currentColor; }
+  html.dark #partTocOverlay .gbr-scripture-ref[aria-pressed="true"] { background:rgba(220,178,133,.11);border-bottom-color:#d8b58a;color:#f1d3ac; }
+  html.dark #partTocOverlay .gbr-scripture-ref { border-bottom-color:rgba(244,224,205,.26); }
+  html.dark #partTocOverlay .gbr-scripture-reading { border-top-color:rgba(244,224,205,.25); }
+  html.dark #partTocOverlay .gbr-scripture-active-ref,
+  html.dark #partTocOverlay .gbr-scripture-return { color:#dfb78c; }
+  html.dark #partTocOverlay .gbr-scripture-quote,
+  html.dark #partTocOverlay .gbr-scripture-unavailable { border-left-color:#bb926b!important; }
+  @media(max-width:359px) { #partTocOverlay .gbr-scripture-ref { font-size:12px;padding:7px 10px; } #partTocOverlay .gbr-scripture-quote { font-size:21px!important; } }
+  @media(prefers-reduced-motion:reduce) { #partTocOverlay .gbr-scripture-ref { transition:none; } }
+  #partTocOverlay .gbr-marginalia-term { border-bottom:1px solid rgba(121,92,67,.11); }
+  #partTocOverlay .gbr-marginalia-term:last-child { border-bottom:0; }
+  #partTocOverlay .gbr-marginalia-term summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font:600 15px/1.45 'Source Sans 3',system-ui,sans-serif; list-style:none; }
+  #partTocOverlay .gbr-marginalia-term summary::-webkit-details-marker { display:none; }
+  #partTocOverlay .gbr-marginalia-term summary::after { content:''; flex:0 0 6px; width:6px; height:6px; box-sizing:border-box; margin-inline:10px; border:solid currentColor; border-width:0 1px 1px 0; color:#987956; transform:rotate(45deg); }
+  #partTocOverlay .gbr-marginalia-term[open] summary::after { transform:rotate(225deg); }
+  #partTocOverlay .gbr-marginalia-term-body { padding:0 0 14px; }
+  #partTocOverlay .gbr-marginalia-term-body p { margin:7px 0 12px; font:400 13px/1.6 'Source Sans 3',system-ui,sans-serif; }
+  #partTocOverlay .gbr-marginalia-category { font:600 10px/1.4 system-ui,sans-serif; color:#987956; }
+  #partTocOverlay .gbr-marginalia-detail { opacity:.75; }
+  #partTocOverlay .gbr-marginalia-evidence { padding:10px 0 16px; }
+  #partTocOverlay .gbr-marginalia-index { font:600 10px system-ui,sans-serif; color:#987956; }
+  #partTocOverlay .gbr-marginalia-evidence p { font:400 13.5px/1.62 'Lora',Georgia,serif; margin:8px 0 10px; }
+  #partTocOverlay .gbr-marginalia-provenance, #partTocOverlay .gbr-marginalia-empty { font:400 11px/1.6 system-ui,sans-serif; opacity:.65; }
+  #partTocOverlay .gbr-marginalia-provenance { padding:13px 0; }
+  @media (max-width:359px) { #partTocOverlay .gbr-marginalia-tabs { padding-left:11px; padding-right:11px; } #partTocOverlay .gbr-marginalia { padding-left:14px; padding-right:14px; } }
+  @media (prefers-reduced-motion:reduce) { #partTocOverlay .gbr-marginalia-tab { transition:none; } }
+
+@font-face{font-family:'GB Classic Literata';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/Literata/literata-cyrillic-400-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'GB Classic Literata';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/Literata/literata-latin-400-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'GB Classic Literata';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/Literata/literata-cyrillic-500-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'GB Classic Literata';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/Literata/literata-latin-500-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'GB Classic Literata';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Literata/literata-cyrillic-600-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'GB Classic Literata';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Literata/literata-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'GB Classic Literata';font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/Literata/literata-cyrillic-400-italic.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'GB Classic Literata';font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/Literata/literata-latin-400-italic.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'GB Classic Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/JetBrainsMono/jetbrains-mono-cyrillic-500-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'GB Classic Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/JetBrainsMono/jetbrains-mono-latin-500-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'GB Classic Mono';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/JetBrainsMono/jetbrains-mono-cyrillic-600-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:'GB Classic Mono';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/JetBrainsMono/jetbrains-mono-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+
+
+/* ARGON CLASSIC · owner-approved visual finish for the actual Gill mobile
+   Analytics sheet. Interaction and ScriptureDataProjection remain unchanged. */
+#partTocOverlay .toc-sheet{
+  background:#FBF9F5!important;
+  color:#1A1816!important;
+}
+#partTocOverlay .gbr-marginalia-tabs{
+  background:#EFECE4!important;
+  border-color:#DFD9CE!important;
+}
+#partTocOverlay .gbr-marginalia-tab{
+  font:600 12px/1.3 'Inter',system-ui,sans-serif!important;
+  letter-spacing:.01em;
+}
+#partTocOverlay .gbr-marginalia-tab[aria-selected="true"]{
+  color:#1A1816!important;background:#FBF9F5!important;
+}
+#partTocOverlay .gbr-marginalia-lead{
+  border-color:#DFD9CE!important;
+}
+#partTocOverlay .gbr-marginalia-lead h3{
+  font:600 21px/1.13 'Cormorant Garamond',Georgia,serif!important;
+  letter-spacing:-.025em!important;
+}
+#partTocOverlay .gbr-marginalia-eyebrow,
+#partTocOverlay .gbr-scripture-scope,
+#partTocOverlay .gbr-marginalia-term summary,
+#partTocOverlay .gbr-marginalia-provenance,
+#partTocOverlay .gbr-marginalia-empty{
+  font-family:'Inter',system-ui,sans-serif!important;
+}
+#partTocOverlay .gbr-marginalia-eyebrow,
+#partTocOverlay .gbr-marginalia-category,
+#partTocOverlay .gbr-marginalia-index{
+  color:#9B2C2C!important;
+}
+#partTocOverlay details.gbr-marginalia-group{
+  background:#FBF9F5!important;
+  border-color:#DFD9CE!important;
+  border-radius:6px!important;
+  box-shadow:none!important;
+}
+#partTocOverlay .gbr-marginalia-group-head strong{
+  font:600 20px/1.22 'Cormorant Garamond',Georgia,serif!important;
+  letter-spacing:-.017em;
+}
+#partTocOverlay .gbr-scripture-caption{
+  margin-top:2px;
+}
+#partTocOverlay .gbr-scripture-count,
+#partTocOverlay .gbr-scripture-active-ref{
+  font-variant-numeric:tabular-nums;
+}
+#partTocOverlay .gbr-scripture-count{
+  font:500 10px/1.45 'GB Classic Mono',Consolas,monospace!important;
+  color:#8C6239!important;
+}
+#partTocOverlay .gbr-scripture-picker{margin-bottom:12px;}
+#partTocOverlay .gbr-scripture-ref{
+  min-height:44px!important;
+  border:1px solid #DFD9CE!important;
+  border-radius:5px!important;
+  background:#EFECE4!important;
+  padding:7px 11px!important;
+  font:500 11px/1.35 'GB Classic Mono',Consolas,monospace!important;
+  color:#5A534A!important;
+  text-align:left!important;
+  letter-spacing:-.015em;
+  transition:background .13s,border-color .13s,color .13s!important;
+}
+#partTocOverlay .gbr-scripture-ref[aria-pressed="true"]{
+  border-color:#8C6239!important;
+  background:#8C6239!important;
+  color:#fff!important;
+}
+#partTocOverlay .gbr-scripture-ref:not([aria-pressed="true"]):hover{
+  border-color:#8C6239!important;
+  background:#F8F6F0!important;
+}
+#partTocOverlay .gbr-scripture-step{
+  color:#8C6239!important;
+  background:#EFECE4!important;
+  border:1px solid #DFD9CE!important;
+}
+#partTocOverlay .gbr-scripture-reading{
+  padding:12px 1px 5px!important;
+  border-color:#DFD9CE!important;
+}
+#partTocOverlay .gbr-scripture-active-ref{
+  margin:0 0 8px!important;
+  color:#8C6239!important;
+  font:600 23px/1.15 'Cormorant Garamond',Georgia,serif!important;
+}
+#partTocOverlay .gbr-scripture-quote{
+  font:400 15px/1.75 'GB Classic Literata',Georgia,serif!important;
+  border:0!important;
+  border-left:2px solid #8C6239!important;
+  color:#1A1816!important;
+  background:transparent!important;
+  padding:2px 6px 2px 14px!important;
+  white-space:pre-line!important;
+  letter-spacing:0!important;
+}
+#partTocOverlay .gbr-scripture-source{
+  margin:10px 0!important;
+  font:400 10.5px/1.6 'Inter',system-ui,sans-serif!important;
+  color:#5A534A!important;opacity:.88!important;
+}
+#partTocOverlay .gbr-scripture-return{
+  font:600 11px/1.5 'Inter',system-ui,sans-serif!important;
+  min-height:44px!important;color:#8C6239!important;
+  border:0!important;background:transparent!important;
+}
+#partTocOverlay .gbr-marginalia-evidence p,
+#partTocOverlay .gbr-marginalia-term-body p{
+  font-family:'GB Classic Literata',Georgia,serif!important;
+  color:#1A1816!important;
+}
+#partTocOverlay .gbr-marginalia-term-body p{font-size:13px!important;line-height:1.68!important;}
+html.dark #partTocOverlay .toc-sheet,
+html[data-reader-theme="dark"] #partTocOverlay .toc-sheet{
+  background:#17191D!important;color:#EAE6DF!important;
+}
+html.dark #partTocOverlay .gbr-marginalia-tabs,
+html[data-reader-theme="dark"] #partTocOverlay .gbr-marginalia-tabs{
+  background:#1D2025!important;border-color:#2A2E35!important;
+}
+html.dark #partTocOverlay .gbr-marginalia-tab[aria-selected="true"],
+html[data-reader-theme="dark"] #partTocOverlay .gbr-marginalia-tab[aria-selected="true"]{
+  background:#17191D!important;color:#EAE6DF!important;
+}
+html.dark #partTocOverlay details.gbr-marginalia-group,
+html[data-reader-theme="dark"] #partTocOverlay details.gbr-marginalia-group{
+  background:#17191D!important;border-color:#343940!important;
+}
+html.dark #partTocOverlay .gbr-marginalia-lead,
+html[data-reader-theme="dark"] #partTocOverlay .gbr-marginalia-lead,
+html.dark #partTocOverlay .gbr-scripture-reading,
+html[data-reader-theme="dark"] #partTocOverlay .gbr-scripture-reading{
+  border-color:#343940!important;
+}
+html.dark #partTocOverlay :is(.gbr-marginalia-eyebrow,.gbr-marginalia-category,.gbr-marginalia-index),
+html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-marginalia-eyebrow,.gbr-marginalia-category,.gbr-marginalia-index){
+  color:#D46A6A!important;
+}
+html.dark #partTocOverlay :is(.gbr-scripture-count,.gbr-scripture-active-ref,.gbr-scripture-return),
+html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-count,.gbr-scripture-active-ref,.gbr-scripture-return){
+  color:#C89B6E!important;
+}
+html.dark #partTocOverlay .gbr-scripture-ref,
+html[data-reader-theme="dark"] #partTocOverlay .gbr-scripture-ref{
+  background:#1D2025!important;color:#EAE6DF!important;border-color:#343940!important;
+}
+html.dark #partTocOverlay .gbr-scripture-ref[aria-pressed="true"],
+html[data-reader-theme="dark"] #partTocOverlay .gbr-scripture-ref[aria-pressed="true"]{
+  background:#C89B6E!important;color:#17191D!important;border-color:#C89B6E!important;
+}
+html.dark #partTocOverlay .gbr-scripture-quote,
+html[data-reader-theme="dark"] #partTocOverlay .gbr-scripture-quote{
+  color:#EAE6DF!important;border-left-color:#C89B6E!important;
+}
+html.dark #partTocOverlay :is(.gbr-scripture-source,.gbr-marginalia-term-body p,.gbr-marginalia-evidence p),
+html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-marginalia-term-body p,.gbr-marginalia-evidence p){
+  color:#DDD4C9!important;
+}
+@media(max-width:359px){
+ #partTocOverlay .gbr-scripture-ref{
+   padding-inline:8px!important;font-size:10.2px!important;
+ }
+ #partTocOverlay .gbr-scripture-quote{
+   font-size:14px!important;line-height:1.72!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #partTocOverlay .gbr-scripture-ref{transition:none!important;}
+}
+
+
+/* W59 Mobile ARGON Classic — approved unified Toc/Analytics presentation.
+   Only mobile #partTocOverlay. No desktop W57 or Reader article typography. */
+@media (max-width: 1120px) {
+  #partTocOverlay {
+    --gbr-classic-paper: #FBF9F5;
+    --gbr-classic-surface: #EFECE4;
+    --gbr-classic-edge: #DFD9CE;
+    --gbr-classic-bronze: #8C6239;
+    --gbr-classic-rubric: #9B2C2C;
+    --gbr-classic-ink: #1A1816;
+    --gbr-classic-muted: #5A534A;
+  }
+  #partTocOverlay .toc-sheet {
+    background: var(--gbr-classic-paper) !important;
+    color: var(--gbr-classic-ink) !important;
+  }
+  #partTocOverlay .toc-head-txt h3 {
+    margin: 0;
+    font: 500 clamp(25px, 7.2vw, 28px)/1.08 'GB Mobile Classic Cormorant', Georgia, serif !important;
+    letter-spacing: -.021em;
+    color: var(--gbr-classic-ink);
+    text-wrap: balance;
+  }
+  #partTocOverlay .toc-head-txt .lab {
+    font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+    color: var(--gbr-classic-rubric) !important;
+  }
+  #partTocOverlay .gbr-marginalia-tabs {
+    background: var(--gbr-classic-surface) !important;
+    border-color: var(--gbr-classic-edge) !important;
+  }
+  #partTocOverlay .gbr-marginalia-tab {
+    font: 600 12.5px/1.3 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+    letter-spacing: 0 !important;
+  }
+  #partTocOverlay .gbr-marginalia-tab[aria-selected="true"] {
+    background: var(--gbr-classic-paper) !important;
+    color: var(--gbr-classic-ink) !important;
+  }
+  #partTocOverlay .gbat-part {
+    --fill: var(--gbr-classic-paper);
+  }
+  #partTocOverlay .gbat-part.cur {
+    --fill: var(--gbr-classic-paper);
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #partTocOverlay .gbat-part.cur > .gbat-hd {
+    background: rgba(140, 98, 57, .095);
+    color: var(--gbr-classic-ink);
+  }
+  #partTocOverlay .gbat-part.cur::before {
+    background: var(--gbr-classic-bronze);
+    box-shadow: none;
+  }
+  #partTocOverlay .gbat-hd {
+    color: var(--gbr-classic-ink);
+  }
+  #partTocOverlay .gbat-hd .gbat-t {
+    font: 500 20px/1.13 'GB Mobile Classic Cormorant', Georgia, serif !important;
+    letter-spacing: -.012em;
+  }
+  #partTocOverlay .gbat-part.cur .gbat-t {
+    font-weight: 600 !important;
+    color: var(--gbr-classic-bronze);
+  }
+  #partTocOverlay .gbat-part:not(.cur) .gbat-t {
+    color: var(--gbr-classic-ink);
+  }
+  /* Owner W99: large upright Roman chapter numerals on mobile,
+     not the tiny 11px mono navigation counters and not italic. */
+  #partTocOverlay .gbat-num:not(.gbat-num--label) {
+    font: 600 26px/1 'GB Mobile Classic Cormorant', Georgia, serif !important;
+    font-style: normal !important;
+    letter-spacing: -.025em;
+    color: var(--gbr-classic-bronze);
+  }
+  #partTocOverlay .gbat-part.cur .gbat-num:not(.gbat-num--label) {
+    font-weight: 700 !important;
+  }
+  #partTocOverlay .gbat-num--label i {
+    font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+    font-size: 8px;
+    font-weight: 600 !important;
+    letter-spacing: .055em;
+    transform: rotate(-90deg) !important;
+    color: var(--gbr-classic-bronze) !important;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-num--label i {
+    transform:translateX(-5px) rotate(-90deg) !important;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-hd {
+    height:78px;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-t {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height:1.06 !important;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-s {
+    margin-top:0 !important;
+    line-height:1.12 !important;
+  }
+  #partTocOverlay .gbat-s,
+  #partTocOverlay .gbat-sub,
+  #partTocOverlay .gbat-now,
+  #partTocOverlay .gbat-go {
+    font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+  }
+  #partTocOverlay .gbat-sub:not(.h3) {font-size:13px !important;font-weight:500 !important;line-height:1.37 !important;}
+  #partTocOverlay .gbat-sub.h3 {font-size:12px !important;font-weight:400 !important;line-height:1.37 !important;}
+  #partTocOverlay .gbat-sub:is([aria-current='location'],[aria-current='true'],.active,.cur){font-weight:600 !important;color:var(--gbr-classic-bronze) !important;}
+  #partTocOverlay .gbat-rail{background:var(--gbr-classic-edge) !important;}
+  #partTocOverlay .gbat-dot{border-color:var(--gbr-classic-bronze) !important;box-shadow:none !important;}
+  #partTocOverlay .gbat-sub.h3 .gbat-dot{border-color:var(--gbr-classic-edge) !important;}
+  #partTocOverlay .gbat-min,
+  #partTocOverlay .gbat-satmin,
+  #partTocOverlay .gbat-satmark {
+    font-family: 'GB Classic Mono', Consolas, monospace !important;
+    font-variant-numeric: tabular-nums;
+  }
+  #partTocOverlay .gbat-s { font-size: 11.5px; }
+  #partTocOverlay .gbr-marginalia-lead h3 {
+    font: 400 21px/1.18 'GB Mobile Classic Cormorant', Georgia, serif !important;
+  }
+  #partTocOverlay .gbr-marginalia-group-head strong {
+    font: 700 20px/1.22 'GB Mobile Classic Cormorant', Georgia, serif !important;
+  }
+  #partTocOverlay .gbr-scripture-quote,
+  #partTocOverlay .gbr-marginalia-evidence p {
+    font-family: 'GB Classic Literata', Georgia, serif !important;
+  }
+  #partTocOverlay .gbr-scripture-ref,
+  #partTocOverlay .gbr-scripture-count {
+    font-family: 'GB Classic Mono', Consolas, monospace !important;
+  }
+  #partTocOverlay :is(.gbat-hd,.gbat-sub,.gbr-marginalia-tab,.gbr-scripture-ref):focus-visible {
+    outline: 2px solid var(--gbr-classic-bronze);
+    outline-offset: 2px;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay {
+    --gbr-classic-paper:#17191D;
+    --gbr-classic-surface:#1D2025;
+    --gbr-classic-edge:#343940;
+    --gbr-classic-bronze:#C89B6E;
+    --gbr-classic-rubric:#D46A6A;
+    --gbr-classic-ink:#EAE6DF;
+    --gbr-classic-muted:#B6AA9B;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part.cur > .gbat-hd {
+    background:rgba(200,155,110,.11);
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part.cur .gbat-t {
+    color: var(--gbr-classic-bronze) !important;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part:not(.cur) .gbat-t {
+    color: var(--gbr-classic-ink) !important;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part.cur {
+    --fill:var(--gbr-classic-surface);
+  }
+}
+
+
+@media (max-width:1120px){
+ #partTocOverlay :is(.gbr-marginalia-eyebrow,.gbr-scripture-scope,.gbr-marginalia-term summary,.gbr-marginalia-provenance,.gbr-scripture-source,.gbr-scripture-return){font-family:'GB Mobile Classic Inter',system-ui,sans-serif!important;}
+}
+/* W62: narrow phone reading controls must show the complete action,
+   not an ellipsis that turns "СЛУШАТЬ ЧАСТЬ" into "СЛУШАТЬ ЧА...". */
+@media (max-width:350px){
+ #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-txt{
+   flex:1 1 auto;min-width:0;
+ }
+ #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-txt b{
+   white-space:normal!important;overflow:visible!important;
+   text-overflow:clip!important;line-height:1.08!important;
+ }
+/* W65: keep the canonical Listen/Continue/PDF footer in three columns at
+   320px without shrinking its 52px action targets. */
+ #partTocOverlay .gbat-foot{
+   grid-template-columns:minmax(0,1.36fr) minmax(0,1fr) 40px!important;
+ }
+ #partTocOverlay .gbat-fbtn--listen{
+   padding-inline:5px!important;gap:4px!important;
+ }
+ #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-ic{
+   flex-basis:22px!important;width:22px!important;height:22px!important;
+ }
+ #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-txt b{
+   font-size:9.5px!important;letter-spacing:-.1px!important;
+ }
+ #partTocOverlay .gbat-fbtn--cont{
+   padding-inline:4px!important;
+ }
+ #partTocOverlay .gbat-cont-label{
+   font-size:11px!important;letter-spacing:-.1px!important;
+   white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;
+ }
+}
+</style>
+
+<style is:global>
+  /* Reading progress is shared by both tabs; the header remains stable. */
+  #partTocOverlay.gbr-research-open .toc-sheet {background:#fffcf7;}
+  #partTocOverlay .gbr-marginalia-eyebrow,
+  #partTocOverlay .gbr-marginalia-category,
+  #partTocOverlay .gbr-marginalia-index {color:#806045;}
+  html.dark #partTocOverlay.gbr-research-open .toc-sheet {background:#211b1d;color:#eee4de;}
+  html.dark #partTocOverlay .gbr-marginalia-eyebrow,
+  html.dark #partTocOverlay .gbr-marginalia-category,
+  html.dark #partTocOverlay .gbr-marginalia-index,
+  html.dark #partTocOverlay .gbr-marginalia-term summary::after {color:#dfb78c;}
+  html.dark #partTocOverlay .gbr-marginalia-group,
+  html.dark #partTocOverlay .gbr-marginalia-term,
+  html.dark #partTocOverlay .gbr-marginalia-lead {border-color:rgba(244,224,205,.23);}
+  html.dark #partTocOverlay .gbr-marginalia-jump {border-color:rgba(244,224,205,.27);background:rgba(255,255,255,.04);}
+</style>
+
+<style is:global>
+  #partTocOverlay details.gbr-marginalia-group {padding:0 12px;margin:0 0 7px;border:1px solid var(--color-border);border-radius:6px;background:transparent}
+  #partTocOverlay details.gbr-marginalia-group[open] {padding-bottom:12px}
+  #partTocOverlay summary.gbr-marginalia-group-head {display:flex;align-items:center;gap:8px;min-height:44px;margin:0;padding:0;list-style:none;cursor:pointer}
+  #partTocOverlay summary.gbr-marginalia-group-head::-webkit-details-marker {display:none}
+  #partTocOverlay .gbr-marginalia-group-head strong {margin-inline-end:auto;font:600 15px/1.3 'Lora',Georgia,serif}
+  #partTocOverlay .gbr-marginalia-group-head::after {content:'';width:6px;height:6px;border:solid currentColor;border-width:0 1px 1px 0;transform:rotate(45deg);margin:0 3px 3px 4px}
+  #partTocOverlay details[open] > .gbr-marginalia-group-head::after {transform:rotate(225deg);margin-top:5px}
+
+  /* W127: the movable quiz uses the SAME .gbr-marginalia-group and
+     .gbr-marginalia-group-head rules above as all native accordions.
+     Only the EXPANDED quiz contents need their own editorial treatment. */
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__inner {
+    min-width:0;padding:13px 1px 2px;
+    border-top:1px solid var(--gbr-classic-edge,var(--color-border));
+  }
+  #partTocOverlay #gbAnalyticsQuiz {
+    min-width:0;color:var(--gbr-classic-ink,inherit);
+    font:400 13px/1.6 'GB Mobile Classic Inter',system-ui,sans-serif;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-status {
+    margin:1px 0 9px;color:var(--gbr-classic-muted,inherit);
+    font:600 10.5px/1.45 'GB Mobile Classic Inter',system-ui,sans-serif;
+    letter-spacing:.055em;
+  }
+  #partTocOverlay #gbAnalyticsQuiz h4 {
+    margin:0 0 13px;color:inherit;
+    font:600 16.5px/1.45 'GB Classic Literata',Georgia,serif;
+    letter-spacing:-.008em;text-wrap:pretty;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options {
+    display:grid;counter-reset:gb-study-choice;gap:7px;margin:12px 0;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button {
+    position:relative;display:block;min-width:0;width:100%;min-height:48px;
+    margin:0;padding:11px 12px 11px 43px;
+    border:1px solid var(--gbr-classic-edge,var(--color-border));border-radius:6px;
+    background:color-mix(in srgb,var(--gbr-classic-surface,#efece4) 42%,transparent);
+    color:inherit;text-align:left;overflow-wrap:anywhere;
+    font:500 12.5px/1.5 'GB Mobile Classic Inter',system-ui,sans-serif;
+    transition:border-color .16s ease,background-color .16s ease;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button::before {
+    counter-increment:gb-study-choice;content:counter(gb-study-choice,decimal-leading-zero);
+    position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    color:var(--gbr-classic-bronze,#8c6239);
+    font:500 10px/1.2 'GB Classic Mono',monospace;
+    font-variant-numeric:tabular-nums;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button:hover:not(:disabled) {
+    border-color:var(--gbr-classic-bronze,#8c6239);
+    background:color-mix(in srgb,var(--gbr-classic-surface,#efece4) 80%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button.is-correct {
+    border-color:#4d866b;background:color-mix(in srgb,#4d866b 12%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-options button.is-wrong {
+    border-color:#b77963;background:color-mix(in srgb,#b77963 12%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__modes {
+    display:flex;gap:7px;margin:0 0 12px;
+  }
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__modes[hidden] {display:none!important}
+  #partTocOverlay #gbAnalyticsStudy .gb-analytics-study__modes button {
+    min-height:44px;padding:9px 12px;
+    border-color:var(--gbr-classic-edge,var(--color-border));border-radius:6px;
+    font:600 11.5px/1.4 'GB Mobile Classic Inter',system-ui,sans-serif;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-feedback {
+    margin:13px 0;padding:11px 13px;
+    border-left:2px solid var(--gbr-classic-bronze,#8c6239);
+    border-radius:0 5px 5px 0;
+    background:color-mix(in srgb,var(--gbr-classic-surface,#efece4) 55%,transparent);
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-feedback p {
+    margin:7px 0 0;line-height:1.65;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-next {
+    display:block;width:100%;min-height:48px;margin:14px 0 0;
+    border-color:var(--gbr-classic-bronze,#8c6239);border-radius:6px;
+    background:color-mix(in srgb,var(--gbr-classic-bronze,#8c6239) 12%,transparent);
+    font:600 12.5px/1.5 'GB Mobile Classic Inter',system-ui,sans-serif;
+    text-align:center;
+  }
+  #partTocOverlay #gbAnalyticsQuiz .gb-study-score {
+    margin:4px 0 12px;font:650 19px/1.35 'GB Mobile Classic Cormorant',Georgia,serif;
+  }
+  #partTocOverlay #gbAnalyticsQuiz button:focus-visible,
+  #partTocOverlay #gbAnalyticsStudy > summary:focus-visible {
+    outline:2px solid var(--gbr-classic-bronze,#8c6239);outline-offset:2px;
+  }
+  #partTocOverlay .gbr-marginalia-personal {border-top:1px solid var(--color-border);padding:8px 0;overflow-wrap:anywhere}
+  #partTocOverlay .gbr-marginalia-personal p {margin:4px 0;white-space:pre-line}
+  /* Mobile Classic shelf: keep both horizontal-scroll arrows at least 44px
+     wide; the tall rail already supplies the vertical hit area. The desktop
+     W57 preview never receives this mobile-only target override. */
+  @media (max-width:1120px) {
+    #partTocOverlay .gbr-scripture-step {flex-basis:44px;min-width:44px}
+  }
+
+  /* W107: the TOC and Analytics are two TAB PANELS of the SAME Gill sheet.
+     Previously max-height:85vh only capped intrinsic content height: the
+     long TOC reached 85vh while shorter Analytics shrank the entire sheet
+     by 130px. Fix the outer rectangle to one 85dvh reference; its existing
+     tabpanels independently scroll inside, and the actions stay anchored.
+     This does not change desktop W57, Settings or the separate series TOC. */
+  @media screen and (max-width:84.999em) {
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet {
+      height:85vh;
+      height:85dvh;
+      max-height:85vh;
+      max-height:85dvh;
+      min-height:0;
+    }
+  }
+  /* Short landscape: reserve useful reading space without changing the
+     fixed tab/foot geometry or the normal portrait/desktop sheet. */
+  @media screen and (min-width:40em) and (max-width:84.999em) and (orientation:landscape) and (max-height:500px),
+         screen and (min-width:30em) and (max-width:84.999em) and (orientation:landscape) and (height < 390px) {
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay {
+      padding-block:max(4px, env(safe-area-inset-top, 0px)) max(4px, env(safe-area-inset-bottom, 0px)) !important;
+      padding-inline:max(20px, env(safe-area-inset-left, 0px)) max(20px, env(safe-area-inset-right, 0px)) !important;
+    }
+    @media (max-width:960px) {
+      body[data-gbs2-series="dzhon-gill"] #partTocOverlay {
+        padding-inline:env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px) !important;
+      }
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet {
+      height:min(95vh, 100%);
+      height:min(95dvh, 100%);
+      max-height:100%;
+      box-sizing:border-box;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__head--grid {
+      grid-template-columns:44px minmax(0, 1fr) !important;
+      padding-block:4px !important;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__head--grid .back {
+      width:44px !important;
+      height:44px !important;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__reading-progress {
+      padding-block:2px 3px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__progress-caption {
+      margin-bottom:3px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbr-marginalia-tabs {
+      padding-block:4px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbat-foot {
+      grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr) 44px;
+    }
+  }
+  /* Very short landscape: one header row, two fixed action rows and one
+     independently scrolling tabpanel. DOM order, controls and ARIA remain
+     the same; the handle becomes an explicit close affordance. */
+  @media screen and (min-width:30em) and (max-width:84.999em) and (orientation:landscape) and (height < 390px) {
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet {
+      display:grid;
+      grid-template-columns:44px minmax(0, 1fr) minmax(92px, 22%);
+      grid-template-rows:auto auto minmax(0, 1fr) auto;
+      align-items:stretch;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__handle {
+      grid-area:1 / 1;
+      width:44px !important;
+      height:44px !important;
+      margin:0 !important;
+      align-self:center;
+      opacity:1;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__handle::before {
+      content:'×';
+      width:auto;
+      height:auto;
+      background:transparent;
+      color:var(--gbr-classic-ink, var(--gb-text));
+      font:400 27px/1 system-ui,sans-serif;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__head--grid {
+      grid-area:1 / 2;
+      min-width:0;
+      gap:6px !important;
+      padding:4px 6px 4px 0 !important;
+      border-bottom:0;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-head-txt h3 {
+      font-size:22px !important;
+      white-space:normal !important;
+      overflow-wrap:anywhere;
+      text-overflow:clip !important;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-head-txt .lab {
+      overflow-wrap:anywhere;
+      letter-spacing:.06em;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__reading-progress {
+      grid-area:1 / 3;
+      align-self:center;
+      min-width:0;
+      padding:4px 8px 4px 0;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet__progress-caption {
+      flex-wrap:wrap;
+      gap:2px 6px;
+      font-size:10px;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbr-marginalia-tabs { grid-area:2 / 1 / 3 / -1; }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay :is(#gbs2PartToc, #gbrMarginalia) {
+      grid-area:3 / 1 / 4 / -1;
+      min-height:0;
+      min-width:0;
+    }
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .gbat-foot { grid-area:4 / 1 / 5 / -1; }
+  }
+</style>

@@ -1,0 +1,50 @@
+name: Reader W57 pilot browser visual QA
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'research/reader-w57-pilot/**'
+      - 'scripts/reader-w57-browser-visual-qa.mjs'
+      - '.github/workflows/reader-w57-browser-visual-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: reader-w57-visual-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  pilot-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact PR commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Setup pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.4'
+          cache: npm
+      - name: Install exact dependencies and browser engines
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium webkit
+      - name: Verify source contracts
+        run: |
+          node --check scripts/reader-w57-browser-visual-qa.mjs
+          node research/reader-w57-pilot/verify.mjs
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+      - name: Screenshot and interact with exact W57 pilot
+        env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/reader-w57-browser-visual-qa.mjs
+      - name: Upload screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reader-w57-browser-visual-${{ github.run_id }}
+          path: reports/reader-w57-visual/
+          if-no-files-found: warn
+          retention-days: 14

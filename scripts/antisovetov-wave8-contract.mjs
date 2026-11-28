@@ -45,11 +45,23 @@ requireText('защищённые или конфиденциальные кан
 requireText('предполагаемом преступлении, непосредственной опасности', 'law-enforcement scope boundary');
 requireText('компетентности в защите детей и уязвимых, отсутствия конфликта интересов', 'external helper competence boundary');
 requireText('а также межцерковные структуры', 'clear guidance list');
-requireText('18 источников о защите детей и уязвимых и о пастырском управлении', 'clear source-count wording');
-requireText('ὑπόκρισις) — притворство и лицемерие', 'lexical correction');
+requireText('Источниковая рамка', 'public evidence apparatus remains');
+requireText('Это лицемерие (ὑπόκρισις):', 'Greek term explained without Russian tautology');
 requireText('Авторская аналитическая формула: «отрицательный отбор пресвитеров»', 'authorial-term boundary');
 requireText('data-audit-sources="54"', '54-source audit marker');
-requireText('Полный контрольный реестр Wave 7: 54 источника', 'full registry link label');
+// The archived 54-source Research authority is not reader-facing editorial copy.
+forbidText('Полный контрольный реестр Wave 7', 'internal audit registry leaked to reader');
+forbidText('locator-контроля', 'internal locator instruction leaked to reader');
+forbidText('ὑπόκρισις) — притворство и лицемерие', 'Greek/Russian lexical tautology');
+forbidText('не воскресило убитых пророков', 'Manasseh historical overclaim');
+forbidText('не учил и не вёл', 'Peter Acts 1:15–22 historical error');
+forbidText('обычно это годы, а не месяцы', 'unsourced mandatory restoration duration');
+forbidText('Притчи 28:20', 'wealth proverb used as direct pastoral authority proof');
+requireText('покаяние Манассии не отменило факта прежде пролитой невинной крови (4 Цар. 21:16)', 'Manasseh passage evidentiary boundary');
+requireText('а ещё до Пятидесятницы Пётр обращался к собранию учеников (Деян. 1:15–22)', 'Peter ministry chronology');
+requireText('Писание не задаёт для всех таких случаев единого срока ожидания', 'no fabricated fixed restoration calendar');
+requireText('без принуждения к встрече с виновным или к поддержке его возвращения', 'survivor restoration consent boundary');
+requireText('Библейский ориентир (1 Пет. 5:2–3)', 'direct pastoral authority passage');
 
 const sourceSection = source.match(/<section class="sources-block" id="istochniki"[\s\S]*?<\/section>/)?.[0] ?? '';
 const urls = [...sourceSection.matchAll(/href="(https:\/\/[^\"]+)"/g)].map((match) => match[1]);

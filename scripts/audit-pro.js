@@ -64,8 +64,14 @@ const ALLOWED_JS = new Set([
   'js/search.js',
   'js/enhancements.js',
   'js/highlights.js',
+  'js/reader-library-storage.js',
+  'js/reader-library-record-transactions.js',
+  'js/reader-library-selection.js',
+  'js/reader-library-ranges.js',
   'js/reader-library-presenter.js',
   'js/reader-library-v3.js',
+  'js/reader-library-research-core.js',
+  'js/reader-library-navigation.js',
   'js/reader-library-dock.js',
   'js/glossary.js',
   'js/bookmark-engine.js',
@@ -929,6 +935,34 @@ const SITE_CSS_MIN_BYTES = 200_000;
 // 14. Security/static-site hygiene
 (function securityHygiene() {
   let problems = 0;
+  // Remove only the repository prefix of real GitHub permalinks, not
+  // arbitrary HTTP URLs or the remainder of a permalink (which may leak a path).
+  // Construct the fixture repository name as SEO-01 does: fixture strings
+  // are not deployed paths and must not trip the independent source scanner.
+  const repoName = 'gb-' + 'is-my-strength';
+  function hasLocalRepositoryPath(source) {
+    const githubPrefix = new RegExp('\\bhttps://github\\.com/FedorMilovanov/' + repoName + '/(?=(?:pull|issues|commit|blob|tree|actions/runs)/)', 'gi');
+    const repositoryPath = new RegExp('[\\\\/]' + repoName + '[\\\\/]', 'i');
+    return repositoryPath.test(source.replace(githubPrefix, ''));
+  }
+  const permalink = 'https://github.com/FedorMilovanov/' + repoName + '/pull/2346#issuecomment-7048520954';
+  const localPath = '/tmp/' + repoName + '/src/';
+  const pathFixtures = [
+    ['github-permalink', permalink, false],
+    ['linux-path', localPath, true],
+    ['windows-path', 'C:\\Users\\Fedor\\projects\\' + repoName + '\\src\\file.js', true],
+    ['mixed', permalink + ' and ' + localPath, true],
+    ['production-subpath', '/' + repoName + '/css/site.css', true],
+    ['github-pages-subpath', 'https://fedormilovanov.github.io/' + repoName + '/css/site.css', true],
+    ['lookalike-host', 'https://github.com.evil.example/FedorMilovanov/' + repoName + '/pull/2346', true],
+    ['embedded-path', permalink + '?path=' + localPath, true],
+  ];
+  for (const [label, sample, expected] of pathFixtures) {
+    if (hasLocalRepositoryPath(sample) !== expected) {
+      problems++;
+      R.err('Repository path detector self-test failed: ' + label);
+    }
+  }
   for (const p of allFiles.filter(f => /\.(html|css|js|json|xml|txt|md)$/.test(f))) {
     const file = rel(p);
     let text;
@@ -936,7 +970,7 @@ const SITE_CSS_MIN_BYTES = 200_000;
     // SANDBOX-ENV-*.md intentionally documents the real sandbox filesystem
     // paths for the next agent (copy-pasteable setup commands). That is not an
     // accidental leak; exempt it the same way this audit file itself is exempt.
-    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/') && !file.startsWith('scripts/') && text.includes('/gb-' + 'is-my-strength/')) { problems++; R.err(`Repository base path leak in ${file}`); }
+    if (file !== 'scripts/audit-pro.js' && !file.startsWith('docs/') && !file.startsWith('scripts/') && hasLocalRepositoryPath(text)) { problems++; R.err(`Repository base path leak in ${file}`); }
     // Match real href/src/content attributes only; do not flag XML namespaces like xmlns:content="http://..." in RSS.
     if (/(?:^|[\s<])(?:href|src|content)=[\"']http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org|www\.google\.com\/schemas)([^\"']+)[\"']/i.test(text)) R.warn(`Possible http:// mixed content in ${file}`);
     if (file.startsWith('js/') && /\beval\s*\(|new\s+Function\s*\(/.test(text)) { problems++; R.err(`Dangerous JS dynamic execution in ${file}`); }
@@ -2205,6 +2239,9 @@ const JS_SIZE_FLOORS = {
   'js/search.js':          { soft: 38_000,  hard: 55_000 },
   'js/enhancements.js':    { soft: 34_000,  hard: 48_000 }, // 2026-06-11: intentional growth — GBS phase 2 behavior module (honest progress, resume, keyboard, fallbacks) per GBS Phase-2 roadmap (§0, decisions archived in AGENTS r101-r102)
   'js/highlights.js':      { soft: 17_000,  hard: 26_000 },
+  'js/reader-library-research-core.js': { soft: 8_000, hard: 10_000 },
+  'js/reader-library-navigation.js': { soft: 2_000, hard: 3_000 },
+  'js/reader-library-ranges.js': { soft: 16_000, hard: 18_000 },
   'js/bookmark-engine.js': { soft: 12_000,  hard: 20_000 },
   'js/glossary.js':        { soft:  6_000,  hard: 12_000 },
 };
@@ -4405,9 +4442,35 @@ const JS_SIZE_FLOORS = {
     return;
   }
 
+  // The preview link owns only unmodified primary-click navigation.
+  // Preserve the browser's native Ctrl/Meta click behavior without permitting
+  // a second keyboard shortcut owner. Exempt only the exact complete adapter;
+  // any changed handler or additional modifier parsing must fail closed.
+  const previewLinkClick = 'd&&d.addEventListener("click",function(t){if(t.button===0&&!t.ctrlKey&&!t.metaKey&&!t.shiftKey&&!t.altKey){t.preventDefault();e.title&&U(e.title);__gbOpenArticleResult(e)}})';
+  function hasUnexpectedSearchModifierParsing(source) {
+    const pieces = source.split(previewLinkClick);
+    if (pieces.length > 2) return true;
+    return /\b(?:ctrlKey|metaKey)\b/.test(pieces.join(''));
+  }
+  const keyHandler = 'document.addEventListener("keydown",function(e){if(e.ctrlKey||e.metaKey)open()})';
+  const shortcutFixtures = [
+    ['no modifier parser', 'window.addEventListener("gb:openSearch",open)', false],
+    ['native modified click preserved', previewLinkClick, false],
+    ['keyboard shortcut parser', keyHandler, true],
+    ['second owner beside allowed click', previewLinkClick + ';' + keyHandler, true],
+    ['duplicate click owner', previewLinkClick + ';' + previewLinkClick, true],
+    ['mutated click handler', previewLinkClick.replace('t.button===0', 't.button!==0'), true],
+    ['meta only parser', 'if(e.metaKey)open()', true],
+  ];
+  for (const [label, sample, expected] of shortcutFixtures) {
+    if (hasUnexpectedSearchModifierParsing(sample) !== expected) {
+      R.err('Search shortcut boundary self-test failed: ' + label);
+      return;
+    }
+  }
   const searchJs = read('js/search.js');
-  if (/\b(?:ctrlKey|metaKey)\b/.test(searchJs)) {
-    R.err('Search shortcuts: js/search.js must consume gb:openSearch and never parse Ctrl/Meta');
+  if (hasUnexpectedSearchModifierParsing(searchJs)) {
+    R.err('Search shortcuts: js/search.js must consume gb:openSearch; only the exact native preview-link click adapter may inspect Ctrl/Meta');
     return;
   }
   if (!searchJs.includes('window.addEventListener("gb:openSearch"')) {

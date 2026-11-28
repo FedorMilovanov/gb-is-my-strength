@@ -10,6 +10,7 @@ import {
   normalizeBookAlias,
   normalizeVerseKey,
   parseBibleReference,
+  parseBibleReferenceSpan,
   resolveBibleReference,
 } from '../src/lib/bible-reference-core.mjs';
 import { createPublicSynodalResolver } from '../src/lib/public-synodal-reference.mjs';
@@ -113,7 +114,7 @@ function createReferenceRegex(registry) {
     .sort((a, b) => b.length - a.length || a.localeCompare(b, 'ru'));
   const books = unique.map(aliasPattern).join('|');
   return new RegExp(
-    `(?<![\\p{L}\\p{N}])(?<alias>${books})\\s+(?<chapter>\\d{1,3})(?:(?::\\s*(?<start>\\d{1,3}[а-яa-z]?)(?:\\s*[‐‑‒–—−-]\\s*(?<end>\\d{1,3}[а-яa-z]?))?)|(?:\\s*[‐‑‒–—−-]\\s*(?<chapterEnd>\\d{1,3})))?`,
+    `(?<![\\p{L}\\p{N}])(?<alias>${books})\\s+(?<chapter>\\d{1,3})(?:(?::\\s*(?<start>\\d{1,3}[а-яa-z]?)(?:\\s*[‐‑‒–—−-]\\s*(?<end>\\d{1,3}[а-яa-z]?(?::\\s*\\d{1,3}[а-яa-z]?)?))?)|(?:\\s*[‐‑‒–—−-]\\s*(?<chapterEnd>\\d{1,3})))?`,
     'giu',
   );
 }
@@ -133,6 +134,15 @@ function parseCandidate(match, registry) {
       key: normalizeVerseKey(`${startParsed.chapter}–${endParsed.chapter}`),
       kind: 'chapter-range',
       chapterEnd: endParsed.chapter,
+    };
+  }
+
+  if (String(groups.end || '').includes(':')) {
+    const parsed = parseBibleReferenceSpan(raw, registry);
+    if (!parsed.ok || parsed.kind !== 'cross-chapter') return null;
+    return {
+      raw, parsed, bookId: parsed.bookId, key: parsed.key,
+      kind: 'cross-chapter', chapterEnd: parsed.endChapter,
     };
   }
 
@@ -276,7 +286,7 @@ function canonicalLabel(candidate, registry) {
 }
 
 function canonicalPayload(candidate, corpus) {
-  if (candidate.kind === 'chapter-range' || candidate.parsed.wholeChapter) return { text: null, source: null };
+  if (candidate.kind === 'chapter-range' || candidate.kind === 'cross-chapter' || candidate.parsed.wholeChapter) return { text: null, source: null };
   const record = resolveBibleReference(candidate.parsed, corpus);
   if (!record) return { text: null, source: null };
   return {

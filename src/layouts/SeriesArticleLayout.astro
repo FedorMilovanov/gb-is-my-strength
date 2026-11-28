@@ -185,7 +185,7 @@ const editorialName = SITE.authorName;
           <p class="article-byline reveal">
             <span class="article-byline__strong">{editorialRole}: {editorialName}</span>
             <span aria-hidden="true" class="article-byline__sep">·</span>
-            <time datetime={published.toISOString()}>{published.toLocaleDateString('ru-RU')}</time>
+            <time datetime={published.toISOString()} data-editorial-slot="published">{published.toLocaleDateString('ru-RU')}</time>
           </p>
         </header>
 

@@ -14,12 +14,26 @@ on:
       - 'src/styles/**'
       - 'src/layouts/**'
       - 'src/runtime/print-pagination-geometry.js'
+      - 'src/runtime/reader-export.css'
+      - 'src/runtime/reader-actions.js'
+      - 'src/runtime/article-tooltips.js'
+      - 'src/runtime/note-registry.css'
+      - 'research/reader-w57-pilot/MANIFEST.json'
+      - 'research/reader-w57-pilot/assets/**'
+      - 'scripts/lib/note-registry.mjs'
+      - 'scripts/lib/reader-desktop-contract.js'
+      - 'scripts/lib/reader-desktop-delivery.js'
+      - 'scripts/astro-reader-desktop.mjs'
+      - 'scripts/astro-cache-bust-postbuild.js'
+      - 'src/lib/asset-version.js'
       - 'scripts/check-print-geometry-contract.js'
       - 'scripts/engine-sweep.mjs'
       - 'scripts/print-paper-pdf-audit.py'
       - 'scripts/print-pagination-contract.mjs'
       - 'scripts/print-pagination-raster-audit.py'
       - 'scripts/print-reversible-card-contract.mjs'
+      - 'scripts/reader-mobile-print-lock-browser-contract.cjs'
+      - 'scripts/nagornaya-bar-asset-browser-test.js'
       - '.github/workflows/print-paper-contract.yml'
   workflow_dispatch:
 
@@ -41,6 +55,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           fetch-depth: 0
+      - name: Prove exact print source identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          mkdir -p reports/print-paper
+          printf 'SOURCE_SHA=%s\n' "$EXPECTED_SHA" > reports/print-paper/source-sha.txt
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.4'
@@ -48,12 +70,32 @@ jobs:
       - run: npm ci
       - name: Validate print geometry ownership
         run: node scripts/check-print-geometry-contract.js
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils python3-pil
-      - run: npm run strangler:build:production-like
+      - name: Build exact production-like dist
+        id: print_build
+        run: npm run strangler:build:production-like
+      - name: Prove Nagornaya adaptive screen controls and print visibility
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/nagornaya-bar-asset-browser-test.js 2>&1 | tee reports/print-paper/nagornaya-adaptive.log
+      - name: Prove lossless mobile overlay print and restoration
+        id: mobile_overlay_print
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
+        env:
+          GB_MOBILE_PRINT_ARTIFACT_DIR: reports/print-paper/mobile-overlay
+        shell: bash
+        run: |
+          mkdir -p reports/print-paper/mobile-overlay
+          set -o pipefail
+          node scripts/reader-mobile-print-lock-browser-contract.cjs --dist 2>&1 | tee reports/print-paper/mobile-overlay/contract.log
       - name: Generate canonical reader PDF
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
+        id: canonical_pdf
         env:
           GB_READER_UI_ARTIFACT_DIR: reports/print-paper/canonical
         shell: bash
@@ -62,19 +104,29 @@ jobs:
           set -o pipefail
           node scripts/engine-sweep.mjs 2>&1 | tee reports/print-paper/canonical/engine-sweep.log
       - name: Audit canonical pages, palette and pagination
+        if: ${{ !cancelled() && (steps.canonical_pdf.outcome == 'success' || steps.canonical_pdf.outcome == 'failure') }}
         run: python3 scripts/print-paper-pdf-audit.py reports/print-paper/canonical/reader-print-a4.pdf --out reports/print-paper/canonical
       - name: Prove atomic and keep-with-next components across route families
+        id: print_matrix
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
         env:
           GB_PRINT_PAGINATION_ARTIFACT_DIR: reports/print-paper/matrix
         run: node scripts/print-pagination-contract.mjs
       - name: Prove both physical reversible-card states
+        id: reversible_card
+        if: ${{ !cancelled() && steps.print_build.outcome == 'success' }}
         env:
           GB_PRINT_REVERSIBLE_CARD_ARTIFACT_DIR: reports/print-paper/reversible-card
         run: node scripts/print-reversible-card-contract.mjs
-      - name: Raster-audit every route PDF and build contact sheets
-        run: |
-          python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix --out reports/print-paper/matrix-raster
-          python3 scripts/print-pagination-raster-audit.py reports/print-paper/reversible-card --out reports/print-paper/reversible-card-raster
+      - name: Raster-audit route PDFs and build contact sheets
+        if: ${{ !cancelled() && (steps.print_matrix.outcome == 'success' || steps.print_matrix.outcome == 'failure') }}
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix --out reports/print-paper/matrix-raster
+      - name: Raster-audit the complete physical paper-format matrix
+        if: ${{ !cancelled() && (steps.print_matrix.outcome == 'success' || steps.print_matrix.outcome == 'failure') }}
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/matrix/paper-formats --out reports/print-paper/paper-formats-raster --require-paper-formats
+      - name: Raster-audit reversible-card PDFs
+        if: ${{ !cancelled() && (steps.reversible_card.outcome == 'success' || steps.reversible_card.outcome == 'failure') }}
+        run: python3 scripts/print-pagination-raster-audit.py reports/print-paper/reversible-card --out reports/print-paper/reversible-card-raster
       - if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

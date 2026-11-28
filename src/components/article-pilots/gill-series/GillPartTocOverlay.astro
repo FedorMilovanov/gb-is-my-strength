@@ -1,5 +1,6 @@
 ---
 import { GILL_SERIES, satellitesOf, chapterArticles, sectionLabel, type SeriesConfig } from '../_shared/series/seriesConfig';
+import GillMobileMarginalia from './GillMobileMarginalia.astro';
 
 interface Props { pageId: string; config?: SeriesConfig; }
 const { pageId, config = GILL_SERIES } = Astro.props;
@@ -33,9 +34,12 @@ const currentPartLabel = currentRaw.mark.kind === 'arabic'
 /* Время текущей статьи/части — для подписи кнопки «Слушать» (референс владельца
    2026-07-17: play-в-кружке + подпись + время). */
 const listenTime = currentRaw.readingTime;
+// Label/frontmatter routes are full articles; keep the canonical contextual Listen action in their TOC footer too.
+const listenActionLabel = currentRaw.mark.kind === 'label' || current.tier === 'chapter'
+  ? 'Слушать статью'
+  : 'Слушать часть';
 /* Убираем дубль «Часть N.»/«Глава N.» из заголовка строки — колонка нумерала уже говорит это. */
 const shortTitle = (t: string) => t.replace(/^(?:Часть|Глава)\s+[IVXLC]+\.\s*/, '');
-const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.href || '';
 ---
 <div class="toc-overlay" id="partTocOverlay" aria-hidden="true">
   <div class="toc-sheet" role="dialog" aria-modal="true" aria-label={page.partDialogLabel}>
@@ -44,8 +48,15 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       <button class="back" id="backToSeries" aria-label="Назад к серии"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg></button>
       <div class="toc-head-txt"><div class="lab">{config.seriesTitle} · {currentPartLabel}</div><h3>{current.tier === 'chapter' ? 'Оглавление главы' : 'Оглавление части'}</h3></div>
     </div>
-    <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
-    <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav>
+    <div class="toc-sheet__reading-progress" data-reader-toc-progress>
+      <div class="toc-sheet__progress-caption" aria-hidden="true"><span>Прогресс чтения</span><span data-reader-toc-pct>0%</span></div>
+      <div class="toc-sheet__scroll-bar" role="progressbar" aria-label="Прогресс чтения" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i aria-hidden="true"></i></div>
+    </div>
+    <div class="gbr-marginalia-tabs" role="tablist" aria-label="Оглавление и исследовательские материалы">
+      <button type="button" id="gbrTocTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="toc" aria-selected="true" aria-controls="gbs2PartToc" tabindex="0">Оглавление</button>
+      <button type="button" id="gbrMarginaliaTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="research" aria-selected="false" aria-controls="gbrMarginalia" tabindex="-1">Аналитика</button>
+    </div>
+    <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav role="tabpanel" aria-labelledby="gbrTocTab">
       {seriesItems.map((item) => {
         const isCurrent = item.id === currentPartId;
         const sats = satellitesOf(config, item.id);
@@ -132,10 +143,11 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
         );
       })}
     </div>
+    <GillMobileMarginalia />
     <div class="toc-sheet__actions gbat-foot">
       <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
         <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>
-        <span class="gbat-fbtn-txt"><b>{current.tier === 'chapter' ? 'Слушать статью' : 'Слушать часть'}</b><small>{listenTime}</small></span>
+        <span class="gbat-fbtn-txt"><b>{listenActionLabel}</b><small>{listenTime}</small></span>
       </button>
       <button class="gbat-fbtn gbat-fbtn--cont" type="button" data-gbat-continue>
         <span class="gbat-cont-label">Продолжить</span>
@@ -145,7 +157,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   </div>
 </div>
 
-<script is:inline define:vars={{ currentAnchor }}>
+<script is:inline>
 (function () {
   'use strict';
   var ov = document.getElementById('partTocOverlay');
@@ -200,29 +212,55 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   var listen = ov.querySelector('[data-gbat-listen]');
   if (listen) listen.addEventListener('click', function () {
     closeOverlay();
-    var ember = document.querySelector('.mobile-top-bar .gb-ember') ||
-                document.querySelector('.gbs-theme-corner .gb-ember');
+    /* Both Play controls exist in the DOM. The inactive one is display:none
+       across the canonical 85em Gill breakpoint. Never click hidden mobile
+       Play on desktop (or the hidden desktop rail on mobile). */
+    var desktop = window.matchMedia('(min-width: 85em)').matches;
+    var ember = document.querySelector(desktop
+      ? '.gbs-theme-corner .gb-ember'
+      : '.mobile-top-bar .gb-ember');
     if (ember) setTimeout(function () { ember.click(); }, 120);
   });
-  /* Продолжить: закрыть и плавно вернуть читателя к текущему разделу.
-     Живая секция берётся из ReaderState-снапшота, а не из статичного
-     SSR-якоря (тот ведёт на старт части); currentAnchor — фолбэк. */
+  /* Continue closes the TOC without moving the reader to a section start.
+     The shared overlay scroll lock restores the precise pre-open scrollY.
+     Explicit links in the TOC are the only section-navigation action. */
   var cont = ov.querySelector('[data-gbat-continue]');
-  if (cont) cont.addEventListener('click', function () {
-    closeOverlay();
-    var anchor = currentAnchor;
-    try {
-      var rs = window.GBReaderState || window.ReaderState;
-      var saved = rs && rs.getSaved && rs.getSaved();
-      if (saved && saved.sectionId && document.getElementById(saved.sectionId)) anchor = '#' + saved.sectionId;
-    } catch (_) {}
-    if (!anchor) return;
-    // Harden: a sectionId with CSS-special chars would make querySelector
-    // throw — fall back to getElementById for plain #id anchors.
-    var el = null;
-    try { el = document.querySelector(anchor); }
-    catch (_) { el = anchor.charAt(0) === '#' ? document.getElementById(anchor.slice(1)) : null; }
-    if (el) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 140);
-  });
+  if (cont) cont.addEventListener('click', closeOverlay);
 })();
 </script>
+
+<style is:global>
+  /* W99b owner correction: reference/frontmatter lists are typographic,
+     not miniature progress timelines. W89 inadvertently reinstated dots
+     hidden in W84; restore the calm Classic editorial hierarchy here only.
+     Numbered chapters retain their authentic dot + rail navigation. */
+  @media (max-width:84.999em) {
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-rail,
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub .gbat-dot {
+      display:none;
+    }
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub:not(.gbat-sat) {
+      padding-inline-start:20px;
+    }
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub.h3:not(.gbat-sat) {
+      padding-inline-start:28px;
+    }
+  }
+  @media (max-width:84.999em) {
+    [data-gill-v16] #partTocOverlay .toc-sheet__handle {
+      flex:0 0 28px;
+      height:28px !important;
+      margin:0 auto !important;
+      background:transparent !important;
+    }
+    [data-gill-v16] #partTocOverlay .toc-sheet__handle::before {
+      content:'';
+      display:block;
+      width:40px;
+      height:4px;
+      margin:auto;
+      border-radius:4px;
+      background:var(--gill-mobile-bar-gold, #a78252);
+    }
+  }
+</style>

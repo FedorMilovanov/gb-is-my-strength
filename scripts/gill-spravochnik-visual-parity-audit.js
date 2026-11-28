@@ -219,6 +219,43 @@ if (!problems.length) {
   else console.log('ℹ️ dist not built — dist-level assertions skipped');
 
   for (const token of FORBIDDEN) mustNotContain('strict-native source scope', scopeText, token);
+
+  // Intentional editorial map migration: verify native ownership, not a retired CSS marker.
+  const atlasPath = 'src/components/article-pilots/gill-series/GillEditorialAtlas.astro';
+  mustExist('shared editorial atlas', atlasPath);
+  const atlasTail = read(BASE_REL + '/GillSpravochnikSectionQuizTail.astro');
+  mustContain('tail imports canonical atlas', atlasTail, "import GillEditorialAtlas from '../gill-series/GillEditorialAtlas.astro';");
+  const mounts = [...atlasTail.matchAll(/<GillEditorialAtlas\b[^>]*\/>/g)];
+  if (mounts.length !== 1 || mounts[0][0] !== '<GillEditorialAtlas current="spravochnik" />') bad('exactly one route-correct native atlas mount required');
+  else ok('route-correct native atlas mount');
+  mustNotContain('tail excludes retired static map', atlasTail, 'class="gbs2-timeline"');
+  if (exists(atlasPath)) {
+    const atlas = read(atlasPath);
+    for (const token of FORBIDDEN) mustNotContain('native atlas source scope', atlas, token);
+    mustContain('atlas consumes canonical series', atlas, 'GILL_SERIES_ITEMS.map(');
+    mustContain('atlas owns semantic section', atlas, '<section class="gill-atlas"');
+    mustContain('atlas owns real links', atlas, 'href={item.href}');
+    mustContain('atlas identifies current route', atlas, "aria-current={item.id === current ? 'page' : undefined}");
+  }
+  if (distHtml) {
+    const distArticle = articleInner(distHtml);
+    const sections = [...distArticle.matchAll(/<section\b[^>]*\bclass=["']gill-atlas["'][^>]*>[\s\S]*?<\/section>/g)];
+    if (sections.length !== 1) bad('dist must render exactly one editorial atlas in article body');
+    else {
+      const map = sections[0][0];
+      const links = [...map.matchAll(/<a\b[^>]*\bclass=["']atlas-node["'][^>]*>/g)].map(m => ({
+        href: m[0].match(/\bhref=["']([^"']+)["']/)?.[1],
+        current: /\baria-current=["']page["']/.test(m[0]),
+      }));
+      const expected = ['dzhon-gill-istoricheskiy-kontekst','dzhon-gill-chast-1-chelovek','dzhon-gill-chast-2-uchenyi','dzhon-gill-chast-4-ekzeget','dzhon-gill-chast-3-nasledie','dzhon-gill-spravochnik'].map(slug => '/articles/' + slug + '/');
+      if (JSON.stringify(links.map(link => link.href)) !== JSON.stringify(expected)) bad('dist atlas links missing, duplicated or out of canonical order');
+      else ok('dist atlas six ordered native links');
+      if (links.filter(link => link.current).length !== 1 || !links.some(link => link.current && link.href === ROUTE)) bad('dist atlas current route mismatch');
+      else ok('dist atlas current route');
+    }
+    mustNotContain('dist article excludes retired static map', distArticle, 'class="gbs2-timeline"');
+  }
+
   mustContain('route imports native page head', page, 'GillSpravochnikPageHead');
   mustContain('route imports native page chrome', page, 'GillSpravochnikPageChrome');
   mustContain('route imports native main shell', page, 'GillSpravochnikMainShell');
@@ -256,7 +293,7 @@ if (!problems.length) {
   mustContain('main shell uses post article', shell, 'GillSpravochnikPostArticle');
   mustContain('body component owns article wrapper', body, '<article class="article-body" data-pagefind-body>');
   for (const component of SECTION_COMPONENTS) mustContain(`body imports ${component}`, body, component.replace(/\.astro$/, ''));
-  for (const marker of ['class="gbs2-hero"', 'Джон Гилл: справочник', 'summary-card', 'id="sec-prdl"', 'id="sec-timeline"', 'id="sec-works"', 'id="sec-body-structure"', 'id="sec-network"', 'id="sec-disputes"', 'id="sec-terms"', 'id="sec-links"', 'id="sec-quiz"', 'gbs2-next', 'gbs2-timeline', 'article-end-sdg-wrap']) mustContain('reconstructed body marker', reconstructed, marker);
+  for (const marker of ['class="gbs2-hero"', 'Джон Гилл: справочник', 'summary-card', 'id="sec-prdl"', 'id="sec-timeline"', 'id="sec-works"', 'id="sec-body-structure"', 'id="sec-network"', 'id="sec-disputes"', 'id="sec-terms"', 'id="sec-links"', 'id="sec-quiz"', 'gbs2-next', '<GillEditorialAtlas current="spravochnik" />', 'article-end-sdg-wrap']) mustContain('reconstructed body marker', reconstructed, marker);
   if (normalize(reconstructed) === normalize(legacyBody)) ok('reconstructed article matches legacy article after normalization');
   else console.log(`⚠ reconstructed article differs from legacy reference (legacyStatus=${profile.legacyStatus}; exact equality is non-blocking)`);
 

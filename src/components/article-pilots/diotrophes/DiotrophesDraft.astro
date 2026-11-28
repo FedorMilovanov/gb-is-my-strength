@@ -19,7 +19,7 @@ type CaseCard = {
   sources: string[];
 };
 
-type SourceLink = [label: string, href: string];
+type SourceLink = [label: string, href: string, recordId?: string];
 type QuizItem = [question: string, options: string[], correct: number, explanation: string];
 
 interface Props {
@@ -46,7 +46,7 @@ const caseCards: CaseCard[] = [
   {
     id: 'darrin-patrick', section: 'authority-capture', name: 'Darrin Patrick / The Journey',
     mechanism: 'Лидерская незаменимость и сопротивление подотчётности',
-    evidence: 'Официальная история The Journey и письмо совета фиксируют повторные вмешательства, вопросы характера и единогласное отстранение. Этот материал показывает, как сильная публичная роль может сосуществовать с растущей неспособностью принимать коррекцию.',
+    evidence: 'Письмо старейшин The Journey от апреля 2016 года документирует решение об отстранении и объявленные дальнейшие меры. Поздняя история организации сообщала о единогласном голосовании, но её прежний адрес ныне недоступен. Само письмо не доказывает, что все запланированные последующие встречи состоялись.',
     boundary: 'Последующая история восстановления рассматривается отдельно и не используется ни для отмены первоначальных выводов, ни для посмертного объяснения причин трагедии.',
     sources: ['W2-PAT-01', 'W2-PAT-02']
   },
@@ -109,7 +109,7 @@ const caseCards: CaseCard[] = [
   {
     id: 'mike-bickle', section: 'information-reputation', name: 'Mike Bickle / IHOPKC',
     mechanism: 'Дозированное раскрытие и меняющаяся институциональная формулировка',
-    evidence: 'Независимый отчёт Firefly, архив заявлений IHOPKC и последующие правовые реформы позволяют проследить, как неполные ранние формулировки и запоздалое раскрытие влияют на доверие и безопасность сообщества.',
+    evidence: 'Независимый отчёт Firefly и архив заявлений IHOPKC позволяют сопоставлять институциональную реакцию, содержание публичных сообщений и порядок проверки. Изменения законодательства Миссури не выдаются здесь за доказанное следствие именно этого дела.',
     boundary: 'Каждое сообщение и обвинение сохраняет собственный доказательный статус. Карточка не утверждает больше, чем установлено независимым отчётом и официальными документами.',
     sources: ['BIC-02', 'BIC-05']
   },
@@ -157,55 +157,55 @@ const caseCards: CaseCard[] = [
   },
   {
     id: 'stanislav-moskvitin', section: 'sexual-spiritual-coercion', name: 'Stanislav Moskvitin / «Новое Творение»',
-    mechanism: 'Судебно установленное принуждение внутри религиозной зависимости',
-    evidence: 'Опубликованные карточки суда первой инстанции и апелляции дают юридическую основу для описания насилия и принуждающей практики в отношении участников. Здесь властный механизм подтверждён судебным, а не только журналистским материалом.',
+    mechanism: 'Сведения о принуждении внутри религиозной зависимости: судебные основания требуют точной сверки',
+    evidence: 'Опубликованные карточки суда первой инстанции и апелляции подтверждают наличие судебных процедур, но не заменяют полного мотивированного решения. Описание конкретных действий и правовой квалификации требует сверки текста судебных актов; одна карточка не позволяет приписать суду все выводы этой статьи.',
     boundary: 'Позднейшее отдельное дело о нежелательной организации полностью исключено: оно относится к другой правовой и религиозно-свободной проблематике.',
     sources: ['W2-MOS-01', 'W2-MOS-02']
   },
   {
     id: 'nikolay-kuznetsov', section: 'financial-dependency', name: 'Nikolay Kuznetsov / «Возрождение XXI век»',
-    mechanism: 'Финансовая практика, усиленная духовным авторитетом',
-    evidence: 'Судебное решение и апелляция позволяют рассматривать обязательные платежи и воздействие на участников как установленное ядро дела. Карточка сохраняет правозащитные и доказательственные оговорки, отмеченные при проверке документов.',
+    mechanism: 'Проверяемая гипотеза о связи финансовых действий с духовным авторитетом',
+    evidence: 'Исследовательский реестр содержит записи судебного решения и апелляции, но их точные публичные локаторы пока не восстановлены. Поэтому эта карточка не выдаёт конкретные финансовые действия, размер ущерба или пересказ судебных выводов за независимо проверенные редакцией факты.',
     boundary: 'Журналистские выражения и спорные психологические формулы не используются как самостоятельное доказательство. Прямые цитаты запрещены до восстановления точного официального указателя.',
     sources: ['W2-KUZ-01', 'W2-KUZ-02']
   },
   {
     id: 'evgeny-shin', section: 'financial-dependency', name: 'Evgeny Shin / «Христианская миссия»',
-    mechanism: 'Использование доверия общины в доказанном мошенничестве',
-    evidence: 'Судебное решение фиксирует мошенническое ядро, потерпевших и установленный размер ущерба. Для темы статьи важно, что доступ к людям и доверие были связаны с церковным положением.',
+    mechanism: 'Проверяемый вопрос о роли церковного доверия в сообщениях о финансовом преступлении',
+    evidence: 'Исследовательский реестр содержит сведения о судебном деле, однако точный доступный публичный локатор решения не восстановлен. Пока нельзя независимо подтвердить приведённые в пересказах размер ущерба, мотивировку судебного акта и роль церковного положения; такие детали остаются на источниковой проверке.',
     boundary: 'Медийная оценка ущерба в полмиллиарда исключена. Утверждение о сознательном сокрытии со стороны церкви также не используется без самостоятельной первичной опоры.',
     sources: ['W2-SHI-01', 'W2-SHI-02']
   }
 ];
 
 const sourceLinks: SourceLink[] = [
-  ['Guidepost: SBC independent investigation', 'https://guidepostsolutions.com/insights/media-mentions/guidepost-solutions-report-of-the-independent-investigation-of-the-southern-baptist-convention/'],
-  ['SBC Executive Committee response', 'https://www.sbc.net/a-statement-in-response-to-the-release-of-the-satf-report/'],
+  ['Guidepost: SBC independent investigation', 'https://guidepostsolutions.com/insights/media-mentions/guidepost-solutions-report-of-the-independent-investigation-of-the-southern-baptist-convention/', 'SBC-01'],
+  ['SBC Executive Committee response', 'https://www.sbc.net/a-statement-in-response-to-the-release-of-the-satf-report/', 'SBC-02'],
   ['SBC statement concerning former general counsel', 'https://www.sbc.net/a-statement-regarding-former-general-counsel-d-august-boto/'],
   ['Willow Creek institutional history', 'https://www.willowcreek.org/about-willow'],
   ['Royal Commission Case Study 18', 'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches'],
   ['Royal Commission findings release for Case Study 18', 'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches'],
   ['Guidepost faith-based investigations', 'https://guidepostsolutions.com/industries/faith-based-organizations/'],
   ['CREC Anselm Presbytery archive', 'https://crechurches.org/presbyteries/anselm'],
-  ['Thirtyone:eight Crowded House review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/crowded-house-review/'],
+  ['Thirtyone:eight Crowded House review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/crowded-house-review/', 'TIM-01'],
   ['Thirtyone:eight completion statement', 'https://thirtyoneeight.org/news/statement-on-the-completion-of-our-independent-learning-review-for-the-crowded-house/'],
-  ['Thirtyone:eight Jonathan Fletcher review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/jonathan-fletcher-review/'],
+  ['Thirtyone:eight Jonathan Fletcher review', 'https://thirtyoneeight.org/safeguarding-services/consultancy/case-and-learning-reviews/jonathan-fletcher-review/', 'FLE-01'],
   ['SWBTS statement on abuse', 'https://swbts.edu/news/statement-on-abuse/'],
   ['SWBTS statement regarding Paige Patterson', 'https://swbts.edu/news/statement-regarding-dr-paige-patterson/'],
-  ['SWBTS Executive Committee statement', 'https://swbts.edu/news/statement-by-the-southwestern-theological-seminary/'],
-  ['Liberty University accepts resignation', 'https://www.liberty.edu/news/2020/08/25/liberty-university-board-accepts-jerry-falwell-jr-s-resignation-as-president/'],
-  ['Liberty launches independent investigation', 'https://www.liberty.edu/news/2020/08/31/liberty-university-board-pledges-full-commitment-to-spiritual-mission-and-launches-independent-investigation/'],
-  ['Church of England: Pilavachi concerns substantiated', 'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation'],
+  ['SWBTS Executive Committee statement', 'https://swbts.edu/news/statement-by-the-southwestern-theological-seminary/', 'PAT-03'],
+  ['Liberty University accepts resignation', 'https://www.liberty.edu/news/2020/08/25/liberty-university-board-accepts-jerry-falwell-jr-s-resignation-as-president/', 'FAL-02'],
+  ['Liberty launches independent investigation', 'https://www.liberty.edu/news/2020/08/31/liberty-university-board-pledges-full-commitment-to-spiritual-mission-and-launches-independent-investigation/', 'FAL-03'],
+  ['Church of England: Pilavachi concerns substantiated', 'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation', 'PIL-04'],
   ['Church of England: Pilavachi safeguarding statement', 'https://www.churchofengland.org/safeguarding/safeguarding-news-releases/mike-pilavachi-statement-national-safeguarding-team'],
-  ['Firefly independent investigation', 'https://www.tikkunglobal.org/_files/ugd/c39fc4_0c894435ff7b456c83bd967bdf2f40fc.pdf'],
+  ['Firefly independent investigation', 'https://www.tikkunglobal.org/_files/ugd/c39fc4_0c894435ff7b456c83bd967bdf2f40fc.pdf', 'BIC-02'],
   ['Missouri governor: SB 81 signed', 'https://governor.mo.gov/press-releases/archive/governor-kehoe-signs-sb-81-law'],
-  ['Oklahoma AG: Robert Morris guilty plea', 'https://oklahoma.gov/oag/news/newsroom/2025/october/megachurch-founder-pleads-guilty-to-child-sex-abuse-charges.html'],
-  ['Texas Legislature witness record', 'https://capitol.texas.gov/tlodocs/88R/witlistmtg/html/C3302024100209001.HTM'],
-  ['Kirov District Court case card', 'https://kirovcourt--oms.sudrf.ru/modules.php?case_id=188983504&case_uid=450d424b-86ce-4fc9-8bea-af647a97bfa8&delo_id=1540006&name=sud_delo&name_op=case&new=&srv_num=2'],
-  ['Omsk Regional Court appeal card', 'https://oblsud--oms.sudrf.ru/modules.php?case_id=26456881&case_uid=beacc133-296f-4569-a29a-2223bb29c15d&delo_id=4&name=sud_delo&name_op=case&new=4&srv_num=1'],
+  ['Oklahoma AG: Robert Morris guilty plea', 'https://oklahoma.gov/oag/news/newsroom/2025/october/megachurch-founder-pleads-guilty-to-child-sex-abuse-charges.html', 'W2-MOR-02'],
+  ['Texas Legislature witness record', 'https://capitol.texas.gov/tlodocs/88R/witlistmtg/html/C3302024100209001.HTM', 'W2-MOR-03'],
+  ['Kirov District Court case card', 'https://kirovcourt--oms.sudrf.ru/modules.php?case_id=188983504&case_uid=450d424b-86ce-4fc9-8bea-af647a97bfa8&delo_id=1540006&name=sud_delo&name_op=case&new=&srv_num=2', 'W2-MOS-01'],
+  ['Omsk Regional Court appeal card', 'https://oblsud--oms.sudrf.ru/modules.php?case_id=26456881&case_uid=beacc133-296f-4569-a29a-2223bb29c15d&delo_id=4&name=sud_delo&name_op=case&new=4&srv_num=1', 'W2-MOS-02'],
   ['The Journey official history', 'https://www.thejourney.org/about/our-story-new'],
-  ['Bethel: important leadership letter', 'https://www.bethel.com/news/an-important-letter-from-bill-kris-and-dann-on-behalf-of-bethel-leadership'],
-  ['Bethel leadership updates timeline', 'https://www.bethel.com/leadership-updates/timeline'],
+  ['Bethel: important leadership letter', 'https://www.bethel.com/news/an-important-letter-from-bill-kris-and-dann-on-behalf-of-bethel-leadership', 'W2-BET-01'],
+  ['Bethel leadership updates timeline', 'https://www.bethel.com/leadership-updates/timeline', 'W2-BET-06'],
   ['Bethel: scope of institutional apology', 'https://www.bethel.com/leadership-updates/answered-questions/if-bethel-was-not-formally-covering-shawn-what-did-bethel-apologize-for'],
   ['SBL Greek New Testament', 'https://github.com/Faithlife/SBLGNT'],
   ['STEPBible Data', 'https://github.com/STEPBible/STEPBible-Data'],
@@ -221,8 +221,12 @@ const sourceLinks: SourceLink[] = [
   ['Church of England safeguarding policy', 'https://www.churchofengland.org/resources/safeguarding-gateway/promoting-safer-church-0']
 ];
 
+// Reuse case-specific A-class documents already in the frozen 40-link bibliography.
+// Missing court locators remain HOLD; no additional source URLs are introduced.
+const readerLinksForCard = (card: CaseCard) => sourceLinks.filter(([, , recordId]) => Boolean(recordId && card.sources.includes(recordId)));
+
 const quiz: QuizItem[] = [
-  ['Что в 3 Ин. 9–10 является корнем поведения Диотрефа?', ['Недостаток образования', 'Любовь к первенству', 'Отсутствие харизмы', 'Слабая администрация'], 1, 'Текст связывает несколько действий — непринятие свидетельства, злые слова, контроль гостеприимства и изгнание — с любовью к первенству.'],
+  ['Что в 3 Ин. 9–10 является корнем поведения Диотрефа?', ['Недостаток образования', 'Любовь к первенству', 'Отсутствие харизмы', 'Слабая администрация'], 1, 'Стихи называют любовь к первенству и конкретные действия: Диотреф не принимает «нас», злословит автора послания, не принимает братьев, препятствует желающим их принять и изгоняет из церкви. Стихи не описывают современных процедур независимой проверки.'],
   ['Почему статья не называет каждого участника «современным Диотрефом»?', ['Потому что имена запрещены', 'Потому что важнее проверяемый механизм и точный статус доказательств', 'Потому что все дела закрыты', 'Потому что церковная власть не подлежит оценке'], 1, 'Библейский образ служит аналитической рамкой, а не универсальным судебным ярлыком.'],
   ['Как следует использовать качественную вторичную публикацию?', ['Как единственное доказательство спорного утверждения', 'Только для иллюстрации эмоций', 'Для уточнения контекста и хронологии наряду с первичными документами', 'Для прямой цитаты без точного указателя'], 2, 'Добросовестная вторичная публикация помогает понять контекст и хронологию, но спорные утверждения нужно сверять с первичными документами и независимыми свидетельствами.'],
   ['Что означает различие между Королевской комиссией и уголовным судом?', ['Они всегда противоречат друг другу', 'Комиссия и суд отвечают на разные вопросы и имеют разные стандарты', 'Комиссия равна приговору', 'Оправдание удаляет исторические документы'], 1, 'Институциональное расследование может оценивать практики и реакцию, а уголовный процесс — конкретный состав и доказательства по нему.'],
@@ -244,7 +248,8 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
     data-wave12-published={publicationMode ? 'true' : undefined}
     data-source-authority="148"
     data-curated-sources="54"
-    data-reader-links="40"
+    data-bibliography-records="40"
+    data-active-reader-links="39"
   >
     <span data-pagefind-meta="author" hidden>Автор-редактор: Фёдор Милованов</span>
     <span data-pagefind-meta="category" hidden>Служение</span>
@@ -255,9 +260,9 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
       <p class="article-byline">
         <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
         <span aria-hidden="true" class="article-byline__sep">·</span>
-        <time datetime={publicationMode ? '2026-08-02' : '2026-08-01'}>{publicationMode ? '2 августа 2026' : '1 августа 2026'}</time>
+        <time datetime={publicationMode ? '2026-08-02' : '2026-08-01'} data-editorial-slot="published">{publicationMode ? '2 августа 2026' : '1 августа 2026'}</time>
         <span aria-hidden="true" class="article-byline__sep">·</span>
-        <span>{publicationMode ? '15 мин' : 'Исследовательский черновик'}</span>
+        <span>{publicationMode ? '35 мин' : 'Исследовательский черновик'}</span>
       </p>
     </header>
 
@@ -282,13 +287,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
     <aside class="summary-card" aria-labelledby="short-summary">
       <h2 id="short-summary">Коротко</h2>
       <ul>
-        <li>Библейский профиль Диотрефа — любовь к первенству, непринятие проверки, злые слова, контроль доступа и изгнание несогласных.</li>
+        <li>Библейский профиль Диотрефа — любовь к первенству, непринятие автора послания, злословие, отказ принимать братьев, препятствие желающим их принять и изгнание из церкви.</li>
         <li>В статье 21 кейс, но для каждого разрешён только один главный доказанный механизм власти.</li>
         <li>Каждая карточка рассматривает документы различной природы — судебные решения, официальные заявления, независимые расследования и церковные записи — с оговоркой о том, что именно подтверждает каждый источник.</li>
         <li>Сильные вторичные публикации могут уточнять хронологию, но не являются единственной опорой спорного тезиса.</li>
         <li>Цель — не отменить пастырскую власть, а вернуть ей служебную природу, реальную множественность и подотчётность истине.</li>
       </ul>
     </aside>
+
+    {publicationMode && <slot />}
 
     <h2 id="interpretive-guardrails">Почему одного тревожного признака недостаточно</h2>
     <p>Сильная лидерская манера сама по себе не доказывает захват власти. Большая церковь не обязательно является закрытой системой. Публичная известность, высокий бюджет, решительный характер, строгая дисциплина и даже серьёзный внутренний конфликт ещё не дают права объявить человека духовным насильником. Иногда быстрые решения необходимы, конфиденциальность защищает пострадавшего, совет не может сразу раскрыть детали, а обвинение оказывается неполным или ложным. Если всякая асимметрия полномочий заранее считается злоупотреблением, церковь теряет возможность иметь настоящих пастырей и руководителей.</p>
@@ -297,8 +304,8 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
     <p>Наконец, несколько дел в этой подборке связаны с тяжёлыми сексуальными или финансовыми преступлениями, но преступление и диотрефский механизм не тождественны. Властная тема появляется там, где духовный статус дал особый доступ, ослабил проверку, сделал пострадавшего зависимым, задержал раскрытие или позволил структуре защищать платформу вместо истины. Именно поэтому из исследования исключены известные падения, для которых такая связка не была достаточно доказана. Тяжесть греха не заменяет доказательство механизма, а сходство биографий не позволяет переносить выводы с одного человека на другого.</p>
 
     <h2 id="biblical-profile">Диотреф в 3 Ин. 9–10: четыре действия, один корень</h2>
-    <p>Иоанн начинает не с административной ошибки, а с желания быть первым. Из этого корня вырастают четыре наблюдаемых действия. Во-первых, Диотреф не принимает свидетельство, которое способно ограничить его положение. Во-вторых, он управляет картиной через злые слова. В-третьих, он контролирует, кого община может принимать. В-четвёртых, он превращает церковное исключение в оружие против тех, кто не подчиняется его линии.</p>
-    <p>Поэтому «диотрефство» в этой статье — не диагноз личности и не синоним всякого тяжёлого греха. Это аналитическая рамка для повторяющегося сочетания: <strong>первенство → защита центра → управление информацией → наказание независимости</strong>. У сильного, но подотчётного пастора могут быть резкий характер и ошибочные решения; это ещё не доказывает систему. Система обнаруживается там, где одни и те же механизмы воспроизводятся, а исправление становится опаснее самой ошибки.</p>
+    <p>В 3 Ин. 9–10 сначала названа любовь Диотрефа к первенству. Далее послание сообщает, что он «не принимает нас», поносит автора и его спутников злыми словами, сам не принимает братьев, препятствует тем, кто желает их принять, и изгоняет из церкви. Текст не называет церковной должности Диотрефа, не уточняет процедуру изгнания и не утверждает, что он действовал без участия общины. Непринятие современной независимой проверки может быть пастырской аналогией, но не буквальным содержанием слов «не принимает нас».</p>
+    <p>Поэтому «диотрефство» в этой статье — не диагноз личности и не синоним всякого тяжёлого греха. В современной церковной жизни с этим текстом можно осторожно сопоставлять стремление сделать лидера непроверяемым, злословие несогласных, препятствие братскому общению и использование дисциплины как давления. Но это <strong>богословская аналогия</strong>, а не обязательная последовательность из пяти стадий или установленный мотив каждого названного руководителя. У сильного, но подотчётного пастора могут быть резкий характер и ошибочные решения; сами по себе они не доказывают системного злоупотребления.</p>
 
     <h2 id="authority-capture">Когда служение становится продолжением личности лидера</h2>
     <p>Захват власти редко начинается с объявления диктатуры. Чаще структура постепенно учится воспринимать благополучие лидера как благополучие церкви. Его известность становится аргументом, его интуиция — заменой обсуждения, его усталость — основанием отключить обратную связь, а его незаменимость — причиной отложить проверку. Следующие карточки различаются по тяжести и фактам, но показывают общий риск: организация теряет способность отделять верность миссии от верности центральной фигуре.</p>
@@ -309,7 +316,13 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {card.id === 'darrin-patrick' ? (
+              <a href="https://gallery.mailchimp.com/403ae4d269435dd5dbbd5c310/files/RemovalfromOfficeLetter.pdf" rel="noopener noreferrer">Первичный документ: письмо совета The Journey, апрель 2016 года (PDF, 3 страницы)</a>
+            ) : (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -323,7 +336,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -337,7 +357,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -351,7 +378,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -365,13 +399,20 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
 
     <h2 id="financial-dependency">Деньги, доверие и пасторская зависимость</h2>
-    <p>Финансовое преступление не становится «церковным» только потому, что его совершил верующий. Для этой статьи важна доказанная связка между духовным положением, доступом к людям, зависимостью и финансовым действием. Поэтому в ядро вошли только те русскоязычные дела, где судебный материал позволяет говорить об установленном финансовом ядре, а неподтверждённые масштабы и сенсационные формулы исключены.</p>
+    <p>Финансовое преступление не становится «церковным» только потому, что его совершил верующий. Для этой статьи важна доказанная связка между духовным положением, доступом к людям, зависимостью и финансовым действием. Русскоязычные истории здесь рассматриваются с дополнительным источниковым ограничением: пока официальный локатор конкретного судебного решения не восстановлен, материалы СМИ не выдаются за самостоятельно перепроверенный судебный вывод, а неподтверждённые масштабы и сенсационные формулы исключены.</p>
     <div class="case-grid">
       {grouped('financial-dependency').map((card) => (
         <section class="note-box evidence-card" id={`case-${card.id}`} data-case-id={card.id} data-evidence-records={card.sources.join(',')}>
@@ -379,7 +420,14 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref"><a href="#sources">Документы, источники и границы проверки</a></p>
+          <p class="source-ref">
+            {readerLinksForCard(card).map(([label, href], index) => (
+              <span>{index > 0 ? ' · ' : ''}<a href={href} rel="noopener noreferrer">{label}</a></span>
+            ))}
+            {readerLinksForCard(card).length === 0 && (
+              <a href="#sources">Документы, источники и границы проверки</a>
+            )}
+          </p>
         </section>
       ))}
     </div>
@@ -398,12 +446,18 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
       </ul>
     </div>
 
-    <section class="reading-list-section" id="sources" data-reader-source-links="40">
+    <section class="reading-list-section" id="sources" data-bibliography-records="40" data-reader-source-links="39">
       <h2>Источники и границы проверки</h2>
-      <p>Документальное основание статьи шире опубликованной здесь подборки. Ниже приведены 40 прямых ссылок на документы и исследования; отдельный раздел о верных свидетелях содержит ещё 33 ссылки. Судебный акт, заявление, независимый отчёт и свидетельство участника имеют разную доказательственную силу. Если для архивной записи не подтверждён доступный публичный адрес, она не выдаётся за прямую читательскую ссылку и не служит основанием непроверенной дословной цитаты.</p>
+      <p>Документальное основание статьи шире опубликованной здесь подборки. Ниже приведены 40 библиографических записей о документах и исследованиях; один исторический адрес The Journey сейчас недоступен (404) и не выдаётся за работающую ссылку. Отдельный раздел о верных свидетелях содержит ещё 33 записи. Судебный акт, заявление, независимый отчёт и свидетельство участника имеют разную доказательственную силу. Если для архивной записи не подтверждён доступный публичный адрес, она не выдаётся за прямую читательскую ссылку и не служит основанием непроверенной дословной цитаты.</p>
       <ol>
         {sourceLinks.map(([label, href]) => (
-          <li><a href={href} rel="noopener noreferrer">{label}</a></li>
+          <li>
+            {href === 'https://www.thejourney.org/about/our-story-new' ? (
+              <span data-locator-status="unavailable-404-2026-11-23" data-historical-href={href}>{label} — исторический адрес сейчас недоступен; это не открываемый первичный документ.</span>
+            ) : (
+              <a href={href} rel="noopener noreferrer">{label}</a>
+            )}
+          </li>
         ))}
       </ol>
     </section>

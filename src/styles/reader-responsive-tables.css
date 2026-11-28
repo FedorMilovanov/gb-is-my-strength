@@ -1,0 +1,192 @@
+/*
+ * Opt-in responsive presentation of short editorial/prose comparisons.
+ * No JS, duplicated source text, parser or storage. Do not use for numeric
+ * or truly wide datasets; those retain the accessible scrolling-table owner.
+ * All column names are copied from the authored <th> into data-label.
+ * Opt-in owners: article-body, teen-series-prose and the heart handbook's
+ * explicit data-responsive-prose-owner. No other route is enrolled.
+ */
+/*
+ * Wide/desktop layout has two different semantic first-column types.
+ * Chronologies (Gill dates) stay compact. Long prose status labels must wrap
+ * normally instead of inheriting the legacy compare-table nowrap column.
+ */
+@media (min-width: 701px) {
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"])
+  table[data-responsive-layout="stacked-prose"][data-key-type="prose"]
+  > tbody > tr > td:first-child {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    inline-size: 28%;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"])
+  table[data-responsive-layout="stacked-prose"][data-key-type="prose"]
+  > tbody > tr > td:not(:first-child) {
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+}
+@media (max-width: 700px) {
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) .table-scroll:has(> table[data-responsive-layout="stacked-prose"]) {
+    overflow: visible;
+    max-inline-size: 100%;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    border: 0;
+    border-spacing: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > thead {
+    /* Override legacy .compare-table thead{display:none}; keeping DOM
+       nodes alone is insufficient: column headers must stay in the
+       accessibility tree even when visually clipped on narrow screens. */
+    display: table-header-group;
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    min-inline-size: 0;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-inline-size: 0;
+    margin: 0;
+    border: 1px solid var(--color-border, #e5e2dc);
+    border-radius: 14px;
+    background: var(--color-surface, #fffdf9);
+    box-shadow: 0 1px 3px rgba(16, 18, 22, .035);
+    overflow: hidden;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
+    display: block;
+    inline-size: auto;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-text, #24211e);
+    font-size: clamp(14px, 3.7vw, 16px);
+    line-height: 1.58;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td + td {
+    border-block-start: 1px solid var(--color-border, #e5e2dc);
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child {
+    padding-block: 11px;
+    font-weight: 650;
+    line-height: 1.4;
+    background: var(--color-surface-muted, #f5f2ed);
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child::before {
+    content: none;
+    display: none;
+  }
+
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    position: static;
+    inset: auto;
+    float: none;
+    inline-size: auto;
+    block-size: auto;
+    transform: none;
+    white-space: normal;
+    margin-block-end: 5px;
+    color: var(--color-text-secondary, #555);
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: .01em;
+    hyphens: none;
+  }
+
+  html.dark :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr {
+    box-shadow: none;
+  }
+
+  html.dark :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child {
+    background: var(--color-surface-muted, #1b1f26);
+  }
+}
+
+@media print {
+  /* The original three-column table is the single print source of truth. */
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] {
+    /* A narrow print viewport may still match site.css's article display:block
+       and floating-cluster's 34rem floor. Real print never scrolls. */
+    display: table;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    overflow: visible;
+  }
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > thead {
+    position: static;
+    display: table-header-group;
+    inline-size: auto;
+    block-size: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    white-space: normal;
+    clip-path: none;
+  }
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody {
+    display: table-row-group;
+  }
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr {
+    display: table-row;
+    border: 0;
+    box-shadow: none;
+  }
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
+    display: table-cell;
+    inline-size: auto;
+    max-inline-size: none;
+    border: 1px solid var(--color-border, #e5e2dc);
+    border-radius: 0;
+    padding: 9px 11px;
+    background: transparent;
+  }
+  :is(.article-body, .teen-series-prose, article[data-responsive-prose-owner="heart-guide"]) table[data-responsive-layout="stacked-prose"] > tbody > tr > td::before {
+    content: none !important;
+    display: none !important;
+  }
+}
