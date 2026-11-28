@@ -92,7 +92,10 @@ test('R6 exact bounded Research adoption preserves all seven new source identiti
       const source=bibliography.get(id);
       assert.equal(source?.url,r6.sources[id]);
       assert.equal(source?.researchLocator,p.id);
-      assert.equal(source?.returnHref,p.id==='G3-HIST-PUB-16'?'#g3-year-2022':'#'+p.targetExistingAnchor);
+      // Research insertion anchors are historical handoff evidence, not permanent reader navigation.
+      const returnHref = p.id === 'G3-HIST-PUB-14' ? '#g3-year-2021'
+        : p.id === 'G3-HIST-PUB-16' ? '#g3-year-2022' : '#'+p.targetExistingAnchor;
+      assert.equal(source?.returnHref,returnHref);
       assert.ok(historicalText.includes("cite('"+id+"')"));
     }
   }
