@@ -7,6 +7,8 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { mixedScriptHtml, assertMixedScriptContract } = require('./lib/mixed-script-tokens');
+assertMixedScriptContract();
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const { buildAuditProSourceCorpus, routeToRootHtml } = require('./lib/audit-pro-source-corpus');
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -195,7 +197,9 @@ const fatalPatterns = [
   ['fatal-ukrainian-readtime-min', /\bмін\b/],
   ['fatal-application-salvation-glue', /Применение\s+спасение/i],
   ['fatal-abbreviated-research-finding', /исследоват\.\s*находк/i],
-  ['fatal-cyrillic-latin-glue', /[А-Яа-яЁё][A-Za-z]{3,}|[A-Za-z]{3,}[А-Яа-яЁё]/],
+  // Retained reference HTML remains subject to its historical narrow guard.
+  // Final publication is parsed separately below, without the 3-letter blind spot.
+  ...(ROOT === REPO_ROOT ? [['fatal-cyrillic-latin-glue', /[А-Яа-яЁё][A-Za-z]{3,}|[A-Za-z]{3,}[А-Яа-яЁё]/]] : []),
   // Exact negative fixtures for the five known malformed forms
   // (GBS-READER-MALFORMED-RUSSIAN-WORDS-BATCH): each matches ONLY the bad
   // token — «обеспечительные»/«самоуверенности»/«установленным»/«телеологии»
@@ -213,7 +217,13 @@ const fatalPatterns = [
   ['fatal-malformed-gill-v-vidu-zritelej', /в\s+виду\s+многих\s+зрителей/i],
 ];
 for (const f of htmlFiles) {
-  const text = readableText(fs.readFileSync(f, 'utf8'));
+  const html = fs.readFileSync(f, 'utf8');
+  const text = readableText(html);
+  if (ROOT !== REPO_ROOT) {
+    for (const finding of mixedScriptHtml(html)) {
+      fail('fatal-cyrillic-latin-glue', rel(f), `${finding.surface}: ${finding.token}`);
+    }
+  }
   for (const [kind, rx] of fatalPatterns) {
     const m = text.match(rx);
     if (m) fail(kind, rel(f), m[0]);
