@@ -72,6 +72,53 @@ try {
   assert.equal(await page.locator('[data-source-id="field-source"] a').first().getAttribute('href'), 'https://example.test/report');
   assert.match(await page.locator('[data-source-id="field-source"] .map-arch-source__meta').first().textContent(), /академическая рамка/);
 
+  checkpoint = 'reader-typography';
+  const typographyProfiles = [];
+  const originalTheme = await page.locator('.me-map').getAttribute('data-map-theme');
+  const minSizes = {
+    '.map-arch-projection__eyebrow': 11,
+    '.map-arch-badge': 11,
+    '.map-arch-projection__note': 12,
+    '.map-arch-card__statement': 14,
+    '.map-arch-card__limitations': 12,
+    '.map-arch-source__link': 13,
+    '.map-arch-source__meta': 12,
+  };
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const theme of ['light', 'dark']) {
+      if (await page.locator('.me-map').getAttribute('data-map-theme') !== theme) {
+        await page.locator('.me-theme-btn').evaluate(button => button.click());
+      }
+      assert.equal(await page.locator('.me-map').getAttribute('data-map-theme'), theme);
+      const measured = await page.locator('[data-archaeology-projection-root]').evaluate((root, selectors) => {
+        const roles = Object.fromEntries(Object.keys(selectors).map(selector => {
+          const nodes = [...root.querySelectorAll(selector)];
+          return [selector, nodes.map(node => {
+            const style = getComputedStyle(node);
+            return { size: parseFloat(style.fontSize), line: parseFloat(style.lineHeight), color: style.color };
+          })];
+        }));
+        return { roles, overflow: root.scrollWidth - root.clientWidth };
+      }, minSizes);
+      for (const [selector, min] of Object.entries(minSizes)) {
+        const samples = measured.roles[selector];
+        assert.ok(samples.length > 0, `missing typography role ${selector}`);
+        assert.ok(samples.every(sample => sample.size >= min && sample.line >= sample.size * 1.4 - 0.1),
+          `${width}/${theme}: unreadable ${selector}: ${JSON.stringify(samples)}`);
+      }
+      assert.ok(measured.overflow <= 1, `${width}/${theme}: archaeology projection horizontal overflow ${measured.overflow}`);
+      if (theme === 'light') {
+        assert.equal(await page.locator('.map-arch-badge--high').first().evaluate(node => getComputedStyle(node).color), 'rgb(33, 100, 59)');
+      }
+      typographyProfiles.push({ width, theme, roles: Object.keys(minSizes).length, overflow: measured.overflow });
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  if (await page.locator('.me-map').getAttribute('data-map-theme') !== originalTheme) {
+    await page.locator('.me-theme-btn').evaluate(button => button.click());
+  }
+
   checkpoint = 'close-panel';
   await page.locator('[data-tab="story"]').click();
   await page.waitForFunction(() => !document.querySelector('[data-archaeology-projection-root]'));
@@ -91,8 +138,8 @@ try {
   assert.equal(await page.locator('.me-arch-footer').count(), 0);
   assert.deepEqual(errors, []);
 
-  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, errors }, null, 2));
-  console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, errors: 0 }, null, 2));
+  fs.writeFileSync(reportPath, JSON.stringify({ browser: browserName, ok: true, checkpoint: 'complete', standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, errors }, null, 2));
+  console.log(JSON.stringify({ browser: browserName, standaloneOverlay: true, directEngine: true, mapCards: true, placeCards: true, legacyFooters: 0, typographyProfiles, errors: 0 }, null, 2));
 } catch (error) {
   const panelState = await page.locator('.me-panel').evaluate(element => ({
     className: element.className,
