@@ -108,6 +108,10 @@ try {
           `${width}/${theme}: unreadable ${selector}: ${JSON.stringify(samples)}`);
       }
       assert.ok(measured.overflow <= 1, `${width}/${theme}: archaeology projection horizontal overflow ${measured.overflow}`);
+      assert.equal(await page.locator('.map-arch-projection__note').evaluate(node => getComputedStyle(node).color),
+        theme === 'light' ? 'rgb(107, 91, 71)' : 'rgb(154, 162, 174)', `${width}/${theme}: note must use the active palette`);
+      assert.equal(await page.locator('a.map-arch-source__link').first().evaluate(node => getComputedStyle(node).textDecorationLine),
+        'underline', 'document links must be visibly identifiable without relying on color');
       if (theme === 'light') {
         assert.equal(await page.locator('.map-arch-badge--high').first().evaluate(node => getComputedStyle(node).color), 'rgb(33, 100, 59)');
       }
@@ -134,6 +138,11 @@ try {
   await page.locator('[data-tab="arch"]').click();
   await page.waitForSelector('[data-claim-id="retracted-context"]');
   assert.equal(await page.locator('[data-source-id="retracted-source"] a').count(), 0);
+  const inactiveSource = page.locator('[data-source-id="retracted-source"] span.map-arch-source__link');
+  assert.equal(await inactiveSource.count(), 1);
+  assert.equal(await inactiveSource.evaluate(node => getComputedStyle(node).textDecorationLine), 'none');
+  assert.equal(await inactiveSource.evaluate(node => getComputedStyle(node).color),
+    originalTheme === 'light' ? 'rgb(46, 36, 24)' : 'rgb(233, 228, 214)');
   assert.equal(await page.locator('[data-source-id="retracted-source"][data-evidence-use="negative"][data-source-status="retracted"]').count(), 1);
   assert.equal(await page.locator('.me-arch-footer').count(), 0);
   assert.deepEqual(errors, []);
